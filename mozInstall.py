@@ -251,7 +251,7 @@ class MozInstaller:
     self.dest = self.normalizePath(self.dest)
     #TODO: throw stderr
     zipped = zipfile.ZipFile(self.src)
-    if 'extractall' in zipped:
+    if zipped.extractall:
         zipped.extractall(self.dest)
     else:
         args = ["unzip", "-o", "-q", "-d", self.dest, self.src]

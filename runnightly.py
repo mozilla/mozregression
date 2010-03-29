@@ -32,7 +32,7 @@ def currentPlatform():
     (bits, linkage) = platform.architecture()
 
     os = platform.system()
-    if os == 'Microsoft' or re.match(".*cygwin.*", os):
+    if os == 'Microsoft' or os == 'Windows' or re.match(".*cygwin.*", os):
         return "Windows " + bits # 'Windows 32bit'
     elif os == 'Linux':
         return "Linux " + bits

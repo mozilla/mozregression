@@ -6,27 +6,14 @@ import re
 import sys
 import platform
 import subprocess
+from optparse import OptionParser
+from BeautifulSoup import BeautifulSoup
+
 from mozrunner import FirefoxProfile
 from mozrunner import Runner
-from BeautifulSoup import BeautifulSoup
 from mozInstall import MozInstaller
 from mozInstall import rmdirRecursive
-from optparse import OptionParser
-
-
-def strsplit(string, sep):
-    strlist = string.split(sep)
-    if len(strlist) == 1 and strlist[0] == '': # python's split function is ridiculous
-      return []
-    return strlist
-
-def getDate(dateString):
-    p = re.compile('(\d{4})\-(\d{1,2})\-(\d{1,2})')
-    m = p.match(dateString)
-    if not m:
-        print "Incorrect date format"
-        return
-    return datetime.date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+from utils import strsplit, download_url, get_date
 
 def currentPlatform():
     (bits, linkage) = platform.architecture()
@@ -45,28 +32,12 @@ class Nightly(object):
         if url:
             if not dest:
                 dest = os.path.basename(url)
-            print "\nDownloading nightly...\n"
-            self.downloadUrl(url, dest)
+            print "\nDownloading nightly...\n"  #TODO: doesn't belong here
+            download_url(url, dest)
             self.dest = dest
             return True
         else:
             return False
-
-    def downloadUrl(self, url, dest=None):
-        h = httplib2.Http()
-        resp, content = h.request(url, "GET")
-        if dest == None:
-            dest = os.path.basename(url)
-
-        local = open(dest, 'wb')
-        local.write(content)
-        local.close()
-        return dest
-
-    def formatDatePart(self, part):
-        if part < 10:
-            part = "0" + str(part)
-        return str(part)
 
     def install(self):
         rmdirRecursive("app")
@@ -104,6 +75,11 @@ class FirefoxNightly(Nightly):
             url = self.getUrl(date, i)
             if url:
                 return url
+                
+    def formatDatePart(self, part):
+        if part < 10:
+            part = "0" + str(part)
+        return str(part)
 
     def getUrl(self, date, hour):
         url = "http://ftp.mozilla.org/pub/mozilla.org/firefox/nightly/"
@@ -140,8 +116,8 @@ class FirefoxNightly(Nightly):
 
 
 class NightlyRunner(object):
-    def __init__(self, extensions=None, application=FirefoxNightly(currentPlatform()), profile=None, cmdargs=[]):
-        self.extensions = extensions
+    def __init__(self, addons=None, application=FirefoxNightly(currentPlatform()), profile=None, cmdargs=[]):
+        self.addons = addons
         self.profile = profile
         self.application = application
         self.cmdargs = cmdargs
@@ -152,9 +128,9 @@ class NightlyRunner(object):
         self.application.install()
 
         if self.profile:
-            profile = self.application.profileClass(profile=self.profile, create_new=False, plugins=self.extensions)
-        elif len(self.extensions):
-            profile = self.application.profileClass(plugins=self.extensions)
+            profile = self.application.profileClass(profile=self.profile, create_new=False, addons=self.addons)
+        elif len(self.addons):
+            profile = self.application.profileClass(addons=self.addons)
         else:
             profile = self.application.profileClass()
 
@@ -169,14 +145,17 @@ class NightlyRunner(object):
 
     def getAppInfo(self):
         return self.application.getAppInfo()
-
-if __name__ == "__main__":
+        
+def cli():
     parser = OptionParser()
     parser.add_option("-d", "--date", dest="date", help="date of the nightly", metavar="YYYY-MM-DD", default=str(datetime.date.today()))
-    parser.add_option("-e", "--extensions", dest="extensions", help="list of extensions to install", metavar="PATH1,PATH2", default="")
+    parser.add_option("-a", "--addons", dest="addons", help="list of addons to install", metavar="PATH1,PATH2", default="")
     parser.add_option("-p", "--profile", dest="profile", help="path to profile to user", metavar="PATH")
     (options, args) = parser.parse_args()
-    extensions = strsplit(options.extensions, ",")
 
-    runner = NightlyRunner(extensions=extensions, profile=options.profile)
-    runner.start(getDate(options.date))
+    runner = NightlyRunner(addons=strsplit(options.addons, ","), profile=options.profile)
+    runner.start(get_date(options.date))
+
+
+if __name__ == "__main__":
+    cli()

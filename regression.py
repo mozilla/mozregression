@@ -3,8 +3,8 @@ import datetime
 import sys
 from optparse import OptionParser
 from runnightly import NightlyRunner
-from runnightly import getDate
-from runnightly import strsplit
+from runnightly import get_date
+from runnightly import strsplit, get_date
 
 class Bisector():
     def __init__(self, runner): 
@@ -63,21 +63,22 @@ class Bisector():
             return repo + "/pushloghtml?fromchange=" + chset2 + "&tochange=" + chset1
         return repo + "/pushloghtml?fromchange=" + chset1 + "&tochange=" + chset2
         
-
-if __name__ == "__main__":
+def cli():
     parser = OptionParser()
     parser.add_option("-b", "--bad", dest="badDate",help="first known bad nightly build, default is today",metavar="YYYY-MM-DD", default=str(datetime.date.today()))
     parser.add_option("-g", "--good", dest="goodDate",help="last known good nightly build", metavar="YYYY-MM-DD")
-    parser.add_option("-e", "--extensions", dest="extensions",help="list of extensions to install", metavar="PATH1,PATH2", default="")
+    parser.add_option("-e", "--addons", dest="addons",help="list of addons to install", metavar="PATH1,PATH2", default="")
     parser.add_option("-p", "--profile", dest="profile", help="profile to use with nightlies", metavar="PATH")
     parser.add_option("-a", "--args", dest="cmdargs", help="command-line arguments to pass to the application", metavar="ARG1,ARG2", default="")
     (options, args) = parser.parse_args()
 
-    extensions = strsplit(options.extensions, ",")
+    addons = strsplit(options.addons, ",")
     cmdargs = strsplit(options.cmdargs, ",")
 
-    runner = NightlyRunner(extensions=extensions, profile=options.profile, cmdargs=cmdargs)
+    runner = NightlyRunner(addons=addons, profile=options.profile, cmdargs=cmdargs)
     bisector = Bisector(runner)
-    bisector.bisect(getDate(options.goodDate), getDate(options.badDate))
+    bisector.bisect(get_date(options.goodDate), get_date(options.badDate))
 
 
+if __name__ == "__main__":
+    cli()

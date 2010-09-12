@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>mozregression - nightly regression range finder for Firefox</title>
+<link rel="stylesheet/less" href="index.less" type="text/css">
+<script src="less-1.0.35.min.js" type="text/javascript"></script>
+
+</head>
+<body>
+  <a href="http://github.com/harthur/mozregression"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub" /></a>
+  <div id="container">
+    <div id="header">
+      <div id="title">mozregression</div>
+      <div id="subtitle">interactive regression range finder for Firefox nightlies</div>
+    </div>
+    
+    <div id="content">
+      <div class="section">
+        <div class="section-header">
+          Install
+        </div><p>Mozregression is a Python package, so you'll need <a href="http://pypi.python.org/pypi/setuptools" ><code>setuptools</code></a> or <a href="http://pypi.python.org/pypi/pip"><code>pip</code></a> to install. If you're on Windows you can just <a href="http://ftp.mozilla.org/pub/mozilla.org/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe"> install MozillaBuild</a> which comes with <code>setuptools</code> (run <code>C:\mozilla-build\start-l10n.bat</code> to get the command line). After installing <code>setuptools</code>, you can install mozregression:
+<pre class="code-example">
+easy_install mozregression
+</pre>
+</p>
+   <div class="main-section">
+      <div class="section-header">
+        How To Use
+      </div>
+        Let's say you just found a bug in the current nightly build and you know that bug didn't exist in the nightly from a few months ago. To find the regression range of this bug (the window of commits the bug was introduced in), run the <code>mozregression</code> command and give it a known "good" date with the <code>good</code> argument:
+      <pre class="code-example">
+mozregression --good=2010-03-16</pre>
+You can also specify the most distant known "bad" nightly date with the <code>bad</code> argument.
+      <pre class="code-example">
+mozregression --good=2010-03-16 --bad=2010-09-08</pre>
+
+      <p>This will guide you through a bisection, downloading and opening nightly builds from various dates and asking you whether the bug exists in them. After a few iterations you'll get the regression range, something like this:
+<pre class="code-example">
+Last good nightly: 2010-09-08 First bad nightly: 2010-09-09
+
+Pushlog: http://hg.mozilla.org/mozilla-central/pushloghtml?fromchange=36f5cf6b2d42&tochange=8e0fce7d5b49
+</pre></p>
+      <div id="examples" class="section-content">
+        <a href="regression.png">
+          <img id="screenshot"src="regression.png"></img>
+        </a>
+      </div>
+    </div>
+  </div>
+   
+  </div>
+</body>
+</html>

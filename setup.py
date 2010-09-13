@@ -3,21 +3,19 @@ from setuptools import setup, find_packages
 desc = """Regression range finder for Mozilla nightly builds"""
 summ = """Interactive regression range finder for Mozilla nightly builds"""
 
-PACKAGE_NAME = "mozregression"
-PACKAGE_VERSION = "0.1"
-
-setup(name=PACKAGE_NAME,
-      version=PACKAGE_VERSION,
+setup(name="mozregression",
+      version="0.1.3",
       description=desc,
       long_description=summ,
       author='Heather Arthur',
       author_email='fayearthur@gmail.com',
       url='http://github.com/harthur/mozregression',
-      license='MPL',
+      license='MPL 1.1/GPL 2.0/LGPL 2.1',
+      packages=find_packages(exclude=['legacy']),
       entry_points="""
           [console_scripts]
-          mozregression = regression:cli
-          moznightly = runnightly:cli
+          mozregression = mozregression:regressioncli
+          moznightly = mozregression:nightlycli
         """,
       platforms =['Any'],
       install_requires = ['httplib2 >= 0.6.0', 'mozrunner >= 2.5.0', 'BeautifulSoup >= 3.0.4'],

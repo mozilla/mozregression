@@ -4,7 +4,6 @@
 <title>mozregression - nightly regression range finder for Firefox</title>
 <link rel="stylesheet/less" href="index.less" type="text/css">
 <script src="less-1.0.35.min.js" type="text/javascript"></script>
-
 </head>
 <body>
   <a href="http://github.com/harthur/mozregression"><img style="position: absolute; top: 0; right: 0; border: 0;margin:0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub" /></a>
@@ -24,48 +23,46 @@
             <div class="sub-section-header">
               Windows
             </div>
-            <ul>
-              <li><a href="http://ftp.mozilla.org/pub/mozilla.org/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe">
-                install MozillaBuild</a>
-              </li>
-              <li>Run <code>C:\mozilla-build\start-l10n.bat</code>. This will give you a command-line prompt.
-              </li>
-              <li>
-                Type this into the command-line and press Enter:
-              <pre class="code-example">
+            <div class="sub-section-content">
+              <ul>
+                <li><a href="http://ftp.mozilla.org/pub/mozilla.org/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe">
+                  install MozillaBuild</a>
+                </li>
+                <li>Run <code>C:\mozilla-build\start-l10n.bat</code>. This will give you a command-line prompt.
+                </li>
+                <li>
+                  Type this into the command-line and press Enter:
+                <pre class="code-example">
 easy_install mozregression
 </pre>
-              </li>
-            </ul>
+                </li>
+              </ul>
+          </div>
           </div>
           <div class="sub-section">
             <div class="sub-section-header">
               Mac
             </div>
-            <ul>
-              <li>Open the Terminal application</a>
-              </li>
-              <li>Run these commands:
+            <div class="sub-section-content">
+              Run these commands in the Terminal:
               <pre class="code-example">
 curl -O http://peak.telecommunity.com/dist/ez_setup.py
 sudo python ez_setup.py
 sudo easy_install mozregression
 </pre>
-              </li>
-            </ul>
+            </div>
           </div>
           <div class="sub-section">
             <div class="sub-section-header">
               Ubuntu
             </div>
-            <ul>
-              <li>Run these commands in the Terminal:
+            <div class="sub-section-content">
+              Run these commands in the Terminal:
               <pre class="code-example">
 sudo apt-get install python-pip
 sudo pip mozregression
 </pre>
-              </li>
-            </ul>
+          </div>
           </div>
         </div>
    <div class="main-section">

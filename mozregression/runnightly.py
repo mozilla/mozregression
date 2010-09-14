@@ -33,9 +33,9 @@ class Nightly(object):
             return False
 
     def install(self):
-        rmdirRecursive("app")
+        rmdirRecursive("moznightlyapp")
         subprocess._cleanup = lambda : None # mikeal's fix for subprocess threading bug
-        MozInstaller(src=self.dest, dest="app")
+        MozInstaller(src=self.dest, dest="moznightlyapp")
     
 
 class FirefoxNightly(Nightly):
@@ -48,19 +48,19 @@ class FirefoxNightly(Nightly):
         if platform == "Windows" or platform == "Windows 32bit":
             self.buildRegex = ".*win32.zip"
             self.processName = "firefox.exe"
-            self.executablePath = "app/firefox/firefox.exe"
+            self.executablePath = "moznightlyapp/firefox/firefox.exe"
         elif platform == "Linux" or platform == "Linux 32bit":
             self.buildRegex = ".*linux-i686.tar.bz2"
             self.processName = "firefox-bin"
-            self.executablePath = "app/firefox/firefox"
+            self.executablePath = "moznightlyapp/firefox/firefox"
         elif platform == "Linux 64bit":
             self.buildRegex = ".*linux-x86_64.tar.bz2"
             self.processName = "firefox-bin"
-            self.executablePath = "app/firefox/firefox"
+            self.executablePath = "moznightlyapp/firefox/firefox"
         elif platform == "Mac" or platform=="Mac 32bit" or platform == "Mac 64bit":
             self.buildRegex = ".*mac.dmg"
             self.processName = "firefox-bin"
-            self.executablePath = "app/Minefield.app/Contents/MacOS/firefox-bin"
+            self.executablePath = "moznightlyapp/Minefield.app/Contents/MacOS/firefox-bin"
 
     def getBuildUrl(self, date):
         # we don't know which hour the build was made, so look through all of them

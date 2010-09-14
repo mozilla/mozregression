@@ -1,6 +1,18 @@
 import re
 import httplib2
 import datetime
+import platform
+
+def current_platform():
+    (bits, linkage) = platform.architecture()
+
+    os = platform.system()
+    if os == 'Microsoft' or os == 'Windows' or re.match(".*cygwin.*", os):
+        return "Windows " + bits # 'Windows 32bit'
+    elif os == 'Linux':
+        return "Linux " + bits
+    elif os == 'Darwin' or os == 'Mac':
+        return "Mac " + bits
 
 def strsplit(string, sep):
     strlist = string.split(sep)

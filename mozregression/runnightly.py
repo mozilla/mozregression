@@ -17,18 +17,7 @@ except:
 from mozrunner import Runner
 from mozInstall import MozInstaller
 from mozInstall import rmdirRecursive
-from utils import strsplit, download_url, get_date
-
-def currentPlatform():
-    (bits, linkage) = platform.architecture()
-
-    os = platform.system()
-    if os == 'Microsoft' or os == 'Windows' or re.match(".*cygwin.*", os):
-        return "Windows " + bits # 'Windows 32bit'
-    elif os == 'Linux':
-        return "Linux " + bits
-    elif os == 'Darwin' or os == 'Mac':
-        return "Mac " + bits        
+from utils import strsplit, download_url, get_date, current_platform 
 
 class Nightly(object):
     def download(self, date=datetime.date.today(), dest=None):
@@ -50,7 +39,7 @@ class Nightly(object):
     
 
 class FirefoxNightly(Nightly):
-    def __init__(self, platform=currentPlatform()):
+    def __init__(self, platform=current_platform()):
         self.profileClass = FirefoxProfile
 
         if platform == "Windows 64bit":
@@ -120,7 +109,7 @@ class FirefoxNightly(Nightly):
 
 
 class NightlyRunner(object):
-    def __init__(self, addons=None, application=FirefoxNightly(currentPlatform()), profile=None, cmdargs=[]):
+    def __init__(self, addons=None, application=FirefoxNightly(current_platform()), profile=None, cmdargs=[]):
         self.addons = addons
         self.profile = profile
         self.application = application

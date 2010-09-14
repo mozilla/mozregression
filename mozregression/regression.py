@@ -3,8 +3,7 @@ import datetime
 import sys
 from optparse import OptionParser
 from runnightly import NightlyRunner
-from runnightly import get_date
-from runnightly import strsplit, get_date
+from utils import strsplit, get_date
 
 class Bisector():
     def __init__(self, runner): 
@@ -22,7 +21,6 @@ class Bisector():
         # run the nightly from that date
         dest = self.runner.start(midDate)
         while not dest:
-            print "\nCould not find nightly for " + str(midDate)
             midDate += datetime.timedelta(days=1)
             if midDate == badDate:
                 print "\n\nLast good nightly: " + str(goodDate) + " First bad nightly: " + str(badDate) + "\n"

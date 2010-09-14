@@ -117,6 +117,7 @@ class NightlyRunner(object):
 
     def start(self, date=datetime.date.today()):
         if not self.application.download(date=date):
+            print "could not find nightly from " + str(date)
             return False # download failed
         self.application.install()
 

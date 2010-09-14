@@ -18,23 +18,75 @@
       <div class="section">
         <div class="section-header">
           Install
-        </div><p>Mozregression is a Python package, so you'll need <a href="http://pypi.python.org/pypi/setuptools" ><code>setuptools</code></a> or <a href="http://pypi.python.org/pypi/pip"><code>pip</code></a> to install. If you're on Windows you can just <a href="http://ftp.mozilla.org/pub/mozilla.org/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe"> install MozillaBuild</a> which comes with <code>setuptools</code> (run <code>C:\mozilla-build\start-l10n.bat</code> to get the command line). After installing <code>setuptools</code>, you can install mozregression:
-<pre class="code-example">
+        </div><p><code>mozregression</code> is a Python package, installable via <code>setuptools</code>
+           or <code>pip</code> if you know how to do that, otherwise follow along with the OS-specific instructions:</p>
+          <div class="sub-section">
+            <div class="sub-section-header">
+              Windows
+            </div>
+            <ul>
+              <li><a href="http://ftp.mozilla.org/pub/mozilla.org/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe">
+                install MozillaBuild</a>
+              </li>
+              <li>Run <code>C:\mozilla-build\start-l10n.bat</code>. This will give you a command-line prompt.
+              </li>
+              <li>
+                Type this into the command-line and press Enter:
+              <pre class="code-example">
 easy_install mozregression
 </pre>
-</p>
+              </li>
+            </ul>
+          </div>
+          <div class="sub-section">
+            <div class="sub-section-header">
+              Mac
+            </div>
+            <ul>
+              <li>Open the Terminal application</a>
+              </li>
+              <li>Run these commands:
+              <pre class="code-example">
+curl -O http://peak.telecommunity.com/dist/ez_setup.py
+sudo python ez_setup.py
+sudo easy_install mozregression
+</pre>
+              </li>
+            </ul>
+          </div>
+          <div class="sub-section">
+            <div class="sub-section-header">
+              Ubuntu
+            </div>
+            <ul>
+              <li>Run these commands in the Terminal:
+              <pre class="code-example">
+sudo apt-get install python-pip
+sudo pip mozregression
+</pre>
+              </li>
+            </ul>
+          </div>
+        </div>
    <div class="main-section">
       <div class="section-header">
         How To Use
       </div>
-        Let's say you just found a bug in the current nightly build and you know that bug didn't exist in the nightly from a few months ago. To find the regression range of this bug (the window of commits the bug was introduced in), run the <code>mozregression</code> command and give it a known "good" date with the <code>good</code> argument:
+        <p>Let's say you just found a bug in the current nightly build and you know that bug
+          didn't exist in the nightly from a few months ago. You want to find the regression
+           range of this bug (the window of commits the bug was introduced in).</p>
+        <p>To find the range run the <code>mozregression</code> command on the command-line
+          (if you're on Windows this is Mozilla Build command-line, if you're on Mac or Linux
+          this is the Terminal) and give it a known "good" date with the <code>good</code> argument:</p>
       <pre class="code-example">
 mozregression --good=2010-03-16</pre>
 You can also specify the most distant known "bad" nightly date with the <code>bad</code> argument.
       <pre class="code-example">
 mozregression --good=2010-03-16 --bad=2010-09-08</pre>
 
-      <p>This will guide you through a bisection, downloading and opening nightly builds from various dates and asking you whether the bug exists in them. After a few iterations you'll get the regression range, something like this:
+      <p>This will guide you through a bisection, automatically downloading and opening
+        nightly builds from various dates and asking you whether the bug exists in them.
+        After doing this a few times you'll get the regression range, something like this:
 <pre class="code-example">
 Last good nightly: 2010-09-08 First bad nightly: 2010-09-09
 

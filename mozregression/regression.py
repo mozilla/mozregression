@@ -65,8 +65,10 @@ class Bisector():
         
 def cli():
     parser = OptionParser()
-    parser.add_option("-b", "--bad", dest="badDate",help="first known bad nightly build, default is today",metavar="YYYY-MM-DD", default=str(datetime.date.today()))
-    parser.add_option("-g", "--good", dest="goodDate",help="last known good nightly build", metavar="YYYY-MM-DD")
+    parser.add_option("-b", "--bad", dest="bad_date",help="first known bad nightly build, default is today",
+                      metavar="YYYY-MM-DD", default=str(datetime.date.today()))
+    parser.add_option("-g", "--good", dest="good_date",help="last known good nightly build",
+                      metavar="YYYY-MM-DD", default=None)
     parser.add_option("-e", "--addons", dest="addons",help="list of addons to install", metavar="PATH1,PATH2", default="")
     parser.add_option("-p", "--profile", dest="profile", help="profile to use with nightlies", metavar="PATH")
     parser.add_option("-a", "--args", dest="cmdargs", help="command-line arguments to pass to the application", metavar="ARG1,ARG2", default="")
@@ -74,10 +76,14 @@ def cli():
 
     addons = strsplit(options.addons, ",")
     cmdargs = strsplit(options.cmdargs, ",")
+    
+    if not options.good_date:
+        options.good_date = "2008-01-01"
+        print "No 'good' date specified, using " + options.good_date
 
     runner = NightlyRunner(addons=addons, profile=options.profile, cmdargs=cmdargs)
     bisector = Bisector(runner)
-    bisector.bisect(get_date(options.goodDate), get_date(options.badDate))
+    bisector.bisect(get_date(options.good_date), get_date(options.bad_date))
 
 
 if __name__ == "__main__":

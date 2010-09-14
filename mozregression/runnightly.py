@@ -9,7 +9,11 @@ import subprocess
 from optparse import OptionParser
 from BeautifulSoup import BeautifulSoup
 
-from mozrunner import FirefoxProfile
+try:
+  from mozprofile import FirefoxProfile
+except:
+  from mozrunner import FirefoxProfile
+
 from mozrunner import Runner
 from mozInstall import MozInstaller
 from mozInstall import rmdirRecursive

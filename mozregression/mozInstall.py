@@ -251,9 +251,9 @@ class MozInstaller:
     self.dest = self.normalizePath(self.dest)
     #TODO: throw stderr
     zipped = zipfile.ZipFile(self.src)
-    if zipped.extractall:
+    try:
         zipped.extractall(self.dest)
-    else:
+    except:
         args = ["unzip", "-o", "-q", "-d", self.dest, self.src]
         proc = subprocess.Popen(args)
         proc.wait()

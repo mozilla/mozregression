@@ -122,7 +122,7 @@ class NightlyRunner(object):
         self.application.install()
 
         if self.profile:
-            profile = self.application.profileClass(profile=self.profile, create_new=False, addons=self.addons)
+            profile = self.application.profileClass(profile=self.profile, addons=self.addons)
         elif len(self.addons):
             profile = self.application.profileClass(addons=self.addons)
         else:

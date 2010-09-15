@@ -15,6 +15,8 @@ def get_platform():
         name = "Mac"
         (release, versioninfo, machine) = platform.mac_ver()
         version = "OS X " + release
+    elif name == "Microsoft":
+        name = "Windows"
 
     bits = platform.architecture()[0]
     cpu = uname[4]

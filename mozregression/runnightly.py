@@ -97,10 +97,13 @@ class Nightly(object):
         parser = ConfigParser()
         ini_file = os.path.join(os.path.dirname(self.binary), "application.ini")
         parser.read(ini_file)
-        changeset = parser.get('App', 'SourceStamp')
-        repo = parser.get('App', 'SourceRepository')
-        return (repo, changeset)
-        
+        try:
+            changeset = parser.get('App', 'SourceStamp')
+            repo = parser.get('App', 'SourceRepository')
+            return (repo, changeset)
+        except:
+            return ("", "")
+
 class ThunderbirdNightly(Nightly):
 
     name = 'thunderbird' 

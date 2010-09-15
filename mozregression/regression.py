@@ -2,6 +2,7 @@
 import datetime
 import sys
 from optparse import OptionParser
+
 from runnightly import NightlyRunner
 from utils import strsplit, get_date
 
@@ -69,7 +70,10 @@ def cli():
                       metavar="YYYY-MM-DD", default=None)
     parser.add_option("-e", "--addons", dest="addons",help="list of addons to install", metavar="PATH1,PATH2", default="")
     parser.add_option("-p", "--profile", dest="profile", help="profile to use with nightlies", metavar="PATH")
-    parser.add_option("-a", "--args", dest="cmdargs", help="command-line arguments to pass to the application", metavar="ARG1,ARG2", default="")
+    parser.add_option("-a", "--args", dest="cmdargs", help="command-line arguments to pass to the application",
+                      metavar="ARG1,ARG2", default="")
+    parser.add_option("-n", "--app", dest="app", help="application name (firefox or thunderbird)",
+                      metavar="[firefox|thunderbird]", default="firefox")
     (options, args) = parser.parse_args()
 
     addons = strsplit(options.addons, ",")
@@ -79,7 +83,7 @@ def cli():
         options.good_date = "2008-01-01"
         print "No 'good' date specified, using " + options.good_date
 
-    runner = NightlyRunner(addons=addons, profile=options.profile, cmdargs=cmdargs)
+    runner = NightlyRunner(appname=options.app, addons=addons, profile=options.profile, cmdargs=cmdargs)
     bisector = Bisector(runner)
     bisector.bisect(get_date(options.good_date), get_date(options.bad_date))
 

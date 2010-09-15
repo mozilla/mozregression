@@ -222,11 +222,17 @@ class MozInstaller:
     mountpoint = os.path.join(self.dest, "MOUNTEDDMG")
     devnull = open(os.devnull, "w")
     subprocess.check_call(["hdiutil", "attach", "-quiet", "-mountpoint", mountpoint, self.src], stdout=devnull)
+
+    app = 'Minefield.app'
+    for fname in os.listdir(mountpoint):
+      if fname.find(".app") != -1:
+        app = fname
+
     try:
       #while not os.path.exists(mountpoint + "/MinefieldDebug.app"):
       #  print "waiting for disk image"
       #  time.sleep(1)
-      shutil.copytree(os.path.join(mountpoint, "Minefield.app"), os.path.join(self.dest, "Minefield.app"))
+      shutil.copytree(os.path.join(mountpoint, app), os.path.join(self.dest, app))
     finally:
       subprocess.check_call(["hdiutil", "detach", mountpoint], stdout=devnull)
       #shutil.rmtree(mountpoint)

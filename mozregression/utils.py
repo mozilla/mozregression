@@ -2,17 +2,34 @@ import re
 import httplib2
 import datetime
 import platform
+        
+def get_platform():
+    uname = platform.uname()
+    name = uname[0]
+    version = uname[2]
 
-def current_platform():
-    (bits, linkage) = platform.architecture()
+    if name == "Linux":
+        (distro, version, codename) = platform.linux_distribution()
+        version = distro + " " + version
+    elif name == "Darwin":
+        name = "Mac"
+        (release, versioninfo, machine) = platform.mac_ver()
+        version = "OS X " + release
 
-    os = platform.system()
-    if os == 'Microsoft' or os == 'Windows' or re.match(".*cygwin.*", os):
-        return "Windows " + bits # 'Windows 32bit'
-    elif os == 'Linux':
-        return "Linux " + bits
-    elif os == 'Darwin' or os == 'Mac':
-        return "Mac " + bits
+    bits = platform.architecture()[0]
+    cpu = uname[4]
+    if cpu == "i386" or cpu == "i686":
+        if bits == "32bit":
+            cpu = "x86"
+        elif bits == "64bit":
+            cpu = "x86_64"
+    elif cpu == 'Power Macintosh':
+        cpu = 'ppc'
+
+    bits = re.compile('(\d+)bit').search(bits).group(1)
+
+    return {'name': name, 'version': version, 'bits':  bits, 'cpu': cpu}
+
 
 def strsplit(string, sep):
     strlist = string.split(sep)

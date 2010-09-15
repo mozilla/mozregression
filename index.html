@@ -82,7 +82,7 @@ You can also specify the most distant known "bad" nightly date with the <code>ba
 mozregression --good=2010-03-16 --bad=2010-09-08</pre>
 
       <p>This will guide you through a bisection, automatically downloading and opening
-        nightly builds from various dates and asking you whether the bug exists in them.
+        nightly builds from various dates (on <b>new, clean profiles</b>) and asking you whether the bug exists in them.
         After doing this a few times you'll get the regression range, something like this:
 <pre class="code-example">
 Last good nightly: 2010-09-08 First bad nightly: 2010-09-09
@@ -95,6 +95,27 @@ Pushlog: http://hg.mozilla.org/mozilla-central/pushloghtml?fromchange=36f5cf6b2d
       <p>There's also a sister script, <code>moznightly</code> that will just download and run a nightly from a particular date:
      <pre class="code-example">moznightly --date=2010-07-23</pre>
 
+    </div>
+    <div class="main-section" id="code">
+      <div class="section-header">
+        Other Options
+      </div>
+      Run Thunderbird nightlies:
+<pre class="code-example">
+mozregression --app=thunderbird
+</pre>
+      Use a specific profile
+<pre class="code-example">
+mozregression --profile=/path/to/profile
+</pre>
+      Install addons
+<pre class="code-example">
+mozregression --addons="/path/to/addon,/other/addon"
+</pre>
+      Forward arguments to the browser
+<pre class="code-example">
+mozregression --args="-foreground,-P"
+</pre>
     </div>
     <div class="main-section" id="code">
       <div class="section-header">

@@ -87,6 +87,7 @@ class FirefoxNightly(Nightly):
         resp, content = h.request(url, "GET")
         if resp.status != 200:
             return False
+
         soup = BeautifulSoup(content)
         for link in soup.findAll('a'):
             href = link.get("href")
@@ -142,8 +143,10 @@ class NightlyRunner(object):
         
 def cli():
     parser = OptionParser()
-    parser.add_option("-d", "--date", dest="date", help="date of the nightly", metavar="YYYY-MM-DD", default=str(datetime.date.today()))
-    parser.add_option("-a", "--addons", dest="addons", help="list of addons to install", metavar="PATH1,PATH2", default="")
+    parser.add_option("-d", "--date", dest="date", help="date of the nightly",
+                      metavar="YYYY-MM-DD", default=str(datetime.date.today()))
+    parser.add_option("-a", "--addons", dest="addons", help="list of addons to install",
+                      metavar="PATH1,PATH2", default="")
     parser.add_option("-p", "--profile", dest="profile", help="path to profile to user", metavar="PATH")
     (options, args) = parser.parse_args()
 

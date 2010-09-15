@@ -114,7 +114,7 @@ class ThunderbirdNightly(Nightly):
            print "Can't run Windows builds before 2010-03-18"
            sys.exit()
       
-        if date < datetime.date(2008, 07, 26):
+        if date < datetime.date(2008, 7, 26):
             return "trunk"
         elif date < datetime.date(2009, 1, 9):
             return "comm-central"
@@ -130,7 +130,7 @@ class FirefoxNightly(Nightly):
     profileClass = FirefoxProfile
 
     def getTrunkName(self, date):
-        if date < datetime.date(2008, 06, 17):
+        if date < datetime.date(2008, 6, 17):
             return "trunk"
         else:
             return "mozilla-central"

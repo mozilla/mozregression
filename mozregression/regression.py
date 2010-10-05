@@ -45,8 +45,8 @@ from utils import strsplit, get_date
 class Bisector():
     def __init__(self, runner): 
         self.runner = runner
-        self.currAppInfo = ''
-        self.prevAppInfo = ''
+        self.goodAppInfo = ''
+        self.badAppInfo = ''
         self.currDate = ''
 
     def bisect(self, goodDate, badDate):
@@ -66,9 +66,7 @@ class Bisector():
                 sys.exit()
             dest = self.runner.start(midDate)
         
-        self.prevAppInfo = self.currAppInfo
         self.prevDate = self.currDate
-        self.currAppInfo = self.runner.getAppInfo()
         self.currDate = midDate
 
         # wait for them to call it 'good' or 'bad'
@@ -78,26 +76,25 @@ class Bisector():
 
         self.runner.stop()
         if verdict == 'good' or verdict == 'g':
+            self.goodAppInfo = self.runner.getAppInfo()
             self.bisect(midDate, badDate)
         else:
+            self.badAppInfo = self.runner.getAppInfo()
             self.bisect(goodDate, midDate)
 
     def getPushlogUrl(self, goodDate, badDate):
-        if not self.currAppInfo or not self.prevAppInfo:
-            if self.currAppInfo:
-                (repo, chset) = self.currAppInfo
-            elif self.prevAppInfo:
-                (repo, chset) = self.prevAppInfo
+        if not self.goodAppInfo or not self.badAppInfo:
+            if self.goodAppInfo:
+                (repo, chset) = self.goodAppInfo
+            elif self.badAppInfo:
+                (repo, chset) = self.badAppInfo
             else:
-                repo = ''
-
+                repo = 'http://hg.mozilla.org/mozilla-central'
             return repo + "/pushloghtml?startdate=" + str(goodDate) + "&enddate=" + str(badDate)
 
-        (repo, chset1) = self.currAppInfo
-        (repo, chset2) = self.prevAppInfo
-        if self.currDate > self.prevDate:
-            return repo + "/pushloghtml?fromchange=" + chset2 + "&tochange=" + chset1
-        return repo + "/pushloghtml?fromchange=" + chset1 + "&tochange=" + chset2
+        (repo, good_chset) = self.goodAppInfo
+        (repo, bad_chset) = self.badAppInfo
+        return repo + "/pushloghtml?fromchange=" + good_chset + "&tochange=" + bad_chset
         
 def cli():
     parser = OptionParser()

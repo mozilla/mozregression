@@ -75,7 +75,7 @@ class Nightly(object):
             else:
                 self.buildRegex = ".*linux-i686.tar.bz2"
         elif platform['name'] == "Mac":
-            self.buildRegex = ".*mac.dmg"
+            self.buildRegex = ".*mac.*\.dmg"
             self.processName = self.name + "-bin"
             self.binary = "moznightlyapp/" + self.nickname + ".app/Contents/MacOS/" + self.name + "-bin"
 
@@ -94,7 +94,7 @@ class Nightly(object):
     def install(self):
         rmdirRecursive("moznightlyapp")
         subprocess._cleanup = lambda : None # mikeal's fix for subprocess threading bug
-        MozInstaller(src=self.dest, dest="moznightlyapp") 
+        MozInstaller(src=self.dest, dest="moznightlyapp")
     
     def getBuildUrl(self, date):
         # we don't know which hour the build was made, so look through all of them

@@ -181,6 +181,7 @@ class MozInstaller:
     #assert (kwargs['branch'] != "" and kwargs['branch'] != None)
     self.src = kwargs['src']
     self.dest = kwargs['dest']
+    self.dest_app = kwargs['dest_app']
     #self.productName = kwargs['productName']
     #self.branch = kwargs['branch']
     #debug("running uninstall")
@@ -188,7 +189,7 @@ class MozInstaller:
      #                            branch = self.branch)
 
     if isDMG.match(self.src):
-      self.installDmg()
+      self.installDmg(self.dest_app)
     elif isTARBZ.match(self.src):
       self.installTarBz()
     elif isTARGZ.match(self.src):
@@ -214,7 +215,7 @@ class MozInstaller:
       print "Error creating destination directory " + path
     return path
 
-  def installDmg(self):
+  def installDmg(self, dest_app):
     # Ensure our destination directory exists
     self.dest = self.normalizePath(self.dest)
 
@@ -232,7 +233,7 @@ class MozInstaller:
       #while not os.path.exists(mountpoint + "/MinefieldDebug.app"):
       #  print "waiting for disk image"
       #  time.sleep(1)
-      shutil.copytree(os.path.join(mountpoint, app), os.path.join(self.dest, app))
+      shutil.copytree(os.path.join(mountpoint, app), os.path.join(self.dest, dest_app or app))
     finally:
       subprocess.check_call(["hdiutil", "detach", mountpoint], stdout=devnull)
       #shutil.rmtree(mountpoint)

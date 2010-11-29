@@ -58,7 +58,7 @@ from mozInstall import rmdirRecursive
 from utils import strsplit, download_url, get_date, get_platform 
 
 class Nightly(object):
-    def __init__(self):
+    def __init__(self, repo_name=None):
         platform=get_platform()
         if platform['name'] == "Windows":
             if platform['bits'] == '64bit':
@@ -77,7 +77,8 @@ class Nightly(object):
         elif platform['name'] == "Mac":
             self.buildRegex = ".*mac.*\.dmg"
             self.processName = self.name + "-bin"
-            self.binary = "moznightlyapp/" + self.nickname + ".app/Contents/MacOS/" + self.name + "-bin"
+            self.binary = "moznightlyapp/Mozilla.app/Contents/MacOS/" + self.name + "-bin"
+        self.repo_name = repo_name
 
     def download(self, date=datetime.date.today(), dest=None):
         url = self.getBuildUrl(date)
@@ -94,7 +95,7 @@ class Nightly(object):
     def install(self):
         rmdirRecursive("moznightlyapp")
         subprocess._cleanup = lambda : None # mikeal's fix for subprocess threading bug
-        MozInstaller(src=self.dest, dest="moznightlyapp")
+        MozInstaller(src=self.dest, dest="moznightlyapp", dest_app="Mozilla.app")
     
     def getBuildUrl(self, date):
         # we don't know which hour the build was made, so look through all of them
@@ -108,8 +109,9 @@ class Nightly(object):
         year = str(date.year)
         month = self.formatDatePart(date.month)
         day = self.formatDatePart(date.day)
+        repo_name = self.repo_name or self.getRepoName(date)
         url += year + "/" + month + "/" + year + "-" + month + "-" + day + "-"
-        url += self.formatDatePart(hour) + "-" + self.getTrunkName(date) + "/"
+        url += self.formatDatePart(hour) + "-" + repo_name + "/"
 
         # now parse the page for the correct build url
         h = httplib2.Http();
@@ -140,12 +142,10 @@ class Nightly(object):
             return ("", "")
 
 class ThunderbirdNightly(Nightly):
-
-    name = 'thunderbird' 
-    nickname = 'Shredder'
+    name = 'thunderbird'
     profileClass = ThunderbirdProfile
                 
-    def getTrunkName(self, date):
+    def getRepoName(self, date):
         # sneaking this in here
         if get_platform()['name'] == "Windows" and date < datetime.date(2010, 03, 18):
            # no .zip package for Windows, can't use the installer
@@ -164,10 +164,9 @@ class ThunderbirdNightly(Nightly):
 
 class FirefoxNightly(Nightly):
     name = 'firefox'
-    nickname = 'Minefield'
     profileClass = FirefoxProfile
 
-    def getTrunkName(self, date):
+    def getRepoName(self, date):
         if date < datetime.date(2008, 6, 17):
             return "trunk"
         else:
@@ -175,11 +174,12 @@ class FirefoxNightly(Nightly):
 
 
 class NightlyRunner(object):
-    def __init__(self, addons=None, appname="firefox", profile=None, cmdargs=[]):
+    def __init__(self, addons=None, appname="firefox", repo_name=None,
+                 profile=None, cmdargs=[]):
         if appname.lower() == 'thunderbird':
-           self.app = ThunderbirdNightly()
+           self.app = ThunderbirdNightly(repo_name=repo_name)
         else:
-           self.app = FirefoxNightly()
+           self.app = FirefoxNightly(repo_name=repo_name)
         self.addons = addons
         self.profile = profile
         self.cmdargs = cmdargs
@@ -218,9 +218,12 @@ def cli():
     parser.add_option("-p", "--profile", dest="profile", help="path to profile to user", metavar="PATH")
     parser.add_option("-n", "--app", dest="app", help="application name (firefox or thunderbird)",
                       metavar="[firefox|thunderbird]", default="firefox")
+    parser.add_option("-r", "--repo", dest="repo_name", help="repository name on ftp.mozilla.org",
+                      metavar="[mozilla-central]", default=None)
     (options, args) = parser.parse_args()
 
-    runner = NightlyRunner(appname=options.app, addons=strsplit(options.addons, ","), profile=options.profile)
+    runner = NightlyRunner(appname=options.app, addons=strsplit(options.addons, ","),
+                           profile=options.profile, repo_name=options.repo_name)
     runner.start(get_date(options.date))
 
 

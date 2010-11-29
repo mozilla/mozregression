@@ -108,6 +108,8 @@ def cli():
                       metavar="ARG1,ARG2", default="")
     parser.add_option("-n", "--app", dest="app", help="application name (firefox or thunderbird)",
                       metavar="[firefox|thunderbird]", default="firefox")
+    parser.add_option("-r", "--repo", dest="repo_name", help="repository name on ftp.mozilla.org",
+                      metavar="[mozilla-central]", default=None)
     (options, args) = parser.parse_args()
 
     addons = strsplit(options.addons, ",")
@@ -117,7 +119,8 @@ def cli():
         options.good_date = "2009-01-01"
         print "No 'good' date specified, using " + options.good_date
 
-    runner = NightlyRunner(appname=options.app, addons=addons, profile=options.profile, cmdargs=cmdargs)
+    runner = NightlyRunner(appname=options.app, addons=addons, repo_name=options.repo_name,
+                           profile=options.profile, cmdargs=cmdargs)
     bisector = Bisector(runner)
     bisector.bisect(get_date(options.good_date), get_date(options.bad_date))
 

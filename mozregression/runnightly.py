@@ -105,7 +105,7 @@ class Nightly(object):
                 return url
 
     def getUrl(self, date, hour):
-        url = "http://ftp.mozilla.org/pub/mozilla.org/" + self.name + "/nightly/"
+        url = "http://ftp.mozilla.org/pub/mozilla.org/" + self.appName + "/nightly/"
         year = str(date.year)
         month = self.formatDatePart(date.month)
         day = self.formatDatePart(date.day)
@@ -142,6 +142,7 @@ class Nightly(object):
             return ("", "")
 
 class ThunderbirdNightly(Nightly):
+    appName = 'thunderbird'
     name = 'thunderbird'
     profileClass = ThunderbirdProfile
                 
@@ -163,6 +164,7 @@ class ThunderbirdNightly(Nightly):
 
 
 class FirefoxNightly(Nightly):
+    appName = 'firefox'
     name = 'firefox'
     profileClass = FirefoxProfile
 
@@ -172,12 +174,21 @@ class FirefoxNightly(Nightly):
         else:
             return "mozilla-central"
 
+class FennecNightly(Nightly):
+    appName = 'mobile'
+    name = 'fennec'
+    profileClass = FirefoxProfile
+
+    def getRepoName(self, date):
+      return "mozilla-central-linux"
 
 class NightlyRunner(object):
     def __init__(self, addons=None, appname="firefox", repo_name=None,
                  profile=None, cmdargs=[]):
         if appname.lower() == 'thunderbird':
            self.app = ThunderbirdNightly(repo_name=repo_name)
+        elif appname.lower() == 'mobile':
+           self.app = FennecNightly(repo_name=repo_name)
         else:
            self.app = FirefoxNightly(repo_name=repo_name)
         self.addons = addons

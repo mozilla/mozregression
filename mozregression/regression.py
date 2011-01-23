@@ -106,8 +106,8 @@ def cli():
     parser.add_option("-p", "--profile", dest="profile", help="profile to use with nightlies", metavar="PATH")
     parser.add_option("-a", "--args", dest="cmdargs", help="command-line arguments to pass to the application",
                       metavar="ARG1,ARG2", default="")
-    parser.add_option("-n", "--app", dest="app", help="application name (firefox or thunderbird)",
-                      metavar="[firefox|thunderbird]", default="firefox")
+    parser.add_option("-n", "--app", dest="app", help="application name (firefox, mobile or thunderbird)",
+                      metavar="[firefox|mobile|thunderbird]", default="firefox")
     parser.add_option("-r", "--repo", dest="repo_name", help="repository name on ftp.mozilla.org",
                       metavar="[mozilla-central]", default=None)
     (options, args) = parser.parse_args()

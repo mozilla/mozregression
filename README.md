@@ -22,6 +22,9 @@ Just run the nightly for a particular date:
 Find regression range on Thunderbird nightlies:
 	mozregression --app=thunderbird
 	
+Find regression range on Firefox mobile nightlies:
+	mozregression --app=mobile
+	
 Other branches/repos:
 	mozregression --repo=mozilla-1.9.2
 	

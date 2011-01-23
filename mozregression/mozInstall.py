@@ -292,7 +292,7 @@ if __name__ == "__main__":
                           1.9", metavar="BRANCH")
   parser.add_option("-p", "--Product", dest="product",
                     help="Product name - optional should be all lowercase if\
-                         specified: firefox, thunderbird, etc",
+                         specified: firefox, mobile, thunderbird, etc",
                     metavar="PRODUCT")
   parser.add_option("-o", "--Operation", dest="op",
                     help="The operation you would like the script to perform.\

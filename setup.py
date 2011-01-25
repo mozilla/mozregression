@@ -4,7 +4,7 @@ desc = """Regression range finder for Mozilla nightly builds"""
 summ = """Interactive regression range finder for Mozilla nightly builds"""
 
 setup(name="mozregression",
-      version="0.1.9",
+      version="0.2",
       description=desc,
       long_description=summ,
       author='Heather Arthur',

@@ -109,7 +109,7 @@ def cli():
     parser.add_option("-n", "--app", dest="app", help="application name (firefox, mobile or thunderbird)",
                       metavar="[firefox|mobile|thunderbird]", default="firefox")
     parser.add_option("-r", "--repo", dest="repo_name", help="repository name on ftp.mozilla.org",
-                      metavar="[mozilla-central]", default=None)
+                      metavar="[tracemonkey|mozilla-1.9.2]", default=None)
     (options, args) = parser.parse_args()
 
     addons = strsplit(options.addons, ",")

@@ -61,7 +61,7 @@ class Nightly(object):
     def __init__(self, repo_name=None):
         platform=get_platform()
         if platform['name'] == "Windows":
-            if platform['bits'] == '64bit':
+            if platform['bits'] == '64':
                 print "No nightly builds available for 64 bit Windows"
                 sys.exit()
             self.buildRegex = ".*win32.zip"
@@ -70,7 +70,7 @@ class Nightly(object):
         elif platform['name'] == "Linux":
             self.processName = self.name + "-bin"
             self.binary = "moznightlyapp/" + self.name + "/" + self.name
-            if platform['bits'] == '64bit':
+            if platform['bits'] == '64':
                 self.buildRegex = ".*linux-x86_64.tar.bz2"
             else:
                 self.buildRegex = ".*linux-i686.tar.bz2"

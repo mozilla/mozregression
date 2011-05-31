@@ -1,0 +1,14 @@
+Metadata-Version: 1.0
+Name: mozregression
+Version: 0.3
+Summary: Regression range finder for Mozilla nightly builds
+Home-page: http://github.com/harthur/mozregression
+Author: Heather Arthur
+Author-email: fayearthur@gmail.com
+License: MPL 1.1/GPL 2.0/LGPL 2.1
+Description: Interactive regression range finder for Mozilla nightly builds
+Platform: Any
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent

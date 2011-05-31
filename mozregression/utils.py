@@ -37,7 +37,7 @@ import re
 import httplib2
 import datetime
 import platform
-        
+
 def get_platform():
     uname = platform.uname()
     name = uname[0]
@@ -73,7 +73,7 @@ def strsplit(string, sep):
     if len(strlist) == 1 and strlist[0] == '': # python's split function is ridiculous
       return []
     return strlist
-    
+
 def download_url(url, dest=None):
     h = httplib2.Http()
     resp, content = h.request(url, "GET")
@@ -92,3 +92,9 @@ def get_date(dateString):
         print "Incorrect date format"
         return
     return datetime.date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+
+def increment_day(date):
+    s = date.split("-")
+    delta = datetime.timedelta(days=1)
+    nextDate = datetime.date(int(s[0]),int(s[1]),int(s[2])) + delta
+    return str(nextDate)

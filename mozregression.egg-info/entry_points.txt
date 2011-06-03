@@ -1,5 +1,0 @@
-
-          [console_scripts]
-          mozregression = mozregression:regressioncli
-          moznightly = mozregression:nightlycli
-        

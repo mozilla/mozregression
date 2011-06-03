@@ -1,4 +1,0 @@
-httplib2 >= 0.6.0
-mozrunner >= 2.5.1
-BeautifulSoup >= 3.0.4
-mozcommitbuilder >= 0.29

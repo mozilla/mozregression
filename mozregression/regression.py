@@ -53,19 +53,27 @@ class Bisector():
         self.badAppInfo = ''
         self.currDate = ''
 
+    def buildChangesets(self, goodDate, badDate):
+      commitBuilder = builder.Builder()
+      lastGoodChangeset = commitBuilder.changesetFromDay(str(goodDate))
+      if(goodDate == badDate):
+        firstBadChangeset = commitBuilder.getTip()
+      else:
+        firstBadChangeset = commitBuilder.changesetFromDay(str(badDate))
+
+
+      print "\n Narrowed changeset range from " + lastGoodChangeset + " to " + firstBadChangeset +"\n"
+
+      print "Time to do some bisecting and building!"
+      commitBuilder.bisect(lastGoodChangeset, firstBadChangeset)
+
+
     def bisect(self, goodDate, badDate):
         midDate = goodDate + (badDate - goodDate) / 2
         if midDate == badDate or midDate == goodDate:
             print "\n\nLast good nightly: " + str(goodDate) + " First bad nightly: " + str(badDate) + "\n"
             print "Pushlog: " + self.getPushlogUrl(goodDate, badDate) + "\n"
-
-            commitBuilder = builder.Builder()
-            lastGoodChangeset = commitBuilder.changesetFromDay(str(goodDate))
-            firstBadChangeset = commitBuilder.changesetFromDay(str(badDate))
-            print "Narrowed changeset range from " + lastGoodChangeset + " to " + firstBadChangeset
-            print "Time to do some bisecting and building!"
-            commitBuilder.bisect(lastGoodChangeset, firstBadChangeset)
-
+            self.buildChangesets(goodDate, badDate)
             sys.exit()
 
         # run the nightly from that date
@@ -75,6 +83,7 @@ class Bisector():
             if midDate == badDate:
                 print "\n\nLast good nightly: " + str(goodDate) + " First bad nightly: " + str(badDate) + "\n"
                 print "Pushlog: " + self.getPushlogUrl(goodDate, badDate) + "\n"
+                self.buildChangesets(goodDate, badDate)
                 sys.exit()
             dest = self.runner.start(midDate)
 

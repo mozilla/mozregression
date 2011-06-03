@@ -74,6 +74,7 @@ class Bisector():
             print "\n\nLast good nightly: " + str(goodDate) + " First bad nightly: " + str(badDate) + "\n"
             print "Pushlog: " + self.getPushlogUrl(goodDate, badDate) + "\n"
             if appname == "firefox":
+              print "Building changesets:"
               self.buildChangesets(goodDate, badDate)
             sys.exit()
 
@@ -85,6 +86,7 @@ class Bisector():
                 print "\n\nLast good nightly: " + str(goodDate) + " First bad nightly: " + str(badDate) + "\n"
                 print "Pushlog: " + self.getPushlogUrl(goodDate, badDate) + "\n"
                 if appname == "firefox":
+                  print "Building changesets:"
                   self.buildChangesets(goodDate, badDate)
                 sys.exit()
             dest = self.runner.start(midDate)

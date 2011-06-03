@@ -37,13 +37,17 @@
 
 import datetime
 import sys
+import subprocess
 from optparse import OptionParser
+
+#Call mozcommitbuilder
+from mozcommitbuilder import builder
 
 from runnightly import NightlyRunner
 from utils import strsplit, get_date
 
 class Bisector():
-    def __init__(self, runner): 
+    def __init__(self, runner):
         self.runner = runner
         self.goodAppInfo = ''
         self.badAppInfo = ''
@@ -54,8 +58,16 @@ class Bisector():
         if midDate == badDate or midDate == goodDate:
             print "\n\nLast good nightly: " + str(goodDate) + " First bad nightly: " + str(badDate) + "\n"
             print "Pushlog: " + self.getPushlogUrl(goodDate, badDate) + "\n"
+
+            commitBuilder = builder.Builder()
+            lastGoodChangeset = commitBuilder.changesetFromDay(str(goodDate))
+            firstBadChangeset = commitBuilder.changesetFromDay(str(badDate))
+            print "Narrowed changeset range from " + lastGoodChangeset + " to " + firstBadChangeset
+            print "Time to do some bisecting and building!"
+            commitBuilder.bisect(lastGoodChangeset, firstBadChangeset)
+
             sys.exit()
-    
+
         # run the nightly from that date
         dest = self.runner.start(midDate)
         while not dest:
@@ -65,7 +77,7 @@ class Bisector():
                 print "Pushlog: " + self.getPushlogUrl(goodDate, badDate) + "\n"
                 sys.exit()
             dest = self.runner.start(midDate)
-        
+
         self.prevDate = self.currDate
         self.currDate = midDate
 
@@ -95,7 +107,7 @@ class Bisector():
         (repo, good_chset) = self.goodAppInfo
         (repo, bad_chset) = self.badAppInfo
         return repo + "/pushloghtml?fromchange=" + good_chset + "&tochange=" + bad_chset
-        
+
 def cli():
     parser = OptionParser()
     parser.add_option("-b", "--bad", dest="bad_date",help="first known bad nightly build, default is today",
@@ -114,7 +126,7 @@ def cli():
 
     addons = strsplit(options.addons, ",")
     cmdargs = strsplit(options.cmdargs, ",")
-    
+
     if not options.good_date:
         options.good_date = "2009-01-01"
         print "No 'good' date specified, using " + options.good_date

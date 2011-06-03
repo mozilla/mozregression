@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: mozregression
-Version: 0.3
+Version: 0.3.1
 Summary: Regression range finder for Mozilla nightly builds
 Home-page: http://github.com/harthur/mozregression
 Author: Heather Arthur

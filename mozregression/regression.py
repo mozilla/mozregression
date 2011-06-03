@@ -68,12 +68,13 @@ class Bisector():
       commitBuilder.bisect(lastGoodChangeset, firstBadChangeset)
 
 
-    def bisect(self, goodDate, badDate):
+    def bisect(self, goodDate, badDate, appname="firefox"):
         midDate = goodDate + (badDate - goodDate) / 2
         if midDate == badDate or midDate == goodDate:
             print "\n\nLast good nightly: " + str(goodDate) + " First bad nightly: " + str(badDate) + "\n"
             print "Pushlog: " + self.getPushlogUrl(goodDate, badDate) + "\n"
-            self.buildChangesets(goodDate, badDate)
+            if appname == "firefox":
+              self.buildChangesets(goodDate, badDate)
             sys.exit()
 
         # run the nightly from that date
@@ -83,7 +84,8 @@ class Bisector():
             if midDate == badDate:
                 print "\n\nLast good nightly: " + str(goodDate) + " First bad nightly: " + str(badDate) + "\n"
                 print "Pushlog: " + self.getPushlogUrl(goodDate, badDate) + "\n"
-                self.buildChangesets(goodDate, badDate)
+                if appname == "firefox":
+                  self.buildChangesets(goodDate, badDate)
                 sys.exit()
             dest = self.runner.start(midDate)
 
@@ -143,7 +145,7 @@ def cli():
     runner = NightlyRunner(appname=options.app, addons=addons, repo_name=options.repo_name,
                            profile=options.profile, cmdargs=cmdargs)
     bisector = Bisector(runner)
-    bisector.bisect(get_date(options.good_date), get_date(options.bad_date))
+    bisector.bisect(get_date(options.good_date), get_date(options.bad_date), options.app)
 
 
 if __name__ == "__main__":

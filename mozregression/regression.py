@@ -46,8 +46,9 @@ from runnightly import NightlyRunner
 from utils import strsplit, get_date, increment_day
 
 class Bisector():
-    def __init__(self, runner):
+    def __init__(self, runner, appname="firefox"):
         self.runner = runner
+        self.appname = appname
         self.goodAppInfo = ''
         self.badAppInfo = ''
         self.currDate = ''
@@ -59,7 +60,6 @@ class Bisector():
         lastGoodChangeset = commitBuilder.changesetFromDay(str(goodDate)) #Gets oldest commit from given date
         firstBadChangeset = commitBuilder.changesetFromDay(increment_day(str(badDate))) #Don't want to miss commits,
                                                                                          #widen window by a day
-
         if self.goodAppInfo:
             lastGoodChangeset = self.goodAppInfo[1]
 
@@ -79,28 +79,30 @@ class Bisector():
         commitBuilder.bisect(lastGoodChangeset, firstBadChangeset)
         quit()
 
-    def build(self, goodDate, badDate, app="firefox"):
-        if app == "firefox":
+    def build(self, goodDate, badDate):
+        if self.appname == "firefox":
             print "Building changesets:"
             self.buildChangesets(goodDate, badDate)
+            
+    def printRange(self, goodDate, badDate):
+        print "\n\nLast good nightly: " + str(goodDate) + "\nFirst bad nightly: " + str(badDate) + "\n"
+        print "Pushlog:\n" + self.getPushlogUrl(goodDate, badDate) + "\n"
+        verdict = raw_input("do you want to bisect further by fetching the repository and building? (y or n) ")
+        if verdict == "y":
+            self.build(goodDate, badDate)
+        sys.exit()
 
-    def bisect(self, goodDate, badDate, appname="firefox"):
+    def bisect(self, goodDate, badDate):
         midDate = goodDate + (badDate - goodDate) / 2
         if midDate == badDate or midDate == goodDate:
-            print "\n\nLast good nightly: " + str(goodDate) + " First bad nightly: " + str(badDate) + "\n"
-            print "Pushlog: " + self.getPushlogUrl(goodDate, badDate) + "\n"
-            self.build(goodDate, badDate, app=appname)
-            sys.exit()
+            self.printRange(goodDate, badDate)
 
         # run the nightly from that date
         dest = self.runner.start(midDate)
         while not dest:
             midDate += datetime.timedelta(days=1)
             if midDate == badDate:
-                print "\n\nLast good nightly: " + str(goodDate) + " First bad nightly: " + str(badDate) + "\n"
-                print "Pushlog: " + self.getPushlogUrl(goodDate, badDate) + "\n"
-                self.build(goodDate, badDate, app=appname)
-                sys.exit()
+                self.printRange(goodDate, badDate)
             dest = self.runner.start(midDate)
 
         self.prevDate = self.currDate
@@ -158,8 +160,8 @@ def cli():
 
     runner = NightlyRunner(appname=options.app, addons=addons, repo_name=options.repo_name,
                            profile=options.profile, cmdargs=cmdargs)
-    bisector = Bisector(runner)
-    bisector.bisect(get_date(options.good_date), get_date(options.bad_date), options.app)
+    bisector = Bisector(runner, appname=options.app)
+    bisector.bisect(get_date(options.good_date), get_date(options.bad_date))
 
 
 if __name__ == "__main__":

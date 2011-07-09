@@ -79,6 +79,7 @@ class Nightly(object):
             self.processName = self.name + "-bin"
             self.binary = "moznightlyapp/Mozilla.app/Contents/MacOS/" + self.name + "-bin"
         self.repo_name = repo_name
+        self._montlinks = {}
 
     def download(self, date=datetime.date.today(), dest=None):
         url = self.getBuildUrl(date)
@@ -96,34 +97,48 @@ class Nightly(object):
         rmdirRecursive("moznightlyapp")
         subprocess._cleanup = lambda : None # mikeal's fix for subprocess threading bug
         MozInstaller(src=self.dest, dest="moznightlyapp", dest_app="Mozilla.app")
-    
-    def getBuildUrl(self, date):
-        # we don't know which hour the build was made, so look through all of them
-        for i in [3, 2, 4, 5, 6, 1, 0] + range(7, 23):
-            url = self.getUrl(date, i)
-            if url:
-                return url
 
-    def getUrl(self, date, hour):
+    @staticmethod
+    def urlLinks(url):
+        res = [] # do not return a generator but an array, so we can store it for later use
+
+        h = httplib2.Http();
+        resp, content = h.request(url, "GET")
+        if resp.status != 200:
+            return res
+
+        soup = BeautifulSoup(content)
+        for link in soup.findAll('a'):
+            res.append(link)
+        return res
+
+    def getBuildUrl(self, date):
         url = "http://ftp.mozilla.org/pub/mozilla.org/" + self.appName + "/nightly/"
         year = str(date.year)
         month = self.formatDatePart(date.month)
         day = self.formatDatePart(date.day)
         repo_name = self.repo_name or self.getRepoName(date)
-        url += year + "/" + month + "/" + year + "-" + month + "-" + day + "-"
-        url += self.formatDatePart(hour) + "-" + repo_name + "/"
+        url += year + "/" + month + "/"
 
-        # now parse the page for the correct build url
-        h = httplib2.Http();
-        resp, content = h.request(url, "GET")
-        if resp.status != 200:
-            return False
+        linkRegex = '^' + year + '-' + month + '-' + day + '-' + '[\d-]+' + repo_name + '/$'
+        cachekey = year + '-' + month
+        if cachekey in self._montlinks:
+            monthlinks = self._montlinks[cachekey]
+        else:
+            monthlinks = self.urlLinks(url)
+            self._montlinks[cachekey] = monthlinks
 
-        soup = BeautifulSoup(content)
-        for link in soup.findAll('a'):
-            href = link.get("href")
-            if re.match(self.buildRegex, href):     
-                return url + href
+        # first parse monthly list to get correct directory
+        for dirlink in monthlinks:
+            dirhref = dirlink.get("href")
+            if re.match(linkRegex, dirhref):
+                # now parse the page for the correct build url
+                for link in self.urlLinks(url + dirhref):
+                    href = link.get("href")
+                    if re.match(self.buildRegex, href):
+                        return url + dirhref + href
+
+        return False
                 
     def formatDatePart(self, part):
         if part < 10:

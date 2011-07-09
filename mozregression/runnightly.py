@@ -79,6 +79,7 @@ class Nightly(object):
             self.processName = self.name + "-bin"
             self.binary = "moznightlyapp/Mozilla.app/Contents/MacOS/" + self.name + "-bin"
         self.repo_name = repo_name
+        self._monthlinks = {}
 
     def download(self, date=datetime.date.today(), dest=None):
         url = self.getBuildUrl(date)
@@ -99,14 +100,18 @@ class Nightly(object):
 
     @staticmethod
     def urlLinks(url):
+        res = [] # do not return a generator but an array, so we can store it for later use
+
         h = httplib2.Http();
         resp, content = h.request(url, "GET")
         if resp.status != 200:
-            return []
+            return res
 
         soup = BeautifulSoup(content)
-        return soup.findAll('a')
-    
+        for link in soup.findAll('a'):
+            res.append(link)
+        return res
+
     def getBuildUrl(self, date):
         url = "http://ftp.mozilla.org/pub/mozilla.org/" + self.appName + "/nightly/"
         year = str(date.year)
@@ -116,8 +121,15 @@ class Nightly(object):
         url += year + "/" + month + "/"
 
         linkRegex = '^' + year + '-' + month + '-' + day + '-' + '[\d-]+' + repo_name + '/$'
+        cachekey = year + '-' + month
+        if cachekey in self._monthlinks:
+            monthlinks = self._monthlinks[cachekey]
+        else:
+            monthlinks = self.urlLinks(url)
+            self._monthlinks[cachekey] = monthlinks
+
         # first parse monthly list to get correct directory
-        for dirlink in self.urlLinks(url):
+        for dirlink in monthlinks:
             dirhref = dirlink.get("href")
             if re.match(linkRegex, dirhref):
                 # now parse the page for the correct build url

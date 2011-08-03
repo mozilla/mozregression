@@ -55,7 +55,7 @@ except:
 from mozrunner import Runner
 from mozInstall import MozInstaller
 from mozInstall import rmdirRecursive
-from utils import strsplit, download_url, get_date, get_platform 
+from utils import strsplit, download_url, get_date, get_platform
 
 class Nightly(object):
     def __init__(self, repo_name=None):
@@ -139,12 +139,12 @@ class Nightly(object):
                         return url + dirhref + href
 
         return False
-                
+
     def formatDatePart(self, part):
         if part < 10:
             part = "0" + str(part)
         return str(part)
-        
+
     def getAppInfo(self):
         parser = ConfigParser()
         ini_file = os.path.join(os.path.dirname(self.binary), "application.ini")
@@ -160,14 +160,14 @@ class ThunderbirdNightly(Nightly):
     appName = 'thunderbird'
     name = 'thunderbird'
     profileClass = ThunderbirdProfile
-                
+
     def getRepoName(self, date):
         # sneaking this in here
         if get_platform()['name'] == "Windows" and date < datetime.date(2010, 03, 18):
            # no .zip package for Windows, can't use the installer
            print "Can't run Windows builds before 2010-03-18"
            sys.exit()
-      
+
         if date < datetime.date(2008, 7, 26):
             return "trunk"
         elif date < datetime.date(2009, 1, 9):
@@ -210,12 +210,14 @@ class NightlyRunner(object):
         self.profile = profile
         self.cmdargs = cmdargs
 
-    def start(self, date=datetime.date.today()):
+    def install(self, date=datetime.date.today()):
         if not self.app.download(date=date):
             print "could not find nightly from " + str(date)
             return False # download failed
         self.app.install()
 
+    def start(self, date=datetime.date.today()):
+        self.install(date)
         if self.profile:
             profile = self.app.profileClass(profile=self.profile, addons=self.addons)
         elif len(self.addons):
@@ -234,7 +236,7 @@ class NightlyRunner(object):
 
     def getAppInfo(self):
         return self.app.getAppInfo()
-        
+
 def cli():
     parser = OptionParser()
     parser.add_option("-d", "--date", dest="date", help="date of the nightly",

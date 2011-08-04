@@ -54,7 +54,6 @@ class Bisector():
 
     def findRegressionChset(self, goodDate, badDate):
         #Uses mozcommitbuilder to bisect on changesets
-
         #Only needed if they want to bisect, so we'll put the dependency here.
         from mozcommitbuilder import builder
         commitBuilder = builder.Builder()
@@ -97,8 +96,11 @@ class Bisector():
             self.build(goodDate, badDate)
         sys.exit()
 
-    def bisect(self, goodDate, badDate):
+    def bisect(self, goodDate, badDate, skips=0):
         midDate = goodDate + (badDate - goodDate) / 2
+        
+        midDate += datetime.timedelta(days=skips)
+
         if midDate == badDate or midDate == goodDate:
             self.printRange(goodDate, badDate)
 
@@ -115,16 +117,23 @@ class Bisector():
 
         # wait for them to call it 'good' or 'bad'
         verdict = ""
-        while verdict != 'good' and verdict != 'bad' and verdict != 'b' and verdict != 'g':
-            verdict = raw_input("Was this nightly good or bad? (type 'good' or 'bad' and press Enter): ")
+        options = ['good','g','bad','b','skip','s','retry','r']
+        while verdict not in options:
+            verdict = raw_input("Was this nightly good, bad, or broken? (type 'good', 'bad', 'skip', or 'retry' and press Enter): ")
 
         self.runner.stop()
         if verdict == 'good' or verdict == 'g':
             self.goodAppInfo = self.runner.getAppInfo()
             self.bisect(midDate, badDate)
-        else:
+        elif verdict == 'bad' or verdict == 'b':
             self.badAppInfo = self.runner.getAppInfo()
             self.bisect(goodDate, midDate)
+        elif verdict == 'skip' or verdict == 's':
+            #skip -- go 1 day further down
+            self.bisect(goodDate, badDate, skips=skips+1)
+        else:
+            #retry -- since we're just calling ourselves with the same parameters, it does the same thing again
+            self.bisect(goodDate, badDate)
 
     def getPushlogUrl(self, goodDate, badDate):
         if not self.goodAppInfo or not self.badAppInfo:

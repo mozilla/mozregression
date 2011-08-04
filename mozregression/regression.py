@@ -40,7 +40,6 @@ import sys
 import subprocess
 from optparse import OptionParser
 
-from mozcommitbuilder import builder
 
 from runnightly import NightlyRunner
 from utils import strsplit, get_date, increment_day
@@ -53,25 +52,29 @@ class Bisector():
         self.badAppInfo = ''
         self.currDate = ''
 
-    def buildChangesets(self, goodDate, badDate):
+    def findRegressionChset(self, goodDate, badDate):
+        #Uses mozcommitbuilder to bisect on changesets
+
+        #Only needed if they want to bisect, so we'll put the dependency here.
+        from mozcommitbuilder import builder
         commitBuilder = builder.Builder()
 
-        # See https://bugzilla.mozilla.org/show_bug.cgi?id=487036 for better future solution
-        lastGoodChangeset = commitBuilder.changesetFromDay(str(goodDate)) #Gets oldest commit from given date
-        firstBadChangeset = commitBuilder.changesetFromDay(increment_day(str(badDate))) #Don't want to miss commits,
-                                                                                         #widen window by a day
+        #One of these won't be set, so we need to download one more nightly and set it
         if self.goodAppInfo:
             lastGoodChangeset = self.goodAppInfo[1]
+        else:
+            #Download and get the info
+            missingNightly = NightlyRunner()
+            missingNightly.install(goodDate)
+            lastGoodChangeset = missingNightly.getAppInfo()[1]
 
         if self.badAppInfo:
-            firstBadchangeset = self.badAppInfo[1]
-
-        if not firstBadChangeset or not lastGoodChangeset:
-            print "Done, not bisecting -- your date range goes into the future. Try one day earlier?"
-            quit()
-
-        elif(goodDate == badDate):
-            firstBadChangeset = commitBuilder.getTip()
+            firstBadChangeset = self.badAppInfo[1]
+        else:
+            #Download and get the info
+            missingNightly = NightlyRunner()
+            missingNightly.install(badDate)
+            firstBadChangeset = missingNightly.getAppInfo()[1]
 
         print "\n Narrowed changeset range from " + lastGoodChangeset + " to " + firstBadChangeset +"\n"
 
@@ -82,8 +85,10 @@ class Bisector():
     def build(self, goodDate, badDate):
         if self.appname == "firefox":
             print "Building changesets:"
-            self.buildChangesets(goodDate, badDate)
-            
+            self.findRegressionChset(goodDate, badDate)
+        else:
+            print "Bisection on anything other than firefox is not currently supported."
+
     def printRange(self, goodDate, badDate):
         print "\n\nLast good nightly: " + str(goodDate) + "\nFirst bad nightly: " + str(badDate) + "\n"
         print "Pushlog:\n" + self.getPushlogUrl(goodDate, badDate) + "\n"

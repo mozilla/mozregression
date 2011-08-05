@@ -86,7 +86,7 @@ class Nightly(object):
         if url:
             if not dest:
                 dest = os.path.basename(url)
-            print "\nDownloading nightly...\n"  #TODO: doesn't belong here
+            print "\nDownloading nightly from " + str(date) + "\n"
             download_url(url, dest)
             self.dest = dest
             return True
@@ -214,6 +214,7 @@ class NightlyRunner(object):
         if not self.app.download(date=date):
             print "could not find nightly from " + str(date)
             return False # download failed
+        print "Starting nightly\n"
         self.app.install()
 
     def start(self, date=datetime.date.today()):
@@ -225,7 +226,6 @@ class NightlyRunner(object):
         else:
             profile = self.app.profileClass()
 
-        print "running nightly from " + str(date) + "\n"
         self.runner = Runner(binary=self.app.binary, cmdargs=self.cmdargs, profile=profile)
         self.runner.names = [self.app.processName]
         self.runner.start()

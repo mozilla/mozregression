@@ -80,6 +80,13 @@ class Nightly(object):
             self.binary = "moznightlyapp/Mozilla.app/Contents/MacOS/" + self.name + "-bin"
         self.repo_name = repo_name
         self._monthlinks = {}
+        self.lastdest = None
+
+    def __del__(self):
+        # cleanup
+        rmdirRecursive('moznightlyapp')
+        if self.lastdest:
+            os.remove(self.lastdest)
 
     def download(self, date=datetime.date.today(), dest=None):
         url = self.getBuildUrl(date)
@@ -87,8 +94,10 @@ class Nightly(object):
             if not dest:
                 dest = os.path.basename(url)
             print "\nDownloading nightly from " + str(date) + "\n"
+            if self.lastdest:
+                os.remove(self.lastdest)
             download_url(url, dest)
-            self.dest = dest
+            self.dest = self.lastdest = dest
             return True
         else:
             return False

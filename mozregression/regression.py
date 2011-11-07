@@ -44,7 +44,7 @@ from optparse import OptionParser
 from runnightly import NightlyRunner
 from utils import strsplit, get_date, increment_day
 
-class Bisector():
+class Bisector(object):
     def __init__(self, runner, appname="firefox"):
         self.runner = runner
         self.appname = appname
@@ -117,9 +117,9 @@ class Bisector():
 
         # wait for them to call it 'good' or 'bad'
         verdict = ""
-        options = ['good','g','bad','b','skip','s','retry','r']
+        options = ['good','g','bad','b','skip','s','retry','r', 'exit']
         while verdict not in options:
-            verdict = raw_input("Was this nightly good, bad, or broken? (type 'good', 'bad', 'skip', or 'retry' and press Enter): ")
+            verdict = raw_input("Was this nightly good, bad, or broken? (type 'good', 'bad', 'skip', 'retry', or 'exit' and press Enter): ")
 
         self.runner.stop()
         if verdict == 'good' or verdict == 'g':
@@ -131,6 +131,16 @@ class Bisector():
         elif verdict == 'skip' or verdict == 's':
             #skip -- go 1 day further down
             self.bisect(goodDate, badDate, skips=skips+1)
+        elif verdict == 'exit':
+            self.runner.stop()
+            goodDateString = '%04d-%02d-%02d' % (goodDate.year, goodDate.month, goodDate.day)
+            badDateString = '%04d-%02d-%02d' % (badDate.year, badDate.month, badDate.day)
+            print 'Newest known good nightly: %s' % goodDateString
+            print 'Oldest known bad nightly: %s' % badDateString
+            print 'To resume, run:'
+            print 'mozregression --good=%s --bad=%s' % (goodDateString, badDateString)
+            return
+            import pdb; pdb.set_trace()
         else:
             #retry -- since we're just calling ourselves with the same parameters, it does the same thing again
             self.bisect(goodDate, badDate)

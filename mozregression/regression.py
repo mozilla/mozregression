@@ -140,7 +140,6 @@ class Bisector(object):
             print 'To resume, run:'
             print 'mozregression --good=%s --bad=%s' % (goodDateString, badDateString)
             return
-            import pdb; pdb.set_trace()
         else:
             #retry -- since we're just calling ourselves with the same parameters, it does the same thing again
             self.bisect(goodDate, badDate)

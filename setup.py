@@ -1,10 +1,17 @@
+import os
 from setuptools import setup, find_packages
 
 desc = """Regression range finder for Mozilla nightly builds"""
-summ = """Interactive regression range finder for Mozilla nightly builds"""
+
+# take description from README
+here = os.path.dirname(os.path.abspath(__file__))
+try:
+    summ = file(os.path.join(here, 'README.md')).read()
+except:
+    summ = """Interactive regression range finder for Mozilla nightly builds"""
 
 setup(name="mozregression",
-      version="0.5.4",
+      version="0.6",
       description=desc,
       long_description=summ,
       author='Heather Arthur',
@@ -18,7 +25,7 @@ setup(name="mozregression",
           moznightly = mozregression:nightlycli
         """,
       platforms =['Any'],
-      install_requires = ['httplib2 == 0.6.0', 'mozrunner == 2.5.1', 'BeautifulSoup >= 3.0.4', 'mozcommitbuilder >= 0.3.9'],
+      install_requires = ['httplib2 == 0.6.0', 'mozrunner >= 2.5.4', 'BeautifulSoup >= 3.0.4', 'mozcommitbuilder >= 0.4.7'],
       classifiers=['Development Status :: 4 - Beta',
                    'Environment :: Console',
                    'Intended Audience :: Developers',

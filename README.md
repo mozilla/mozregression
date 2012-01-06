@@ -35,6 +35,4 @@ Other branches/repos:
 	mozregression --repo=mozilla-1.9.2
 	
 Other options exist for running the nightlies with a particular profile, addons, and browser arguments.
-	
 
-	

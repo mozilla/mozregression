@@ -25,7 +25,7 @@ setup(name="mozregression",
           moznightly = mozregression:nightlycli
         """,
       platforms =['Any'],
-      install_requires = ['httplib2 == 0.6.0', 'mozrunner >= 2.5.4', 'BeautifulSoup >= 3.0.4', 'mozcommitbuilder >= 0.4.8'],
+      install_requires = ['httplib2 >= 0.6.0', 'mozrunner >= 2.5.4', 'BeautifulSoup >= 3.0.4', 'mozcommitbuilder >= 0.4.8'],
       classifiers=['Development Status :: 4 - Beta',
                    'Environment :: Console',
                    'Intended Audience :: Developers',

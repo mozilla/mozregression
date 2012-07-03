@@ -2,7 +2,7 @@
 [mozregression](http://mozilla.github.com/mozregression) is an interactive regression range finder for Mozilla nightly builds.
 
 #install
-you can install mozregression with [setuptools](http://pypi.python.org/pypi/setuptools) or [pip](http://pypi.python.org/pypi/pip). [OS-specific instructions](http://harthur.github.com/mozregression/)
+you can install mozregression with [setuptools](http://pypi.python.org/pypi/setuptools) or [pip](http://pypi.python.org/pypi/pip). [OS-specific instructions](http://mozilla.github.com/mozregression/)
 
 	easy_install mozregression
 
@@ -35,4 +35,3 @@ Other branches/repos:
 	mozregression --repo=mozilla-1.9.2
 	
 Other options exist for running the nightlies with a particular profile, addons, and browser arguments.
-

@@ -16,7 +16,7 @@ setup(name="mozregression",
       long_description=summ,
       author='Heather Arthur',
       author_email='fayearthur@gmail.com',
-      url='http://github.com/harthur/mozregression',
+      url='http://github.com/mozilla/mozregression',
       license='MPL 1.1/GPL 2.0/LGPL 2.1',
       packages=find_packages(exclude=['legacy']),
       entry_points="""

@@ -10,7 +10,7 @@ you can install mozregression with [setuptools](http://pypi.python.org/pypi/setu
 To find the regression range for a bug, supply mozregression with the date of the last known good nightly and the date of a bad nightly (optional):
 
 	mozregression --good=2010-03-16 --bad=2010-09-08
-	
+
 This will download and run several nightly builds on new profiles and narrow down the range. After checking a few nightlies, you'll get the regression range which looks something like this:
 
 	Last good nightly: 2010-09-08 First bad nightly: 2010-09-09
@@ -25,13 +25,20 @@ Just run the nightly for a particular date:
 Find regression range on Thunderbird nightlies:
 
 	mozregression --app=thunderbird
-	
+
 Find regression range on Firefox mobile nightlies:
 
 	mozregression --app=mobile
-	
+
 Other branches/repos:
 
 	mozregression --repo=mozilla-1.9.2
-	
-Other options exist for running the nightlies with a particular profile, addons, and browser arguments.
+
+Other options exist for running the nightlies with a particular
+profile, addons, and browser arguments.
+
+#dependencies
+
+mozregression uses mozcommitbuilder:
+
+https://github.com/mozilla/mozcommitbuilder

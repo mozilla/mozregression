@@ -11,7 +11,7 @@ except:
     summ = """Interactive regression range finder for Mozilla nightly builds"""
 
 setup(name="mozregression",
-      version="0.6.2",
+      version="0.6.3",
       description=desc,
       long_description=summ,
       author='Heather Arthur',
@@ -25,7 +25,7 @@ setup(name="mozregression",
           moznightly = mozregression:nightlycli
         """,
       platforms =['Any'],
-      install_requires = ['httplib2 >= 0.6.0', 'mozrunner >= 2.5.4', 'BeautifulSoup >= 3.0.4', 'mozcommitbuilder >= 0.4.9'],
+      install_requires = ['httplib2 >= 0.6.0', 'mozrunner >= 2.5.4', 'BeautifulSoup >= 3.0.4', 'mozcommitbuilder >= 0.4.10'],
       classifiers=['Development Status :: 4 - Beta',
                    'Environment :: Console',
                    'Intended Audience :: Developers',

@@ -70,7 +70,7 @@ def get_platform():
 
 def strsplit(string, sep):
     strlist = string.split(sep)
-    if len(strlist) == 1 and strlist[0] == '': # python's split function is ridiculous
+    if strlist == ['']:
       return []
     return strlist
 

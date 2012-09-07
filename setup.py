@@ -1,5 +1,5 @@
 import os
-from setuptools import setup, find_packages
+from setuptools import setup
 
 desc = """Regression range finder for Mozilla nightly builds"""
 
@@ -18,7 +18,7 @@ setup(name="mozregression",
       author_email='fayearthur@gmail.com',
       url='http://github.com/mozilla/mozregression',
       license='MPL 1.1/GPL 2.0/LGPL 2.1',
-      packages=find_packages(exclude=['legacy']),
+      packages=['mozregression'],
       entry_points="""
           [console_scripts]
           mozregression = mozregression:regressioncli

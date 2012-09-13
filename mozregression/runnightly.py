@@ -261,12 +261,13 @@ class NightlyRunner(object):
         if not self.app.download(date=date):
             print "could not find nightly from " + str(date)
             return False # download failed
-        print "Starting nightly\n"
+        print "Installing nightly\n"
         return self.app.install()
 
     def start(self, date=datetime.date.today()):
         if not self.install(date):
             return False
+        print "Starting nightly\n"
         if not self.app.start(self.profile, self.addons, self.cmdargs):
             return False
         return True

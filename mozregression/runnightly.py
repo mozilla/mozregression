@@ -225,6 +225,8 @@ class FennecNightly(Nightly):
         self.buildRegex = 'fennec-.*\.apk'
         self.processName = 'org.mozilla.fennec'
         self.binary = 'org.mozilla.fennec/.App'
+        if "y" != raw_input("WARNING: bisecting nightly fennec builds will clobber your existing nightly profile. Continue? (y or n)"):
+            raise Exception("Aborting!")
 
     def getRepoName(self, date):
         return "mozilla-central-android"

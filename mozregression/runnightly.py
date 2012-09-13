@@ -106,6 +106,7 @@ class Nightly(object):
         rmdirRecursive("moznightlyapp")
         subprocess._cleanup = lambda : None # mikeal's fix for subprocess threading bug
         MozInstaller(src=self.dest, dest="moznightlyapp", dest_app="Mozilla.app")
+        return True
 
     @staticmethod
     def urlLinks(url):
@@ -165,6 +166,22 @@ class Nightly(object):
         except:
             return ("", "")
 
+    def start(self, profile, addons, cmdargs):
+        if profile:
+            profile = self.profileClass(profile=profile, addons=addons)
+        elif len(addons):
+            profile = self.profileClass(addons=addons)
+        else:
+            profile = self.profileClass()
+
+        self.runner = Runner(binary=self.binary, cmdargs=cmdargs, profile=profile)
+        self.runner.names = [self.processName]
+        self.runner.start()
+        return True
+
+    def stop(self):
+        self.runner.stop()
+
 class ThunderbirdNightly(Nightly):
     appName = 'thunderbird'
     name = 'thunderbird'
@@ -203,15 +220,38 @@ class FennecNightly(Nightly):
     name = 'fennec'
     profileClass = FirefoxProfile
 
+    def __init__(self, repo_name=None):
+        Nightly.__init__(self, repo_name)
+        self.buildRegex = 'fennec-.*\.apk'
+        self.processName = 'org.mozilla.fennec'
+        self.binary = 'org.mozilla.fennec/.App'
+        if "y" != raw_input("WARNING: bisecting nightly fennec builds will clobber your existing nightly profile. Continue? (y or n)"):
+            raise Exception("Aborting!")
+
     def getRepoName(self, date):
-      return "mozilla-central-linux"
+        return "mozilla-central-android"
+
+    def install(self):
+        subprocess.check_call(["adb", "uninstall", "org.mozilla.fennec"])
+        subprocess.check_call(["adb", "install", self.dest])
+        return True
+
+    def start(self, profile, addons, cmdargs):
+        subprocess.check_call(["adb", "shell", "am start -n %s" % self.binary])
+        return True
+
+    def stop(self):
+        # TODO: kill fennec (don't really care though since uninstalling it kills it)
+        # PID = $(adb shell ps | grep org.mozilla.fennec | awk '{ print $2 }')
+        # adb shell run-as org.mozilla.fennec kill $PID
+        return True
 
 class NightlyRunner(object):
     def __init__(self, addons=None, appname="firefox", repo_name=None,
                  profile=None, cmdargs=[]):
         if appname.lower() == 'thunderbird':
            self.app = ThunderbirdNightly(repo_name=repo_name)
-        elif appname.lower() == 'mobile':
+        elif appname.lower() == 'fennec':
            self.app = FennecNightly(repo_name=repo_name)
         else:
            self.app = FirefoxNightly(repo_name=repo_name)
@@ -223,25 +263,19 @@ class NightlyRunner(object):
         if not self.app.download(date=date):
             print "could not find nightly from " + str(date)
             return False # download failed
-        print "Starting nightly\n"
-        self.app.install()
+        print "Installing nightly\n"
+        return self.app.install()
 
     def start(self, date=datetime.date.today()):
-        self.install(date)
-        if self.profile:
-            profile = self.app.profileClass(profile=self.profile, addons=self.addons)
-        elif len(self.addons):
-            profile = self.app.profileClass(addons=self.addons)
-        else:
-            profile = self.app.profileClass()
-
-        self.runner = Runner(binary=self.app.binary, cmdargs=self.cmdargs, profile=profile)
-        self.runner.names = [self.app.processName]
-        self.runner.start()
+        if not self.install(date):
+            return False
+        print "Starting nightly\n"
+        if not self.app.start(self.profile, self.addons, self.cmdargs):
+            return False
         return True
 
     def stop(self):
-        self.runner.stop()
+        self.app.stop()
 
     def getAppInfo(self):
         return self.app.getAppInfo()
@@ -253,8 +287,8 @@ def cli():
     parser.add_option("-a", "--addons", dest="addons", help="list of addons to install",
                       metavar="PATH1,PATH2", default="")
     parser.add_option("-p", "--profile", dest="profile", help="path to profile to user", metavar="PATH")
-    parser.add_option("-n", "--app", dest="app", help="application name (firefox or thunderbird)",
-                      metavar="[firefox|thunderbird]", default="firefox")
+    parser.add_option("-n", "--app", dest="app", help="application name (firefox, thunderbird, or fennec)",
+                      metavar="[firefox|thunderbird|fennec]", default="firefox")
     parser.add_option("-r", "--repo", dest="repo_name", help="repository name on ftp.mozilla.org",
                       metavar="[tracemonkey|mozilla-1.9.2]", default=None)
     (options, args) = parser.parse_args()

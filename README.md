@@ -28,7 +28,7 @@ Find regression range on Thunderbird nightlies:
 
 Find regression range on Firefox mobile nightlies:
 
-	mozregression --app=mobile
+	mozregression --app=fennec
 
 Other branches/repos:
 

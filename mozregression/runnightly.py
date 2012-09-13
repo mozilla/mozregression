@@ -203,8 +203,12 @@ class FennecNightly(Nightly):
     name = 'fennec'
     profileClass = FirefoxProfile
 
+    def __init__(self, repo_name=None):
+        Nightly.__init__(self, repo_name)
+        self.buildRegex = 'fennec-.*\.apk'
+
     def getRepoName(self, date):
-      return "mozilla-central-linux"
+        return "mozilla-central-android"
 
 class NightlyRunner(object):
     def __init__(self, addons=None, appname="firefox", repo_name=None,

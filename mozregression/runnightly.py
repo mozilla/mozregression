@@ -227,7 +227,8 @@ class NightlyRunner(object):
         self.app.install()
 
     def start(self, date=datetime.date.today()):
-        self.install(date)
+        if not self.install(date):
+            return False
         if self.profile:
             profile = self.app.profileClass(profile=self.profile, addons=self.addons)
         elif len(self.addons):

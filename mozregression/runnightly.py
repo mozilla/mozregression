@@ -106,6 +106,7 @@ class Nightly(object):
         rmdirRecursive("moznightlyapp")
         subprocess._cleanup = lambda : None # mikeal's fix for subprocess threading bug
         MozInstaller(src=self.dest, dest="moznightlyapp", dest_app="Mozilla.app")
+        return True
 
     @staticmethod
     def urlLinks(url):
@@ -165,6 +166,22 @@ class Nightly(object):
         except:
             return ("", "")
 
+    def start(self, profile, addons, cmdargs):
+        if profile:
+            profile = self.profileClass(profile=profile, addons=addons)
+        elif len(addons):
+            profile = self.profileClass(addons=addons)
+        else:
+            profile = self.profileClass()
+
+        self.runner = Runner(binary=self.binary, cmdargs=cmdargs, profile=profile)
+        self.runner.names = [self.processName]
+        self.runner.start()
+        return True
+
+    def stop(self):
+        self.runner.stop()
+
 class ThunderbirdNightly(Nightly):
     appName = 'thunderbird'
     name = 'thunderbird'
@@ -206,9 +223,26 @@ class FennecNightly(Nightly):
     def __init__(self, repo_name=None):
         Nightly.__init__(self, repo_name)
         self.buildRegex = 'fennec-.*\.apk'
+        self.processName = 'org.mozilla.fennec'
+        self.binary = 'org.mozilla.fennec/.App'
 
     def getRepoName(self, date):
         return "mozilla-central-android"
+
+    def install(self):
+        subprocess.check_call(["adb", "uninstall", "org.mozilla.fennec"])
+        subprocess.check_call(["adb", "install", self.dest])
+        return True
+
+    def start(self, profile, addons, cmdargs):
+        subprocess.check_call(["adb", "shell", "am start -n %s" % self.binary])
+        return True
+
+    def stop(self):
+        # TODO: kill fennec (don't really care though since uninstalling it kills it)
+        # PID = $(adb shell ps | grep org.mozilla.fennec | awk '{ print $2 }')
+        # adb shell run-as org.mozilla.fennec kill $PID
+        return True
 
 class NightlyRunner(object):
     def __init__(self, addons=None, appname="firefox", repo_name=None,
@@ -228,25 +262,17 @@ class NightlyRunner(object):
             print "could not find nightly from " + str(date)
             return False # download failed
         print "Starting nightly\n"
-        self.app.install()
+        return self.app.install()
 
     def start(self, date=datetime.date.today()):
         if not self.install(date):
             return False
-        if self.profile:
-            profile = self.app.profileClass(profile=self.profile, addons=self.addons)
-        elif len(self.addons):
-            profile = self.app.profileClass(addons=self.addons)
-        else:
-            profile = self.app.profileClass()
-
-        self.runner = Runner(binary=self.app.binary, cmdargs=self.cmdargs, profile=profile)
-        self.runner.names = [self.app.processName]
-        self.runner.start()
+        if not self.app.start(self.profile, self.addons, self.cmdargs):
+            return False
         return True
 
     def stop(self):
-        self.runner.stop()
+        self.app.stop()
 
     def getAppInfo(self):
         return self.app.getAppInfo()

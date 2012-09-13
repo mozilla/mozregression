@@ -249,7 +249,7 @@ class NightlyRunner(object):
                  profile=None, cmdargs=[]):
         if appname.lower() == 'thunderbird':
            self.app = ThunderbirdNightly(repo_name=repo_name)
-        elif appname.lower() == 'mobile':
+        elif appname.lower() == 'fennec':
            self.app = FennecNightly(repo_name=repo_name)
         else:
            self.app = FirefoxNightly(repo_name=repo_name)
@@ -284,8 +284,8 @@ def cli():
     parser.add_option("-a", "--addons", dest="addons", help="list of addons to install",
                       metavar="PATH1,PATH2", default="")
     parser.add_option("-p", "--profile", dest="profile", help="path to profile to user", metavar="PATH")
-    parser.add_option("-n", "--app", dest="app", help="application name (firefox or thunderbird)",
-                      metavar="[firefox|thunderbird]", default="firefox")
+    parser.add_option("-n", "--app", dest="app", help="application name (firefox, thunderbird, or fennec)",
+                      metavar="[firefox|thunderbird|fennec]", default="firefox")
     parser.add_option("-r", "--repo", dest="repo_name", help="repository name on ftp.mozilla.org",
                       metavar="[tracemonkey|mozilla-1.9.2]", default=None)
     (options, args) = parser.parse_args()

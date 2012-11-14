@@ -71,40 +71,6 @@ def getPlatform():
   else:
     return platform.system()
 
-# This code is lifted directly from the buildbot code. That we use here. I
-# can't call it in buildbot without importing a trillion other things.
-# Original Source: http://mxr.mozilla.org/mozilla/source/tools/buildbot/buildbot/slave/commands.py#59
-#def rmdirRecursive(dir):
-  #"""This is a replacement for shutil.rmtree that works better under
-  #windows. Thanks to Bear at the OSAF for the code."""
-  #if not os.path.exists(dir):
-      #return
-
-  #if os.path.islink(dir):
-      #os.remove(dir)
-      #return
-
-  ## Verify the directory is read/write/execute for the current user
-  #os.chmod(dir, 0700)
-
-  #for name in os.listdir(dir):
-      #full_name = os.path.join(dir, name)
-      ## on Windows, if we don't have write permission we can't remove
-      ## the file/directory either, so turn that on
-      #if os.name == 'nt':
-          #if not os.access(full_name, os.W_OK):
-              ## I think this is now redundant, but I don't have an NT
-              ## machine to test on, so I'm going to leave it in place
-              ## -warner
-              #os.chmod(full_name, 0600)
-
-      #if os.path.isdir(full_name):
-          #rmdirRecursive(full_name)
-      #else:
-          #os.chmod(full_name, 0700)
-          #os.remove(full_name)
-  #os.rmdir(dir)
-
 class MozUninstaller:
   def __init__(self, **kwargs):
     debug("uninstall constructor")
@@ -130,8 +96,6 @@ class MozUninstaller:
       except OSError:
         # Directories are still there - kill them all!
         rmtree(self.dest)
-        #rmdirRecursive(self.dest)
-
 
   def doWindowsUninstall(self):
     debug("do windowsUninstall")
@@ -314,4 +278,3 @@ if __name__ == "__main__":
                                  productName = options.product)
   elif string.upper(options.op) == "DELETE" or string.upper(options.op) == "D":
     rmtree(options.dest)
-    rmdirRecursive(options.dest)

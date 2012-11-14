@@ -54,7 +54,6 @@ except:
 
 from mozrunner import Runner
 from mozInstall import MozInstaller
-#from mozInstall import rmdirRecursive
 from mozfile import rmtree
 from utils import strsplit, download_url, get_date, get_platform
 
@@ -86,7 +85,6 @@ class Nightly(object):
     def __del__(self):
         # cleanup
         rmtree('moznightlyapp')
-        #rmdirRecursive('moznightlyapp')
         if self.lastdest:
             os.remove(self.lastdest)
 
@@ -106,7 +104,6 @@ class Nightly(object):
 
     def install(self):
         rmtree("moznightlyapp")
-        #rmdirRecursive("moznightlyapp")
         subprocess._cleanup = lambda : None # mikeal's fix for subprocess threading bug
         MozInstaller(src=self.dest, dest="moznightlyapp", dest_app="Mozilla.app")
         return True

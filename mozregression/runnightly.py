@@ -41,6 +41,8 @@ import re
 import sys
 import platform
 import subprocess
+import mozinstall
+
 from optparse import OptionParser
 from ConfigParser import ConfigParser
 from BeautifulSoup import BeautifulSoup
@@ -53,12 +55,12 @@ except:
   from mozrunner import ThunderbirdProfile
 
 from mozrunner import Runner
-from mozInstall import MozInstaller
 from mozfile import rmtree
 from utils import strsplit, download_url, get_date, get_platform
 
 class Nightly(object):
     def __init__(self, repo_name=None):
+        self.app_name = "moznightlyapp"
         platform=get_platform()
         if platform['name'] == "Windows":
             if platform['bits'] == '64':
@@ -66,10 +68,10 @@ class Nightly(object):
                 sys.exit()
             self.buildRegex = ".*win32.zip"
             self.processName = self.name + ".exe"
-            self.binary = "moznightlyapp/" + self.name + "/" + self.name + ".exe"
+            self.binary = self.app_name + "/" + self.name + "/" + self.name + ".exe"
         elif platform['name'] == "Linux":
             self.processName = self.name + "-bin"
-            self.binary = "moznightlyapp/" + self.name + "/" + self.name
+            self.binary = self.app_name + "/" + self.name + "/" + self.name
             if platform['bits'] == '64':
                 self.buildRegex = ".*linux-x86_64.tar.bz2"
             else:
@@ -77,14 +79,14 @@ class Nightly(object):
         elif platform['name'] == "Mac":
             self.buildRegex = ".*mac.*\.dmg"
             self.processName = self.name + "-bin"
-            self.binary = "moznightlyapp/Mozilla.app/Contents/MacOS/" + self.name + "-bin"
+            self.binary = self.app_name + "/Mozilla.app/Contents/MacOS/" + self.name + "-bin"
         self.repo_name = repo_name
         self._monthlinks = {}
         self.lastdest = None
 
     def __del__(self):
         # cleanup
-        rmtree('moznightlyapp')
+        rmtree(self.app_name)
         if self.lastdest:
             os.remove(self.lastdest)
 
@@ -103,9 +105,9 @@ class Nightly(object):
             return False
 
     def install(self):
-        rmtree("moznightlyapp")
+        rmtree(self.app_name)
         subprocess._cleanup = lambda : None # mikeal's fix for subprocess threading bug
-        MozInstaller(src=self.dest, dest="moznightlyapp", dest_app="Mozilla.app")
+        self.binary = mozinstall.install(src=self.dest, dest=self.app_name)
         return True
 
     @staticmethod

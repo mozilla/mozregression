@@ -1,60 +1,26 @@
 #!/usr/bin/env python
-# ***** BEGIN LICENSE BLOCK *****
-# Version: MPL 1.1/GPL 2.0/LGPL 2.1
-#
-# The contents of this file are subject to the Mozilla Public License Version
-# 1.1 (the "License"); you may not use this file except in compliance with
-# the License. You may obtain a copy of the License at
-# http://www.mozilla.org/MPL/
-#
-# Software distributed under the License is distributed on an "AS IS" basis,
-# WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-# for the specific language governing rights and limitations under the
-# License.
-#
-# The Original Code is Mozilla Corporation Code.
-#
-# The Initial Developer of the Original Code is
-# Heather Arthur
-# Portions created by the Initial Developer are Copyright (C) 2009
-# the Initial Developer. All Rights Reserved.
-#
-# Contributor(s): Heather Arthur <fayearthur@gmail.com>
-#
-# Alternatively, the contents of this file may be used under the terms of
-# either the GNU General Public License Version 2 or later (the "GPL"), or
-# the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
-# in which case the provisions of the GPL or the LGPL are applicable instead
-# of those above. If you wish to allow use of your version of this file only
-# under the terms of either the GPL or the LGPL, and not to allow others to
-# use your version of this file under the terms of the MPL, indicate your
-# decision by deleting the provisions above and replace them with the notice
-# and other provisions required by the GPL or the LGPL. If you do not delete
-# the provisions above, a recipient may use your version of this file under
-# the terms of any one of the MPL, the GPL or the LGPL.
-#
-# ***** END LICENSE BLOCK *****
-import os
+
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 import datetime
+import os
 import httplib2
-import re
-import sys
 import platform
+import re
 import subprocess
+import sys
+
+from mozfile import rmtree
+from mozprofile import FirefoxProfile
+from mozprofile import ThunderbirdProfile
+from mozrunner import Runner
 from optparse import OptionParser
 from ConfigParser import ConfigParser
 from BeautifulSoup import BeautifulSoup
 
-try:
-  from mozprofile import FirefoxProfile
-  from mozprofile import ThunderbirdProfile
-except:
-  from mozrunner import FirefoxProfile
-  from mozrunner import ThunderbirdProfile
-
-from mozrunner import Runner
 from mozInstall import MozInstaller
-from mozfile import rmtree
 from utils import strsplit, download_url, get_date, get_platform
 
 class Nightly(object):
@@ -82,18 +48,19 @@ class Nightly(object):
         self._monthlinks = {}
         self.lastdest = None
 
-    def __del__(self):
-        # cleanup
+    def cleanup(self):
         rmtree('moznightlyapp')
         if self.lastdest:
             os.remove(self.lastdest)
+
+    __del__ = cleanup
 
     def download(self, date=datetime.date.today(), dest=None):
         url = self.getBuildUrl(date)
         if url:
             if not dest:
                 dest = os.path.basename(url)
-            print "\nDownloading nightly from " + str(date) + "\n"
+            print "Downloading nightly from %s" % date
             if self.lastdest:
                 os.remove(self.lastdest)
             download_url(url, dest)
@@ -125,8 +92,8 @@ class Nightly(object):
     def getBuildUrl(self, date):
         url = "http://ftp.mozilla.org/pub/mozilla.org/" + self.appName + "/nightly/"
         year = str(date.year)
-        month = self.formatDatePart(date.month)
-        day = self.formatDatePart(date.day)
+        month = "%02d" % date.month
+        day = "%02d" % date.day
         repo_name = self.repo_name or self.getRepoName(date)
         url += year + "/" + month + "/"
 
@@ -149,11 +116,6 @@ class Nightly(object):
                         return url + dirhref + href
 
         return False
-
-    def formatDatePart(self, part):
-        if part < 10:
-            part = "0" + str(part)
-        return str(part)
 
     def getAppInfo(self):
         parser = ConfigParser()
@@ -181,6 +143,9 @@ class Nightly(object):
 
     def stop(self):
         self.runner.stop()
+
+    def wait(self):
+        self.runner.wait()
 
 class ThunderbirdNightly(Nightly):
     appName = 'thunderbird'
@@ -247,29 +212,28 @@ class FennecNightly(Nightly):
         return True
 
 class NightlyRunner(object):
+    apps = {'thunderbird': ThunderbirdNightly,
+            'fennec': FennecNightly,
+            'firefox': FirefoxNightly}
+
     def __init__(self, addons=None, appname="firefox", repo_name=None,
-                 profile=None, cmdargs=[]):
-        if appname.lower() == 'thunderbird':
-           self.app = ThunderbirdNightly(repo_name=repo_name)
-        elif appname.lower() == 'fennec':
-           self.app = FennecNightly(repo_name=repo_name)
-        else:
-           self.app = FirefoxNightly(repo_name=repo_name)
+                 profile=None, cmdargs=()):
+        self.app = self.apps[appname](repo_name=repo_name)
         self.addons = addons
         self.profile = profile
-        self.cmdargs = cmdargs
+        self.cmdargs = list(cmdargs)
 
     def install(self, date=datetime.date.today()):
         if not self.app.download(date=date):
-            print "could not find nightly from " + str(date)
+            print "Could not find nightly from %s" % date
             return False # download failed
-        print "Installing nightly\n"
+        print "Installing nightly"
         return self.app.install()
 
     def start(self, date=datetime.date.today()):
         if not self.install(date):
             return False
-        print "Starting nightly\n"
+        print "Starting nightly"
         if not self.app.start(self.profile, self.addons, self.cmdargs):
             return False
         return True
@@ -277,25 +241,45 @@ class NightlyRunner(object):
     def stop(self):
         self.app.stop()
 
+    def wait(self):
+        self.app.wait()
+
+    def cleanup(self):
+        self.app.cleanup()
+
     def getAppInfo(self):
         return self.app.getAppInfo()
 
-def cli():
+def cli(args=sys.argv[1:]):
+    """moznightly command line entry point"""
+
+    # parse command line options
     parser = OptionParser()
     parser.add_option("-d", "--date", dest="date", help="date of the nightly",
                       metavar="YYYY-MM-DD", default=str(datetime.date.today()))
-    parser.add_option("-a", "--addons", dest="addons", help="list of addons to install",
-                      metavar="PATH1,PATH2", default="")
+    parser.add_option("-a", "--addons", dest="addons",
+                      help="list of addons to install",
+                      metavar="PATH1,PATH2")
     parser.add_option("-p", "--profile", dest="profile", help="path to profile to user", metavar="PATH")
-    parser.add_option("-n", "--app", dest="app", help="application name (firefox, thunderbird, or fennec)",
-                      metavar="[firefox|thunderbird|fennec]", default="firefox")
+    parser.add_option("-n", "--app", dest="app", help="application name",
+                      type="choice",
+                      metavar="[%s]" % "|".join(NightlyRunner.apps.keys()),
+                      choices=NightlyRunner.apps.keys(),
+                      default="firefox")
     parser.add_option("-r", "--repo", dest="repo_name", help="repository name on ftp.mozilla.org",
                       metavar="[tracemonkey|mozilla-1.9.2]", default=None)
-    (options, args) = parser.parse_args()
+    options, args = parser.parse_args(args)
+    # XXX https://github.com/mozilla/mozregression/issues/50
+    addons = strsplit(options.addons or "", ",")
 
-    runner = NightlyRunner(appname=options.app, addons=strsplit(options.addons, ","),
+    # run nightly
+    runner = NightlyRunner(appname=options.app, addons=addons,
                            profile=options.profile, repo_name=options.repo_name)
     runner.start(get_date(options.date))
+    try:
+        runner.wait()
+    except KeyboardInterrupt:
+        runner.stop()
 
 
 if __name__ == "__main__":

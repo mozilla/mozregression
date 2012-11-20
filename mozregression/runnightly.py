@@ -12,6 +12,8 @@ import re
 import subprocess
 import sys
 
+import mozinstall
+
 from mozfile import rmtree
 from mozprofile import FirefoxProfile
 from mozprofile import ThunderbirdProfile
@@ -20,33 +22,30 @@ from optparse import OptionParser
 from ConfigParser import ConfigParser
 from BeautifulSoup import BeautifulSoup
 
-from mozInstall import MozInstaller
 from utils import strsplit, download_url, get_date, get_platform
 
 class Nightly(object):
     def __init__(self, repo_name=None):
+        self.app_name = "moznightlyapp"
         platform=get_platform()
         if platform['name'] == "Windows":
             if platform['bits'] == '64':
                 print "No nightly builds available for 64 bit Windows"
                 sys.exit()
             self.buildRegex = ".*win32.zip"
-            self.binary = "moznightlyapp/" + self.name + "/" + self.name + ".exe"
         elif platform['name'] == "Linux":
-            self.binary = "moznightlyapp/" + self.name + "/" + self.name
             if platform['bits'] == '64':
                 self.buildRegex = ".*linux-x86_64.tar.bz2"
             else:
                 self.buildRegex = ".*linux-i686.tar.bz2"
         elif platform['name'] == "Mac":
             self.buildRegex = ".*mac.*\.dmg"
-            self.binary = "moznightlyapp/Mozilla.app/Contents/MacOS/" + self.name + "-bin"
         self.repo_name = repo_name
         self._monthlinks = {}
         self.lastdest = None
 
     def cleanup(self):
-        rmtree('moznightlyapp')
+        rmtree(self.app_name)
         if self.lastdest:
             os.remove(self.lastdest)
 
@@ -67,9 +66,9 @@ class Nightly(object):
             return False
 
     def install(self):
-        rmtree("moznightlyapp")
+        rmtree(self.app_name)
         subprocess._cleanup = lambda : None # mikeal's fix for subprocess threading bug
-        MozInstaller(src=self.dest, dest="moznightlyapp", dest_app="Mozilla.app")
+        self.binary = mozinstall.install(src=self.dest, dest=self.app_name)
         return True
 
     @staticmethod
@@ -184,7 +183,7 @@ class FennecNightly(Nightly):
     def __init__(self, repo_name=None):
         Nightly.__init__(self, repo_name)
         self.buildRegex = 'fennec-.*\.apk'
-        self.binary = 'org.mozilla.fennec/.App'
+        #self.binary = 'org.mozilla.fennec/.App'
         if "y" != raw_input("WARNING: bisecting nightly fennec builds will clobber your existing nightly profile. Continue? (y or n)"):
             raise Exception("Aborting!")
 

@@ -31,6 +31,7 @@ setup(name="mozregression",
                           'mozprofile >= 0.4',
                           'mozrunner >= 5.14',
                           'BeautifulSoup >= 3.0.4',
+                          'mozinstall >= 1.4'
                           ],
       classifiers=['Development Status :: 4 - Beta',
                    'Environment :: Console',

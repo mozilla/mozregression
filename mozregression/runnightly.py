@@ -137,7 +137,6 @@ class Nightly(object):
             profile = self.profileClass()
 
         self.runner = Runner(binary=self.binary, cmdargs=cmdargs, profile=profile)
-        self.runner.names = [self.processName]
         self.runner.start()
         return True
 

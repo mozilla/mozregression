@@ -31,10 +31,8 @@ class Nightly(object):
                 print "No nightly builds available for 64 bit Windows"
                 sys.exit()
             self.buildRegex = ".*win32.zip"
-            self.processName = self.name + ".exe"
             self.binary = "moznightlyapp/" + self.name + "/" + self.name + ".exe"
         elif platform['name'] == "Linux":
-            self.processName = self.name + "-bin"
             self.binary = "moznightlyapp/" + self.name + "/" + self.name
             if platform['bits'] == '64':
                 self.buildRegex = ".*linux-x86_64.tar.bz2"
@@ -42,7 +40,6 @@ class Nightly(object):
                 self.buildRegex = ".*linux-i686.tar.bz2"
         elif platform['name'] == "Mac":
             self.buildRegex = ".*mac.*\.dmg"
-            self.processName = self.name + "-bin"
             self.binary = "moznightlyapp/Mozilla.app/Contents/MacOS/" + self.name + "-bin"
         self.repo_name = repo_name
         self._monthlinks = {}
@@ -187,7 +184,6 @@ class FennecNightly(Nightly):
     def __init__(self, repo_name=None):
         Nightly.__init__(self, repo_name)
         self.buildRegex = 'fennec-.*\.apk'
-        self.processName = 'org.mozilla.fennec'
         self.binary = 'org.mozilla.fennec/.App'
         if "y" != raw_input("WARNING: bisecting nightly fennec builds will clobber your existing nightly profile. Continue? (y or n)"):
             raise Exception("Aborting!")

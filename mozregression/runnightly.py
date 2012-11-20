@@ -7,29 +7,34 @@
 import datetime
 import os
 import httplib2
+import mozinstall
 import platform
 import re
 import subprocess
 import sys
-
-import mozinstall
+import tempfile
 
 from mozfile import rmtree
 from mozprofile import FirefoxProfile
 from mozprofile import ThunderbirdProfile
 from mozrunner import Runner
 from optparse import OptionParser
-from ConfigParser import ConfigParser
-from BeautifulSoup import BeautifulSoup
-
 from utils import strsplit, download_url, get_date, get_platform
+from BeautifulSoup import BeautifulSoup
+from ConfigParser import ConfigParser
+
+subprocess._cleanup = lambda : None # mikeal's fix for subprocess threading bug
+# XXX please reference this issue with a URL!
 
 class Nightly(object):
+
+    name = None # abstract base class
+
     def __init__(self, repo_name=None):
-        self.app_name = "moznightlyapp"
         platform=get_platform()
         if platform['name'] == "Windows":
             if platform['bits'] == '64':
+                # XXX this should actually throw an error to be consumed by the caller
                 print "No nightly builds available for 64 bit Windows"
                 sys.exit()
             self.buildRegex = ".*win32.zip"
@@ -43,13 +48,27 @@ class Nightly(object):
         self.repo_name = repo_name
         self._monthlinks = {}
         self.lastdest = None
+        self.tempdir = None
 
-    def cleanup(self):
-        rmtree(self.app_name)
+    ### cleanup functions
+
+    def remove_tempdir(self):
+        if self.tempdir:
+            rmtree(self.tempdir)
+            self.tempdir = None
+
+    def remove_lastdest(self):
         if self.lastdest:
             os.remove(self.lastdest)
+            self.lastdest = None
+
+    def cleanup(self):
+        self.remove_tempdir()
+        self.remove_lastdest()
 
     __del__ = cleanup
+
+    ### installation functions
 
     def download(self, date=datetime.date.today(), dest=None):
         url = self.getBuildUrl(date)
@@ -57,8 +76,7 @@ class Nightly(object):
             if not dest:
                 dest = os.path.basename(url)
             print "Downloading nightly from %s" % date
-            if self.lastdest:
-                os.remove(self.lastdest)
+            self.remove_lastdest()
             download_url(url, dest)
             self.dest = self.lastdest = dest
             return True
@@ -66,24 +84,25 @@ class Nightly(object):
             return False
 
     def install(self):
-        rmtree(self.app_name)
-        subprocess._cleanup = lambda : None # mikeal's fix for subprocess threading bug
-        self.binary = mozinstall.install(src=self.dest, dest=self.app_name)
+        if not self.name:
+            raise NotImplementedError("Can't invoke abstract base class")
+        self.remove_tempdir()
+        self.tempdir = tempfile.mkdtemp()
+        self.binary = mozinstall.get_binary(mozinstall.install(src=self.dest, dest=self.tempdir), self.name)
         return True
 
     @staticmethod
     def urlLinks(url):
-        res = [] # do not return a generator but an array, so we can store it for later use
+        # TODO: this should go in utils.py
 
         h = httplib2.Http();
         resp, content = h.request(url, "GET")
         if resp.status != 200:
-            return res
+            return []
 
         soup = BeautifulSoup(content)
-        for link in soup.findAll('a'):
-            res.append(link)
-        return res
+        # do not return a generator but an array, so we can store it for later use
+        return [link for link in soup.findAll('a')]
 
     def getBuildUrl(self, date):
         url = "http://ftp.mozilla.org/pub/mozilla.org/" + self.appName + "/nightly/"
@@ -112,6 +131,9 @@ class Nightly(object):
                         return url + dirhref + href
 
         return False
+
+
+    ### functions for invoking nightly
 
     def getAppInfo(self):
         parser = ConfigParser()
@@ -153,6 +175,7 @@ class ThunderbirdNightly(Nightly):
            # no .zip package for Windows, can't use the installer
            print "Can't run Windows builds before 2010-03-18"
            sys.exit()
+           # XXX this should throw an exception vs exiting without the error code
 
         if date < datetime.date(2008, 7, 26):
             return "trunk"
@@ -206,6 +229,7 @@ class FennecNightly(Nightly):
         return True
 
 class NightlyRunner(object):
+
     apps = {'thunderbird': ThunderbirdNightly,
             'fennec': FennecNightly,
             'firefox': FirefoxNightly}

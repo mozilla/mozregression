@@ -30,8 +30,8 @@ class Nightly(object):
 
     name = None # abstract base class
 
-    def __init__(self, repo_name=None):
-        platform=get_platform()
+    def __init__(self, repo_name=None, force32bit=False):
+        platform=get_platform(force32bit)
         if platform['name'] == "Windows":
             if platform['bits'] == '64':
                 # XXX this should actually throw an error to be consumed by the caller
@@ -171,7 +171,7 @@ class ThunderbirdNightly(Nightly):
 
     def getRepoName(self, date):
         # sneaking this in here
-        if get_platform()['name'] == "Windows" and date < datetime.date(2010, 03, 18):
+        if get_platform(False)['name'] == "Windows" and date < datetime.date(2010, 03, 18):
            # no .zip package for Windows, can't use the installer
            print "Can't run Windows builds before 2010-03-18"
            sys.exit()
@@ -203,7 +203,7 @@ class FennecNightly(Nightly):
     name = 'fennec'
     profileClass = FirefoxProfile
 
-    def __init__(self, repo_name=None):
+    def __init__(self, repo_name=None, force32bit=False):
         Nightly.__init__(self, repo_name)
         self.buildRegex = 'fennec-.*\.apk'
         #self.binary = 'org.mozilla.fennec/.App'
@@ -235,8 +235,8 @@ class NightlyRunner(object):
             'firefox': FirefoxNightly}
 
     def __init__(self, addons=None, appname="firefox", repo_name=None,
-                 profile=None, cmdargs=()):
-        self.app = self.apps[appname](repo_name=repo_name)
+                 profile=None, cmdargs=(), force32bit=False):
+        self.app = self.apps[appname](repo_name=repo_name, force32bit=force32bit)
         self.addons = addons
         self.profile = profile
         self.cmdargs = list(cmdargs)
@@ -286,6 +286,8 @@ def cli(args=sys.argv[1:]):
                       default="firefox")
     parser.add_option("-r", "--repo", dest="repo_name", help="repository name on ftp.mozilla.org",
                       metavar="[tracemonkey|mozilla-1.9.2]", default=None)
+    parser.add_option("--force32bit", action="store_true", dest="force32bit",help="force the 32-bit version (only applies to x86_64 boxes)",
+                      default=None)
     options, args = parser.parse_args(args)
     # XXX https://github.com/mozilla/mozregression/issues/50
     addons = strsplit(options.addons or "", ",")

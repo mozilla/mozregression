@@ -7,7 +7,7 @@ import httplib2
 import datetime
 import platform
 
-def get_platform():
+def get_platform(force32bit):
     uname = platform.uname()
     name = uname[0]
     version = uname[2]
@@ -23,6 +23,10 @@ def get_platform():
         name = "Windows"
 
     bits = platform.architecture()[0]
+    # handling case for forcing 32bit on a 64bit machine
+    if bits == "64bit" and force32bit:
+        bits = "32bit"
+
     cpu = uname[4]
     if cpu == "i386" or cpu == "i686":
         if bits == "32bit":

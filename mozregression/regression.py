@@ -145,6 +145,14 @@ class Bisector(object):
             self.bisect(goodDate, badDate)
 
     def getPushlogUrl(self, goodDate, badDate):
+        # pushlogs are typically done with the oldest date first
+        if goodDate < badDate:
+            start = goodDate
+            end = badDate
+        else:
+            start = badDate
+            end = goodDate
+
         if not self.goodAppInfo or not self.badAppInfo:
             if self.goodAppInfo:
                 (repo, chset) = self.goodAppInfo
@@ -152,7 +160,7 @@ class Bisector(object):
                 (repo, chset) = self.badAppInfo
             else:
                 repo = 'http://hg.mozilla.org/mozilla-central'
-            return repo + "/pushloghtml?startdate=" + str(goodDate) + "&enddate=" + str(badDate)
+            return repo + "/pushloghtml?startdate=" + str(start) + "&enddate=" + str(end)
 
         (repo, good_chset) = self.goodAppInfo
         (repo, bad_chset) = self.badAppInfo

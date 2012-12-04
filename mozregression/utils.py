@@ -5,41 +5,6 @@
 import re
 import httplib2
 import datetime
-import platform
-
-def get_platform(force32bit):
-    uname = platform.uname()
-    name = uname[0]
-    version = uname[2]
-
-    if name == "Linux":
-        (distro, version, codename) = platform.linux_distribution()
-        version = distro + " " + version
-    elif name == "Darwin":
-        name = "Mac"
-        (release, versioninfo, machine) = platform.mac_ver()
-        version = "OS X " + release
-    elif name == "Microsoft":
-        name = "Windows"
-
-    bits = platform.architecture()[0]
-    # handling case for forcing 32bit on a 64bit machine
-    if bits == "64bit" and force32bit:
-        bits = "32bit"
-
-    cpu = uname[4]
-    if cpu == "i386" or cpu == "i686":
-        if bits == "32bit":
-            cpu = "x86"
-        elif bits == "64bit":
-            cpu = "x86_64"
-    elif cpu == 'Power Macintosh':
-        cpu = 'ppc'
-
-    bits = re.compile('(\d+)bit').search(bits).group(1)
-
-    return {'name': name, 'version': version, 'bits':  bits, 'cpu': cpu}
-
 
 def strsplit(string, sep):
     # XXX https://github.com/mozilla/mozregression/issues/50

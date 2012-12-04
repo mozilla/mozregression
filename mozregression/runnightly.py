@@ -8,18 +8,18 @@ import datetime
 import os
 import httplib2
 import mozinstall
-import platform
 import re
 import subprocess
 import sys
 import tempfile
+import mozinfo
 
 from mozfile import rmtree
 from mozprofile import FirefoxProfile
 from mozprofile import ThunderbirdProfile
 from mozrunner import Runner
 from optparse import OptionParser
-from utils import strsplit, download_url, get_date, get_platform
+from utils import strsplit, download_url, get_date
 from BeautifulSoup import BeautifulSoup
 from ConfigParser import ConfigParser
 
@@ -31,19 +31,20 @@ class Nightly(object):
     name = None # abstract base class
 
     def __init__(self, repo_name=None, force32bit=False):
-        platform=get_platform(force32bit)
-        if platform['name'] == "Windows":
-            if platform['bits'] == '64':
+        if mozinfo.bits == '64' and force32bit:
+            mozinfo.bits = '32'
+        if mozinfo.os == "win":
+            if mozinfo.bits == '64':
                 # XXX this should actually throw an error to be consumed by the caller
                 print "No nightly builds available for 64 bit Windows"
                 sys.exit()
             self.buildRegex = ".*win32.zip"
-        elif platform['name'] == "Linux":
-            if platform['bits'] == '64':
+        elif mozinfo.os == "linux":
+            if mozinfo.bits == '64':
                 self.buildRegex = ".*linux-x86_64.tar.bz2"
             else:
                 self.buildRegex = ".*linux-i686.tar.bz2"
-        elif platform['name'] == "Mac":
+        elif mozinfo.os == "mac":
             self.buildRegex = ".*mac.*\.dmg"
         self.repo_name = repo_name
         self._monthlinks = {}
@@ -171,7 +172,7 @@ class ThunderbirdNightly(Nightly):
 
     def getRepoName(self, date):
         # sneaking this in here
-        if get_platform(False)['name'] == "Windows" and date < datetime.date(2010, 03, 18):
+        if mozinfo.os == "win" and date < datetime.date(2010, 03, 18):
            # no .zip package for Windows, can't use the installer
            print "Can't run Windows builds before 2010-03-18"
            sys.exit()
@@ -206,7 +207,7 @@ class FennecNightly(Nightly):
     def __init__(self, repo_name=None, force32bit=False):
         Nightly.__init__(self, repo_name)
         self.buildRegex = 'fennec-.*\.apk'
-        #self.binary = 'org.mozilla.fennec/.App'
+        self.binary = 'org.mozilla.fennec/.App'
         if "y" != raw_input("WARNING: bisecting nightly fennec builds will clobber your existing nightly profile. Continue? (y or n)"):
             raise Exception("Aborting!")
 

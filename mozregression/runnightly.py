@@ -30,17 +30,15 @@ class Nightly(object):
 
     name = None # abstract base class
 
-    def __init__(self, repo_name=None, force32bit=False):
-        if mozinfo.bits == '64' and force32bit:
-            mozinfo.bits = '32'
+    def __init__(self, repo_name=None, bits=mozinfo.bits):
         if mozinfo.os == "win":
-            if mozinfo.bits == '64':
+            if bits == 64:
                 # XXX this should actually throw an error to be consumed by the caller
                 print "No nightly builds available for 64 bit Windows"
                 sys.exit()
             self.buildRegex = ".*win32.zip"
         elif mozinfo.os == "linux":
-            if mozinfo.bits == '64':
+            if bits == 64:
                 self.buildRegex = ".*linux-x86_64.tar.bz2"
             else:
                 self.buildRegex = ".*linux-i686.tar.bz2"
@@ -204,7 +202,7 @@ class FennecNightly(Nightly):
     name = 'fennec'
     profileClass = FirefoxProfile
 
-    def __init__(self, repo_name=None, force32bit=False):
+    def __init__(self, repo_name=None, bits=mozinfo.bits):
         Nightly.__init__(self, repo_name)
         self.buildRegex = 'fennec-.*\.apk'
         self.binary = 'org.mozilla.fennec/.App'
@@ -236,8 +234,8 @@ class NightlyRunner(object):
             'firefox': FirefoxNightly}
 
     def __init__(self, addons=None, appname="firefox", repo_name=None,
-                 profile=None, cmdargs=(), force32bit=False):
-        self.app = self.apps[appname](repo_name=repo_name, force32bit=force32bit)
+                 profile=None, cmdargs=(), bits=mozinfo.bits):
+        self.app = self.apps[appname](repo_name=repo_name, bits=bits)
         self.addons = addons
         self.profile = profile
         self.cmdargs = list(cmdargs)
@@ -287,15 +285,22 @@ def cli(args=sys.argv[1:]):
                       default="firefox")
     parser.add_option("-r", "--repo", dest="repo_name", help="repository name on ftp.mozilla.org",
                       metavar="[tracemonkey|mozilla-1.9.2]", default=None)
-    parser.add_option("--force32bit", action="store_true", dest="force32bit",help="force the 32-bit version (only applies to x86_64 boxes)",
-                      default=None)
+    parser.add_option("--bits", dest="bits", help="force 32 or 64 bit version (only applies to x86_64 boxes)",
+                      choices=("32","64"), default=mozinfo.bits)
     options, args = parser.parse_args(args)
+
+    # need to convert to int since mozinfo.bits is of type int
+    if options.bits == "64" and mozinfo.bits != 32:
+        options.bits = 64
+    elif options.bits == "32":
+        options.bits = 32
+
     # XXX https://github.com/mozilla/mozregression/issues/50
     addons = strsplit(options.addons or "", ",")
 
     # run nightly
     runner = NightlyRunner(appname=options.app, addons=addons,
-                           profile=options.profile, repo_name=options.repo_name)
+                           profile=options.profile, repo_name=options.repo_name, bits=options.bits)
     runner.start(get_date(options.date))
     try:
         runner.wait()

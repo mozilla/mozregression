@@ -38,10 +38,10 @@
 import datetime
 import sys
 import subprocess
+import mozinfo
 from optparse import OptionParser
 
-
-from runnightly import NightlyRunner
+from runnightly import NightlyRunner, parseBits
 from utils import strsplit, get_date, increment_day
 
 class Bisector(object):
@@ -180,9 +180,11 @@ def cli():
                       metavar="[firefox|fennec|thunderbird]", default="firefox")
     parser.add_option("-r", "--repo", dest="repo_name", help="repository name on ftp.mozilla.org",
                       metavar="[tracemonkey|mozilla-1.9.2]", default=None)
-    parser.add_option("--force32bit", action="store_true", dest="force32bit",help="force the 32-bit version (only applies to x86_64 boxes)",
-                      default=None)
+    parser.add_option("--bits", dest="bits", help="force 32 or 64 bit version (only applies to x86_64 boxes)",
+                      choices=("32","64"), default=mozinfo.bits)
     (options, args) = parser.parse_args()
+
+    options.bits = parseBits(options.bits)
 
     addons = strsplit(options.addons, ",")
     cmdargs = strsplit(options.cmdargs, ",")
@@ -192,7 +194,7 @@ def cli():
         print "No 'good' date specified, using " + options.good_date
 
     runner = NightlyRunner(appname=options.app, addons=addons, repo_name=options.repo_name,
-                           profile=options.profile, cmdargs=cmdargs, force32bit=options.force32bit)
+                           profile=options.profile, cmdargs=cmdargs, bits=options.bits)
     bisector = Bisector(runner, appname=options.app)
     bisector.bisect(get_date(options.good_date), get_date(options.bad_date))
 

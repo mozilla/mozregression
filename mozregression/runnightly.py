@@ -267,6 +267,14 @@ class NightlyRunner(object):
     def getAppInfo(self):
         return self.app.getAppInfo()
 
+def parseBits(optionBits):
+    """returns the correct bits based on the mozinfo.bits"""
+    # need to convert to int since mozinfo.bits is of type int
+    if optionBits == "64" and mozinfo.bits != 32:
+        return 64
+    elif optionBits == "32":
+        return 32
+
 def cli(args=sys.argv[1:]):
     """moznightly command line entry point"""
 
@@ -289,11 +297,7 @@ def cli(args=sys.argv[1:]):
                       choices=("32","64"), default=mozinfo.bits)
     options, args = parser.parse_args(args)
 
-    # need to convert to int since mozinfo.bits is of type int
-    if options.bits == "64" and mozinfo.bits != 32:
-        options.bits = 64
-    elif options.bits == "32":
-        options.bits = 32
+    options.bits = parseBits(options.bits)
 
     # XXX https://github.com/mozilla/mozregression/issues/50
     addons = strsplit(options.addons or "", ",")

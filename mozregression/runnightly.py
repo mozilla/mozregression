@@ -268,12 +268,12 @@ class NightlyRunner(object):
         return self.app.getAppInfo()
 
 def parseBits(optionBits):
-    """returns the correct bits based on the mozinfo.bits"""
-    # need to convert to int since mozinfo.bits is of type int
-    if optionBits == "64" and mozinfo.bits != 32:
-        return 64
-    elif optionBits == "32":
+    """returns the correctly typed bits"""
+    if optionBits == "32":
         return 32
+    else:
+        # if 64 bits is passed on a 32 bit system, it won't be honored
+        return mozinfo.bits
 
 def cli(args=sys.argv[1:]):
     """moznightly command line entry point"""

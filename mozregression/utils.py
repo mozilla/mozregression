@@ -31,9 +31,3 @@ def get_date(dateString):
         print "Incorrect date format"
         return
     return datetime.date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
-
-def increment_day(date):
-    s = date.split("-")
-    delta = datetime.timedelta(days=1)
-    nextDate = datetime.date(int(s[0]),int(s[1]),int(s[2])) + delta
-    return str(nextDate)

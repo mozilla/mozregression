@@ -10,7 +10,7 @@ import subprocess
 import sys
 from optparse import OptionParser
 from runnightly import NightlyRunner, parseBits
-from utils import strsplit, get_date, increment_day
+from utils import strsplit, get_date
 
 class Bisector(object):
     def __init__(self, runner, appname="firefox"):

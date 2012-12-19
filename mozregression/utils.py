@@ -2,9 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import re
-import httplib2
 import datetime
+import os
+import re
+import sys
+import urllib2
+
+from BeautifulSoup import BeautifulSoup
 
 def strsplit(string, sep):
     # XXX https://github.com/mozilla/mozregression/issues/50
@@ -13,17 +17,6 @@ def strsplit(string, sep):
       return []
     return strlist
 
-def download_url(url, dest=None):
-    h = httplib2.Http()
-    resp, content = h.request(url, "GET")
-    if dest == None:
-        dest = os.path.basename(url)
-
-    local = open(dest, 'wb')
-    local.write(content)
-    local.close()
-    return dest
-
 def get_date(dateString):
     p = re.compile('(\d{4})\-(\d{1,2})\-(\d{1,2})')
     m = p.match(dateString)
@@ -31,3 +24,41 @@ def get_date(dateString):
         print "Incorrect date format"
         return
     return datetime.date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+
+def update_download_progress(percent):
+    sys.stdout.write("===== Downloaded %d%% =====\r"%percent)
+    sys.stdout.flush()
+    if percent >= 100:
+        sys.stdout.write("\n")
+
+def download_url(url, dest=None):
+    CHUNK = 16 * 1024
+    bytes_so_far = 0.0
+    tmp_file = dest + ".part"
+    r = urllib2.urlopen(url)
+    total_size = int(r.info().getheader('Content-length').strip())
+    if dest == None:
+        dest = os.path.basename(url)
+    
+    f = open(tmp_file, 'wb')
+    # write the file to the tmp_file
+    for chunk in iter(lambda: r.read(CHUNK), ''):
+        bytes_so_far += CHUNK
+        f.write(chunk)
+        percent = (bytes_so_far / total_size) * 100
+        update_download_progress(percent)
+    # move the temp file to the dest
+    os.rename(tmp_file, dest)
+    f.close()
+
+    return dest
+
+def urlLinks(url):
+    r = urllib2.urlopen(url)
+    content = r.read()
+    if r.getcode() != 200:
+        return []
+
+    soup = BeautifulSoup(content)
+    # do not return a generator but an array, so we can store it for later use
+    return [link for link in soup.findAll('a')]

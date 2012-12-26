@@ -6,7 +6,6 @@
 
 import datetime
 import os
-import httplib2
 import mozinstall
 import re
 import subprocess
@@ -19,8 +18,7 @@ from mozprofile import FirefoxProfile
 from mozprofile import ThunderbirdProfile
 from mozrunner import Runner
 from optparse import OptionParser
-from utils import strsplit, download_url, get_date
-from BeautifulSoup import BeautifulSoup
+from utils import strsplit, get_date, download_url, urlLinks
 from ConfigParser import ConfigParser
 
 subprocess._cleanup = lambda : None # mikeal's fix for subprocess threading bug
@@ -90,19 +88,6 @@ class Nightly(object):
         self.binary = mozinstall.get_binary(mozinstall.install(src=self.dest, dest=self.tempdir), self.name)
         return True
 
-    @staticmethod
-    def urlLinks(url):
-        # TODO: this should go in utils.py
-
-        h = httplib2.Http();
-        resp, content = h.request(url, "GET")
-        if resp.status != 200:
-            return []
-
-        soup = BeautifulSoup(content)
-        # do not return a generator but an array, so we can store it for later use
-        return [link for link in soup.findAll('a')]
-
     def getBuildUrl(self, date):
         url = "http://ftp.mozilla.org/pub/mozilla.org/" + self.appName + "/nightly/"
         year = str(date.year)
@@ -116,7 +101,7 @@ class Nightly(object):
         if cachekey in self._monthlinks:
             monthlinks = self._monthlinks[cachekey]
         else:
-            monthlinks = self.urlLinks(url)
+            monthlinks = urlLinks(url)
             self._monthlinks[cachekey] = monthlinks
 
         # first parse monthly list to get correct directory
@@ -124,7 +109,7 @@ class Nightly(object):
             dirhref = dirlink.get("href")
             if re.match(linkRegex, dirhref):
                 # now parse the page for the correct build url
-                for link in self.urlLinks(url + dirhref):
+                for link in urlLinks(url + dirhref):
                     href = link.get("href")
                     if re.match(self.buildRegex, href):
                         return url + dirhref + href
@@ -268,12 +253,12 @@ class NightlyRunner(object):
         return self.app.getAppInfo()
 
 def parseBits(optionBits):
-    """returns the correct bits based on the mozinfo.bits"""
-    # need to convert to int since mozinfo.bits is of type int
-    if optionBits == "64" and mozinfo.bits != 32:
-        return 64
-    elif optionBits == "32":
+    """returns the correctly typed bits"""
+    if optionBits == "32":
         return 32
+    else:
+        # if 64 bits is passed on a 32 bit system, it won't be honored
+        return mozinfo.bits
 
 def cli(args=sys.argv[1:]):
     """moznightly command line entry point"""

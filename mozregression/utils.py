@@ -31,7 +31,14 @@ def update_download_progress(percent):
     if percent >= 100:
         sys.stdout.write("\n")
 
-def download_url(url, dest=None):
+def download_url(url, dest=None, message="Downloading Nightly from:"):
+    if os.path.exists(dest):
+        print "Using local file: %s" % dest
+        return
+
+    if message:
+        print "%s %s"%(message, url)
+
     CHUNK = 16 * 1024
     bytes_so_far = 0.0
     tmp_file = dest + ".part"

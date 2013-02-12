@@ -150,6 +150,7 @@ def cli():
                       metavar="[tracemonkey|mozilla-1.9.2]", default=None)
     parser.add_option("--bits", dest="bits", help="force 32 or 64 bit version (only applies to x86_64 boxes)",
                       choices=("32","64"), default=mozinfo.bits)
+    parser.add_option("--persist", dest="persist", help="the directory in which files are to persist ie. /Users/someuser/Documents")
     (options, args) = parser.parse_args()
 
     options.bits = parseBits(options.bits)
@@ -162,7 +163,8 @@ def cli():
         print "No 'good' date specified, using " + options.good_date
 
     runner = NightlyRunner(appname=options.app, addons=addons, repo_name=options.repo_name,
-                           profile=options.profile, cmdargs=cmdargs, bits=options.bits)
+                           profile=options.profile, cmdargs=cmdargs, bits=options.bits,
+                           persist=options.persist)
     bisector = Bisector(runner, appname=options.app)
     bisector.bisect(get_date(options.good_date), get_date(options.bad_date))
 

@@ -28,7 +28,7 @@ class Nightly(object):
 
     name = None # abstract base class
 
-    def __init__(self, repo_name=None, bits=mozinfo.bits):
+    def __init__(self, repo_name=None, bits=mozinfo.bits, persist=None):
         if mozinfo.os == "win":
             if bits == 64:
                 # XXX this should actually throw an error to be consumed by the caller
@@ -42,6 +42,7 @@ class Nightly(object):
                 self.buildRegex = ".*linux-i686.tar.bz2"
         elif mozinfo.os == "mac":
             self.buildRegex = ".*mac.*\.dmg"
+        self.persist = persist
         self.repo_name = repo_name
         self._monthlinks = {}
         self.lastdest = None
@@ -61,21 +62,31 @@ class Nightly(object):
 
     def cleanup(self):
         self.remove_tempdir()
-        self.remove_lastdest()
+        if not self.persist:
+            self.remove_lastdest()
 
     __del__ = cleanup
 
     ### installation functions
 
+    def get_destination(self, url, date):
+        repo_name = self.repo_name or self.getRepoName(date)
+        dest = os.path.basename(url)
+        if self.persist is not None:
+            date_str = date.strftime("%Y-%m-%d")
+            dest = os.path.join(self.persist, "%s--%s--%s"%(date_str, repo_name, dest))
+        return dest
+
     def download(self, date=datetime.date.today(), dest=None):
         url = self.getBuildUrl(date)
         if url:
             if not dest:
-                dest = os.path.basename(url)
-            print "Downloading nightly from %s" % date
-            self.remove_lastdest()
-            download_url(url, dest)
+                dest = self.get_destination(url, date)
+            if not self.persist:
+                self.remove_lastdest()
+
             self.dest = self.lastdest = dest
+            download_url(url, dest)
             return True
         else:
             return False
@@ -187,10 +198,11 @@ class FennecNightly(Nightly):
     name = 'fennec'
     profileClass = FirefoxProfile
 
-    def __init__(self, repo_name=None, bits=mozinfo.bits):
-        Nightly.__init__(self, repo_name)
+    def __init__(self, repo_name=None, bits=mozinfo.bits, persist=None):
+        Nightly.__init__(self, repo_name, persist)
         self.buildRegex = 'fennec-.*\.apk'
         self.binary = 'org.mozilla.fennec/.App'
+        self.persist = persist
         if "y" != raw_input("WARNING: bisecting nightly fennec builds will clobber your existing nightly profile. Continue? (y or n)"):
             raise Exception("Aborting!")
 
@@ -219,10 +231,11 @@ class NightlyRunner(object):
             'firefox': FirefoxNightly}
 
     def __init__(self, addons=None, appname="firefox", repo_name=None,
-                 profile=None, cmdargs=(), bits=mozinfo.bits):
-        self.app = self.apps[appname](repo_name=repo_name, bits=bits)
+                 profile=None, cmdargs=(), bits=mozinfo.bits, persist=None):
+        self.app = self.apps[appname](repo_name=repo_name, bits=bits, persist=persist)
         self.addons = addons
         self.profile = profile
+        self.persist = persist
         self.cmdargs = list(cmdargs)
 
     def install(self, date=datetime.date.today()):
@@ -280,6 +293,7 @@ def cli(args=sys.argv[1:]):
                       metavar="[tracemonkey|mozilla-1.9.2]", default=None)
     parser.add_option("--bits", dest="bits", help="force 32 or 64 bit version (only applies to x86_64 boxes)",
                       choices=("32","64"), default=mozinfo.bits)
+    parser.add_option("--persist", dest="persist", help="the directory in which files are to persist ie. /Users/someuser/Documents")
     options, args = parser.parse_args(args)
 
     options.bits = parseBits(options.bits)
@@ -289,7 +303,8 @@ def cli(args=sys.argv[1:]):
 
     # run nightly
     runner = NightlyRunner(appname=options.app, addons=addons,
-                           profile=options.profile, repo_name=options.repo_name, bits=options.bits)
+                           profile=options.profile, repo_name=options.repo_name, bits=options.bits,
+                           persist=options.persist)
     runner.start(get_date(options.date))
     try:
         runner.wait()

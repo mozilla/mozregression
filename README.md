@@ -2,6 +2,8 @@
 [mozregression](http://mozilla.github.com/mozregression) is an interactive regression range finder for Mozilla nightly builds.
 
 #install
+Please keep in mind that you need python 2 to get it working. Accordingly you will have to install the relevant version of pip. Depending upon your setup, the script might be called pip or pip2 (or may be something else).
+
 you can install mozregression with [setuptools](http://pypi.python.org/pypi/setuptools) or [pip](http://pypi.python.org/pypi/pip). [OS-specific instructions](http://mozilla.github.com/mozregression/)
 
 	easy_install mozregression

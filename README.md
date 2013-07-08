@@ -15,9 +15,11 @@ To find the regression range for a bug, supply mozregression with the date of th
 
 This will download and run several nightly builds on new profiles and narrow down the range. After checking a few nightlies, you'll get the regression range which looks something like this:
 
-	Last good nightly: 2010-09-08 First bad nightly: 2010-09-09
+	Last good nightly: 2010-09-08
+	First bad nightly: 2010-09-09
 
-	Pushlog: http://hg.mozilla.org/mozilla-central/pushloghtml?fromchange=36f5cf6b2d42&tochange=8e0fce7d5b49
+	Pushlog:
+	http://hg.mozilla.org/mozilla-central/pushloghtml?fromchange=36f5cf6b2d42&tochange=8e0fce7d5b49
 
 #other options
 Just run the nightly for a particular date:

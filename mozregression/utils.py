@@ -54,9 +54,9 @@ def download_url(url, dest=None, message="Downloading Nightly from:"):
         f.write(chunk)
         percent = (bytes_so_far / total_size) * 100
         update_download_progress(percent)
+    f.close()
     # move the temp file to the dest
     os.rename(tmp_file, dest)
-    f.close()
 
     return dest
 

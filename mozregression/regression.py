@@ -6,7 +6,6 @@
 
 import datetime
 import mozinfo
-import subprocess
 import sys
 from optparse import OptionParser
 from runnightly import NightlyRunner, parseBits

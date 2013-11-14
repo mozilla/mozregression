@@ -27,26 +27,30 @@ subprocess._cleanup = lambda : None # mikeal's fix for subprocess threading bug
 class Nightly(object):
 
     name = None # abstract base class
+    _monthlinks = {}
+    lastdest = None
+    tempdir = None
 
-    def __init__(self, repo_name=None, bits=mozinfo.bits, persist=None):
+    @staticmethod
+    def _getBuildRegex(bits):
         if mozinfo.os == "win":
             if bits == 64:
                 # XXX this should actually throw an error to be consumed by the caller
-                print "No nightly builds available for 64 bit Windows"
+                print "No builds available for 64 bit Windows"
                 sys.exit()
-            self.buildRegex = ".*win32.zip"
+            return ".*win32.zip"
         elif mozinfo.os == "linux":
             if bits == 64:
-                self.buildRegex = ".*linux-x86_64.tar.bz2"
+                return ".*linux-x86_64.tar.bz2"
             else:
-                self.buildRegex = ".*linux-i686.tar.bz2"
+                return ".*linux-i686.tar.bz2"
         elif mozinfo.os == "mac":
-            self.buildRegex = ".*mac.*\.dmg"
+            return ".*mac.*\.dmg"
+
+    def __init__(self, repo_name=None, bits=mozinfo.bits, persist=None):
+        self.buildRegex = self._getBuildRegex(bits)
         self.persist = persist
         self.repo_name = repo_name
-        self._monthlinks = {}
-        self.lastdest = None
-        self.tempdir = None
 
     ### cleanup functions
 
@@ -99,12 +103,12 @@ class Nightly(object):
         self.binary = mozinstall.get_binary(mozinstall.install(src=self.dest, dest=self.tempdir), self.name)
         return True
 
-    def getBuildUrl(self, date):
+    def getBuildUrl(self, datestamp):
         url = "http://ftp.mozilla.org/pub/mozilla.org/" + self.appName + "/nightly/"
-        year = str(date.year)
-        month = "%02d" % date.month
-        day = "%02d" % date.day
-        repo_name = self.repo_name or self.getRepoName(date)
+        year = str(datestamp.year)
+        month = "%02d" % datestamp.month
+        day = "%02d" % datestamp.day
+        repo_name = self.repo_name or self.getRepoName(datestamp)
         url += year + "/" + month + "/"
 
         linkRegex = '^' + year + '-' + month + '-' + day + '-' + '[\d-]+' + repo_name + '/$'
@@ -125,9 +129,6 @@ class Nightly(object):
                     if re.match(self.buildRegex, href):
                         return url + dirhref + href
 
-        return False
-
-
     ### functions for invoking nightly
 
     def getAppInfo(self):
@@ -139,7 +140,7 @@ class Nightly(object):
             repo = parser.get('App', 'SourceRepository')
             return (repo, changeset)
         except:
-            return ("", "")
+            return None
 
     def start(self, profile, addons, cmdargs):
         if profile:
@@ -240,7 +241,7 @@ class NightlyRunner(object):
 
     def install(self, date=datetime.date.today()):
         if not self.app.download(date=date):
-            print "Could not find nightly from %s" % date
+            print "Could not find build from %s" % date
             return False # download failed
         print "Installing nightly"
         return self.app.install()

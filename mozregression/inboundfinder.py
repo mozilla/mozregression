@@ -1,7 +1,6 @@
 import re
 import urllib2
-import subprocess
-from mozcommitbuilder import builder
+import json
 from utils import urlLinks
 import mozinfo
 import sys
@@ -25,27 +24,29 @@ def getBuildBaseURL(bits=mozinfo.bits):
         return baseURL + 'mozilla-inbound-macosx64/'
 
 def getInboundRevisions(startRev, endRev):
-    commitBuilder = builder.Builder()
 
-    revisions = map(lambda l: l.split()[0:2],
-                    subprocess.check_output(['hg', 'log', '-R',
-                                             commitBuilder.repoPath,
-                                             '-r', '%s:%s' % (startRev,
-                                                              endRev),
-                                             '--template',
-                                             '{node} {date|hgdate}\n']
-                                            ).splitlines())
+    revisions = []
+    r = urllib2.urlopen('https://hg.mozilla.org/integration/mozilla-inbound/'
+                        'json-pushes?fromchange=%s&tochange=%s'% (startRev,
+                                                                  endRev))
+    pushlog = json.loads(r.read())
+    for pushid in sorted(pushlog.keys()):
+        push = pushlog[pushid]
+        revisions.append((push['changesets'][-1], push['date']))
 
-    start = (int(revisions[0][1]), revisions[0][0])
-    end = (int(revisions[-1][1]), revisions[-1][0])
+    revisions.sort(key=lambda r: r[1])
+    if not revisions:
+        return []
+    starttime = revisions[0][1]
+    endtime = revisions[-1][1]
     rawRevisions = map(lambda l: l[0], revisions)
 
     baseURL = getBuildBaseURL()
     range = 60*60*4 # anything within four hours is potentially within the range
     timestamps = map(lambda l: int(l.get('href').strip('/')),
                      urlLinks(baseURL))
-    timestampsInRange = filter(lambda t: t > (start[0] - range) and \
-                             t < (end[0] + range), timestamps)
+    timestampsInRange = filter(lambda t: t > (starttime - range) and
+                               t < (endtime + range), timestamps)
     revisions = [] # timestamp, order pairs
     for timestamp in timestampsInRange:
         for link in urlLinks("%s%s/" % (baseURL, timestamp)):
@@ -64,15 +65,7 @@ def getInboundRevisions(startRev, endRev):
                         if remoteRevision in revision:
                             revisions.append((revision, timestamp, i))
 
-    # re-order timestamps (we want revision order, not build
-    # order) and omit the first and last revisions, which we already
-    # know about
-    orderedRevisions = sorted(revisions, key=lambda r: r[2])
-    return orderedRevisions[1:-2]
-
-def getInboundTimestamps(startRev, endRev):
-    revisions = getInboundRevisions(startRev, endRev)
-    return map(lambda r: r[1], revisions)
+    return sorted(revisions, key=lambda r: r[2])
 
 def cli(args=sys.argv[1:]):
 

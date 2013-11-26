@@ -23,7 +23,7 @@ class FirefoxInbound(FirefoxNightly):
                 return url + href
 
     def getRepoName(self, date):
-        return "mozilla-central"
+        return "mozilla-inbound"
 
 class InboundRunner(NightlyRunner):
 

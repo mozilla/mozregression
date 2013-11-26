@@ -1,5 +1,5 @@
 #mozregression
-[mozregression](http://mozilla.github.com/mozregression) is an interactive regression range finder for Mozilla nightly builds.
+[mozregression](http://mozilla.github.com/mozregression) is an interactive regression range finder for Mozilla nightly and inbound builds.
 
 #install
 Please keep in mind that you need python 2 to get it working. Accordingly you will have to install the relevant version of pip. Depending upon your setup, the script might be called pip or pip2 (or may be something else).

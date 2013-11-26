@@ -31,7 +31,7 @@ def update_download_progress(percent):
     if percent >= 100:
         sys.stdout.write("\n")
 
-def download_url(url, dest=None, message="Downloading Nightly from:"):
+def download_url(url, dest=None, message="Downloading build from:"):
     if os.path.exists(dest):
         print "Using local file: %s" % dest
         return

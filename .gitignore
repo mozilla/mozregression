@@ -1,0 +1,3 @@
+mozcommitbuilder.egg-info/*
+dist/*
+*.pyc

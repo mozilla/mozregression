@@ -8,7 +8,7 @@ import datetime
 import mozinfo
 import sys
 from optparse import OptionParser
-from inboundfinder import getInboundTimestamps
+from inboundfinder import getInboundRevisions
 from runnightly import NightlyRunner, parseBits
 from runinbound import InboundRunner
 from utils import strsplit, get_date
@@ -88,14 +88,14 @@ class Bisector(object):
 
         return verdict
 
-    def bisect_inbound(self, inboundTimestamps=None):
-        if not inboundTimestamps:
+    def bisect_inbound(self, inboundRevisions=None):
+        if not inboundRevisions:
             print "Getting inbound builds between %s and %s" % (
                 self.lastGoodRevision, self.firstBadRevision)
-            inboundTimestamps = getInboundTimestamps(
+            inboundRevisions = getInboundRevisions(
                 self.lastGoodRevision, self.firstBadRevision)
 
-            if not inboundTimestamps:
+            if not inboundRevisions:
                 print "Oh noes, no (more) inbound revisions :("
                 self.offer_build(self.lastGoodRevision,
                                  self.firstBadRevision)
@@ -103,21 +103,22 @@ class Bisector(object):
         # hardcode repo to mozilla-central (if we use inbound, we may be
         # missing some revisions that went into the nightlies which we may
         # also be comparing against...)
-        self.foundRepo = 'http://hg.mozilla.org/mozilla-central/'
 
-        mid = len(inboundTimestamps) / 2
-        print "Testing inbound build with timestamp %s" % inboundTimestamps[mid]
-        self.inboundRunner.start(inboundTimestamps[mid])
+        mid = len(inboundRevisions) / 2
+        print "Testing inbound build with timestamp %s, revision %s" % (inboundRevisions[mid][1],
+                                                                        inboundRevisions[mid][0])
+        self.inboundRunner.start(inboundRevisions[mid][1])
 
         verdict = self._get_verdict('inbound', offerSkip=False)
         self.inboundRunner.stop()
+        self.foundRepo = self.inboundRunner.getAppInfo()[0]
         if verdict == 'g':
             self.lastGoodRevision = self.inboundRunner.getAppInfo()[1]
         elif verdict == 'b':
             self.firstBadRevision = self.inboundRunner.getAppInfo()[1]
         elif verdict == 'r':
             # do the same thing over again
-            self.bisect_inbound(inboundTimestamps=inboundTimestamps)
+            self.bisect_inbound(inboundRevisions=inboundRevisions)
             return
         elif verdict == 'e':
             print 'Newest known good inbound revision: %s' % self.lastGoodRevision
@@ -127,10 +128,10 @@ class Bisector(object):
                 self.lastGoodRevision, self.firstBadRevision)
             return
 
-        if len(inboundTimestamps) > 1 and verdict == 'g':
-            self.bisect_inbound(inboundTimestamps[(mid+1):])
-        elif len(inboundTimestamps) > 1 and verdict == 'b':
-            self.bisect_inbound(inboundTimestamps[:mid])
+        if len(inboundRevisions) > 1 and verdict == 'g':
+            self.bisect_inbound(inboundRevisions[(mid+1):])
+        elif len(inboundRevisions) > 1 and verdict == 'b':
+            self.bisect_inbound(inboundRevisions[:mid])
         else:
             # no more inbounds to be bisect, we must build
             print "No more inbounds to bisect"

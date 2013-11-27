@@ -11,7 +11,7 @@ except:
     summ = """Interactive regression range finder for Mozilla nightly builds"""
 
 setup(name="mozregression",
-      version="0.8",
+      version="0.9",
       description=desc,
       long_description=summ,
       author='Heather Arthur',

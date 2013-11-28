@@ -11,7 +11,7 @@ def getBuildBaseURL(bits=mozinfo.bits):
     if mozinfo.os == "win":
         if bits == 64:
             # XXX this should actually throw an error to be consumed by the caller
-            print "No builds available for 64 bit Windows"
+            print "No builds available for 64 bit Windows (try specifying --bits=32)"
             sys.exit()
         else:
             return baseURL + 'mozilla-inbound-win32/'

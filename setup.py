@@ -11,11 +11,11 @@ except:
     summ = """Interactive regression range finder for Mozilla nightly builds"""
 
 setup(name="mozregression",
-      version="0.9",
+      version="0.10",
       description=desc,
       long_description=summ,
-      author='Heather Arthur',
-      author_email='fayearthur@gmail.com',
+      author='Mozilla Automation and Tools Team',
+      author_email='tools@lists.mozilla.org',
       url='http://github.com/mozilla/mozregression',
       license='MPL 1.1/GPL 2.0/LGPL 2.1',
       packages=['mozregression'],

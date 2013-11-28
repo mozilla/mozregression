@@ -93,7 +93,7 @@ class Bisector(object):
             print "Getting inbound builds between %s and %s" % (
                 self.lastGoodRevision, self.firstBadRevision)
             inboundRevisions = getInboundRevisions(
-                self.lastGoodRevision, self.firstBadRevision)
+                self.lastGoodRevision, self.firstBadRevision, bits=self.inboundRunner.bits)
 
             if not inboundRevisions:
                 print "Oh noes, no (more) inbound revisions :("

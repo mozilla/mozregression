@@ -30,6 +30,7 @@ class InboundRunner(NightlyRunner):
     def __init__(self, addons=None, appname="firefox", repo_name=None,
                  profile=None, cmdargs=(), bits=mozinfo.bits, persist=None):
         self.app = FirefoxInbound(bits=bits, persist=persist)
+        self.bits = bits
         self.addons = addons
         self.profile = profile
         self.persist = persist

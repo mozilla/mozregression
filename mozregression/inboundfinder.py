@@ -23,7 +23,7 @@ def getBuildBaseURL(bits=mozinfo.bits):
     elif mozinfo.os == "mac":
         return baseURL + 'mozilla-inbound-macosx64/'
 
-def getInboundRevisions(startRev, endRev):
+def getInboundRevisions(startRev, endRev, bits=mozinfo.bits):
 
     revisions = []
     r = urllib2.urlopen('https://hg.mozilla.org/integration/mozilla-inbound/'
@@ -41,7 +41,7 @@ def getInboundRevisions(startRev, endRev):
     endtime = revisions[-1][1]
     rawRevisions = map(lambda l: l[0], revisions)
 
-    baseURL = getBuildBaseURL()
+    baseURL = getBuildBaseURL(bits=bits)
     range = 60*60*4 # anything within four hours is potentially within the range
     timestamps = map(lambda l: int(l.get('href').strip('/')),
                      urlLinks(baseURL))

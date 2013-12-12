@@ -93,7 +93,9 @@ class Bisector(object):
             print "Getting inbound builds between %s and %s" % (
                 self.lastGoodRevision, self.firstBadRevision)
             inboundRevisions = getInboundRevisions(
-                self.lastGoodRevision, self.firstBadRevision, bits=self.inboundRunner.bits)
+                self.lastGoodRevision, self.firstBadRevision,
+                appName=self.inboundRunner.appName,
+                bits=self.inboundRunner.bits)
 
             if not inboundRevisions:
                 print "Oh noes, no (more) inbound revisions :("
@@ -146,7 +148,7 @@ class Bisector(object):
         if midDate == badDate or midDate == goodDate:
             print "Got as far as we can go bisecting nightlies..."
             self._ensureMetadata(goodDate, badDate)
-            if self.appname == 'firefox':
+            if self.appname == 'firefox' or self.appname == 'fennec':
                 self.printRange(goodDate, badDate)
                 print "... attempting to bisect inbound builds"
                 self.bisect_inbound()
@@ -238,12 +240,13 @@ def cli():
     cmdargs = strsplit(options.cmdargs, ",")
 
     inboundRunner = None
-    if options.app == "firefox":
-        inboundRunner = InboundRunner(addons=addons,
-                                       repo_name=options.repo_name,
-                                       profile=options.profile,
-                                       cmdargs=cmdargs, bits=options.bits,
-                                       persist=options.persist)
+    if options.app == "firefox" or options.app == "fennec":
+        inboundRunner = InboundRunner(appname=options.app,
+                                      addons=addons,
+                                      repo_name=options.repo_name,
+                                      profile=options.profile,
+                                      cmdargs=cmdargs, bits=options.bits,
+                                      persist=options.persist)
 
     if options.inbound:
         if not options.lastGoodRevision or not options.firstBadRevision:

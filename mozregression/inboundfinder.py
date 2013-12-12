@@ -6,7 +6,11 @@ import mozinfo
 import sys
 from optparse import OptionParser
 
-def getBuildBaseURL(bits=mozinfo.bits):
+def getBuildBaseURL(appName='firefox', bits=mozinfo.bits):
+
+    if appName == 'fennec':
+        return "http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org/mobile/tinderbox-builds/mozilla-inbound-android/"
+
     baseURL = 'http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/'
     if mozinfo.os == "win":
         if bits == 64:
@@ -23,7 +27,7 @@ def getBuildBaseURL(bits=mozinfo.bits):
     elif mozinfo.os == "mac":
         return baseURL + 'mozilla-inbound-macosx64/'
 
-def getInboundRevisions(startRev, endRev, bits=mozinfo.bits):
+def getInboundRevisions(startRev, endRev, appName='firefox', bits=mozinfo.bits):
 
     revisions = []
     r = urllib2.urlopen('https://hg.mozilla.org/integration/mozilla-inbound/'
@@ -41,7 +45,7 @@ def getInboundRevisions(startRev, endRev, bits=mozinfo.bits):
     endtime = revisions[-1][1]
     rawRevisions = map(lambda l: l[0], revisions)
 
-    baseURL = getBuildBaseURL(bits=bits)
+    baseURL = getBuildBaseURL(appName=appName, bits=bits)
     range = 60*60*4 # anything within four hours is potentially within the range
     timestamps = map(lambda l: int(l.get('href').strip('/')),
                      urlLinks(baseURL))

@@ -1,7 +1,7 @@
 from utils import urlLinks, strsplit, get_date
 import re
 import sys
-from runnightly import FirefoxNightly, NightlyRunner, parseBits
+from runnightly import FennecNightly, FirefoxNightly, NightlyRunner, parseBits
 from inboundfinder import getBuildBaseURL
 import mozinfo
 from optparse import OptionParser
@@ -25,11 +25,32 @@ class FirefoxInbound(FirefoxNightly):
     def getRepoName(self, date):
         return "mozilla-inbound"
 
+class FennecInbound(FennecNightly):
+
+    repo_name = None
+
+    def __init__(self, persist=None):
+        self.persist = persist
+
+    def getBuildUrl(self, timestamp):
+        url = "%s%s/" % (getBuildBaseURL(appName=self.appName), timestamp)
+        for link in urlLinks(url):
+            href = link.get("href")
+            if re.match(self.buildRegex, href):
+                return url + href
+
+    def getRepoName(self, date):
+        return "mozilla-inbound"
+
 class InboundRunner(NightlyRunner):
 
     def __init__(self, addons=None, appname="firefox", repo_name=None,
                  profile=None, cmdargs=(), bits=mozinfo.bits, persist=None):
-        self.app = FirefoxInbound(bits=bits, persist=persist)
+        if appname == 'firefox':
+            self.app = FirefoxInbound(bits=bits, persist=persist)
+        else:
+            self.app = FennecInbound(persist=persist)
+        self.appName = appname
         self.bits = bits
         self.addons = addons
         self.profile = profile

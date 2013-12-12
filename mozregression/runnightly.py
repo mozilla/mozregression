@@ -12,6 +12,7 @@ import subprocess
 import sys
 import tempfile
 import mozinfo
+import zipfile
 
 from mozfile import rmtree
 from mozprofile import FirefoxProfile
@@ -104,7 +105,11 @@ class Nightly(object):
         return True
 
     def getBuildUrl(self, datestamp):
-        url = "http://ftp.mozilla.org/pub/mozilla.org/" + self.appName + "/nightly/"
+        if self.appName == 'fennec':
+            repo = 'mobile'
+        else:
+            repo = 'firefox'
+        url = "http://ftp.mozilla.org/pub/mozilla.org/" + repo + "/nightly/"
         year = str(datestamp.year)
         month = "%02d" % datestamp.month
         day = "%02d" % datestamp.day
@@ -195,14 +200,15 @@ class FirefoxNightly(Nightly):
             return "mozilla-central"
 
 class FennecNightly(Nightly):
-    appName = 'mobile'
+    appName = 'fennec'
     name = 'fennec'
     profileClass = FirefoxProfile
+    buildRegex = 'fennec-.*\.apk'
+    binary = 'org.mozilla.fennec/.App'
+    bits = None
 
     def __init__(self, repo_name=None, bits=mozinfo.bits, persist=None):
-        Nightly.__init__(self, repo_name, persist)
-        self.buildRegex = 'fennec-.*\.apk'
-        self.binary = 'org.mozilla.fennec/.App'
+        self.repo_name = repo_name
         self.persist = persist
         if "y" != raw_input("WARNING: bisecting nightly fennec builds will clobber your existing nightly profile. Continue? (y or n)"):
             raise Exception("Aborting!")
@@ -224,6 +230,18 @@ class FennecNightly(Nightly):
         # PID = $(adb shell ps | grep org.mozilla.fennec | awk '{ print $2 }')
         # adb shell run-as org.mozilla.fennec kill $PID
         return True
+
+    def getAppInfo(self):
+        archive = zipfile.ZipFile(self.dest, 'r')
+        f = archive.open('application.ini')
+        parser = ConfigParser()
+        parser.readfp(f)
+        try:
+            changeset = parser.get('App', 'SourceStamp')
+            repo = parser.get('App', 'SourceRepository')
+            return (repo, changeset)
+        except:
+            return None
 
 class NightlyRunner(object):
 

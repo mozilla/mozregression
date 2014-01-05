@@ -63,11 +63,12 @@ def getInboundRevisions(startRev, endRev, appName='firefox', bits=mozinfo.bits):
                     parts = line.split('/rev/')
                     if len(parts) == 2:
                         remoteRevision = parts[1]
-                        break
+                        break # for line
                 if remoteRevision:
                     for (i, revision) in enumerate(rawRevisions):
                         if remoteRevision in revision:
                             revisions.append((revision, timestamp, i))
+                break # for link
 
     return sorted(revisions, key=lambda r: r[2])
 

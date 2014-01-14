@@ -2,18 +2,14 @@ import os
 from setuptools import setup
 
 desc = """Regression range finder for Mozilla nightly builds"""
+long_desc = """"Interactive regression range finder for Mozilla nightly builds.
 
-# take description from README
-here = os.path.dirname(os.path.abspath(__file__))
-try:
-    summ = file(os.path.join(here, 'README.md')).read()
-except:
-    summ = """Interactive regression range finder for Mozilla nightly builds"""
+For more information see the mozregression _website http://mozilla.github.io/mozregression/"""
 
 setup(name="mozregression",
       version="0.11",
       description=desc,
-      long_description=summ,
+      long_description=long_desc,
       author='Mozilla Automation and Tools Team',
       author_email='tools@lists.mozilla.org',
       url='http://github.com/mozilla/mozregression',

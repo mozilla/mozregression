@@ -2,12 +2,12 @@ import os
 from setuptools import setup
 
 desc = """Regression range finder for Mozilla nightly builds"""
-long_desc = """"Interactive regression range finder for Mozilla nightly builds.
+long_desc = """Interactive regression range finder for Mozilla nightly builds.
 
-For more information see the mozregression _website http://mozilla.github.io/mozregression/"""
+For more information see the mozregression website: http://mozilla.github.io/mozregression/"""
 
 setup(name="mozregression",
-      version="0.12",
+      version="0.13",
       description=desc,
       long_description=long_desc,
       author='Mozilla Automation and Tools Team',

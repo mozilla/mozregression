@@ -1,10 +1,11 @@
 import re
-import urllib2
 import json
 from utils import urlLinks
 import mozinfo
 import sys
 from optparse import OptionParser
+
+import requests
 
 def getBuildBaseURL(appName='firefox', bits=mozinfo.bits):
 
@@ -30,10 +31,10 @@ def getBuildBaseURL(appName='firefox', bits=mozinfo.bits):
 def getInboundRevisions(startRev, endRev, appName='firefox', bits=mozinfo.bits):
 
     revisions = []
-    r = urllib2.urlopen('https://hg.mozilla.org/integration/mozilla-inbound/'
-                        'json-pushes?fromchange=%s&tochange=%s'% (startRev,
-                                                                  endRev))
-    pushlog = json.loads(r.read())
+    r = requests.get('https://hg.mozilla.org/integration/mozilla-inbound/'
+                     'json-pushes?fromchange=%s&tochange=%s'% (startRev,
+                                                               endRev))
+    pushlog = json.loads(r.content)
     for pushid in sorted(pushlog.keys()):
         push = pushlog[pushid]
         revisions.append((push['changesets'][-1], push['date']))
@@ -55,19 +56,23 @@ def getInboundRevisions(startRev, endRev, appName='firefox', bits=mozinfo.bits):
     for timestamp in timestampsInRange:
         for link in urlLinks("%s%s/" % (baseURL, timestamp)):
             href = link.get('href')
-            if re.match('.*txt', href):
+            if re.match('^.+\.txt$', href):
                 url = "%s%s/%s" % (baseURL, timestamp, href)
-                contents = urllib2.urlopen(url).read()
+                response = requests.get(url)
                 remoteRevision = None
-                for line in contents.splitlines():
+                for line in response.iter_lines():
+                    # Filter out Keep-Alive new lines.
+                    if not line:
+                        continue
                     parts = line.split('/rev/')
                     if len(parts) == 2:
                         remoteRevision = parts[1]
-                        break
+                        break # for line
                 if remoteRevision:
                     for (i, revision) in enumerate(rawRevisions):
                         if remoteRevision in revision:
                             revisions.append((revision, timestamp, i))
+                break # for link
 
     return sorted(revisions, key=lambda r: r[2])
 

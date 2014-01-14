@@ -6,9 +6,9 @@ import datetime
 import os
 import re
 import sys
-import urllib2
 
 from BeautifulSoup import BeautifulSoup
+import requests
 
 def strsplit(string, sep):
     # XXX https://github.com/mozilla/mozregression/issues/50
@@ -42,14 +42,17 @@ def download_url(url, dest=None, message="Downloading build from:"):
     CHUNK = 16 * 1024
     bytes_so_far = 0.0
     tmp_file = dest + ".part"
-    r = urllib2.urlopen(url)
-    total_size = int(r.info().getheader('Content-length').strip())
+    r = requests.get(url, stream=True)
+    total_size = int(r.headers['Content-length'].strip())
     if dest == None:
         dest = os.path.basename(url)
-    
+
     f = open(tmp_file, 'wb')
     # write the file to the tmp_file
-    for chunk in iter(lambda: r.read(CHUNK), ''):
+    for chunk in r.iter_content(chunk_size=CHUNK):
+        # Filter out Keep-Alive chunks.
+        if not chunk:
+            continue
         bytes_so_far += CHUNK
         f.write(chunk)
         percent = (bytes_so_far / total_size) * 100
@@ -61,9 +64,9 @@ def download_url(url, dest=None, message="Downloading build from:"):
     return dest
 
 def urlLinks(url):
-    r = urllib2.urlopen(url)
-    content = r.read()
-    if r.getcode() != 200:
+    r = requests.get(url)
+    content = r.text
+    if r.status_code != 200:
         return []
 
     soup = BeautifulSoup(content)

@@ -7,28 +7,28 @@ from optparse import OptionParser
 
 import requests
 
-def getBuildBaseURL(appName='firefox', bits=mozinfo.bits):
+def getBuildBaseURL(appName='firefox', bits=mozinfo.bits, os=mozinfo.os):
 
     if appName == 'fennec':
         return "http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org/mobile/tinderbox-builds/mozilla-inbound-android/"
 
     baseURL = 'http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/'
-    if mozinfo.os == "win":
+    if os == "win":
         if bits == 64:
             # XXX this should actually throw an error to be consumed by the caller
             print "No builds available for 64 bit Windows (try specifying --bits=32)"
             sys.exit()
         else:
             return baseURL + 'mozilla-inbound-win32/'
-    elif mozinfo.os == "linux":
+    elif os == "linux":
         if bits == 64:
             return baseURL + 'mozilla-inbound-linux64/'
         else:
             return baseURL + 'mozilla-inbound-linux/'
-    elif mozinfo.os == "mac":
+    elif os == "mac":
         return baseURL + 'mozilla-inbound-macosx64/'
 
-def getInboundRevisions(startRev, endRev, appName='firefox', bits=mozinfo.bits):
+def getInboundRevisions(startRev, endRev, appName='firefox', bits=mozinfo.bits, os=mozinfo.os):
 
     revisions = []
     r = requests.get('https://hg.mozilla.org/integration/mozilla-inbound/'
@@ -46,7 +46,7 @@ def getInboundRevisions(startRev, endRev, appName='firefox', bits=mozinfo.bits):
     endtime = revisions[-1][1]
     rawRevisions = map(lambda l: l[0], revisions)
 
-    baseURL = getBuildBaseURL(appName=appName, bits=bits)
+    baseURL = getBuildBaseURL(appName=appName, bits=bits, os=os)
     range = 60*60*4 # anything within four hours is potentially within the range
     timestamps = map(lambda l: int(l.get('href').strip('/')),
                      urlLinks(baseURL))
@@ -81,13 +81,18 @@ def cli(args=sys.argv[1:]):
     parser = OptionParser()
     parser.add_option("--start-rev", dest="startRev", help="start revision")
     parser.add_option("--end-rev", dest="endRev", help="end revision")
+    parser.add_option("--os", dest="os", help="override operating system "
+                      "autodetection (mac, linux, win)", default=mozinfo.os)
+    parser.add_option("--bits", dest="bits", help="override operating system "
+                      "bits autodetection", default=mozinfo.bits)
 
     options, args = parser.parse_args(args)
     if not options.startRev or not options.endRev:
         print "start revision and end revision must be specified"
         sys.exit(1)
 
-    revisions = getInboundRevisions(options.startRev, options.endRev)
+    revisions = getInboundRevisions(options.startRev, options.endRev,
+                                    os=options.os, bits=options.bits)
     print "Revision, Timestamp, Order"
     for revision in revisions:
         print ", ".join(map(lambda s: str(s), revision))

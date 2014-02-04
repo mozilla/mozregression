@@ -147,10 +147,15 @@ class Bisector(object):
 
         if midDate == badDate or midDate == goodDate:
             print "Got as far as we can go bisecting nightlies..."
-            self._ensureMetadata(goodDate, badDate)
             if self.appname == 'firefox' or self.appname == 'fennec':
+                self._ensureMetadata(goodDate, badDate)
                 self.printRange(goodDate, badDate)
-                print "... attempting to bisect inbound builds"
+                print "... attempting to bisect inbound builds (starting " \
+                    "from previous day, to make sure no inbound revision is " \
+                    "missed)"
+                prevDate = goodDate - datetime.timedelta(days=1)
+                self.nightlyRunner.install(prevDate)
+                self.lastGoodRevision = self.nightlyRunner.getAppInfo()[1]
                 self.bisect_inbound()
                 return
             else:

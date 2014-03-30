@@ -16,7 +16,7 @@ class FirefoxInbound(FirefoxNightly):
         self.bits = bits
 
     def getBuildUrl(self, timestamp):
-        url = "%s%s/" % (getBuildBaseURL(self.bits), timestamp)
+        url = "%s%s/" % (getBuildBaseURL(bits=self.bits), timestamp)
         for link in urlLinks(url):
             href = link.get("href")
             if re.match(self.buildRegex, href):

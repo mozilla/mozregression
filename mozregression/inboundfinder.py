@@ -58,6 +58,7 @@ def getInboundRevisions(startRev, endRev, appName='firefox', bits=mozinfo.bits, 
             href = link.get('href')
             if re.match('^.+\.txt$', href):
                 url = "%s%s/%s" % (baseURL, timestamp, href)
+                print "Checking url: %s..." % url
                 response = requests.get(url)
                 remoteRevision = None
                 for line in response.iter_lines():

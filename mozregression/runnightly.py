@@ -78,7 +78,10 @@ class Nightly(object):
         repo_name = self.repo_name or self.getRepoName(date)
         dest = os.path.basename(url)
         if self.persist is not None:
-            date_str = date.strftime("%Y-%m-%d")
+            if hasattr(date, "strftime"):
+                date_str = date.strftime("%Y-%m-%d")
+            else:
+                date_str = date # Might be just a number with inbound
             dest = os.path.join(self.persist, "%s--%s--%s"%(date_str, repo_name, dest))
         return dest
 

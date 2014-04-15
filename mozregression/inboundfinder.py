@@ -48,8 +48,13 @@ def getInboundRevisions(startRev, endRev, appName='firefox', bits=mozinfo.bits, 
 
     baseURL = getBuildBaseURL(appName=appName, bits=bits, os=os)
     range = 60*60*4 # anything within four hours is potentially within the range
-    timestamps = map(lambda l: int(l.get('href').strip('/')),
-                     urlLinks(baseURL))
+
+    links = urlLinks(baseURL)
+    # Fennec's inbound archive ends with "latest"
+    if links[-1].get('href').strip('/') == 'latest':
+        links = links[:-1]
+
+    timestamps = map(lambda l: int(l.get('href').strip('/')), links)
     timestampsInRange = filter(lambda t: t > (starttime - range) and
                                t < (endtime + range), timestamps)
     revisions = [] # timestamp, order pairs

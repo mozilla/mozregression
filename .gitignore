@@ -1,3 +1,4 @@
 mozcommitbuilder.egg-info/*
 dist/*
 *.pyc
+*.idea

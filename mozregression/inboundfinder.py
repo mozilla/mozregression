@@ -15,9 +15,8 @@ def getBuildBaseURL(appName='firefox', bits=mozinfo.bits, os=mozinfo.os):
     baseURL = 'http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/'
     if os == "win":
         if bits == 64:
-            # XXX this should actually throw an error to be consumed by the caller
-            print "No builds available for 64 bit Windows (try specifying --bits=32)"
-            sys.exit()
+              print "No builds available for 64 bit Windows. Downloading version for 32 bit Windows instead"
+ +            return baseURL + 'mozilla-inbound-win32/'
         else:
             return baseURL + 'mozilla-inbound-win32/'
     elif os == "linux":

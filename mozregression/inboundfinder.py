@@ -87,6 +87,8 @@ def cli(args=sys.argv[1:]):
                       "autodetection (mac, linux, win)", default=mozinfo.os)
     parser.add_option("--bits", dest="bits", help="override operating system "
                       "bits autodetection", default=mozinfo.bits)
+    parser.add_option("-n", "--app", dest="app", help="application name (firefox, fennec or thunderbird)",
+                      metavar="[firefox|fennec|thunderbird]", default="firefox")
 
     options, args = parser.parse_args(args)
     if not options.startRev or not options.endRev:
@@ -94,7 +96,8 @@ def cli(args=sys.argv[1:]):
         sys.exit(1)
 
     revisions = getInboundRevisions(options.startRev, options.endRev,
-                                    os=options.os, bits=options.bits)
+                                    appName=options.app, os=options.os,
+                                    bits=options.bits)
     print "Revision, Timestamp, Order"
     for revision in revisions:
         print ", ".join(map(lambda s: str(s), revision))

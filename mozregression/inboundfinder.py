@@ -48,8 +48,10 @@ def getInboundRevisions(startRev, endRev, appName='firefox', bits=mozinfo.bits, 
 
     baseURL = getBuildBaseURL(appName=appName, bits=bits, os=os)
     range = 60*60*4 # anything within four hours is potentially within the range
-    timestamps = map(lambda l: int(l.get('href').strip('/')),
-                     urlLinks(baseURL))
+    timestamps = map(lambda l: int(l),
+                     filter(lambda l: l.isdigit(), # sometimes we have links like "latest"
+                            map(lambda l: l.get('href').strip('/'),
+                                urlLinks(baseURL))))
     timestampsInRange = filter(lambda t: t > (starttime - range) and
                                t < (endtime + range), timestamps)
     revisions = [] # timestamp, order pairs

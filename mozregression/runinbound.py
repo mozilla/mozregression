@@ -17,10 +17,13 @@ class FirefoxInbound(FirefoxNightly):
 
     def getBuildUrl(self, timestamp):
         url = "%s%s/" % (getBuildBaseURL(bits=self.bits), timestamp)
+        matches = []
         for link in urlLinks(url):
             href = link.get("href")
             if re.match(self.buildRegex, href):
-                return url + href
+                matches.append(url + href)
+        matches.sort()
+        return matches[-1] # the most recent build url
 
     def getRepoName(self, date):
         return "mozilla-inbound"
@@ -34,10 +37,13 @@ class FennecInbound(FennecNightly):
 
     def getBuildUrl(self, timestamp):
         url = "%s%s/" % (getBuildBaseURL(appName=self.appName), timestamp)
+        matches = []
         for link in urlLinks(url):
             href = link.get("href")
             if re.match(self.buildRegex, href):
-                return url + href
+                matches.append(url + href)
+        matches.sort()
+        return matches[-1] # the most recent build url
 
     def getRepoName(self, date):
         return "mozilla-inbound"

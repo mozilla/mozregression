@@ -163,7 +163,7 @@ class Bisector(object):
                 sys.exit()
 
         # run the nightly from that date
-        print midDate
+        print "Running nightly for %s" % midDate
         dest = self.nightlyRunner.start(midDate)
         while not dest:
             midDate += datetime.timedelta(days=1)

@@ -128,6 +128,7 @@ class Nightly(object):
             self._monthlinks[cachekey] = monthlinks
 
         # first parse monthly list to get correct directory
+        matches = []
         for dirlink in monthlinks:
             dirhref = dirlink.get("href")
             if re.match(linkRegex, dirhref):
@@ -135,7 +136,9 @@ class Nightly(object):
                 for link in urlLinks(url + dirhref):
                     href = link.get("href")
                     if re.match(self.buildRegex, href):
-                        return url + dirhref + href
+                        matches.append(url + dirhref + href)
+        matches.sort()
+        return matches[-1] # the most recent build url
 
     ### functions for invoking nightly
 

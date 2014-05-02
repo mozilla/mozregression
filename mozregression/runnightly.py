@@ -82,8 +82,7 @@ class Nightly(object):
                 date_str = date.strftime("%Y-%m-%d")
             else:
                 date_str = date # Might be just a number with inbound
-            dest = os.path.join(self.persist,
-                    "%s--%s--%s"%(date_str, repo_name, dest))
+            dest = os.path.join(self.persist, "%s--%s--%s"%(date_str, repo_name, dest))
         return dest
 
     def download(self, date=datetime.date.today(), dest=None):
@@ -265,7 +264,7 @@ class NightlyRunner(object):
         self.cmdargs = list(cmdargs)
 
     def install(self, date=datetime.date.today()):
-        if not self.app.download(date):
+        if not self.app.download(date=date):
             print "Could not find build from %s" % date
             return False # download failed
         print "Installing nightly"

@@ -142,7 +142,9 @@ class Bisector(object):
 
     def bisect_nightlies(self, goodDate, badDate, skips=0):
         midDate = goodDate + (badDate - goodDate) / 2
+
         midDate += datetime.timedelta(days=skips)
+
         if midDate == badDate or midDate == goodDate:
             print "Got as far as we can go bisecting nightlies..."
             if self.appname == 'firefox' or self.appname == 'fennec':
@@ -163,7 +165,6 @@ class Bisector(object):
         # run the nightly from that date
         print "Running nightly for %s" % midDate
         dest = self.nightlyRunner.start(midDate)
-
         while not dest:
             midDate += datetime.timedelta(days=1)
             if midDate == badDate:

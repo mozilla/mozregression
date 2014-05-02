@@ -74,7 +74,7 @@ class Nightly(object):
 
     ### installation functions
 
-    def get_destination(self, url, date, tryNumber):
+    def get_destination(self, url, date):
         repo_name = self.repo_name or self.getRepoName(date)
         dest = os.path.basename(url)
         if self.persist is not None:
@@ -83,18 +83,14 @@ class Nightly(object):
             else:
                 date_str = date # Might be just a number with inbound
             dest = os.path.join(self.persist,
-                    "%s--%s--%s--%s"%(date_str, repo_name, tryNumber, dest))
+                    "%s--%s--%s"%(date_str, repo_name, dest))
         return dest
 
-    def download(self, date=datetime.date.today(), dest=None, tryNumber=0):
-        urls = self.getBuildUrls(date)
-        if tryNumber >= len(urls):
-            return False
-
-        url = urls[tryNumber]
+    def download(self, date=datetime.date.today(), dest=None):
+        url = self.getBuildUrl(date)
         if url:
             if not dest:
-                dest = self.get_destination(url, date, tryNumber)
+                dest = self.get_destination(url, date)
             if not self.persist:
                 self.remove_lastdest()
 
@@ -112,7 +108,7 @@ class Nightly(object):
         self.binary = mozinstall.get_binary(mozinstall.install(src=self.dest, dest=self.tempdir), self.name)
         return True
 
-    def getBuildUrls(self, datestamp):
+    def getBuildUrl(self, datestamp):
         if self.appName == 'fennec':
             repo = 'mobile'
         else:
@@ -133,7 +129,7 @@ class Nightly(object):
             self._monthlinks[cachekey] = monthlinks
 
         # first parse monthly list to get correct directory
-        matches = ()
+        matches = []
         for dirlink in monthlinks:
             dirhref = dirlink.get("href")
             if re.match(linkRegex, dirhref):
@@ -141,8 +137,9 @@ class Nightly(object):
                 for link in urlLinks(url + dirhref):
                     href = link.get("href")
                     if re.match(self.buildRegex, href):
-                        matches = matches + (url + dirhref + href,)
-        return matches
+                        matches.append(url + dirhref + href)
+        matches.sort()
+        return matches[-1] # the most recent build url
 
     ### functions for invoking nightly
 
@@ -267,15 +264,15 @@ class NightlyRunner(object):
         self.persist = persist
         self.cmdargs = list(cmdargs)
 
-    def install(self, date=datetime.date.today(), tryNumber=0):
-        if not self.app.download(date, tryNumber=tryNumber):
+    def install(self, date=datetime.date.today()):
+        if not self.app.download(date):
             print "Could not find build from %s" % date
             return False # download failed
         print "Installing nightly"
         return self.app.install()
 
-    def start(self, date=datetime.date.today(), tryNumber=0):
-        if not self.install(date, tryNumber):
+    def start(self, date=datetime.date.today()):
+        if not self.install(date):
             return False
         print "Starting nightly"
         if not self.app.start(self.profile, self.addons, self.cmdargs):

@@ -140,7 +140,7 @@ class Bisector(object):
             self.printRange()
             self.offer_build(self.lastGoodRevision, self.firstBadRevision)
 
-    def bisect_nightlies(self, goodDate, badDate, skips=0, tryNumber=0):
+    def bisect_nightlies(self, goodDate, badDate, skips=0):
         midDate = goodDate + (badDate - goodDate) / 2
         midDate += datetime.timedelta(days=skips)
         if midDate == badDate or midDate == goodDate:
@@ -162,7 +162,7 @@ class Bisector(object):
 
         # run the nightly from that date
         print "Running nightly for %s" % midDate
-        dest = self.nightlyRunner.start(midDate, tryNumber=tryNumber)
+        dest = self.nightlyRunner.start(midDate)
 
         while not dest:
             midDate += datetime.timedelta(days=1)
@@ -181,11 +181,7 @@ class Bisector(object):
             self.bisect_nightlies(midDate, badDate)
         elif verdict == 'b':
             self.firstBadRevision = self.nightlyRunner.getAppInfo()[1]
-            if dest:
-                # build was bad, repo existed, but there might be more for the same date
-                self.bisect_nightlies(goodDate, badDate, skips=skips, tryNumber=tryNumber+1)
-            else:
-                self.bisect_nightlies(goodDate, midDate)
+            self.bisect_nightlies(goodDate, midDate)
         elif verdict == 's':
             #skip -- go 1 day further down
             self.bisect_nightlies(goodDate, badDate, skips=skips+1)

@@ -273,7 +273,11 @@ class NightlyRunner(object):
     def start(self, date=datetime.date.today()):
         if not self.install(date):
             return False
-        print "Starting nightly"
+        info = self.getAppInfo()
+        if info is not None:
+            print "Starting nightly (revision: %s)" % info[1]
+        else:
+            print "Starting nightly"
         if not self.app.start(self.profile, self.addons, self.cmdargs):
             return False
         return True

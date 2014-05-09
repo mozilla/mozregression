@@ -49,6 +49,7 @@ class Nightly(object):
             return ".*mac.*\.dmg"
 
     def __init__(self, repo_name=None, bits=mozinfo.bits, persist=None):
+        self.bits = bits
         self.buildRegex = self._getBuildRegex(bits)
         self.persist = persist
         self.repo_name = repo_name
@@ -293,6 +294,29 @@ class NightlyRunner(object):
 
     def getAppInfo(self):
         return self.app.getAppInfo()
+
+    def getResumeOptions(self):
+        info = ""
+        app = self.app.appName
+        repo_name = self.app.repo_name
+        bits = self.app.bits
+        if app is not None:
+            info += ' --app=%s' % app
+        if len(self.addons) > 0:
+            info += ' --addons=%s' % ",".join(self.addons)
+        if self.profile is not None:
+            info += ' --profile=%s' % self.profile
+        if repo_name is not None:
+            info += ' --repo=%s' % repo_name
+        if bits is not None:
+            info += ' --bits=%s' % bits
+        if self.persist is not None:
+            info += ' --persist=%s' % self.persist
+        return info
+
+    def printResumeInfo(self, goodDateString, badDateString):
+        print 'mozregression --good=%s --bad=%s%s' % (
+                goodDateString, badDateString, self.getResumeOptions())
 
 def parseBits(optionBits):
     """returns the correctly typed bits"""

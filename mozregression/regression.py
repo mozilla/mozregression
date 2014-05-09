@@ -125,9 +125,9 @@ class Bisector(object):
         elif verdict == 'e':
             print 'Newest known good inbound revision: %s' % self.lastGoodRevision
             print 'Oldest known bad inbound revision: %s' % self.firstBadRevision
+            
             print 'To resume, run:'
-            print 'mozregression --inbound --good-rev=%s --bad-rev=%s' % (
-                self.lastGoodRevision, self.firstBadRevision)
+            self.inboundRunner.printResumeInfo(self.lastGoodRevision, self.firstBadRevision)
             return
 
         if len(inboundRevisions) > 1 and verdict == 'g':
@@ -193,7 +193,7 @@ class Bisector(object):
             print 'Newest known good nightly: %s' % goodDateString
             print 'Oldest known bad nightly: %s' % badDateString
             print 'To resume, run:'
-            print 'mozregression --good=%s --bad=%s' % (goodDateString, badDateString)
+            self.nightlyRunner.printResumeInfo(goodDateString, badDateString)
             return
         else:
             #retry -- since we're just calling ourselves with the same parameters, it does the same thing again

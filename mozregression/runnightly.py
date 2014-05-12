@@ -33,7 +33,7 @@ class Nightly(object):
     tempdir = None
 
     @staticmethod
-    def _getBuildRegex(bits):
+    def _getOsRegexSuffix(bits):
         if mozinfo.os == "win":
             if bits == 64:
                 # XXX this should actually throw an error to be consumed by the caller
@@ -48,8 +48,14 @@ class Nightly(object):
         elif mozinfo.os == "mac":
             return ".*mac.*\.dmg"
 
+    @staticmethod
+    def _getBuildRegex(name, bits):
+        namePrefix = name if ".*%s" % name is not None else ''
+        suffix = Nightly._getOsRegexSuffix(bits)
+        return "%s%s" % (namePrefix, suffix)
+
     def __init__(self, repo_name=None, bits=mozinfo.bits, persist=None):
-        self.buildRegex = self._getBuildRegex(bits)
+        self.buildRegex = self._getBuildRegex(self.name, bits)
         self.persist = persist
         self.repo_name = repo_name
 

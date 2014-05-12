@@ -12,7 +12,7 @@ class FirefoxInbound(FirefoxNightly):
 
     def __init__(self, bits=mozinfo.bits, persist=None):
         self.persist = persist
-        self.buildRegex = self._getBuildRegex(bits)
+        self.buildRegex = self._getBuildRegex(self.name, bits)
         self.bits = bits
 
     def getBuildUrl(self, timestamp):

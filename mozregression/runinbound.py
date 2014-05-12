@@ -63,8 +63,11 @@ class InboundRunner(NightlyRunner):
         self.persist = persist
         self.cmdargs = list(cmdargs)
 
-def cli(args=sys.argv[1:]):
+    def printResumeInfo(self, lastGoodRevision, firstBadRevision):
+        print 'mozregression --good-rev=%s --bad-rev=%s%s' % (
+                lastGoodRevision, firstBadRevision, self.getResumeOptions())
 
+def cli(args=sys.argv[1:]):
     parser = OptionParser()
     parser.add_option("--timestamp", dest="timestamp", help="timestamp of "
                       "inbound build")

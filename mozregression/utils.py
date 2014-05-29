@@ -10,12 +10,14 @@ import sys
 from BeautifulSoup import BeautifulSoup
 import requests
 
+
 def strsplit(string, sep):
     # XXX https://github.com/mozilla/mozregression/issues/50
     strlist = string.split(sep)
     if strlist == ['']:
-      return []
+        return []
     return strlist
+
 
 def get_date(dateString):
     p = re.compile('(\d{4})\-(\d{1,2})\-(\d{1,2})')
@@ -25,11 +27,13 @@ def get_date(dateString):
         return
     return datetime.date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
 
+
 def update_download_progress(percent):
-    sys.stdout.write("===== Downloaded %d%% =====\r"%percent)
+    sys.stdout.write("===== Downloaded %d%% =====\r" % percent)
     sys.stdout.flush()
     if percent >= 100:
         sys.stdout.write("\n")
+
 
 def download_url(url, dest=None, message="Downloading build from:"):
     if os.path.exists(dest):
@@ -37,14 +41,14 @@ def download_url(url, dest=None, message="Downloading build from:"):
         return
 
     if message:
-        print "%s %s"%(message, url)
+        print "%s %s" % (message, url)
 
     CHUNK = 16 * 1024
     bytes_so_far = 0.0
     tmp_file = dest + ".part"
     r = requests.get(url, stream=True)
     total_size = int(r.headers['Content-length'].strip())
-    if dest == None:
+    if dest is None:
         dest = os.path.basename(url)
 
     f = open(tmp_file, 'wb')
@@ -62,6 +66,7 @@ def download_url(url, dest=None, message="Downloading build from:"):
     os.rename(tmp_file, dest)
 
     return dest
+
 
 def urlLinks(url):
     r = requests.get(url)

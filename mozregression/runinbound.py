@@ -1,10 +1,12 @@
-from utils import urlLinks, strsplit, get_date
 import re
 import sys
-from runnightly import FennecNightly, FirefoxNightly, NightlyRunner, parseBits
-from inboundfinder import getBuildBaseURL
 import mozinfo
 from optparse import OptionParser
+
+from runnightly import FennecNightly, FirefoxNightly, NightlyRunner, parseBits
+from inboundfinder import getBuildBaseURL
+from utils import urlLinks, strsplit, get_date
+
 
 class FirefoxInbound(FirefoxNightly):
 
@@ -23,10 +25,11 @@ class FirefoxInbound(FirefoxNightly):
             if re.match(self.buildRegex, href):
                 matches.append(url + href)
         matches.sort()
-        return matches[-1] # the most recent build url
+        return matches[-1]  # the most recent build url
 
     def getRepoName(self, date):
         return "mozilla-inbound"
+
 
 class FennecInbound(FennecNightly):
 
@@ -43,10 +46,11 @@ class FennecInbound(FennecNightly):
             if re.match(self.buildRegex, href):
                 matches.append(url + href)
         matches.sort()
-        return matches[-1] # the most recent build url
+        return matches[-1]  # the most recent build url
 
     def getRepoName(self, date):
         return "mozilla-inbound"
+
 
 class InboundRunner(NightlyRunner):
 
@@ -65,7 +69,8 @@ class InboundRunner(NightlyRunner):
 
     def printResumeInfo(self, lastGoodRevision, firstBadRevision):
         print 'mozregression --good-rev=%s --bad-rev=%s%s' % (
-                lastGoodRevision, firstBadRevision, self.getResumeOptions())
+            lastGoodRevision, firstBadRevision, self.getResumeOptions())
+
 
 def cli(args=sys.argv[1:]):
     parser = OptionParser()
@@ -74,10 +79,15 @@ def cli(args=sys.argv[1:]):
     parser.add_option("-a", "--addons", dest="addons",
                       help="list of addons to install",
                       metavar="PATH1,PATH2")
-    parser.add_option("-p", "--profile", dest="profile", help="path to profile to user", metavar="PATH")
-    parser.add_option("--bits", dest="bits", help="force 32 or 64 bit version (only applies to x86_64 boxes)",
-                      choices=("32","64"), default=mozinfo.bits)
-    parser.add_option("--persist", dest="persist", help="the directory in which files are to persist ie. /Users/someuser/Documents")
+    parser.add_option("-p", "--profile", dest="profile",
+                      help="path to profile to user", metavar="PATH")
+    parser.add_option("--bits", dest="bits",
+                      help="force 32 or 64 bit version (only applies to"
+                           " x86_64 boxes)",
+                      choices=("32", "64"), default=mozinfo.bits)
+    parser.add_option("--persist", dest="persist",
+                      help="the directory in which files are to persist"
+                           " ie. /Users/someuser/Documents")
 
     options, args = parser.parse_args(args)
     if not options.timestamp:

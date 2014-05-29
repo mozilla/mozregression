@@ -1,22 +1,27 @@
 import re
 import json
-from utils import urlLinks
 import mozinfo
 import sys
 from optparse import OptionParser
-
 import requests
+
+from utils import urlLinks
+
 
 def getBuildBaseURL(appName='firefox', bits=mozinfo.bits, os=mozinfo.os):
 
     if appName == 'fennec':
-        return "http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org/mobile/tinderbox-builds/mozilla-inbound-android/"
+        return "http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org" \
+            "/mobile/tinderbox-builds/mozilla-inbound-android/"
 
-    baseURL = 'http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/'
+    baseURL = 'http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org' \
+        '/firefox/tinderbox-builds/'
     if os == "win":
         if bits == 64:
-            # XXX this should actually throw an error to be consumed by the caller
-            print "No builds available for 64 bit Windows (try specifying --bits=32)"
+            # XXX this should actually throw an error to be consumed
+            # by the caller
+            print "No builds available for 64 bit Windows" \
+                " (try specifying --bits=32)"
             sys.exit()
         else:
             return baseURL + 'mozilla-inbound-win32/'
@@ -28,12 +33,14 @@ def getBuildBaseURL(appName='firefox', bits=mozinfo.bits, os=mozinfo.os):
     elif os == "mac":
         return baseURL + 'mozilla-inbound-macosx64/'
 
-def getInboundRevisions(startRev, endRev, appName='firefox', bits=mozinfo.bits, os=mozinfo.os):
+
+def getInboundRevisions(startRev, endRev, appName='firefox', bits=mozinfo.bits,
+                        os=mozinfo.os):
 
     revisions = []
     r = requests.get('https://hg.mozilla.org/integration/mozilla-inbound/'
-                     'json-pushes?fromchange=%s&tochange=%s'% (startRev,
-                                                               endRev))
+                     'json-pushes?fromchange=%s&tochange=%s' % (startRev,
+                                                                endRev))
     pushlog = json.loads(r.content)
     for pushid in sorted(pushlog.keys()):
         push = pushlog[pushid]
@@ -47,14 +54,16 @@ def getInboundRevisions(startRev, endRev, appName='firefox', bits=mozinfo.bits, 
     rawRevisions = map(lambda l: l[0], revisions)
 
     baseURL = getBuildBaseURL(appName=appName, bits=bits, os=os)
-    range = 60*60*4 # anything within four hours is potentially within the range
+    # anything within four hours is potentially within the range
+    range = 60*60*4
     timestamps = map(lambda l: int(l),
-                     filter(lambda l: l.isdigit(), # sometimes we have links like "latest"
+                     # sometimes we have links like "latest"
+                     filter(lambda l: l.isdigit(),
                             map(lambda l: l.get('href').strip('/'),
                                 urlLinks(baseURL))))
     timestampsInRange = filter(lambda t: t > (starttime - range) and
                                t < (endtime + range), timestamps)
-    revisions = [] # timestamp, order pairs
+    revisions = []  # timestamp, order pairs
     for timestamp in timestampsInRange:
         for link in urlLinks("%s%s/" % (baseURL, timestamp)):
             href = link.get('href')
@@ -69,14 +78,15 @@ def getInboundRevisions(startRev, endRev, appName='firefox', bits=mozinfo.bits, 
                     parts = line.split('/rev/')
                     if len(parts) == 2:
                         remoteRevision = parts[1]
-                        break # for line
+                        break  # for line
                 if remoteRevision:
                     for (i, revision) in enumerate(rawRevisions):
                         if remoteRevision in revision:
                             revisions.append((revision, timestamp, i))
-                break # for link
+                break  # for link
 
     return sorted(revisions, key=lambda r: r[2])
+
 
 def cli(args=sys.argv[1:]):
 
@@ -87,8 +97,10 @@ def cli(args=sys.argv[1:]):
                       "autodetection (mac, linux, win)", default=mozinfo.os)
     parser.add_option("--bits", dest="bits", help="override operating system "
                       "bits autodetection", default=mozinfo.bits)
-    parser.add_option("-n", "--app", dest="app", help="application name (firefox, fennec or thunderbird)",
-                      metavar="[firefox|fennec|thunderbird]", default="firefox")
+    parser.add_option("-n", "--app", dest="app", help="application name "
+                      "(firefox, fennec or thunderbird)",
+                      metavar="[firefox|fennec|thunderbird]",
+                      default="firefox")
 
     options, args = parser.parse_args(args)
     if not options.startRev or not options.endRev:

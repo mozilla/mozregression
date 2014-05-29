@@ -8,10 +8,12 @@ import datetime
 import mozinfo
 import sys
 from optparse import OptionParser
+from utils import strsplit, get_date
+
 from inboundfinder import getInboundRevisions
 from runnightly import NightlyRunner, parseBits
 from runinbound import InboundRunner
-from utils import strsplit, get_date
+
 
 class Bisector(object):
 
@@ -27,26 +29,29 @@ class Bisector(object):
         self.firstBadRevision = firstBadRevision
 
     def findRegressionChset(self, lastGoodRevision, firstBadRevision):
-        #Uses mozcommitbuilder to bisect on changesets
-        #Only needed if they want to bisect, so we'll put the dependency here.
+        # Uses mozcommitbuilder to bisect on changesets
+        # Only needed if they want to bisect, so we'll put the dependency here.
         from mozcommitbuilder import builder
         commitBuilder = builder.Builder()
 
-        print "\n Narrowed changeset range from " + lastGoodRevision + " to " + firstBadRevision +"\n"
+        print "\n Narrowed changeset range from " + lastGoodRevision \
+            + " to " + firstBadRevision + "\n"
 
         print "Time to do some bisecting and building!"
         commitBuilder.bisect(lastGoodRevision, firstBadRevision)
         quit()
 
     def offer_build(self, lastGoodRevision, firstBadRevision):
-        verdict = raw_input("do you want to bisect further by fetching the repository and building? (y or n) ")
+        verdict = raw_input("do you want to bisect further by fetching"
+                            " the repository and building? (y or n) ")
         if verdict != "y":
             sys.exit()
 
         if self.appname == "firefox":
             self.findRegressionChset(lastGoodRevision, firstBadRevision)
         else:
-            print "Bisection on anything other than firefox is not currently supported."
+            print "Bisection on anything other than firefox is not" \
+                  " currently supported."
             sys.exit()
 
     def printRange(self, goodDate=None, badDate=None):
@@ -75,12 +80,14 @@ class Bisector(object):
 
     def _get_verdict(self, buildType, offerSkip=True):
         verdict = ""
-        options = ['good','g','bad','b','retry','r']
+        options = ['good', 'g', 'bad', 'b', 'retry', 'r']
         if offerSkip:
-            options += ['skip','s']
+            options += ['skip', 's']
         options += ['exit']
         while verdict not in options:
-            verdict = raw_input("Was this %s build good, bad, or broken? (type 'good', 'bad', 'skip', 'retry', or 'exit' and press Enter): " % buildType)
+            verdict = raw_input("Was this %s build good, bad, or broken?"
+                                " (type 'good', 'bad', 'skip', 'retry', or"
+                                " 'exit' and press Enter): " % buildType)
 
         # shorten verdict to one character for processing...
         if len(verdict) > 1:
@@ -107,8 +114,9 @@ class Bisector(object):
         # also be comparing against...)
 
         mid = len(inboundRevisions) / 2
-        print "Testing inbound build with timestamp %s, revision %s" % (inboundRevisions[mid][1],
-                                                                        inboundRevisions[mid][0])
+        print "Testing inbound build with timestamp %s," \
+              " revision %s" % (inboundRevisions[mid][1],
+                                inboundRevisions[mid][0])
         self.inboundRunner.start(inboundRevisions[mid][1])
 
         verdict = self._get_verdict('inbound', offerSkip=False)
@@ -123,11 +131,14 @@ class Bisector(object):
             self.bisect_inbound(inboundRevisions=inboundRevisions)
             return
         elif verdict == 'e':
-            print 'Newest known good inbound revision: %s' % self.lastGoodRevision
-            print 'Oldest known bad inbound revision: %s' % self.firstBadRevision
-            
+            print 'Newest known good inbound revision: %s' \
+                % self.lastGoodRevision
+            print 'Oldest known bad inbound revision: %s' \
+                % self.firstBadRevision
+
             print 'To resume, run:'
-            self.inboundRunner.printResumeInfo(self.lastGoodRevision, self.firstBadRevision)
+            self.inboundRunner.printResumeInfo(self.lastGoodRevision,
+                                               self.firstBadRevision)
             return
 
         if len(inboundRevisions) > 1 and verdict == 'g':
@@ -184,19 +195,24 @@ class Bisector(object):
             self.firstBadRevision = self.nightlyRunner.getAppInfo()[1]
             self.bisect_nightlies(goodDate, midDate)
         elif verdict == 's':
-            #skip -- go 1 day further down
+            # skip -- go 1 day further down
             self.bisect_nightlies(goodDate, badDate, skips=skips+1)
         elif verdict == 'e':
             self.nightlyRunner.stop()
-            goodDateString = '%04d-%02d-%02d' % (goodDate.year, goodDate.month, goodDate.day)
-            badDateString = '%04d-%02d-%02d' % (badDate.year, badDate.month, badDate.day)
+            goodDateString = '%04d-%02d-%02d' % (goodDate.year,
+                                                 goodDate.month,
+                                                 goodDate.day)
+            badDateString = '%04d-%02d-%02d' % (badDate.year,
+                                                badDate.month,
+                                                badDate.day)
             print 'Newest known good nightly: %s' % goodDateString
             print 'Oldest known bad nightly: %s' % badDateString
             print 'To resume, run:'
             self.nightlyRunner.printResumeInfo(goodDateString, badDateString)
             return
         else:
-            #retry -- since we're just calling ourselves with the same parameters, it does the same thing again
+            # retry -- since we're just calling ourselves with the same
+            # parameters, it does the same thing again
             self.bisect_nightlies(goodDate, badDate)
 
     def getPushlogUrl(self, goodDate, badDate):
@@ -216,26 +232,45 @@ class Bisector(object):
         return "%s/pushloghtml?fromchange=%s&tochange=%s" % (
             self.foundRepo, self.lastGoodRevision, self.firstBadRevision)
 
+
 def cli():
     parser = OptionParser()
-    parser.add_option("-b", "--bad", dest="bad_date",help="first known bad nightly build, default is today",
+    parser.add_option("-b", "--bad", dest="bad_date",
+                      help="first known bad nightly build, default is today",
                       metavar="YYYY-MM-DD", default=str(datetime.date.today()))
-    parser.add_option("-g", "--good", dest="good_date",help="last known good nightly build",
+    parser.add_option("-g", "--good", dest="good_date",
+                      help="last known good nightly build",
                       metavar="YYYY-MM-DD", default=None)
-    parser.add_option("-e", "--addons", dest="addons",help="list of addons to install", metavar="PATH1,PATH2", default="")
-    parser.add_option("-p", "--profile", dest="profile", help="profile to use with nightlies", metavar="PATH")
-    parser.add_option("-a", "--args", dest="cmdargs", help="command-line arguments to pass to the application",
+    parser.add_option("-e", "--addons", dest="addons",
+                      help="list of addons to install", metavar="PATH1,PATH2",
+                      default="")
+    parser.add_option("-p", "--profile", dest="profile",
+                      help="profile to use with nightlies", metavar="PATH")
+    parser.add_option("-a", "--args", dest="cmdargs",
+                      help="command-line arguments to pass to the application",
                       metavar="ARG1,ARG2", default="")
-    parser.add_option("-n", "--app", dest="app", help="application name (firefox, fennec or thunderbird)",
-                      metavar="[firefox|fennec|thunderbird]", default="firefox")
-    parser.add_option("-r", "--repo", dest="repo_name", help="repository name on ftp.mozilla.org",
+    parser.add_option("-n", "--app", dest="app",
+                      help="application name  (firefox, fennec or"
+                      " thunderbird)",
+                      metavar="[firefox|fennec|thunderbird]",
+                      default="firefox")
+    parser.add_option("-r", "--repo", dest="repo_name",
+                      help="repository name on ftp.mozilla.org",
                       metavar="[tracemonkey|mozilla-1.9.2]", default=None)
-    parser.add_option("--bits", dest="bits", help="force 32 or 64 bit version (only applies to x86_64 boxes)",
-                      choices=("32","64"), default=mozinfo.bits)
-    parser.add_option("--persist", dest="persist", help="the directory in which files are to persist ie. /Users/someuser/Documents")
-    parser.add_option("--inbound", action="store_true", dest="inbound", help="use inbound instead of nightlies (use --good-rev and --bad-rev options")
-    parser.add_option("--bad-rev", dest="firstBadRevision",help="first known bad revision (use with --inbound)")
-    parser.add_option("--good-rev", dest="lastGoodRevision",help="last known good revision (use with --inbound)")
+    parser.add_option("--bits", dest="bits",
+                      help="force 32 or 64 bit version (only applies to"
+                      " x86_64 boxes)",
+                      choices=("32", "64"), default=mozinfo.bits)
+    parser.add_option("--persist", dest="persist",
+                      help="the directory in which files are to persist ie."
+                      " /Users/someuser/Documents")
+    parser.add_option("--inbound", action="store_true", dest="inbound",
+                      help="use inbound instead of nightlies (use --good-rev"
+                      " and --bad-rev options")
+    parser.add_option("--bad-rev", dest="firstBadRevision",
+                      help="first known bad revision (use with --inbound)")
+    parser.add_option("--good-rev", dest="lastGoodRevision",
+                      help="last known good revision (use with --inbound)")
 
     (options, args) = parser.parse_args()
 

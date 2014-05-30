@@ -4,9 +4,9 @@ import mozinfo
 from optparse import OptionParser
 
 from mozregression.runnightly import FennecNightly, FirefoxNightly, \
-    NightlyRunner, parse_bits
-from mozregression.inboundfinder import get_build_base_url
-from mozregression.utils import url_links, strsplit, get_date
+    NightlyRunner, parseBits
+from mozregression.inboundfinder import getBuildBaseURL
+from mozregression.utils import urlLinks, strsplit, get_date
 
 
 class FirefoxInbound(FirefoxNightly):
@@ -15,20 +15,20 @@ class FirefoxInbound(FirefoxNightly):
 
     def __init__(self, bits=mozinfo.bits, persist=None):
         self.persist = persist
-        self.build_regex = self._get_build_regex(self.name, bits)
+        self.buildRegex = self._getBuildRegex(self.name, bits)
         self.bits = bits
 
-    def get_build_url(self, timestamp):
-        url = "%s%s/" % (get_build_base_url(bits=self.bits), timestamp)
+    def getBuildUrl(self, timestamp):
+        url = "%s%s/" % (getBuildBaseURL(bits=self.bits), timestamp)
         matches = []
-        for link in url_links(url):
+        for link in urlLinks(url):
             href = link.get("href")
-            if re.match(self.build_regex, href):
+            if re.match(self.buildRegex, href):
                 matches.append(url + href)
         matches.sort()
         return matches[-1]  # the most recent build url
 
-    def get_repo_name(self, date):
+    def getRepoName(self, date):
         return "mozilla-inbound"
 
 
@@ -39,17 +39,17 @@ class FennecInbound(FennecNightly):
     def __init__(self, persist=None):
         self.persist = persist
 
-    def get_build_url(self, timestamp):
-        url = "%s%s/" % (get_build_base_url(app_name=self.app_name), timestamp)
+    def getBuildUrl(self, timestamp):
+        url = "%s%s/" % (getBuildBaseURL(appName=self.appName), timestamp)
         matches = []
-        for link in url_links(url):
+        for link in urlLinks(url):
             href = link.get("href")
-            if re.match(self.build_regex, href):
+            if re.match(self.buildRegex, href):
                 matches.append(url + href)
         matches.sort()
         return matches[-1]  # the most recent build url
 
-    def get_repo_name(self, date):
+    def getRepoName(self, date):
         return "mozilla-inbound"
 
 
@@ -61,16 +61,16 @@ class InboundRunner(NightlyRunner):
             self.app = FirefoxInbound(bits=bits, persist=persist)
         else:
             self.app = FennecInbound(persist=persist)
-        self.app_name = appname
+        self.appName = appname
         self.bits = bits
         self.addons = addons
         self.profile = profile
         self.persist = persist
         self.cmdargs = list(cmdargs)
 
-    def print_resume_info(self, last_good_revision, first_bad_revision):
+    def printResumeInfo(self, last_good_revision, first_bad_revision):
         print 'mozregression --good-rev=%s --bad-rev=%s%s' % (
-            last_good_revision, first_bad_revision, self.get_resume_options())
+            last_good_revision, first_bad_revision, self.getResumeOptions())
 
 
 def cli(args=sys.argv[1:]):
@@ -94,7 +94,7 @@ def cli(args=sys.argv[1:]):
     if not options.timestamp:
         print "timestamp must be specified"
         sys.exit(1)
-    options.bits = parse_bits(options.bits)
+    options.bits = parseBits(options.bits)
     # XXX https://github.com/mozilla/mozregression/issues/50
     addons = strsplit(options.addons or "", ",")
     runner = InboundRunner(addons=addons, profile=options.profile,

@@ -20,7 +20,7 @@ from mozrunner import Runner
 from optparse import OptionParser
 from ConfigParser import ConfigParser
 
-from mozregression.utils import strsplit, get_date, download_url, url_links
+from mozregression.utils import strsplit, get_date, download_url, urlLinks
 
 
 subprocess._cleanup = lambda: None  # mikeal's fix for subprocess threading bug
@@ -30,12 +30,17 @@ subprocess._cleanup = lambda: None  # mikeal's fix for subprocess threading bug
 class Nightly(object):
 
     name = None  # abstract base class
+    appName = None
     _monthlinks = {}
     lastdest = None
     tempdir = None
 
     @staticmethod
-    def _get_os_regex_suffix(bits):
+    def profileClass(*args, **kwargs):
+        raise NotImplementedError
+
+    @staticmethod
+    def _getOsRegexSuffix(bits):
         if mozinfo.os == "win":
             if bits == 64:
                 # XXX this should actually throw an error to be consumed
@@ -53,16 +58,19 @@ class Nightly(object):
             return r".*mac.*\.dmg"
 
     @staticmethod
-    def _get_build_regex(name, bits):
+    def _getBuildRegex(name, bits):
         name_prefix = name if ".*%s" % name is not None else ''
-        suffix = Nightly._get_os_regex_suffix(bits)
+        suffix = Nightly._getOsRegexSuffix(bits)
         return "%s%s" % (name_prefix, suffix)
 
     def __init__(self, repo_name=None, bits=mozinfo.bits, persist=None):
         self.bits = bits
-        self.build_regex = self._get_build_regex(self.name, bits)
+        self.buildRegex = self._getBuildRegex(self.name, bits)
         self.persist = persist
         self.repo_name = repo_name
+
+    def getRepoName(self, date):
+        raise NotImplementedError
 
     # cleanup functions
 
@@ -86,7 +94,7 @@ class Nightly(object):
     # installation functions
 
     def get_destination(self, url, date):
-        repo_name = self.repo_name or self.get_repo_name(date)
+        repo_name = self.repo_name or self.getRepoName(date)
         dest = os.path.basename(url)
         if self.persist is not None:
             if hasattr(date, "strftime"):
@@ -98,7 +106,7 @@ class Nightly(object):
         return dest
 
     def download(self, date=datetime.date.today(), dest=None):
-        url = self.get_build_url(date)
+        url = self.getBuildUrl(date)
         if url:
             if not dest:
                 dest = self.get_destination(url, date)
@@ -121,8 +129,8 @@ class Nightly(object):
             self.name)
         return True
 
-    def get_build_url(self, datestamp):
-        if self.app_name == 'fennec':
+    def getBuildUrl(self, datestamp):
+        if self.appName == 'fennec':
             repo = 'mobile'
         else:
             repo = 'firefox'
@@ -130,7 +138,7 @@ class Nightly(object):
         year = str(datestamp.year)
         month = "%02d" % datestamp.month
         day = "%02d" % datestamp.day
-        repo_name = self.repo_name or self.get_repo_name(datestamp)
+        repo_name = self.repo_name or self.getRepoName(datestamp)
         url += year + "/" + month + "/"
 
         link_regex = '^' + year + '-' + month + '-' + day + '-' \
@@ -139,7 +147,7 @@ class Nightly(object):
         if cachekey in self._monthlinks:
             monthlinks = self._monthlinks[cachekey]
         else:
-            monthlinks = url_links(url)
+            monthlinks = urlLinks(url)
             self._monthlinks[cachekey] = monthlinks
 
         # first parse monthly list to get correct directory
@@ -148,16 +156,16 @@ class Nightly(object):
             dirhref = dirlink.get("href")
             if re.match(link_regex, dirhref):
                 # now parse the page for the correct build url
-                for link in url_links(url + dirhref):
+                for link in urlLinks(url + dirhref):
                     href = link.get("href")
-                    if re.match(self.build_regex, href):
+                    if re.match(self.buildRegex, href):
                         matches.append(url + dirhref + href)
         matches.sort()
         return matches[-1]  # the most recent build url
 
     # functions for invoking nightly
 
-    def get_app_info(self):
+    def getAppInfo(self):
         parser = ConfigParser()
         ini_file = os.path.join(os.path.dirname(self.binary),
                                 "application.ini")
@@ -171,11 +179,11 @@ class Nightly(object):
 
     def start(self, profile, addons, cmdargs):
         if profile:
-            profile = self.profile_class(profile=profile, addons=addons)
+            profile = self.profileClass(profile=profile, addons=addons)
         elif len(addons):
-            profile = self.profile_class(addons=addons)
+            profile = self.profileClass(addons=addons)
         else:
-            profile = self.profile_class()
+            profile = self.profileClass()
 
         self.runner = Runner(binary=self.binary, cmdargs=cmdargs,
                              profile=profile)
@@ -190,11 +198,11 @@ class Nightly(object):
 
 
 class ThunderbirdNightly(Nightly):
-    app_name = 'thunderbird'
+    appName = 'thunderbird'
     name = 'thunderbird'
-    profile_class = ThunderbirdProfile
+    profileClass = ThunderbirdProfile
 
-    def get_repo_name(self, date):
+    def getRepoName(self, date):
         # sneaking this in here
         if mozinfo.os == "win" and date < datetime.date(2010, 03, 18):
             # no .zip package for Windows, can't use the installer
@@ -214,11 +222,11 @@ class ThunderbirdNightly(Nightly):
 
 
 class FirefoxNightly(Nightly):
-    app_name = 'firefox'
+    appName = 'firefox'
     name = 'firefox'
-    profile_class = FirefoxProfile
+    profileClass = FirefoxProfile
 
-    def get_repo_name(self, date):
+    def getRepoName(self, date):
         if date < datetime.date(2008, 6, 17):
             return "trunk"
         else:
@@ -226,10 +234,10 @@ class FirefoxNightly(Nightly):
 
 
 class FennecNightly(Nightly):
-    app_name = 'fennec'
+    appName = 'fennec'
     name = 'fennec'
-    profile_class = FirefoxProfile
-    build_regex = r'fennec-.*\.apk'
+    profileClass = FirefoxProfile
+    buildRegex = 'fennec-.*\.apk'
     binary = 'org.mozilla.fennec/.App'
     bits = None
 
@@ -241,7 +249,7 @@ class FennecNightly(Nightly):
                             " Continue? (y or n)"):
             raise Exception("Aborting!")
 
-    def get_repo_name(self, date):
+    def getRepoName(self, date):
         return "mozilla-central-android"
 
     def install(self):
@@ -260,7 +268,7 @@ class FennecNightly(Nightly):
         # adb shell run-as org.mozilla.fennec kill $PID
         return True
 
-    def get_app_info(self):
+    def getAppInfo(self):
         archive = zipfile.ZipFile(self.dest, 'r')
         fini = archive.open('application.ini')
         parser = ConfigParser()
@@ -298,7 +306,7 @@ class NightlyRunner(object):
     def start(self, date=datetime.date.today()):
         if not self.install(date):
             return False
-        info = self.get_app_info()
+        info = self.getAppInfo()
         if info is not None:
             print "Starting nightly (revision: %s)" % info[1]
         else:
@@ -316,12 +324,12 @@ class NightlyRunner(object):
     def cleanup(self):
         self.app.cleanup()
 
-    def get_app_info(self):
-        return self.app.get_app_info()
+    def getAppInfo(self):
+        return self.app.getAppInfo()
 
-    def get_resume_options(self):
+    def getResumeOptions(self):
         info = ""
-        app = self.app.app_name
+        app = self.app.appName
         repo_name = self.app.repo_name
         bits = self.app.bits
         if app is not None:
@@ -338,12 +346,12 @@ class NightlyRunner(object):
             info += ' --persist=%s' % self.persist
         return info
 
-    def print_resume_info(self, good_date_string, bad_date_string):
+    def printResumeInfo(self, good_date_string, bad_date_string):
         print 'mozregression --good=%s --bad=%s%s' % (
-            good_date_string, bad_date_string, self.get_resume_options())
+            good_date_string, bad_date_string, self.getResumeOptions())
 
 
-def parse_bits(option_bits):
+def parseBits(option_bits):
     """returns the correctly typed bits"""
     if option_bits == "32":
         return 32
@@ -381,7 +389,7 @@ def cli(args=sys.argv[1:]):
                       " /Users/someuser/Documents")
     options, args = parser.parse_args(args)
 
-    options.bits = parse_bits(options.bits)
+    options.bits = parseBits(options.bits)
 
     # XXX https://github.com/mozilla/mozregression/issues/50
     addons = strsplit(options.addons or "", ",")

@@ -14,8 +14,7 @@ import tempfile
 import mozinfo
 import zipfile
 from mozfile import rmtree
-from mozprofile import FirefoxProfile
-from mozprofile import ThunderbirdProfile
+from mozprofile import FirefoxProfile, ThunderbirdProfile, Profile
 from mozrunner import Runner
 from optparse import OptionParser
 from ConfigParser import ConfigParser
@@ -33,6 +32,8 @@ class Nightly(object):
     _monthlinks = {}
     lastdest = None
     tempdir = None
+    app_name = None
+    profile_class = Profile
 
     @staticmethod
     def _get_os_regex_suffix(bits):
@@ -63,6 +64,9 @@ class Nightly(object):
         self.build_regex = self._get_build_regex(self.name, bits)
         self.persist = persist
         self.repo_name = repo_name
+
+    def get_repo_name(self, date):
+        raise NotImplementedError
 
     # cleanup functions
 

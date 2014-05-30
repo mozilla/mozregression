@@ -5,12 +5,12 @@ import sys
 from optparse import OptionParser
 import requests
 
-from mozregression.utils import urlLinks
+from mozregression.utils import url_links
 
 
-def getBuildBaseURL(appName='firefox', bits=mozinfo.bits, os=mozinfo.os):
+def get_build_base_url(app_name='firefox', bits=mozinfo.bits, os=mozinfo.os):
 
-    if appName == 'fennec':
+    if app_name == 'fennec':
         return "http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org" \
             "/mobile/tinderbox-builds/mozilla-inbound-android/"
 
@@ -34,8 +34,8 @@ def getBuildBaseURL(appName='firefox', bits=mozinfo.bits, os=mozinfo.os):
         return base_url + 'mozilla-inbound-macosx64/'
 
 
-def getInboundRevisions(start_rev, end_rev, appName='firefox',
-                        bits=mozinfo.bits, os=mozinfo.os):
+def get_inbound_revisions(start_rev, end_rev, app_name='firefox',
+                          bits=mozinfo.bits, os=mozinfo.os):
 
     revisions = []
     r = requests.get('https://hg.mozilla.org/integration/mozilla-inbound/'
@@ -53,19 +53,19 @@ def getInboundRevisions(start_rev, end_rev, appName='firefox',
     endtime = revisions[-1][1]
     raw_revisions = map(lambda l: l[0], revisions)
 
-    base_url = getBuildBaseURL(appName=appName, bits=bits, os=os)
+    base_url = get_build_base_url(app_name=app_name, bits=bits, os=os)
     # anything within four hours is potentially within the range
     range = 60*60*4
     timestamps = map(lambda l: int(l),
                      # sometimes we have links like "latest"
                      filter(lambda l: l.isdigit(),
                             map(lambda l: l.get('href').strip('/'),
-                                urlLinks(base_url))))
+                                url_links(base_url))))
     timestamps_in_range = filter(lambda t: t > (starttime - range) and
                                  t < (endtime + range), timestamps)
     revisions = []  # timestamp, order pairs
     for timestamp in timestamps_in_range:
-        for link in urlLinks("%s%s/" % (base_url, timestamp)):
+        for link in url_links("%s%s/" % (base_url, timestamp)):
             href = link.get('href')
             if re.match(r'^.+\.txt$', href):
                 url = "%s%s/%s" % (base_url, timestamp, href)
@@ -107,9 +107,9 @@ def cli(args=sys.argv[1:]):
         print "start revision and end revision must be specified"
         sys.exit(1)
 
-    revisions = getInboundRevisions(options.start_rev, options.end_rev,
-                                    appName=options.app, os=options.os,
-                                    bits=options.bits)
+    revisions = get_inbound_revisions(options.start_rev, options.end_rev,
+                                      app_name=options.app, os=options.os,
+                                      bits=options.bits)
     print "Revision, Timestamp, Order"
     for revision in revisions:
         print ", ".join(map(lambda s: str(s), revision))

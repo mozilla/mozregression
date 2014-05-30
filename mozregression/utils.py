@@ -69,7 +69,7 @@ def download_url(url, dest=None, message="Downloading build from:"):
     return dest
 
 
-def urlLinks(url):
+def url_links(url):
     request = requests.get(url)
     if request.status_code != 200:
         return []

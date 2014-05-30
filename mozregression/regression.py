@@ -8,79 +8,86 @@ import datetime
 import mozinfo
 import sys
 from optparse import OptionParser
-from inboundfinder import getInboundRevisions
-from runnightly import NightlyRunner, parseBits
-from runinbound import InboundRunner
-from utils import strsplit, get_date
+
+from mozregression.utils import strsplit, get_date
+from mozregression.inboundfinder import get_inbound_revisions
+from mozregression.runnightly import NightlyRunner, parse_bits
+from mozregression.runinbound import InboundRunner
+
 
 class Bisector(object):
 
-    currDate = ''
-    foundRepo = None
+    curr_date = ''
+    found_repo = None
 
-    def __init__(self, nightlyRunner, inboundRunner, appname="firefox",
-                 lastGoodRevision=None, firstBadRevision=None):
-        self.nightlyRunner = nightlyRunner
-        self.inboundRunner = inboundRunner
+    def __init__(self, nightly_runner, inbound_runner, appname="firefox",
+                 last_good_revision=None, first_bad_revision=None):
+        self.nightly_runner = nightly_runner
+        self.inbound_runner = inbound_runner
         self.appname = appname
-        self.lastGoodRevision = lastGoodRevision
-        self.firstBadRevision = firstBadRevision
+        self.last_good_revision = last_good_revision
+        self.first_bad_revision = first_bad_revision
 
-    def findRegressionChset(self, lastGoodRevision, firstBadRevision):
-        #Uses mozcommitbuilder to bisect on changesets
-        #Only needed if they want to bisect, so we'll put the dependency here.
+    def find_regression_chset(self, last_good_revision, first_bad_revision):
+        # Uses mozcommitbuilder to bisect on changesets
+        # Only needed if they want to bisect, so we'll put the dependency here.
         from mozcommitbuilder import builder
-        commitBuilder = builder.Builder()
+        commit_builder = builder.Builder()
 
-        print "\n Narrowed changeset range from " + lastGoodRevision + " to " + firstBadRevision +"\n"
+        print "\n Narrowed changeset range from " + last_good_revision \
+            + " to " + first_bad_revision + "\n"
 
         print "Time to do some bisecting and building!"
-        commitBuilder.bisect(lastGoodRevision, firstBadRevision)
+        commit_builder.bisect(last_good_revision, first_bad_revision)
         quit()
 
-    def offer_build(self, lastGoodRevision, firstBadRevision):
-        verdict = raw_input("do you want to bisect further by fetching the repository and building? (y or n) ")
+    def offer_build(self, last_good_revision, first_bad_revision):
+        verdict = raw_input("do you want to bisect further by fetching"
+                            " the repository and building? (y or n) ")
         if verdict != "y":
             sys.exit()
 
         if self.appname == "firefox":
-            self.findRegressionChset(lastGoodRevision, firstBadRevision)
+            self.find_regression_chset(last_good_revision, first_bad_revision)
         else:
-            print "Bisection on anything other than firefox is not currently supported."
+            print "Bisection on anything other than firefox is not" \
+                  " currently supported."
             sys.exit()
 
-    def printRange(self, goodDate=None, badDate=None):
-        def _printDateRevision(name, revision, date):
+    def print_range(self, good_date=None, bad_date=None):
+        def _print_date_revision(name, revision, date):
             if date and revision:
                 print "%s revision: %s (%s)" % (name, revision, date)
             elif revision:
                 print "%s revision: %s" % (name, revision)
             elif date:
                 print "%s build: %s" % (name, date)
-        _printDateRevision("Last good", self.lastGoodRevision, goodDate)
-        _printDateRevision("First bad", self.firstBadRevision, badDate)
+        _print_date_revision("Last good", self.last_good_revision, good_date)
+        _print_date_revision("First bad", self.first_bad_revision, bad_date)
 
-        print "Pushlog:\n" + self.getPushlogUrl(goodDate, badDate) + "\n"
+        print "Pushlog:\n" + self.get_pushlog_url(good_date, bad_date) + "\n"
 
-    def _ensureMetadata(self, goodDate, badDate):
+    def _ensure_metadata(self, good_date, bad_date):
         print "Ensuring we have enough metadata to get a pushlog..."
-        if not self.lastGoodRevision:
-            self.nightlyRunner.install(goodDate)
-            (self.foundRepo, self.lastGoodRevision) = \
-                self.nightlyRunner.getAppInfo()
-        if not self.firstBadRevision:
-            self.nightlyRunner.install(badDate)
-            (self.foundRepo, self.firstBadRevision) = \
-                self.nightlyRunner.getAppInfo()
+        if not self.last_good_revision:
+            self.nightly_runner.install(good_date)
+            (self.found_repo, self.last_good_revision) = \
+                self.nightly_runner.get_app_info()
+        if not self.first_bad_revision:
+            self.nightly_runner.install(bad_date)
+            (self.found_repo, self.first_bad_revision) = \
+                self.nightly_runner.get_app_info()
 
-    def _get_verdict(self, buildType, offerSkip=True):
+    def _get_verdict(self, build_type, offer_skip=True):
         verdict = ""
-        options = ['good','g','bad','b','retry','r']
-        if offerSkip:
-            options += ['skip','s']
+        options = ['good', 'g', 'bad', 'b', 'retry', 'r']
+        if offer_skip:
+            options += ['skip', 's']
         options += ['exit']
         while verdict not in options:
-            verdict = raw_input("Was this %s build good, bad, or broken? (type 'good', 'bad', 'skip', 'retry', or 'exit' and press Enter): " % buildType)
+            verdict = raw_input("Was this %s build good, bad, or broken?"
+                                " (type 'good', 'bad', 'skip', 'retry', or"
+                                " 'exit' and press Enter): " % build_type)
 
         # shorten verdict to one character for processing...
         if len(verdict) > 1:
@@ -88,74 +95,78 @@ class Bisector(object):
 
         return verdict
 
-    def bisect_inbound(self, inboundRevisions=None):
-        if not inboundRevisions:
+    def bisect_inbound(self, inbound_revisions=None):
+        if not inbound_revisions:
             print "Getting inbound builds between %s and %s" % (
-                self.lastGoodRevision, self.firstBadRevision)
-            inboundRevisions = getInboundRevisions(
-                self.lastGoodRevision, self.firstBadRevision,
-                appName=self.inboundRunner.appName,
-                bits=self.inboundRunner.bits)
+                self.last_good_revision, self.first_bad_revision)
+            inbound_revisions = get_inbound_revisions(
+                self.last_good_revision, self.first_bad_revision,
+                app_name=self.inbound_runner.app_name,
+                bits=self.inbound_runner.bits)
 
-            if not inboundRevisions:
+            if not inbound_revisions:
                 print "Oh noes, no (more) inbound revisions :("
-                self.offer_build(self.lastGoodRevision,
-                                 self.firstBadRevision)
+                self.offer_build(self.last_good_revision,
+                                 self.first_bad_revision)
                 return
         # hardcode repo to mozilla-central (if we use inbound, we may be
         # missing some revisions that went into the nightlies which we may
         # also be comparing against...)
 
-        mid = len(inboundRevisions) / 2
-        print "Testing inbound build with timestamp %s, revision %s" % (inboundRevisions[mid][1],
-                                                                        inboundRevisions[mid][0])
-        self.inboundRunner.start(inboundRevisions[mid][1])
+        mid = len(inbound_revisions) / 2
+        print "Testing inbound build with timestamp %s," \
+              " revision %s" % (inbound_revisions[mid][1],
+                                inbound_revisions[mid][0])
+        self.inbound_runner.start(inbound_revisions[mid][1])
 
-        verdict = self._get_verdict('inbound', offerSkip=False)
-        self.inboundRunner.stop()
-        self.foundRepo = self.inboundRunner.getAppInfo()[0]
+        verdict = self._get_verdict('inbound', offer_skip=False)
+        self.inbound_runner.stop()
+        self.found_repo = self.inbound_runner.get_app_info()[0]
         if verdict == 'g':
-            self.lastGoodRevision = self.inboundRunner.getAppInfo()[1]
+            self.last_good_revision = self.inbound_runner.get_app_info()[1]
         elif verdict == 'b':
-            self.firstBadRevision = self.inboundRunner.getAppInfo()[1]
+            self.first_bad_revision = self.inbound_runner.get_app_info()[1]
         elif verdict == 'r':
             # do the same thing over again
-            self.bisect_inbound(inboundRevisions=inboundRevisions)
+            self.bisect_inbound(inbound_revisions=inbound_revisions)
             return
         elif verdict == 'e':
-            print 'Newest known good inbound revision: %s' % self.lastGoodRevision
-            print 'Oldest known bad inbound revision: %s' % self.firstBadRevision
-            
+            print 'Newest known good inbound revision: %s' \
+                % self.last_good_revision
+            print 'Oldest known bad inbound revision: %s' \
+                % self.first_bad_revision
+
             print 'To resume, run:'
-            self.inboundRunner.printResumeInfo(self.lastGoodRevision, self.firstBadRevision)
+            self.inbound_runner.print_resume_info(self.last_good_revision,
+                                                  self.first_bad_revision)
             return
 
-        if len(inboundRevisions) > 1 and verdict == 'g':
-            self.bisect_inbound(inboundRevisions[(mid+1):])
-        elif len(inboundRevisions) > 1 and verdict == 'b':
-            self.bisect_inbound(inboundRevisions[:mid])
+        if len(inbound_revisions) > 1 and verdict == 'g':
+            self.bisect_inbound(inbound_revisions[(mid+1):])
+        elif len(inbound_revisions) > 1 and verdict == 'b':
+            self.bisect_inbound(inbound_revisions[:mid])
         else:
             # no more inbounds to be bisect, we must build
             print "No more inbounds to bisect"
-            self.printRange()
-            self.offer_build(self.lastGoodRevision, self.firstBadRevision)
+            self.print_range()
+            self.offer_build(self.last_good_revision, self.first_bad_revision)
 
-    def bisect_nightlies(self, goodDate, badDate, skips=0):
-        midDate = goodDate + (badDate - goodDate) / 2
+    def bisect_nightlies(self, good_date, bad_date, skips=0):
+        mid_date = good_date + (bad_date - good_date) / 2
 
-        midDate += datetime.timedelta(days=skips)
+        mid_date += datetime.timedelta(days=skips)
 
-        if midDate == badDate or midDate == goodDate:
+        if mid_date == bad_date or mid_date == good_date:
             print "Got as far as we can go bisecting nightlies..."
             if self.appname == 'firefox' or self.appname == 'fennec':
-                self._ensureMetadata(goodDate, badDate)
-                self.printRange(goodDate, badDate)
+                self._ensure_metadata(good_date, bad_date)
+                self.print_range(good_date, bad_date)
                 print "... attempting to bisect inbound builds (starting " \
                     "from previous day, to make sure no inbound revision is " \
                     "missed)"
-                prevDate = goodDate - datetime.timedelta(days=1)
-                self.nightlyRunner.install(prevDate)
-                self.lastGoodRevision = self.nightlyRunner.getAppInfo()[1]
+                prev_date = good_date - datetime.timedelta(days=1)
+                self.nightly_runner.install(prev_date)
+                self.last_good_revision = self.nightly_runner.get_app_info()[1]
                 self.bisect_inbound()
                 return
             else:
@@ -163,115 +174,142 @@ class Bisector(object):
                 sys.exit()
 
         # run the nightly from that date
-        print "Running nightly for %s" % midDate
-        dest = self.nightlyRunner.start(midDate)
+        print "Running nightly for %s" % mid_date
+        dest = self.nightly_runner.start(mid_date)
         while not dest:
-            midDate += datetime.timedelta(days=1)
-            if midDate == badDate:
-                self.printRange(goodDate, badDate)
-            dest = self.nightlyRunner.start(midDate)
+            mid_date += datetime.timedelta(days=1)
+            if mid_date == bad_date:
+                self.print_range(good_date, bad_date)
+            dest = self.nightly_runner.start(mid_date)
 
-        self.prevDate = self.currDate
-        self.currDate = midDate
+        self.prev_date = self.curr_date
+        self.curr_date = mid_date
 
         verdict = self._get_verdict('nightly')
-        self.nightlyRunner.stop()
-        self.foundRepo = self.nightlyRunner.getAppInfo()[0]
+        self.nightly_runner.stop()
+        self.found_repo = self.nightly_runner.get_app_info()[0]
         if verdict == 'g':
-            self.lastGoodRevision = self.nightlyRunner.getAppInfo()[1]
-            self.bisect_nightlies(midDate, badDate)
+            self.last_good_revision = self.nightly_runner.get_app_info()[1]
+            self.bisect_nightlies(mid_date, bad_date)
         elif verdict == 'b':
-            self.firstBadRevision = self.nightlyRunner.getAppInfo()[1]
-            self.bisect_nightlies(goodDate, midDate)
+            self.first_bad_revision = self.nightly_runner.get_app_info()[1]
+            self.bisect_nightlies(good_date, mid_date)
         elif verdict == 's':
-            #skip -- go 1 day further down
-            self.bisect_nightlies(goodDate, badDate, skips=skips+1)
+            # skip -- go 1 day further down
+            self.bisect_nightlies(good_date, bad_date, skips=skips+1)
         elif verdict == 'e':
-            self.nightlyRunner.stop()
-            goodDateString = '%04d-%02d-%02d' % (goodDate.year, goodDate.month, goodDate.day)
-            badDateString = '%04d-%02d-%02d' % (badDate.year, badDate.month, badDate.day)
-            print 'Newest known good nightly: %s' % goodDateString
-            print 'Oldest known bad nightly: %s' % badDateString
+            self.nightly_runner.stop()
+            good_date_string = '%04d-%02d-%02d' % (good_date.year,
+                                                   good_date.month,
+                                                   good_date.day)
+            bad_date_string = '%04d-%02d-%02d' % (bad_date.year,
+                                                  bad_date.month,
+                                                  bad_date.day)
+            print 'Newest known good nightly: %s' % good_date_string
+            print 'Oldest known bad nightly: %s' % bad_date_string
             print 'To resume, run:'
-            self.nightlyRunner.printResumeInfo(goodDateString, badDateString)
+            self.nightly_runner.print_resume_info(good_date_string,
+                                                  bad_date_string)
             return
         else:
-            #retry -- since we're just calling ourselves with the same parameters, it does the same thing again
-            self.bisect_nightlies(goodDate, badDate)
+            # retry -- since we're just calling ourselves with the same
+            # parameters, it does the same thing again
+            self.bisect_nightlies(good_date, bad_date)
 
-    def getPushlogUrl(self, goodDate, badDate):
+    def get_pushlog_url(self, good_date, bad_date):
         # if we don't have precise revisions, we need to resort to just
         # using handwavey dates
-        if not self.lastGoodRevision or not self.firstBadRevision:
+        if not self.last_good_revision or not self.first_bad_revision:
             # pushlogs are typically done with the oldest date first
-            if goodDate < badDate:
-                start = goodDate
-                end = badDate
+            if good_date < bad_date:
+                start = good_date
+                end = bad_date
             else:
-                start = badDate
-                end = goodDate
-            return "%s/pushloghtml?startdate=%s&enddate=%s" % (self.foundRepo,
+                start = bad_date
+                end = good_date
+            return "%s/pushloghtml?startdate=%s&enddate=%s" % (self.found_repo,
                                                                start, end)
 
         return "%s/pushloghtml?fromchange=%s&tochange=%s" % (
-            self.foundRepo, self.lastGoodRevision, self.firstBadRevision)
+            self.found_repo, self.last_good_revision, self.first_bad_revision)
+
 
 def cli():
     parser = OptionParser()
-    parser.add_option("-b", "--bad", dest="bad_date",help="first known bad nightly build, default is today",
+    parser.add_option("-b", "--bad", dest="bad_date",
+                      help="first known bad nightly build, default is today",
                       metavar="YYYY-MM-DD", default=str(datetime.date.today()))
-    parser.add_option("-g", "--good", dest="good_date",help="last known good nightly build",
+    parser.add_option("-g", "--good", dest="good_date",
+                      help="last known good nightly build",
                       metavar="YYYY-MM-DD", default=None)
-    parser.add_option("-e", "--addons", dest="addons",help="list of addons to install", metavar="PATH1,PATH2", default="")
-    parser.add_option("-p", "--profile", dest="profile", help="profile to use with nightlies", metavar="PATH")
-    parser.add_option("-a", "--args", dest="cmdargs", help="command-line arguments to pass to the application",
+    parser.add_option("-e", "--addons", dest="addons",
+                      help="list of addons to install", metavar="PATH1,PATH2",
+                      default="")
+    parser.add_option("-p", "--profile", dest="profile",
+                      help="profile to use with nightlies", metavar="PATH")
+    parser.add_option("-a", "--args", dest="cmdargs",
+                      help="command-line arguments to pass to the application",
                       metavar="ARG1,ARG2", default="")
-    parser.add_option("-n", "--app", dest="app", help="application name (firefox, fennec or thunderbird)",
-                      metavar="[firefox|fennec|thunderbird]", default="firefox")
-    parser.add_option("-r", "--repo", dest="repo_name", help="repository name on ftp.mozilla.org",
+    parser.add_option("-n", "--app", dest="app",
+                      help="application name  (firefox, fennec or"
+                      " thunderbird)",
+                      metavar="[firefox|fennec|thunderbird]",
+                      default="firefox")
+    parser.add_option("-r", "--repo", dest="repo_name",
+                      help="repository name on ftp.mozilla.org",
                       metavar="[tracemonkey|mozilla-1.9.2]", default=None)
-    parser.add_option("--bits", dest="bits", help="force 32 or 64 bit version (only applies to x86_64 boxes)",
-                      choices=("32","64"), default=mozinfo.bits)
-    parser.add_option("--persist", dest="persist", help="the directory in which files are to persist ie. /Users/someuser/Documents")
-    parser.add_option("--inbound", action="store_true", dest="inbound", help="use inbound instead of nightlies (use --good-rev and --bad-rev options")
-    parser.add_option("--bad-rev", dest="firstBadRevision",help="first known bad revision (use with --inbound)")
-    parser.add_option("--good-rev", dest="lastGoodRevision",help="last known good revision (use with --inbound)")
+    parser.add_option("--bits", dest="bits",
+                      help="force 32 or 64 bit version (only applies to"
+                      " x86_64 boxes)",
+                      choices=("32", "64"), default=mozinfo.bits)
+    parser.add_option("--persist", dest="persist",
+                      help="the directory in which files are to persist ie."
+                      " /Users/someuser/Documents")
+    parser.add_option("--inbound", action="store_true", dest="inbound",
+                      help="use inbound instead of nightlies (use --good-rev"
+                      " and --bad-rev options")
+    parser.add_option("--bad-rev", dest="first_bad_revision",
+                      help="first known bad revision (use with --inbound)")
+    parser.add_option("--good-rev", dest="last_good_revision",
+                      help="last known good revision (use with --inbound)")
 
     (options, args) = parser.parse_args()
 
-    options.bits = parseBits(options.bits)
+    options.bits = parse_bits(options.bits)
 
     addons = strsplit(options.addons, ",")
     cmdargs = strsplit(options.cmdargs, ",")
 
-    inboundRunner = None
+    inbound_runner = None
     if options.app == "firefox" or options.app == "fennec":
-        inboundRunner = InboundRunner(appname=options.app,
-                                      addons=addons,
-                                      repo_name=options.repo_name,
-                                      profile=options.profile,
-                                      cmdargs=cmdargs, bits=options.bits,
-                                      persist=options.persist)
+        inbound_runner = InboundRunner(appname=options.app,
+                                       addons=addons,
+                                       repo_name=options.repo_name,
+                                       profile=options.profile,
+                                       cmdargs=cmdargs, bits=options.bits,
+                                       persist=options.persist)
 
     if options.inbound:
-        if not options.lastGoodRevision or not options.firstBadRevision:
+        if not options.last_good_revision or not options.first_bad_revision:
             print "If bisecting inbound, both --good-rev and --bad-rev " \
                 " must be set"
             sys.exit(1)
-        bisector = Bisector(None, inboundRunner, appname=options.app,
-                            lastGoodRevision=options.lastGoodRevision,
-                            firstBadRevision=options.firstBadRevision)
+        bisector = Bisector(None, inbound_runner, appname=options.app,
+                            last_good_revision=options.last_good_revision,
+                            first_bad_revision=options.first_bad_revision)
         bisector.bisect_inbound()
     else:
         if not options.good_date:
             options.good_date = "2009-01-01"
             print "No 'good' date specified, using " + options.good_date
-        nightlyRunner = NightlyRunner(appname=options.app, addons=addons,
-                                      repo_name=options.repo_name,
-                                      profile=options.profile, cmdargs=cmdargs,
-                                      bits=options.bits,
-                                      persist=options.persist)
-        bisector = Bisector(nightlyRunner, inboundRunner, appname=options.app)
+        nightly_runner = NightlyRunner(appname=options.app, addons=addons,
+                                       repo_name=options.repo_name,
+                                       profile=options.profile,
+                                       cmdargs=cmdargs,
+                                       bits=options.bits,
+                                       persist=options.persist)
+        bisector = Bisector(nightly_runner, inbound_runner,
+                            appname=options.app)
         bisector.bisect_nightlies(get_date(options.good_date),
                                   get_date(options.bad_date))
 

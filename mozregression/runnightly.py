@@ -156,8 +156,12 @@ class Nightly(object):
                     href = link.get("href")
                     if re.match(self.build_regex, href):
                         matches.append(url + dirhref + href)
-        matches.sort()
-        return matches[-1]  # the most recent build url
+        if not matches:
+            print "Tried to get builds from %s that match '%s' but didn't find any." % \
+                  (url, self.build_regex)
+            return None
+        else:
+            return sorted(matches)[-1] # the most recent build url
 
     # functions for invoking nightly
 
@@ -241,7 +245,7 @@ class FennecNightly(Nightly):
         self.repo_name = repo_name
         self.persist = persist
         if "y" != raw_input("WARNING: bisecting nightly fennec builds will"
-                            "clobber your existing nightly profile."
+                            " clobber your existing nightly profile."
                             " Continue? (y or n)"):
             raise Exception("Aborting!")
 

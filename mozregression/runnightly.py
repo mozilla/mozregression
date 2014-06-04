@@ -34,6 +34,7 @@ class Nightly(object):
     tempdir = None
     app_name = None
     profile_class = Profile
+    build_base_repo_name = "firefox"
 
     @staticmethod
     def _get_os_regex_suffix(bits):
@@ -126,11 +127,8 @@ class Nightly(object):
         return True
 
     def get_build_url(self, datestamp):
-        if self.app_name == 'fennec':
-            repo = 'mobile'
-        else:
-            repo = 'firefox'
-        url = "http://ftp.mozilla.org/pub/mozilla.org/" + repo + "/nightly/"
+        url = "http://ftp.mozilla.org/pub/mozilla.org/" + \
+            self.build_base_repo_name + "/nightly/"
         year = str(datestamp.year)
         month = "%02d" % datestamp.month
         day = "%02d" % datestamp.day
@@ -240,6 +238,7 @@ class FennecNightly(Nightly):
     build_regex = r'fennec-.*\.apk'
     binary = 'org.mozilla.fennec/.App'
     bits = None
+    build_base_repo_name = "mobile"
 
     def __init__(self, repo_name=None, bits=mozinfo.bits, persist=None):
         self.repo_name = repo_name
@@ -281,11 +280,22 @@ class FennecNightly(Nightly):
             return None
 
 
+class B2gNightly(Nightly):
+    app_name = 'b2g'
+    name = 'b2g'
+    profile_class = Profile
+    build_base_repo_name = 'b2g'
+
+    def get_repo_name(self, date):
+        return "mozilla-central"
+
+
 class NightlyRunner(object):
 
     apps = {'thunderbird': ThunderbirdNightly,
             'fennec': FennecNightly,
-            'firefox': FirefoxNightly}
+            'firefox': FirefoxNightly,
+            'b2g': B2gNightly}
 
     def __init__(self, addons=None, appname="firefox", repo_name=None,
                  profile=None, cmdargs=(), bits=mozinfo.bits, persist=None):

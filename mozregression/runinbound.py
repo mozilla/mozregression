@@ -4,7 +4,7 @@ import mozinfo
 from optparse import OptionParser
 
 from mozregression.runnightly import FennecNightly, FirefoxNightly, \
-    NightlyRunner, parse_bits
+    B2GNightly, NightlyRunner, parse_bits
 from mozregression.inboundfinder import get_build_base_url
 from mozregression.utils import url_links, strsplit, get_date
 
@@ -53,12 +53,34 @@ class FennecInbound(FennecNightly):
         return "mozilla-inbound"
 
 
+class B2GInbound(B2GNightly):
+
+    repo_name = None
+
+    def get_build_url(self, timestamp):
+        url = "%s%s/" % (get_build_base_url(app_name=self.app_name,
+                                            bits=self.bits),
+                         timestamp)
+        matches = []
+        for link in url_links(url):
+            href = link.get("href")
+            if re.match(self.build_regex, href):
+                matches.append(url + href)
+        matches.sort()
+        return matches[-1]  # the most recent build url
+
+    def get_repo_name(self, date):
+        return "mozilla-inbound"
+
+
 class InboundRunner(NightlyRunner):
 
     def __init__(self, addons=None, appname="firefox", repo_name=None,
                  profile=None, cmdargs=(), bits=mozinfo.bits, persist=None):
         if appname == 'firefox':
             self.app = FirefoxInbound(bits=bits, persist=persist)
+        elif appname == 'b2g':
+            self.app = B2GInbound(bits=bits, persist=persist)
         else:
             self.app = FennecInbound(persist=persist)
         self.app_name = appname

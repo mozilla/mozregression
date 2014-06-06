@@ -14,8 +14,12 @@ def get_build_base_url(app_name='firefox', bits=mozinfo.bits, os=mozinfo.os):
         return "http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org" \
             "/mobile/tinderbox-builds/mozilla-inbound-android/"
 
-    base_url = 'http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org' \
-        '/firefox/tinderbox-builds/'
+    if app_name == 'b2g':
+        base_url = 'http://ftp.mozilla.org/pub/mozilla.org/b2g'\
+            '/tinderbox-builds/b2g-inbound-%s_gecko/'
+    else:
+        base_url = 'http://inbound-archive.pub.build.mozilla.org/pub' \
+            '/mozilla.org/firefox/tinderbox-builds/mozilla-inbound-%s/'
     if os == "win":
         if bits == 64:
             # XXX this should actually throw an error to be consumed
@@ -24,22 +28,24 @@ def get_build_base_url(app_name='firefox', bits=mozinfo.bits, os=mozinfo.os):
                 " (try specifying --bits=32)"
             sys.exit()
         else:
-            return base_url + 'mozilla-inbound-win32/'
+            return base_url % 'win32'
     elif os == "linux":
         if bits == 64:
-            return base_url + 'mozilla-inbound-linux64/'
+            return base_url % 'linux64'
         else:
-            return base_url + 'mozilla-inbound-linux/'
+            return base_url % ('linux32' if app_name == 'b2g' else 'linux')
     elif os == "mac":
-        return base_url + 'mozilla-inbound-macosx64/'
+        return base_url % 'macosx64'
 
 
 def get_inbound_revisions(start_rev, end_rev, app_name='firefox',
                           bits=mozinfo.bits, os=mozinfo.os):
 
     revisions = []
-    r = requests.get('https://hg.mozilla.org/integration/mozilla-inbound/'
-                     'json-pushes?fromchange=%s&tochange=%s' % (start_rev,
+    url_part = 'b2g' if app_name == 'b2g' else 'mozilla'
+    r = requests.get('https://hg.mozilla.org/integration/%s-inbound/'
+                     'json-pushes?fromchange=%s&tochange=%s' % (url_part,
+                                                                start_rev,
                                                                 end_rev))
     pushlog = json.loads(r.content)
     for pushid in sorted(pushlog.keys()):

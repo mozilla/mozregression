@@ -280,7 +280,7 @@ class FennecNightly(Nightly):
             return None
 
 
-class B2gNightly(Nightly):
+class B2GNightly(Nightly):
     app_name = 'b2g'
     name = 'b2g'
     profile_class = Profile
@@ -295,7 +295,7 @@ class NightlyRunner(object):
     apps = {'thunderbird': ThunderbirdNightly,
             'fennec': FennecNightly,
             'firefox': FirefoxNightly,
-            'b2g': B2gNightly}
+            'b2g': B2GNightly}
 
     def __init__(self, addons=None, appname="firefox", repo_name=None,
                  profile=None, cmdargs=(), bits=mozinfo.bits, persist=None):

@@ -158,9 +158,9 @@ class Bisector(object):
 
         if mid_date == bad_date or mid_date == good_date:
             print "Got as far as we can go bisecting nightlies..."
+            self._ensure_metadata(good_date, bad_date)
+            self.print_range(good_date, bad_date)
             if self.appname == 'firefox' or self.appname == 'fennec':
-                self._ensure_metadata(good_date, bad_date)
-                self.print_range(good_date, bad_date)
                 print "... attempting to bisect inbound builds (starting " \
                     "from previous day, to make sure no inbound revision is " \
                     "missed)"

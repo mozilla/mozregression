@@ -12,12 +12,11 @@ import subprocess
 import sys
 import tempfile
 import mozinfo
-import zipfile
 from mozfile import rmtree
 from mozprofile import FirefoxProfile, ThunderbirdProfile, Profile
 from mozrunner import Runner
 from optparse import OptionParser
-from ConfigParser import ConfigParser
+import mozversion
 
 from mozregression.utils import strsplit, get_date, download_url, url_links
 
@@ -164,16 +163,7 @@ class Nightly(object):
     # functions for invoking nightly
 
     def get_app_info(self):
-        parser = ConfigParser()
-        ini_file = os.path.join(os.path.dirname(self.binary),
-                                "application.ini")
-        parser.read(ini_file)
-        try:
-            changeset = parser.get('App', 'SourceStamp')
-            repo = parser.get('App', 'SourceRepository')
-            return (repo, changeset)
-        except:
-            return None
+        return mozversion.get_version(binary=self.binary)
 
     def start(self, profile, addons, cmdargs):
         if profile:
@@ -268,16 +258,7 @@ class FennecNightly(Nightly):
         return True
 
     def get_app_info(self):
-        archive = zipfile.ZipFile(self.dest, 'r')
-        fini = archive.open('application.ini')
-        parser = ConfigParser()
-        parser.readfp(fini)
-        try:
-            changeset = parser.get('App', 'SourceStamp')
-            repo = parser.get('App', 'SourceRepository')
-            return (repo, changeset)
-        except:
-            return None
+        return mozversion.get_version(binary=self.dest)
 
 
 class B2GNightly(Nightly):
@@ -318,7 +299,7 @@ class NightlyRunner(object):
             return False
         info = self.get_app_info()
         if info is not None:
-            print "Starting nightly (revision: %s)" % info[1]
+            print "Starting nightly (revision: %s)" % info['application_changeset']
         else:
             print "Starting nightly"
         if not self.app.start(self.profile, self.addons, self.cmdargs):

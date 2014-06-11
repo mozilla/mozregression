@@ -71,12 +71,15 @@ class Bisector(object):
         print "Ensuring we have enough metadata to get a pushlog..."
         if not self.last_good_revision:
             self.nightly_runner.install(good_date)
-            (self.found_repo, self.last_good_revision) = \
-                self.nightly_runner.get_app_info()
+            info = self.nightly_runner.get_app_info()
+            self.found_repo = info['application_repository']
+            self.last_good_revision = info['application_changeset']
+                
         if not self.first_bad_revision:
             self.nightly_runner.install(bad_date)
-            (self.found_repo, self.first_bad_revision) = \
-                self.nightly_runner.get_app_info()
+            info = self.nightly_runner.get_app_info()
+            self.found_repo = info['application_repository']
+            self.first_bad_revision = info['application_changeset']
 
     def _get_verdict(self, build_type, offer_skip=True):
         verdict = ""
@@ -121,11 +124,12 @@ class Bisector(object):
 
         verdict = self._get_verdict('inbound', offer_skip=False)
         self.inbound_runner.stop()
-        self.found_repo = self.inbound_runner.get_app_info()[0]
+        info = self.inbound_runner.get_app_info()
+        self.found_repo = info['application_repository']
         if verdict == 'g':
-            self.last_good_revision = self.inbound_runner.get_app_info()[1]
+            self.last_good_revision = info['application_changeset']
         elif verdict == 'b':
-            self.first_bad_revision = self.inbound_runner.get_app_info()[1]
+            self.first_bad_revision = info['application_changeset']
         elif verdict == 'r':
             # do the same thing over again
             self.bisect_inbound(inbound_revisions=inbound_revisions)
@@ -168,7 +172,8 @@ class Bisector(object):
                     "missed)"
                 prev_date = good_date - datetime.timedelta(days=1)
                 self.nightly_runner.install(prev_date)
-                self.last_good_revision = self.nightly_runner.get_app_info()[1]
+                self.last_good_revision = \
+                    self.nightly_runner.get_app_info()['application_changeset']
                 self.bisect_inbound()
                 return
             else:
@@ -189,12 +194,13 @@ class Bisector(object):
 
         verdict = self._get_verdict('nightly')
         self.nightly_runner.stop()
-        self.found_repo = self.nightly_runner.get_app_info()[0]
+        info = self.nightly_runner.get_app_info()
+        self.found_repo = info['application_repository']
         if verdict == 'g':
-            self.last_good_revision = self.nightly_runner.get_app_info()[1]
+            self.last_good_revision = info['application_changeset']
             self.bisect_nightlies(mid_date, bad_date)
         elif verdict == 'b':
-            self.first_bad_revision = self.nightly_runner.get_app_info()[1]
+            self.first_bad_revision = info['application_changeset']
             self.bisect_nightlies(good_date, mid_date)
         elif verdict == 's':
             # skip -- go 1 day further down

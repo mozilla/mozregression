@@ -160,7 +160,9 @@ class Bisector(object):
             print "Got as far as we can go bisecting nightlies..."
             self._ensure_metadata(good_date, bad_date)
             self.print_range(good_date, bad_date)
-            if self.appname == 'firefox' or self.appname == 'fennec':
+            if self.appname in ('firefox', 'fennec', 'b2g'):
+                self._ensure_metadata(good_date, bad_date)
+                self.print_range(good_date, bad_date)
                 print "... attempting to bisect inbound builds (starting " \
                     "from previous day, to make sure no inbound revision is " \
                     "missed)"
@@ -251,9 +253,9 @@ def cli():
                       help="command-line arguments to pass to the application",
                       metavar="ARG1,ARG2", default="")
     parser.add_option("-n", "--app", dest="app",
-                      help="application name  (firefox, fennec or"
-                      " thunderbird)",
-                      metavar="[firefox|fennec|thunderbird]",
+                      help="application name  (firefox, fennec,"
+                      " thunderbird or b2g)",
+                      metavar="[firefox|fennec|thunderbird|b2g]",
                       default="firefox")
     parser.add_option("-r", "--repo", dest="repo_name",
                       help="repository name on ftp.mozilla.org",
@@ -281,7 +283,7 @@ def cli():
     cmdargs = strsplit(options.cmdargs, ",")
 
     inbound_runner = None
-    if options.app == "firefox" or options.app == "fennec":
+    if options.app in ("firefox", "fennec", "b2g"):
         inbound_runner = InboundRunner(appname=options.app,
                                        addons=addons,
                                        repo_name=options.repo_name,

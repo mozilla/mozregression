@@ -60,8 +60,12 @@ def get_inbound_revisions(start_rev, end_rev, app_name='firefox',
     raw_revisions = map(lambda l: l[0], revisions)
 
     base_url = get_build_base_url(app_name=app_name, bits=bits, os=os)
-    # anything within four hours is potentially within the range
-    range = 60*60*4
+    # anything within twelve hours is potentially within the range
+    # (should be a tighter but some older builds have wrong timestamps,
+    # see https://bugzilla.mozilla.org/show_bug.cgi?id=1018907 ...
+    # we can change this at some point in the future, after those builds
+    # expire)
+    range = 60*60*12
     timestamps = map(lambda l: int(l),
                      # sometimes we have links like "latest"
                      filter(lambda l: l.isdigit(),

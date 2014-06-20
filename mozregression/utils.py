@@ -61,11 +61,20 @@ def download_url(url, dest=None, message="Downloading build from:"):
     return dest
 
 
-def url_links(url):
-    request = requests.get(url)
-    if request.status_code != 200:
-        return []
+def url_links(url, regex=None, auth=None):
+    response = requests.get(url, auth=auth)
+    response.raise_for_status()
 
-    soup = BeautifulSoup(request.text)
+    soup = BeautifulSoup(response.text)
+
+    if regex:
+        if isinstance(regex, basestring):
+            regex = re.compile(regex)
+        match = regex.match
+    else:
+        match = lambda t: True
+
     # do not return a generator but an array, so we can store it for later use
-    return [link for link in soup.findAll('a')]
+    return [link.get('href')
+            for link in soup.findAll('a')
+            if match(link.get('href'))]

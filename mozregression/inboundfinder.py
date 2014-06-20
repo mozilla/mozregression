@@ -69,31 +69,30 @@ def get_inbound_revisions(start_rev, end_rev, app_name='firefox',
     timestamps = map(lambda l: int(l),
                      # sometimes we have links like "latest"
                      filter(lambda l: l.isdigit(),
-                            map(lambda l: l.get('href').strip('/'),
+                            map(lambda l: l.strip('/'),
                                 url_links(base_url))))
     timestamps_in_range = filter(lambda t: t > (starttime - range) and
                                  t < (endtime + range), timestamps)
     revisions = []  # timestamp, order pairs
     for timestamp in timestamps_in_range:
-        for link in url_links("%s%s/" % (base_url, timestamp)):
-            href = link.get('href')
-            if re.match(r'^.+\.txt$', href):
-                url = "%s%s/%s" % (base_url, timestamp, href)
-                response = requests.get(url)
-                remote_revision = None
-                for line in response.iter_lines():
-                    # Filter out Keep-Alive new lines.
-                    if not line:
-                        continue
-                    parts = line.split('/rev/')
-                    if len(parts) == 2:
-                        remote_revision = parts[1]
-                        break  # for line
-                if remote_revision:
-                    for (i, revision) in enumerate(raw_revisions):
-                        if remote_revision in revision:
-                            revisions.append((revision, timestamp, i))
-                break  # for link
+        for link in url_links("%s%s/" % (base_url, timestamp),
+                              regex=r'^.+\.txt$'):
+            url = "%s%s/%s" % (base_url, timestamp, link)
+            response = requests.get(url)
+            remote_revision = None
+            for line in response.iter_lines():
+                # Filter out Keep-Alive new lines.
+                if not line:
+                    continue
+                parts = line.split('/rev/')
+                if len(parts) == 2:
+                    remote_revision = parts[1]
+                    break  # for line
+            if remote_revision:
+                for (i, revision) in enumerate(raw_revisions):
+                    if remote_revision in revision:
+                        revisions.append((revision, timestamp, i))
+            break  # for link
 
     return sorted(revisions, key=lambda r: r[2])
 

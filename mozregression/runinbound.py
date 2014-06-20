@@ -19,12 +19,9 @@ class FirefoxInbound(FirefoxNightly):
         self.bits = bits
 
     def get_build_url(self, timestamp):
-        url = "%s%s/" % (get_build_base_url(bits=self.bits), timestamp)
-        matches = []
-        for link in url_links(url):
-            href = link.get("href")
-            if re.match(self.build_regex, href):
-                matches.append(url + href)
+        base_url = "%s%s/" % (get_build_base_url(bits=self.bits), timestamp)
+        matches = [base_url + url
+                   for url in url_links(base_url, regex=self.build_regex)]
         matches.sort()
         return matches[-1]  # the most recent build url
 
@@ -40,12 +37,10 @@ class FennecInbound(FennecNightly):
         self.persist = persist
 
     def get_build_url(self, timestamp):
-        url = "%s%s/" % (get_build_base_url(app_name=self.app_name), timestamp)
-        matches = []
-        for link in url_links(url):
-            href = link.get("href")
-            if re.match(self.build_regex, href):
-                matches.append(url + href)
+        base_url = "%s%s/" % (get_build_base_url(app_name=self.app_name),
+                              timestamp)
+        matches = [base_url + url
+                   for url in url_links(base_url, regex=self.build_regex)]
         matches.sort()
         return matches[-1]  # the most recent build url
 
@@ -58,14 +53,11 @@ class B2GInbound(B2GNightly):
     repo_name = None
 
     def get_build_url(self, timestamp):
-        url = "%s%s/" % (get_build_base_url(app_name=self.app_name,
-                                            bits=self.bits),
-                         timestamp)
-        matches = []
-        for link in url_links(url):
-            href = link.get("href")
-            if re.match(self.build_regex, href):
-                matches.append(url + href)
+        base_url = "%s%s/" % (get_build_base_url(app_name=self.app_name,
+                                                 bits=self.bits),
+                              timestamp)
+        matches = [base_url + url
+                   for url in url_links(base_url, regex=self.build_regex)]
         matches.sort()
         return matches[-1]  # the most recent build url
 

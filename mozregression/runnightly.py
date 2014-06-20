@@ -146,13 +146,10 @@ class Nightly(object):
         # first parse monthly list to get correct directory
         matches = []
         for dirlink in monthlinks:
-            dirhref = dirlink.get("href")
-            if re.match(link_regex, dirhref):
+            if re.match(link_regex, dirlink):
                 # now parse the page for the correct build url
-                for link in url_links(url + dirhref):
-                    href = link.get("href")
-                    if re.match(self.build_regex, href):
-                        matches.append(url + dirhref + href)
+                for link in url_links(url + dirlink, regex=self.build_regex):
+                    matches.append(url + dirlink + link)
         if not matches:
             print "Tried to get builds from %s that match '%s' but didn't find any." % \
                   (url, self.build_regex)

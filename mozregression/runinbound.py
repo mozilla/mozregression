@@ -5,7 +5,8 @@ from optparse import OptionParser
 
 from mozregression.runnightly import FennecNightly, FirefoxNightly, \
     B2GNightly, NightlyRunner, parse_bits
-from mozregression.inboundfinder import get_build_base_url
+from mozregression.inboundfinder import FirefoxBuildsFinder, \
+    FennecBuildsFinder, B2GBuildsFinder
 from mozregression.utils import url_links, strsplit, get_date
 
 
@@ -17,9 +18,10 @@ class FirefoxInbound(FirefoxNightly):
         self.persist = persist
         self.build_regex = self._get_build_regex(self.name, bits)
         self.bits = bits
+        self.build_finder = FirefoxBuildsFinder(bits=bits)
 
     def get_build_url(self, timestamp):
-        base_url = "%s%s/" % (get_build_base_url(bits=self.bits), timestamp)
+        base_url = "%s%s/" % (self.build_finder.build_base_url, timestamp)
         matches = [base_url + url
                    for url in url_links(base_url, regex=self.build_regex)]
         matches.sort()
@@ -35,10 +37,10 @@ class FennecInbound(FennecNightly):
 
     def __init__(self, persist=None):
         self.persist = persist
+        self.build_finder = FennecBuildsFinder()
 
     def get_build_url(self, timestamp):
-        base_url = "%s%s/" % (get_build_base_url(app_name=self.app_name),
-                              timestamp)
+        base_url = "%s%s/" % (self.build_finder.build_base_url, timestamp)
         matches = [base_url + url
                    for url in url_links(base_url, regex=self.build_regex)]
         matches.sort()
@@ -52,10 +54,12 @@ class B2GInbound(B2GNightly):
 
     repo_name = None
 
+    def __init__(self, **kwargs):
+        B2GNightly.__init__(self, **kwargs)
+        self.build_finder = B2GBuildsFinder(bits=self.bits)
+
     def get_build_url(self, timestamp):
-        base_url = "%s%s/" % (get_build_base_url(app_name=self.app_name,
-                                                 bits=self.bits),
-                              timestamp)
+        base_url = "%s%s/" % (self.build_finder.build_base_url, timestamp)
         matches = [base_url + url
                    for url in url_links(base_url, regex=self.build_regex)]
         matches.sort()

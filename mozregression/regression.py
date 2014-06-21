@@ -10,7 +10,7 @@ import sys
 from optparse import OptionParser
 
 from mozregression.utils import get_date
-from mozregression.inboundfinder import get_inbound_revisions
+tures.concurrent for faster inbound builds info downloads
 from mozregression.runnightly import NightlyRunner, parse_bits
 from mozregression.runinbound import InboundRunner
 
@@ -102,10 +102,15 @@ class Bisector(object):
         if not inbound_revisions:
             print "Getting inbound builds between %s and %s" % (
                 self.last_good_revision, self.first_bad_revision)
-            inbound_revisions = get_inbound_revisions(
-                self.last_good_revision, self.first_bad_revision,
-                app_name=self.inbound_runner.app_name,
-                bits=self.inbound_runner.bits)
+            # anything within twelve hours is potentially within the range
+            # (should be a tighter but some older builds have wrong timestamps,
+            # see https://bugzilla.mozilla.org/show_bug.cgi?id=1018907 ...
+            # we can change this at some point in the future, after those builds
+            # expire)
+            inbound_revisions = self.inbound_runner.app.build_finder \
+                .get_build_infos(self.last_good_revision,
+                                 self.first_bad_revision,
+                                 range=60*60*12)
 
             if not inbound_revisions:
                 print "Oh noes, no (more) inbound revisions :("
@@ -118,9 +123,9 @@ class Bisector(object):
 
         mid = len(inbound_revisions) / 2
         print "Testing inbound build with timestamp %s," \
-              " revision %s" % (inbound_revisions[mid][1],
-                                inbound_revisions[mid][0])
-        self.inbound_runner.start(inbound_revisions[mid][1])
+              " revision %s" % (inbound_revisions[mid]['timestamp'],
+                                inbound_revisions[mid]['revision'])
+        self.inbound_runner.start(inbound_revisions[mid]['timestamp'])
 
         verdict = self._get_verdict('inbound', offer_skip=False)
         self.inbound_runner.stop()

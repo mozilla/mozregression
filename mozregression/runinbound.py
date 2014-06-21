@@ -1,4 +1,3 @@
-import re
 import sys
 import mozinfo
 from optparse import OptionParser

@@ -10,7 +10,6 @@ import sys
 from optparse import OptionParser
 
 from mozregression.utils import get_date
-tures.concurrent for faster inbound builds info downloads
 from mozregression.runnightly import NightlyRunner, parse_bits
 from mozregression.runinbound import InboundRunner
 

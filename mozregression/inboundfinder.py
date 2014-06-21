@@ -1,5 +1,3 @@
-import re
-import json
 import mozinfo
 import sys
 from optparse import OptionParser
@@ -76,7 +74,7 @@ class BuildsFinder(object):
         
         build_urls = [("%s%s/" % (self.build_base_url, path), timestamp)
                       for path, timestamp in self._extract_paths()]
-        
+
         build_urls_in_range = filter(lambda (u, t): t > (start_time - range)
                                      and t < (end_time + range), build_urls)
 
@@ -98,7 +96,7 @@ class BuildsFinder(object):
                 all_builds.extend(future.result())
 
         return all_builds
-    
+
     def _get_valid_builds(self, build_url, timestamp, raw_revisions):
         builds = []
         for link in url_links(build_url, regex=r'^.+\.txt$'):
@@ -137,7 +135,7 @@ class FirefoxBuildsFinder(BuildsFinder):
     }
     root_build_base_url = 'http://inbound-archive.pub.build.mozilla.org/pub' \
             '/mozilla.org/firefox/tinderbox-builds/mozilla-inbound-%s/'
-    
+
     def _get_build_base_url(self):
         if self.os == "win" and self.bits == 64:
             # XXX this should actually throw an error to be consumed
@@ -169,8 +167,8 @@ def cli(args=sys.argv[1:]):
     parser.add_option("--bits", dest="bits", help="override operating system "
                       "bits autodetection", default=mozinfo.bits)
     parser.add_option("-n", "--app", dest="app", help="application name "
-                      "(firefox, fennec or thunderbird)",
-                      metavar="[firefox|fennec|thunderbird]",
+                      "(firefox, fennec or b2g)",
+                      metavar="[firefox|fennec|b2g]",
                       default="firefox")
 
     options, args = parser.parse_args(args)
@@ -178,12 +176,20 @@ def cli(args=sys.argv[1:]):
         print "start revision and end revision must be specified"
         sys.exit(1)
 
-    revisions = get_inbound_revisions(options.start_rev, options.end_rev,
-                                      app_name=options.app, os=options.os,
-                                      bits=options.bits)
-    print "Revision, Timestamp, Order"
+    build_finders = {
+        'firefox': FirefoxBuildsFinder,
+        'b2g': B2GBuildsFinder,
+        'fennec': FennecBuildsFinder
+    }
+    
+    build_finder = build_finders[options.app](os=options.os, bits=options.bits)
+    
+    revisions = build_finder.get_build_infos(options.start_rev,
+                                             options.end_rev,
+                                             range=60*60*12)
+    print "Revision, Timestamp"
     for revision in revisions:
-        print ", ".join(map(lambda s: str(s), revision))
+        print revision['revision'], revision['timestamp']
 
 if __name__ == "__main__":
     cli()

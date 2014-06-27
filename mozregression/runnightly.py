@@ -17,6 +17,7 @@ from mozprofile import FirefoxProfile, ThunderbirdProfile, Profile
 from mozrunner import Runner
 from optparse import OptionParser
 import mozversion
+import requests
 
 from mozregression.utils import strsplit, get_date, download_url, url_links
 
@@ -36,7 +37,7 @@ class Nightly(object):
     build_base_repo_name = "firefox"
 
     @staticmethod
-    def _get_os_regex_suffix(bits):
+    def _get_os_regex_suffix(bits, with_ext=True):
         if mozinfo.os == "win":
             if bits == 64:
                 # XXX this should actually throw an error to be consumed
@@ -44,24 +45,31 @@ class Nightly(object):
                 print "No builds available for 64 bit Windows" \
                       " (try specifying --bits=32)"
                 sys.exit()
-            return ".*win32.zip"
+            suffix, ext = ".*win32", ".zip"
         elif mozinfo.os == "linux":
             if bits == 64:
-                return ".*linux-x86_64.tar.bz2"
+                suffix, ext = ".*linux-x86_64", ".tar.bz2"
             else:
-                return ".*linux-i686.tar.bz2"
+                suffix, ext = ".*linux-i686", ".tar.bz2"
         elif mozinfo.os == "mac":
-            return r".*mac.*\.dmg"
+            suffix, ext = r".*mac.*", "\.dmg"
+
+        if with_ext:
+            return '%s%s' % (suffix, ext)
+        else:
+            return suffix
 
     @staticmethod
-    def _get_build_regex(name, bits):
+    def _get_build_regex(name, bits, with_ext=True):
         name_prefix = name if ".*%s" % name is not None else ''
-        suffix = Nightly._get_os_regex_suffix(bits)
+        suffix = Nightly._get_os_regex_suffix(bits, with_ext)
         return "%s%s" % (name_prefix, suffix)
 
     def __init__(self, repo_name=None, bits=mozinfo.bits, persist=None):
         self.bits = bits
         self.build_regex = self._get_build_regex(self.name, bits)
+        self.build_info_regex = \
+            self._get_build_regex(self.name, bits, with_ext=False) + "\.txt"
         self.persist = persist
         self.repo_name = repo_name
 
@@ -125,7 +133,20 @@ class Nightly(object):
             self.name)
         return True
 
+    def get_build_info(self, date):
+        url = self._get_build_url(date, self.build_info_regex, 'builds info')
+        if url is not None:
+            response = requests.get(url)
+            if response.status_code == 200:
+                for line in response.text.splitlines():
+                    if '/rev/' in line:
+                        # returns [repository, changeset]
+                        return line.split('/rev/')
+
     def get_build_url(self, datestamp):
+        return self._get_build_url(datestamp, self.build_regex, 'builds')
+
+    def _get_build_url(self, datestamp, regex, what):
         url = "http://ftp.mozilla.org/pub/mozilla.org/" + \
             self.build_base_repo_name + "/nightly/"
         year = str(datestamp.year)
@@ -148,11 +169,11 @@ class Nightly(object):
         for dirlink in monthlinks:
             if re.match(link_regex, dirlink):
                 # now parse the page for the correct build url
-                for link in url_links(url + dirlink, regex=self.build_regex):
+                for link in url_links(url + dirlink, regex=regex):
                     matches.append(url + dirlink + link)
         if not matches:
-            print "Tried to get builds from %s that match '%s' but didn't find any." % \
-                  (url, self.build_regex)
+            print "Tried to get %s from %s that match '%s' but didn't find any." % \
+                  (what, url, self.build_regex)
             return None
         else:
             return sorted(matches)[-1] # the most recent build url
@@ -223,6 +244,7 @@ class FennecNightly(Nightly):
     name = 'fennec'
     profile_class = FirefoxProfile
     build_regex = r'fennec-.*\.apk'
+    build_info_regex = r'fennec-.*\.txt'
     binary = 'org.mozilla.fennec/.App'
     bits = None
     build_base_repo_name = "mobile"
@@ -311,6 +333,18 @@ class NightlyRunner(object):
 
     def cleanup(self):
         self.app.cleanup()
+
+    def get_build_info(self, date=datetime.date.today()):
+        result = self.app.get_build_info(date)
+        if result is None:
+            print ("Failed to retrieve build repository and revision from the"
+                   " build dir. Let's try to install it to get the required"
+                   " metadata...")
+            self.install(date)
+            info = self.get_app_info()
+            result = (info['application_repository'],
+                      info['application_changeset'])
+        return result
 
     def get_app_info(self):
         return self.app.get_app_info()

@@ -1,101 +1,160 @@
-import re
-import json
 import mozinfo
 import sys
 from optparse import OptionParser
 import requests
+import copy
 
 from mozregression.utils import url_links
+from concurrent import futures
 
 
-def get_build_base_url(app_name='firefox', bits=mozinfo.bits, os=mozinfo.os):
+class PushLogsFinder(object):
+    """
+    Find pushlog json objects within two revisions.
+    """
+    def __init__(self, start_rev, end_rev, path='integration',
+                 branch='mozilla-inbound'):
+        self.start_rev = start_rev
+        self.end_rev = end_rev
+        self.path = path
+        self.branch = branch
 
-    if app_name == 'fennec':
+    def pushlog_url(self):
+        return 'https://hg.mozilla.org/%s/%s/json-pushes' \
+            '?fromchange=%s&tochange=%s' % (self.path,
+                                            self.branch,
+                                            self.start_rev,
+                                            self.end_rev)
+
+    def get_pushlogs(self):
+        """
+        Returns pushlog json objects (python dicts) sorted by date.
+        """
+        response = requests.get(self.pushlog_url())
+        response.raise_for_status()
+        # sort pushlogs by date
+        return sorted(response.json().itervalues(),
+                      key=lambda push: push['date'])
+
+
+class BuildsFinder(object):
+    """
+    Find builds information for builds within two revisions.
+    """
+    def __init__(self, bits=mozinfo.bits, os=mozinfo.os):
+        self.bits = bits
+        self.os = os
+        self.build_base_url = self._get_build_base_url()
+
+    def _create_pushlog_finder(self, start_rev, end_rev):
+        return PushLogsFinder(start_rev, end_rev)
+
+    def _get_build_base_url(self):
+        raise NotImplementedError()
+
+    def _extract_paths(self):
+        paths = filter(lambda l: l.isdigit(),
+                       map(lambda l: l.strip('/'),
+                           url_links(self.build_base_url)))
+        return [(p, int(p)) for p in paths]
+
+    def get_build_infos(self, start_rev, end_rev, range=60*60*4):
+        """
+        Returns build information for all builds between start_rev and end_rev
+        """
+        pushlogs_finder = self._create_pushlog_finder(start_rev, end_rev)
+
+        pushlogs = pushlogs_finder.get_pushlogs()
+
+        if not pushlogs:
+            return []
+
+        start_time = pushlogs[0]['date']
+        end_time = pushlogs[-1]['date']
+        
+        build_urls = [("%s%s/" % (self.build_base_url, path), timestamp)
+                      for path, timestamp in self._extract_paths()]
+
+        build_urls_in_range = filter(lambda (u, t): t > (start_time - range)
+                                     and t < (end_time + range), build_urls)
+
+        raw_revisions = [push['changesets'][-1] for push in pushlogs]
+        all_builds = []
+        with futures.ThreadPoolExecutor(max_workers=100) as executor:
+            futures_results = {}
+            for build_url, timestamp in build_urls_in_range:
+                future = executor.submit(self._get_valid_builds,
+                                         build_url,
+                                         timestamp,
+                                         raw_revisions)
+                futures_results[future] = build_url
+            for future in futures.as_completed(futures_results):
+                if future.exception() is not None:
+                    sys.exit("Retrieving valid builds from %r generated an"
+                             " exception: %s" % (futures_results[future],
+                                                 future.exception()))
+                all_builds.extend(future.result())
+
+        return all_builds
+
+    def _get_valid_builds(self, build_url, timestamp, raw_revisions):
+        builds = []
+        for link in url_links(build_url, regex=r'^.+\.txt$'):
+            url = "%s/%s" % (build_url, link)
+            response = requests.get(url)
+            remote_revision = None
+            for line in response.iter_lines():
+                # Filter out Keep-Alive new lines.
+                if not line:
+                    continue
+                parts = line.split('/rev/')
+                if len(parts) == 2:
+                    remote_revision = parts[1]
+                    break  # for line
+            if remote_revision:
+                for revision in raw_revisions:
+                    if remote_revision in revision:
+                        builds.append({
+                            'revision': revision,
+                            'timestamp': timestamp,
+                        })
+        return builds
+
+
+class FennecBuildsFinder(BuildsFinder):
+    def _get_build_base_url(self):
         return "http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org" \
             "/mobile/tinderbox-builds/mozilla-inbound-android/"
 
-    if app_name == 'b2g':
-        base_url = 'http://ftp.mozilla.org/pub/mozilla.org/b2g'\
-            '/tinderbox-builds/b2g-inbound-%s_gecko/'
-    else:
-        base_url = 'http://inbound-archive.pub.build.mozilla.org/pub' \
+
+class FirefoxBuildsFinder(BuildsFinder):
+    build_base_os_part = {
+        'linux': {32: 'linux', 64: 'linux64'},
+        'win': {32: 'win32'},
+        'mac': {64: 'macosx64'}
+    }
+    root_build_base_url = 'http://inbound-archive.pub.build.mozilla.org/pub' \
             '/mozilla.org/firefox/tinderbox-builds/mozilla-inbound-%s/'
-    if os == "win":
-        if bits == 64:
+
+    def _get_build_base_url(self):
+        if self.os == "win" and self.bits == 64:
             # XXX this should actually throw an error to be consumed
             # by the caller
             print "No builds available for 64 bit Windows" \
                 " (try specifying --bits=32)"
             sys.exit()
-        else:
-            return base_url % 'win32'
-    elif os == "linux":
-        if bits == 64:
-            return base_url % 'linux64'
-        else:
-            return base_url % ('linux32' if app_name == 'b2g' else 'linux')
-    elif os == "mac":
-        return base_url % 'macosx64'
+        return self.root_build_base_url % self.build_base_os_part[self.os][self.bits]
 
 
-def get_inbound_revisions(start_rev, end_rev, app_name='firefox',
-                          bits=mozinfo.bits, os=mozinfo.os):
+class B2GBuildsFinder(FirefoxBuildsFinder):
+    build_base_os_part = copy.deepcopy(FirefoxBuildsFinder.build_base_os_part)
+    build_base_os_part['linux'][32] = 'linux32'
+    
+    root_build_base_url = 'http://ftp.mozilla.org/pub/mozilla.org/b2g'\
+            '/tinderbox-builds/b2g-inbound-%s_gecko/'
 
-    revisions = []
-    url_part = 'b2g' if app_name == 'b2g' else 'mozilla'
-    r = requests.get('https://hg.mozilla.org/integration/%s-inbound/'
-                     'json-pushes?fromchange=%s&tochange=%s' % (url_part,
-                                                                start_rev,
-                                                                end_rev))
-    pushlog = json.loads(r.content)
-    for pushid in sorted(pushlog.keys()):
-        push = pushlog[pushid]
-        revisions.append((push['changesets'][-1], push['date']))
-
-    revisions.sort(key=lambda r: r[1])
-    if not revisions:
-        return []
-    starttime = revisions[0][1]
-    endtime = revisions[-1][1]
-    raw_revisions = map(lambda l: l[0], revisions)
-
-    base_url = get_build_base_url(app_name=app_name, bits=bits, os=os)
-    # anything within twelve hours is potentially within the range
-    # (should be a tighter but some older builds have wrong timestamps,
-    # see https://bugzilla.mozilla.org/show_bug.cgi?id=1018907 ...
-    # we can change this at some point in the future, after those builds
-    # expire)
-    range = 60*60*12
-    timestamps = map(lambda l: int(l),
-                     # sometimes we have links like "latest"
-                     filter(lambda l: l.isdigit(),
-                            map(lambda l: l.get('href').strip('/'),
-                                url_links(base_url))))
-    timestamps_in_range = filter(lambda t: t > (starttime - range) and
-                                 t < (endtime + range), timestamps)
-    revisions = []  # timestamp, order pairs
-    for timestamp in timestamps_in_range:
-        for link in url_links("%s%s/" % (base_url, timestamp)):
-            href = link.get('href')
-            if re.match(r'^.+\.txt$', href):
-                url = "%s%s/%s" % (base_url, timestamp, href)
-                response = requests.get(url)
-                remote_revision = None
-                for line in response.iter_lines():
-                    # Filter out Keep-Alive new lines.
-                    if not line:
-                        continue
-                    parts = line.split('/rev/')
-                    if len(parts) == 2:
-                        remote_revision = parts[1]
-                        break  # for line
-                if remote_revision:
-                    for (i, revision) in enumerate(raw_revisions):
-                        if remote_revision in revision:
-                            revisions.append((revision, timestamp, i))
-                break  # for link
-
-    return sorted(revisions, key=lambda r: r[2])
+    def _create_pushlog_finder(self, start_rev, end_rev):
+        return PushLogsFinder(start_rev, end_rev, branch='b2g-inbound')
 
 
 def cli(args=sys.argv[1:]):
@@ -108,8 +167,8 @@ def cli(args=sys.argv[1:]):
     parser.add_option("--bits", dest="bits", help="override operating system "
                       "bits autodetection", default=mozinfo.bits)
     parser.add_option("-n", "--app", dest="app", help="application name "
-                      "(firefox, fennec or thunderbird)",
-                      metavar="[firefox|fennec|thunderbird]",
+                      "(firefox, fennec or b2g)",
+                      metavar="[firefox|fennec|b2g]",
                       default="firefox")
 
     options, args = parser.parse_args(args)
@@ -117,12 +176,20 @@ def cli(args=sys.argv[1:]):
         print "start revision and end revision must be specified"
         sys.exit(1)
 
-    revisions = get_inbound_revisions(options.start_rev, options.end_rev,
-                                      app_name=options.app, os=options.os,
-                                      bits=options.bits)
-    print "Revision, Timestamp, Order"
+    build_finders = {
+        'firefox': FirefoxBuildsFinder,
+        'b2g': B2GBuildsFinder,
+        'fennec': FennecBuildsFinder
+    }
+    
+    build_finder = build_finders[options.app](os=options.os, bits=options.bits)
+    
+    revisions = build_finder.get_build_infos(options.start_rev,
+                                             options.end_rev,
+                                             range=60*60*12)
+    print "Revision, Timestamp"
     for revision in revisions:
-        print ", ".join(map(lambda s: str(s), revision))
+        print revision['revision'], revision['timestamp']
 
 if __name__ == "__main__":
     cli()

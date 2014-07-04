@@ -17,8 +17,8 @@ setup(name="mozregression",
       packages=['mozregression'],
       entry_points="""
           [console_scripts]
-          mozregression = mozregression:regressioncli
-          moznightly = mozregression:nightlycli
+          mozregression = mozregression.regression:cli
+          moznightly = mozregression.runnightly:cli
         """,
       platforms =['Any'],
       install_requires = ['httplib2 >= 0.6.0',
@@ -31,6 +31,7 @@ setup(name="mozregression",
                           'mozinfo >= 0.4',
                           'mozversion >= 0.5',
                           'requests >= 2.1',
+                          'futures >= 2.1.6',
                           ],
       classifiers=['Development Status :: 4 - Beta',
                    'Environment :: Console',

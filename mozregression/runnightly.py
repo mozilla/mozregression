@@ -44,7 +44,7 @@ class Nightly(object):
                 print "No builds available for 64 bit Windows" \
                       " (try specifying --bits=32)"
                 sys.exit()
-            return ".*win32.zip"
+            return ".*win32.zip$"
         elif mozinfo.os == "linux":
             if bits == 64:
                 return ".*linux-x86_64.tar.bz2"

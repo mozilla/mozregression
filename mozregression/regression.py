@@ -9,7 +9,7 @@ import mozinfo
 import sys
 from optparse import OptionParser
 
-from mozregression.utils import strsplit, get_date
+from mozregression.utils import get_date
 from mozregression.inboundfinder import get_inbound_revisions
 from mozregression.runnightly import NightlyRunner, parse_bits
 from mozregression.runinbound import InboundRunner
@@ -250,14 +250,15 @@ def cli():
     parser.add_option("-g", "--good", dest="good_date",
                       help="last known good nightly build",
                       metavar="YYYY-MM-DD", default=None)
-    parser.add_option("-e", "--addons", dest="addons",
-                      help="list of addons to install", metavar="PATH1,PATH2",
-                      default="")
+    parser.add_option("-e", "--addon", dest="addons",
+                      help="an addon to install; repeat for multiple addons",
+                      metavar="PATH1", default=[], action="append")
     parser.add_option("-p", "--profile", dest="profile",
                       help="profile to use with nightlies", metavar="PATH")
-    parser.add_option("-a", "--args", dest="cmdargs",
-                      help="command-line arguments to pass to the application",
-                      metavar="ARG1,ARG2", default="")
+    parser.add_option("-a", "--arg", dest="cmdargs",
+                      help="a command-line argument to pass to the application;"
+                           " repeat for multiple arguments",
+                      metavar="ARG1", default=[], action="append")
     parser.add_option("-n", "--app", dest="app",
                       help="application name  (firefox, fennec,"
                       " thunderbird or b2g)",
@@ -285,16 +286,14 @@ def cli():
 
     options.bits = parse_bits(options.bits)
 
-    addons = strsplit(options.addons, ",")
-    cmdargs = strsplit(options.cmdargs, ",")
-
     inbound_runner = None
     if options.app in ("firefox", "fennec", "b2g"):
         inbound_runner = InboundRunner(appname=options.app,
-                                       addons=addons,
+                                       addons=options.addons,
                                        repo_name=options.repo_name,
                                        profile=options.profile,
-                                       cmdargs=cmdargs, bits=options.bits,
+                                       cmdargs=options.cmdargs,
+                                       bits=options.bits,
                                        persist=options.persist)
 
     if options.inbound:
@@ -310,10 +309,10 @@ def cli():
         if not options.good_date:
             options.good_date = "2009-01-01"
             print "No 'good' date specified, using " + options.good_date
-        nightly_runner = NightlyRunner(appname=options.app, addons=addons,
+        nightly_runner = NightlyRunner(appname=options.app, addons=options.addons,
                                        repo_name=options.repo_name,
                                        profile=options.profile,
-                                       cmdargs=cmdargs,
+                                       cmdargs=options.cmdargs,
                                        bits=options.bits,
                                        persist=options.persist)
         bisector = Bisector(nightly_runner, inbound_runner,

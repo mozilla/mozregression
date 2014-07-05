@@ -38,8 +38,12 @@ Other branches/repos:
 
 	mozregression --repo=mozilla-1.9.2
 
+Addons:
+
+	mozregression --addon=/some/addon/path/1 --addon=/some/addon/path/2
+
 Other options exist for running the nightlies with a particular
-profile, addons, and browser arguments.
+profile and browser arguments. See `mozregression --help` for more info.
 
 #dependencies
 

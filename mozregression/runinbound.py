@@ -6,7 +6,7 @@ from optparse import OptionParser
 from mozregression.runnightly import FennecNightly, FirefoxNightly, \
     B2GNightly, NightlyRunner, parse_bits
 from mozregression.inboundfinder import get_build_base_url
-from mozregression.utils import url_links, strsplit, get_date
+from mozregression.utils import url_links, get_date
 
 
 class FirefoxInbound(FirefoxNightly):
@@ -76,7 +76,7 @@ class B2GInbound(B2GNightly):
 class InboundRunner(NightlyRunner):
 
     def __init__(self, addons=None, appname="firefox", repo_name=None,
-                 profile=None, cmdargs=(), bits=mozinfo.bits, persist=None):
+                 profile=None, cmdargs=[], bits=mozinfo.bits, persist=None):
         if appname == 'firefox':
             self.app = FirefoxInbound(bits=bits, persist=persist)
         elif appname == 'b2g':
@@ -99,9 +99,9 @@ def cli(args=sys.argv[1:]):
     parser = OptionParser()
     parser.add_option("--timestamp", dest="timestamp", help="timestamp of "
                       "inbound build")
-    parser.add_option("-a", "--addons", dest="addons",
-                      help="list of addons to install",
-                      metavar="PATH1,PATH2")
+    parser.add_option("-a", "--addon", dest="addons",
+                      help="an addon to install; repeat for multiple addons",
+                      metavar="PATH1", default=[], action="append")
     parser.add_option("-p", "--profile", dest="profile",
                       help="path to profile to user", metavar="PATH")
     parser.add_option("--bits", dest="bits",
@@ -117,9 +117,7 @@ def cli(args=sys.argv[1:]):
         print "timestamp must be specified"
         sys.exit(1)
     options.bits = parse_bits(options.bits)
-    # XXX https://github.com/mozilla/mozregression/issues/50
-    addons = strsplit(options.addons or "", ",")
-    runner = InboundRunner(addons=addons, profile=options.profile,
+    runner = InboundRunner(addons=options.addons, profile=options.profile,
                            bits=options.bits, persist=options.persist)
     runner.start(get_date(options.date))
     try:

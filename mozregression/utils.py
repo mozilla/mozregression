@@ -11,14 +11,6 @@ from BeautifulSoup import BeautifulSoup
 import requests
 
 
-def strsplit(string, sep):
-    # XXX https://github.com/mozilla/mozregression/issues/50
-    strlist = string.split(sep)
-    if strlist == ['']:
-        return []
-    return strlist
-
-
 def get_date(date_string):
     regex = re.compile(r'(\d{4})\-(\d{1,2})\-(\d{1,2})')
     matched = regex.match(date_string)

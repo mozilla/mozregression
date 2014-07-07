@@ -18,7 +18,7 @@ from mozrunner import Runner
 from optparse import OptionParser
 import mozversion
 
-from mozregression.utils import strsplit, get_date, download_url, url_links
+from mozregression.utils import get_date, download_url, url_links
 
 
 subprocess._cleanup = lambda: None  # mikeal's fix for subprocess threading bug
@@ -359,8 +359,8 @@ def cli(args=sys.argv[1:]):
     parser.add_option("-d", "--date", dest="date", help="date of the nightly",
                       metavar="YYYY-MM-DD", default=str(datetime.date.today()))
     parser.add_option("-a", "--addons", dest="addons",
-                      help="list of addons to install",
-                      metavar="PATH1,PATH2")
+                      help="an addon to install; repeat for multiple addons",
+                      metavar="PATH1", default=[], action="append")
     parser.add_option("-p", "--profile", dest="profile",
                       help="path to profile to user", metavar="PATH")
     parser.add_option("-n", "--app", dest="app", help="application name",
@@ -382,11 +382,8 @@ def cli(args=sys.argv[1:]):
 
     options.bits = parse_bits(options.bits)
 
-    # XXX https://github.com/mozilla/mozregression/issues/50
-    addons = strsplit(options.addons or "", ",")
-
     # run nightly
-    runner = NightlyRunner(appname=options.app, addons=addons,
+    runner = NightlyRunner(appname=options.app, addons=options.addons,
                            profile=options.profile,
                            repo_name=options.repo_name, bits=options.bits,
                            persist=options.persist)

@@ -69,16 +69,12 @@ class Bisector(object):
     def _ensure_metadata(self, good_date, bad_date):
         print "Ensuring we have enough metadata to get a pushlog..."
         if not self.last_good_revision:
-            self.nightly_runner.install(good_date)
-            info = self.nightly_runner.get_app_info()
-            self.found_repo = info['application_repository']
-            self.last_good_revision = info['application_changeset']
-                
+            self.found_repo, self.first_bad_revision = \
+                self.nightly_runner.get_build_info(good_date)
+
         if not self.first_bad_revision:
-            self.nightly_runner.install(bad_date)
-            info = self.nightly_runner.get_app_info()
-            self.found_repo = info['application_repository']
-            self.first_bad_revision = info['application_changeset']
+            self.found_repo, self.last_good_revision = \
+                self.nightly_runner.get_build_info(bad_date)
 
     def _get_verdict(self, build_type, offer_skip=True):
         verdict = ""
@@ -175,9 +171,8 @@ class Bisector(object):
                     "from previous day, to make sure no inbound revision is " \
                     "missed)"
                 prev_date = good_date - datetime.timedelta(days=1)
-                self.nightly_runner.install(prev_date)
-                self.last_good_revision = \
-                    self.nightly_runner.get_app_info()['application_changeset']
+                _, self.last_good_revision = \
+                    self.nightly_runner.get_build_info(prev_date)
                 self.bisect_inbound()
                 return
             else:

@@ -44,14 +44,14 @@ class Nightly(object):
                 print "No builds available for 64 bit Windows" \
                       " (try specifying --bits=32)"
                 sys.exit()
-            return ".*win32.zip"
+            return ".*win32.zip$"
         elif mozinfo.os == "linux":
             if bits == 64:
-                return ".*linux-x86_64.tar.bz2"
+                return ".*linux-x86_64.tar.bz2$"
             else:
-                return ".*linux-i686.tar.bz2"
+                return ".*linux-i686.tar.bz2$"
         elif mozinfo.os == "mac":
-            return r".*mac.*\.dmg"
+            return r".*mac.*\.dmg$"
 
     @staticmethod
     def _get_build_regex(name, bits):

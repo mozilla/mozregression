@@ -208,6 +208,7 @@ class Nightly(object):
 class ThunderbirdNightly(Nightly):
     app_name = 'thunderbird'
     name = 'thunderbird'
+    build_base_repo_name = 'thunderbird'
     profile_class = ThunderbirdProfile
 
     def get_repo_name(self, date):

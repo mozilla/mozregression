@@ -179,22 +179,27 @@ class Bisector(object):
                 print "(no more options with %s)" % self.appname
                 sys.exit()
 
-        # run the nightly from that date
-        print "Running nightly for %s" % mid_date
-        dest = self.nightly_runner.start(mid_date)
-        while not dest:
+        info = None
+        while 1:
+            print "Running nightly for %s" % mid_date
+            if self.nightly_runner.start(mid_date):
+                info = self.nightly_runner.get_app_info()
+                self.found_repo = info['application_repository']
+                if mid_date == bad_date:
+                    self.print_range(good_date, bad_date)
+                break
+            else:
+                if mid_date == bad_date:
+                    sys.exit("Unable to get valid builds within the given"
+                             " range. You should try to launch mozregression"
+                             " again with a larger date range.")
             mid_date += datetime.timedelta(days=1)
-            if mid_date == bad_date:
-                self.print_range(good_date, bad_date)
-            dest = self.nightly_runner.start(mid_date)
 
         self.prev_date = self.curr_date
         self.curr_date = mid_date
 
         verdict = self._get_verdict('nightly')
         self.nightly_runner.stop()
-        info = self.nightly_runner.get_app_info()
-        self.found_repo = info['application_repository']
         if verdict == 'g':
             self.last_good_revision = info['application_changeset']
             self.bisect_nightlies(mid_date, bad_date)

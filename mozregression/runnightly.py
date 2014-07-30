@@ -70,7 +70,6 @@ class Nightly(object):
         self.build_regex = self._get_build_regex(self.name, bits) + "$"
         self.build_info_regex = \
             self._get_build_regex(self.name, bits, with_ext=False) + "\.txt$"
-        print "BI regex: %s" % self.build_info_regex
         self.persist = persist
         self.repo_name = repo_name
 

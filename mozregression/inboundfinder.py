@@ -80,7 +80,7 @@ class BuildsFinder(object):
 
         raw_revisions = [push['changesets'][-1] for push in pushlogs]
         all_builds = []
-        with futures.ThreadPoolExecutor(max_workers=100) as executor:
+        with futures.ThreadPoolExecutor(max_workers=8) as executor:
             futures_results = {}
             for build_url, timestamp in build_urls_in_range:
                 future = executor.submit(self._get_valid_builds,

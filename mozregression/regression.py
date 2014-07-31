@@ -69,11 +69,11 @@ class Bisector(object):
     def _ensure_metadata(self, good_date, bad_date):
         print "Ensuring we have enough metadata to get a pushlog..."
         if not self.last_good_revision:
-            self.found_repo, self.first_bad_revision = \
+            self.found_repo, self.last_good_revision = \
                 self.nightly_runner.get_build_info(good_date)
 
         if not self.first_bad_revision:
-            self.found_repo, self.last_good_revision = \
+            self.found_repo, self.first_bad_revision = \
                 self.nightly_runner.get_build_info(bad_date)
 
     def _get_verdict(self, build_type, offer_skip=True):

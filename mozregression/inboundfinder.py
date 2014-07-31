@@ -95,7 +95,10 @@ class BuildsFinder(object):
                                                  future.exception()))
                 all_builds.extend(future.result())
 
-        return all_builds
+        return self._sort_builds(all_builds)
+
+    def _sort_builds(self, builds):
+        return sorted(builds, key=lambda b: b['timestamp'])
 
     def _get_valid_builds(self, build_url, timestamp, raw_revisions):
         builds = []

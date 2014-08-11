@@ -165,8 +165,6 @@ class Bisector(object):
             self._ensure_metadata(good_date, bad_date)
             self.print_range(good_date, bad_date)
             if self.appname in ('firefox', 'fennec', 'b2g'):
-                self._ensure_metadata(good_date, bad_date)
-                self.print_range(good_date, bad_date)
                 print "... attempting to bisect inbound builds (starting " \
                     "from previous day, to make sure no inbound revision is " \
                     "missed)"

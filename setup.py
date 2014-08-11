@@ -7,7 +7,7 @@ long_desc = """Interactive regression range finder for Mozilla nightly builds.
 For more information see the mozregression website: http://mozilla.github.io/mozregression/"""
 
 setup(name="mozregression",
-      version="0.21",
+      version="0.22",
       description=desc,
       long_description=long_desc,
       author='Mozilla Automation and Tools Team',

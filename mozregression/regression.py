@@ -30,8 +30,9 @@ class Bisector(object):
     def find_regression_chset(self, last_good_revision, first_bad_revision):
         # Uses mozcommitbuilder to bisect on changesets
         # Only needed if they want to bisect, so we'll put the dependency here.
-        from mozcommitbuilder import builder
-        commit_builder = builder.Builder()
+        from mozcommitbuilder import builder, utils
+        commit_builder = builder.Builder(cores=utils.cpuCount())
+        commit_builder.mozconfigure()
 
         print "\n Narrowed changeset range from " + last_good_revision \
             + " to " + first_bad_revision + "\n"

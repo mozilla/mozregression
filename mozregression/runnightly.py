@@ -66,12 +66,12 @@ class Nightly(object):
         return "%s%s" % (name_prefix, suffix)
 
     def __init__(self, repo_name=None, bits=mozinfo.bits, persist=None):
+        self.repo_name = repo_name
         self.bits = bits
+        self.persist = persist
         self.build_regex = self._get_build_regex(self.name, bits) + "$"
         self.build_info_regex = \
             self._get_build_regex(self.name, bits, with_ext=False) + "\.txt$"
-        self.persist = persist
-        self.repo_name = repo_name
 
     def get_repo_name(self, date):
         raise NotImplementedError

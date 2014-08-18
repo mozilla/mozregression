@@ -9,6 +9,7 @@ import mozinfo
 import sys
 from optparse import OptionParser
 
+from mozregression import errors
 from mozregression.utils import get_date
 from mozregression.runnightly import NightlyRunner, parse_bits
 from mozregression.runinbound import InboundRunner
@@ -306,7 +307,7 @@ def cli():
         bisector = Bisector(None, inbound_runner, appname=options.app,
                             last_good_revision=options.last_good_revision,
                             first_bad_revision=options.first_bad_revision)
-        bisector.bisect_inbound()
+        app = bisector.bisect_inbound
     else:
         if not options.good_date:
             options.good_date = "2009-01-01"
@@ -319,8 +320,14 @@ def cli():
                                        persist=options.persist)
         bisector = Bisector(nightly_runner, inbound_runner,
                             appname=options.app)
-        bisector.bisect_nightlies(get_date(options.good_date),
-                                  get_date(options.bad_date))
+        app = lambda: bisector.bisect_nightlies(get_date(options.good_date),
+                                                get_date(options.bad_date))
+    try:
+        app()
+    except KeyboardInterrupt:
+        sys.exit("\nInterrupted.")
+    except errors.MozRegressionError as exc:
+        sys.exit(str(exc))
 
 
 if __name__ == "__main__":

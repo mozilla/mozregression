@@ -4,6 +4,7 @@ from optparse import OptionParser
 import requests
 import copy
 
+from mozregression import errors
 from mozregression.utils import url_links
 from concurrent import futures
 
@@ -147,11 +148,7 @@ class FirefoxBuildsFinder(BuildsFinder):
 
     def _get_build_base_url(self, inbound_branch):
         if self.os == "win" and self.bits == 64:
-            # XXX this should actually throw an error to be consumed
-            # by the caller
-            print "No builds available for 64 bit Windows" \
-                " (try specifying --bits=32)"
-            sys.exit()
+            raise errors.Win64NoAvailableBuildError()
         return self.root_build_base_url % \
                 (inbound_branch, self.build_base_os_part[self.os][self.bits])
 

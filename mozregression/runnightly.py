@@ -19,6 +19,7 @@ from optparse import OptionParser
 import mozversion
 import requests
 
+from mozregression import errors
 from mozregression.utils import get_date, download_url, url_links
 
 
@@ -40,11 +41,7 @@ class Nightly(object):
     def _get_os_regex_suffix(bits, with_ext=True):
         if mozinfo.os == "win":
             if bits == 64:
-                # XXX this should actually throw an error to be consumed
-                # by the caller
-                print "No builds available for 64 bit Windows" \
-                      " (try specifying --bits=32)"
-                sys.exit()
+                raise errors.Win64NoAvailableBuildError()
             suffix, ext = ".*win32", ".zip"
         elif mozinfo.os == "linux":
             if bits == 64:
@@ -214,10 +211,7 @@ class ThunderbirdNightly(Nightly):
         # sneaking this in here
         if mozinfo.os == "win" and date < datetime.date(2010, 03, 18):
             # no .zip package for Windows, can't use the installer
-            print "Can't run Windows builds before 2010-03-18"
-            sys.exit()
-            # XXX this should throw an exception vs exiting without
-            # the error code
+            raise errors.WinTooOldBuildError()
 
         if date < datetime.date(2008, 7, 26):
             return "trunk"

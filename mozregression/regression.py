@@ -266,8 +266,8 @@ def cli():
                       " thunderbird or b2g)",
                       metavar="[firefox|fennec|thunderbird|b2g]",
                       default="firefox")
-    parser.add_option("-r", "--repo", dest="repo_name",
-                      help="repository name on ftp.mozilla.org",
+    parser.add_option("--inbound-branch", dest="inbound_branch",
+                      help="inbound branch name on ftp.mozilla.org",
                       metavar="[tracemonkey|mozilla-1.9.2]", default=None)
     parser.add_option("--bits", dest="bits",
                       help="force 32 or 64 bit version (only applies to"
@@ -292,7 +292,7 @@ def cli():
     if options.app in ("firefox", "fennec", "b2g"):
         inbound_runner = InboundRunner(appname=options.app,
                                        addons=options.addons,
-                                       repo_name=options.repo_name,
+                                       inbound_branch=options.inbound_branch,
                                        profile=options.profile,
                                        cmdargs=options.cmdargs,
                                        bits=options.bits,
@@ -312,7 +312,7 @@ def cli():
             options.good_date = "2009-01-01"
             print "No 'good' date specified, using " + options.good_date
         nightly_runner = NightlyRunner(appname=options.app, addons=options.addons,
-                                       repo_name=options.repo_name,
+                                       inbound_branch=options.inbound_branch,
                                        profile=options.profile,
                                        cmdargs=options.cmdargs,
                                        bits=options.bits,

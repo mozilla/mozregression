@@ -10,7 +10,7 @@ class TestPushLogsFinder(unittest.TestCase):
         self.assertEquals(finder.pushlog_url(), good_url)
 
     def test_custom_pushlog_url(self):
-        finder = inboundfinder.PushLogsFinder("1", "2", path="3", branch="4")
+        finder = inboundfinder.PushLogsFinder("1", "2", path="3", inbound_branch="4")
         good_url = 'https://hg.mozilla.org/3/4/json-pushes' \
                    '?fromchange=1&tochange=2'
         self.assertEquals(finder.pushlog_url(), good_url)
@@ -30,7 +30,8 @@ class TestPushLogsFinder(unittest.TestCase):
         ])
 
 class FakeBuildsFinder(inboundfinder.BuildsFinder):
-    def _get_build_base_url(self):
+    default_inbound_branch = 'mozregression-test'
+    def _get_build_base_url(self, inbound_branch):
         return "/"
 
     def _create_pushlog_finder(self, start_rev, end_rev):
@@ -63,65 +64,52 @@ class TestBuildsFinder(unittest.TestCase):
 
 class ConcreteBuildsFinder(unittest.TestCase):
     builder_class = None
-    def assert_build_url(self, os, bits, url):
-        build_finder = self.builder_class(os=os, bits=bits)
+    def assert_build_url(self, os, bits, url, inbound_branch=None):
+        build_finder = self.builder_class(os=os, bits=bits, inbound_branch=inbound_branch)
         self.assertEquals(build_finder.build_base_url, url)
 
 class TestFennecBuildsFinder(ConcreteBuildsFinder):
     builder_class = inboundfinder.FennecBuildsFinder
     def test_build_finder(self):
-        good_url = "http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org" \
-                   "/mobile/tinderbox-builds/mozilla-inbound-android/"
-        self.assert_build_url('linux', 64, good_url)
+        configs = [('linux', 64, 'android'),]
+        for inbound_branch in (None, 'test-branch'):
+            for (os, bits, suffix) in configs:
+                expected_branch = inbound_branch if inbound_branch else 'mozilla-inbound'
+
+                good_url = "http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org" \
+                           "/mobile/tinderbox-builds/%s-%s/" % (expected_branch, suffix)
+                self.assert_build_url(os, bits, good_url, inbound_branch)
 
 class TestFirefoxBuildsFinder(ConcreteBuildsFinder):
     builder_class = inboundfinder.FirefoxBuildsFinder
-    def test_build_finder_linux64(self):
-        good_url = 'http://inbound-archive.pub.build.mozilla.org/pub' \
-                   '/mozilla.org/firefox/tinderbox-builds/mozilla-inbound-linux64/'
-        self.assert_build_url('linux', 64, good_url)
-
-    def test_build_finder_linux32(self):
-        good_url = 'http://inbound-archive.pub.build.mozilla.org/pub' \
-                   '/mozilla.org/firefox/tinderbox-builds/mozilla-inbound-linux/'
-        self.assert_build_url('linux', 32, good_url)
-
-    def test_build_finder_win32(self):
-        good_url = 'http://inbound-archive.pub.build.mozilla.org/pub' \
-                   '/mozilla.org/firefox/tinderbox-builds/mozilla-inbound-win32/'
-        self.assert_build_url('win', 32, good_url)
+    def test_build_finder(self):
+        configs = [('linux', 64, 'linux64'), ('linux', 32, 'linux'),
+                   ('win', 32, 'win32'), ('mac', 64, 'macosx64')]
+        for inbound_branch in (None, 'test-branch'):
+            for (os, bits, suffix) in configs:
+                expected_branch = inbound_branch if inbound_branch else 'mozilla-inbound'
+                good_url = 'http://inbound-archive.pub.build.mozilla.org/pub' \
+                           '/mozilla.org/firefox/tinderbox-builds/%s-%s/' % \
+                           (expected_branch, suffix)
+                self.assert_build_url(os, bits, good_url, inbound_branch)
 
     def test_build_finder_win64(self):
         with self.assertRaises(SystemExit):
             self.assert_build_url('win', 64, "")
-
-    def test_build_finder_mac64(self):
-        good_url = 'http://inbound-archive.pub.build.mozilla.org/pub' \
-                   '/mozilla.org/firefox/tinderbox-builds/mozilla-inbound-macosx64/'
-        self.assert_build_url('mac', 64, good_url)
 
 class TestB2GBuildsFinder(ConcreteBuildsFinder):
     builder_class = inboundfinder.B2GBuildsFinder
-    def test_build_finder_linux64(self):
-        good_url = 'http://ftp.mozilla.org/pub/mozilla.org/b2g'\
-                   '/tinderbox-builds/b2g-inbound-linux64_gecko/'
-        self.assert_build_url('linux', 64, good_url)
-
-    def test_build_finder_linux32(self):
-        good_url = 'http://ftp.mozilla.org/pub/mozilla.org/b2g'\
-                   '/tinderbox-builds/b2g-inbound-linux32_gecko/'
-        self.assert_build_url('linux', 32, good_url)
-
-    def test_build_finder_win32(self):
-        good_url = 'http://ftp.mozilla.org/pub/mozilla.org/b2g'\
-                   '/tinderbox-builds/b2g-inbound-win32_gecko/'
-        self.assert_build_url('win', 32, good_url)
+    def test_build_finder(self):
+        configs = [('linux', 64, 'linux64'), ('linux', 32, 'linux32'),
+                   ('win', 32, 'win32'), ('mac', 64, 'macosx64')]
+        for inbound_branch in (None, 'test-branch'):
+            for (os, bits, suffix) in configs:
+                expected_branch = inbound_branch if inbound_branch else 'b2g-inbound'
+                good_url = 'http://ftp.mozilla.org/pub/mozilla.org/b2g'\
+                           '/tinderbox-builds/%s-%s_gecko/' % \
+                           (expected_branch, suffix)
+                self.assert_build_url(os, bits, good_url, inbound_branch)
 
     def test_build_finder_win64(self):
         with self.assertRaises(SystemExit):
             self.assert_build_url('win', 64, "")
-
-    def test_build_finder_mac64(self):
-        good_url = 'http://ftp.mozilla.org/pub/mozilla.org/b2g'\
-                   '/tinderbox-builds/b2g-inbound-macosx64_gecko/'
-        self.assert_build_url('mac', 64, good_url)

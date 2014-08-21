@@ -13,16 +13,16 @@ class PushLogsFinder(object):
     Find pushlog json objects within two revisions.
     """
     def __init__(self, start_rev, end_rev, path='integration',
-                 branch='mozilla-inbound'):
+                 inbound_branch='mozilla-inbound'):
         self.start_rev = start_rev
         self.end_rev = end_rev
         self.path = path
-        self.branch = branch
+        self.inbound_branch = inbound_branch
 
     def pushlog_url(self):
         return 'https://hg.mozilla.org/%s/%s/json-pushes' \
             '?fromchange=%s&tochange=%s' % (self.path,
-                                            self.branch,
+                                            self.inbound_branch,
                                             self.start_rev,
                                             self.end_rev)
 
@@ -41,15 +41,18 @@ class BuildsFinder(object):
     """
     Find builds information for builds within two revisions.
     """
-    def __init__(self, bits=mozinfo.bits, os=mozinfo.os):
+    def __init__(self, bits=mozinfo.bits, os=mozinfo.os,
+                 inbound_branch=None):
         self.bits = bits
         self.os = os
-        self.build_base_url = self._get_build_base_url()
+        self.inbound_branch = inbound_branch or self.default_inbound_branch
+        self.build_base_url = self._get_build_base_url(self.inbound_branch)
 
     def _create_pushlog_finder(self, start_rev, end_rev):
-        return PushLogsFinder(start_rev, end_rev)
+        return PushLogsFinder(start_rev, end_rev,
+                              inbound_branch=self.inbound_branch)
 
-    def _get_build_base_url(self):
+    def _get_build_base_url(self, inbound_branch):
         raise NotImplementedError()
 
     def _extract_paths(self):
@@ -125,9 +128,11 @@ class BuildsFinder(object):
 
 
 class FennecBuildsFinder(BuildsFinder):
-    def _get_build_base_url(self):
+    default_inbound_branch = 'mozilla-inbound'
+
+    def _get_build_base_url(self, inbound_branch):
         return "http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org" \
-            "/mobile/tinderbox-builds/mozilla-inbound-android/"
+            "/mobile/tinderbox-builds/%s-android/" % inbound_branch
 
 
 class FirefoxBuildsFinder(BuildsFinder):
@@ -137,27 +142,26 @@ class FirefoxBuildsFinder(BuildsFinder):
         'mac': {64: 'macosx64'}
     }
     root_build_base_url = 'http://inbound-archive.pub.build.mozilla.org/pub' \
-            '/mozilla.org/firefox/tinderbox-builds/mozilla-inbound-%s/'
+            '/mozilla.org/firefox/tinderbox-builds/%s-%s/'
+    default_inbound_branch = 'mozilla-inbound'
 
-    def _get_build_base_url(self):
+    def _get_build_base_url(self, inbound_branch):
         if self.os == "win" and self.bits == 64:
             # XXX this should actually throw an error to be consumed
             # by the caller
             print "No builds available for 64 bit Windows" \
                 " (try specifying --bits=32)"
             sys.exit()
-        return self.root_build_base_url % self.build_base_os_part[self.os][self.bits]
+        return self.root_build_base_url % \
+                (inbound_branch, self.build_base_os_part[self.os][self.bits])
 
 
 class B2GBuildsFinder(FirefoxBuildsFinder):
     build_base_os_part = copy.deepcopy(FirefoxBuildsFinder.build_base_os_part)
     build_base_os_part['linux'][32] = 'linux32'
-    
     root_build_base_url = 'http://ftp.mozilla.org/pub/mozilla.org/b2g'\
-            '/tinderbox-builds/b2g-inbound-%s_gecko/'
-
-    def _create_pushlog_finder(self, start_rev, end_rev):
-        return PushLogsFinder(start_rev, end_rev, branch='b2g-inbound')
+            '/tinderbox-builds/%s-%s_gecko/'
+    default_inbound_branch = 'b2g-inbound'
 
 
 def cli(args=sys.argv[1:]):
@@ -173,6 +177,9 @@ def cli(args=sys.argv[1:]):
                       "(firefox, fennec or b2g)",
                       metavar="[firefox|fennec|b2g]",
                       default="firefox")
+    parser.add_option("--inbound-branch", dest="inbound_branch",
+                      help="inbound branch name on ftp.mozilla.org",
+                      metavar="[tracemonkey|mozilla-1.9.2]", default=None)
 
     options, args = parser.parse_args(args)
     if not options.start_rev or not options.end_rev:
@@ -185,7 +192,13 @@ def cli(args=sys.argv[1:]):
         'fennec': FennecBuildsFinder
     }
     
-    build_finder = build_finders[options.app](os=options.os, bits=options.bits)
+    if options.inbound_branch:
+        inbound_branch = options.inbound_branch
+    else:
+        inbound_branch = build_finder.default_inbound_branch
+
+    build_finder = build_finders[options.app](os=options.os, bits=options.bits,
+                                              inbound_branch=inbound_branch)
     
     revisions = build_finder.get_build_infos(options.start_rev,
                                              options.end_rev,

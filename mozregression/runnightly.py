@@ -65,15 +65,15 @@ class Nightly(object):
         suffix = Nightly._get_os_regex_suffix(bits, with_ext)
         return "%s%s" % (name_prefix, suffix)
 
-    def __init__(self, repo_name=None, bits=mozinfo.bits, persist=None):
-        self.repo_name = repo_name
+    def __init__(self, inbound_branch=None, bits=mozinfo.bits, persist=None):
+        self.inbound_branch = inbound_branch
         self.bits = bits
         self.persist = persist
         self.build_regex = self._get_build_regex(self.name, bits) + "$"
         self.build_info_regex = \
             self._get_build_regex(self.name, bits, with_ext=False) + "\.txt$"
 
-    def get_repo_name(self, date):
+    def get_inbound_branch(self, date):
         raise NotImplementedError
 
     # cleanup functions
@@ -98,7 +98,7 @@ class Nightly(object):
     # installation functions
 
     def get_destination(self, url, date):
-        repo_name = self.repo_name or self.get_repo_name(date)
+        inbound_branch = self.get_inbound_branch(date)
         dest = os.path.basename(url)
         if self.persist is not None:
             if hasattr(date, "strftime"):
@@ -106,7 +106,7 @@ class Nightly(object):
             else:
                 date_str = date  # Might be just a number with inbound
             dest = os.path.join(self.persist,
-                                "%s--%s--%s" % (date_str, repo_name, dest))
+                                "%s--%s--%s" % (date_str, inbound_branch, dest))
         return dest
 
     def download(self, date=datetime.date.today(), dest=None):
@@ -153,11 +153,11 @@ class Nightly(object):
         year = str(datestamp.year)
         month = "%02d" % datestamp.month
         day = "%02d" % datestamp.day
-        repo_name = self.repo_name or self.get_repo_name(datestamp)
+        inbound_branch = self.get_inbound_branch(datestamp)
         url += year + "/" + month + "/"
 
         link_regex = '^' + year + '-' + month + '-' + day + '-' \
-                     + r'[\d-]+' + repo_name + '/$'
+                     + r'[\d-]+' + inbound_branch + '/$'
         cachekey = year + '-' + month
         if cachekey in self._monthlinks:
             monthlinks = self._monthlinks[cachekey]
@@ -210,7 +210,7 @@ class ThunderbirdNightly(Nightly):
     build_base_repo_name = 'thunderbird'
     profile_class = ThunderbirdProfile
 
-    def get_repo_name(self, date):
+    def get_inbound_branch(self, date):
         # sneaking this in here
         if mozinfo.os == "win" and date < datetime.date(2010, 03, 18):
             # no .zip package for Windows, can't use the installer
@@ -234,7 +234,7 @@ class FirefoxNightly(Nightly):
     name = 'firefox'
     profile_class = FirefoxProfile
 
-    def get_repo_name(self, date):
+    def get_inbound_branch(self, date):
         if date < datetime.date(2008, 6, 17):
             return "trunk"
         else:
@@ -251,15 +251,15 @@ class FennecNightly(Nightly):
     bits = None
     build_base_repo_name = "mobile"
 
-    def __init__(self, repo_name=None, bits=mozinfo.bits, persist=None):
-        self.repo_name = repo_name
+    def __init__(self, inbound_branch=None, bits=mozinfo.bits, persist=None):
+        self.inbound_branch = inbound_branch
         self.persist = persist
         if "y" != raw_input("WARNING: bisecting nightly fennec builds will"
                             " clobber your existing nightly profile."
                             " Continue? (y or n)"):
             raise Exception("Aborting!")
 
-    def get_repo_name(self, date):
+    def get_inbound_branch(self, date):
         return "mozilla-central-android"
 
     def install(self):
@@ -288,7 +288,7 @@ class B2GNightly(Nightly):
     profile_class = Profile
     build_base_repo_name = 'b2g'
 
-    def get_repo_name(self, date):
+    def get_inbound_branch(self, date):
         return "mozilla-central"
 
 
@@ -299,14 +299,15 @@ class NightlyRunner(object):
             'firefox': FirefoxNightly,
             'b2g': B2GNightly}
 
-    def __init__(self, addons=None, appname="firefox", repo_name=None,
+    def __init__(self, addons=None, appname="firefox", inbound_branch=None,
                  profile=None, cmdargs=(), bits=mozinfo.bits, persist=None):
-        self.app = self.apps[appname](repo_name=repo_name, bits=bits,
+        self.app = self.apps[appname](inbound_branch=inbound_branch, bits=bits,
                                       persist=persist)
         self.addons = addons
         self.profile = profile
         self.persist = persist
         self.cmdargs = list(cmdargs)
+        self.inbound_branch = inbound_branch
 
     def install(self, date=datetime.date.today()):
         if not self.app.download(date=date):
@@ -354,7 +355,7 @@ class NightlyRunner(object):
     def get_resume_options(self):
         info = ""
         app = self.app.app_name
-        repo_name = self.app.repo_name
+        inbound_branch = self.app.inbound_branch
         bits = self.app.bits
         if app is not None:
             info += ' --app=%s' % app
@@ -362,8 +363,8 @@ class NightlyRunner(object):
             info += ' --addons=%s' % ",".join(self.addons)
         if self.profile is not None:
             info += ' --profile=%s' % self.profile
-        if repo_name is not None:
-            info += ' --repo=%s' % repo_name
+        if inbound_branch is not None:
+            info += ' --inbound-branch=%s' % inbound_branch
         if bits is not None:
             info += ' --bits=%s' % bits
         if self.persist is not None:
@@ -401,8 +402,8 @@ def cli(args=sys.argv[1:]):
                       metavar="[%s]" % "|".join(NightlyRunner.apps.keys()),
                       choices=NightlyRunner.apps.keys(),
                       default="firefox")
-    parser.add_option("-r", "--repo", dest="repo_name",
-                      help="repository name on ftp.mozilla.org",
+    parser.add_option("--inbound-branch", dest="inbound_branch",
+                      help="inbound branch name on ftp.mozilla.org",
                       metavar="[tracemonkey|mozilla-1.9.2]", default=None)
     parser.add_option("--bits", dest="bits",
                       help="force 32 or 64 bit version (only applies to"
@@ -418,8 +419,8 @@ def cli(args=sys.argv[1:]):
     # run nightly
     runner = NightlyRunner(appname=options.app, addons=options.addons,
                            profile=options.profile,
-                           repo_name=options.repo_name, bits=options.bits,
-                           persist=options.persist)
+                           inbound_branch=options.inbound_branch,
+                           bits=options.bits, persist=options.persist)
     runner.start(get_date(options.date))
     try:
         runner.wait()

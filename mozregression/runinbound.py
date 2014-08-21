@@ -13,11 +13,12 @@ class FirefoxInbound(FirefoxNightly):
 
     repo_name = None
 
-    def __init__(self, bits=mozinfo.bits, persist=None):
+    def __init__(self, bits=mozinfo.bits, persist=None, inbound_branch=None):
         self.persist = persist
         self.build_regex = self._get_build_regex(self.name, bits)
         self.bits = bits
-        self.build_finder = FirefoxBuildsFinder(bits=bits)
+        self.inbound_branch = inbound_branch
+        self.build_finder = FirefoxBuildsFinder(bits=bits, inbound_branch=inbound_branch)
 
     def get_build_url(self, timestamp):
         base_url = "%s%s/" % (self.build_finder.build_base_url, timestamp)
@@ -26,7 +27,7 @@ class FirefoxInbound(FirefoxNightly):
         matches.sort()
         return matches[-1]  # the most recent build url
 
-    def get_repo_name(self, date):
+    def get_inbound_branch(self, date):
         return "mozilla-inbound"
 
 
@@ -34,9 +35,10 @@ class FennecInbound(FennecNightly):
 
     repo_name = None
 
-    def __init__(self, persist=None):
+    def __init__(self, persist=None, inbound_branch=None):
         self.persist = persist
-        self.build_finder = FennecBuildsFinder()
+        self.inbound_branch = inbound_branch
+        self.build_finder = FennecBuildsFinder(inbound_branch=inbound_branch)
 
     def get_build_url(self, timestamp):
         base_url = "%s%s/" % (self.build_finder.build_base_url, timestamp)
@@ -45,7 +47,7 @@ class FennecInbound(FennecNightly):
         matches.sort()
         return matches[-1]  # the most recent build url
 
-    def get_repo_name(self, date):
+    def get_inbound_branch(self, date):
         return "mozilla-inbound"
 
 
@@ -54,8 +56,10 @@ class B2GInbound(B2GNightly):
     repo_name = None
 
     def __init__(self, **kwargs):
+        self.inbound_branch = kwargs['inbound_branch']
         B2GNightly.__init__(self, **kwargs)
-        self.build_finder = B2GBuildsFinder(bits=self.bits)
+        self.build_finder = B2GBuildsFinder(bits=self.bits,
+                                            inbound_branch=self.inbound_branch)
 
     def get_build_url(self, timestamp):
         base_url = "%s%s/" % (self.build_finder.build_base_url, timestamp)
@@ -64,25 +68,30 @@ class B2GInbound(B2GNightly):
         matches.sort()
         return matches[-1]  # the most recent build url
 
-    def get_repo_name(self, date):
-        return "mozilla-inbound"
+    def get_inbound_branch(self, date):
+        return "b2g-inbound"
 
 
 class InboundRunner(NightlyRunner):
 
     def __init__(self, addons=None, appname="firefox", repo_name=None,
-                 profile=None, cmdargs=[], bits=mozinfo.bits, persist=None):
+                 profile=None, cmdargs=[], bits=mozinfo.bits, persist=None,
+                 inbound_branch=None):
         if appname == 'firefox':
-            self.app = FirefoxInbound(bits=bits, persist=persist)
+            self.app = FirefoxInbound(bits=bits, persist=persist,
+                                      inbound_branch=inbound_branch)
         elif appname == 'b2g':
-            self.app = B2GInbound(bits=bits, persist=persist)
+            self.app = B2GInbound(bits=bits, persist=persist,
+                                  inbound_branch=inbound_branch)
         else:
-            self.app = FennecInbound(persist=persist)
+            self.app = FennecInbound(persist=persist,
+                                     inbound_branch=inbound_branch)
         self.app_name = appname
         self.bits = bits
         self.addons = addons
         self.profile = profile
         self.persist = persist
+        self.inbound_branch = inbound_branch
         self.cmdargs = list(cmdargs)
 
     def print_resume_info(self, last_good_revision, first_bad_revision):
@@ -106,6 +115,9 @@ def cli(args=sys.argv[1:]):
     parser.add_option("--persist", dest="persist",
                       help="the directory in which files are to persist"
                       " ie. /Users/someuser/Documents")
+    parser.add_option("--inbound-branch", dest="inbound_branch",
+                      help="inbound branch name on ftp.mozilla.org",
+                      metavar="[tracemonkey|mozilla-1.9.2]", default=None)
 
     options, args = parser.parse_args(args)
     if not options.timestamp:
@@ -113,7 +125,8 @@ def cli(args=sys.argv[1:]):
         sys.exit(1)
     options.bits = parse_bits(options.bits)
     runner = InboundRunner(addons=options.addons, profile=options.profile,
-                           bits=options.bits, persist=options.persist)
+                           bits=options.bits, persist=options.persist,
+                           inbound_branch=options.inbound_branch)
     runner.start(get_date(options.date))
     try:
         runner.wait()

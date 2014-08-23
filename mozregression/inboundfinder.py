@@ -1,12 +1,12 @@
 import mozinfo
 import sys
 from optparse import OptionParser
-import requests
 import copy
+import limitedfilecache
 from mozlog.structured import get_default_logger
 
 from mozregression.build_data import InboundBuildData, BuildFolderInfoFetcher
-from mozregression.utils import url_links
+from mozregression.utils import url_links, get_http_session, set_http_cache_session, one_gigabyte
 
 def get_repo_url(path='integration', inbound_branch='mozilla-inbound'):
     return "https://hg.mozilla.org/%s/%s" % (path, inbound_branch)
@@ -31,7 +31,7 @@ class PushLogsFinder(object):
         """
         Returns pushlog json objects (python dicts) sorted by date.
         """
-        response = requests.get(self.pushlog_url())
+        response = get_http_session().get(self.pushlog_url())
         response.raise_for_status()
         # sort pushlogs by date
         return sorted(response.json().itervalues(),
@@ -85,7 +85,7 @@ class BuildsFinder(object):
         return InboundBuildData(data, info_fetcher, raw_revisions)
 
 
-def cli(args=sys.argv[1:]):
+def get_build_finder(args):
     from mozregression.fetch_configs import create_config
     parser = OptionParser()
     parser.add_option("--start-rev", dest="start_rev", help="start revision")
@@ -101,6 +101,8 @@ def cli(args=sys.argv[1:]):
     parser.add_option("--inbound-branch", dest="inbound_branch",
                       help="inbound branch name on ftp.mozilla.org",
                       metavar="[tracemonkey|mozilla-1.9.2]", default=None)
+    parser.add_option("--http-cache-dir", dest="http_cache_dir",
+                      help="the directory for caching http requests")
 
     options, args = parser.parse_args(args)
     if not options.start_rev or not options.end_rev:
@@ -108,8 +110,16 @@ def cli(args=sys.argv[1:]):
 
     fetch_config = create_config(options.app, options.os, options.bits)
 
-    build_finder = BuildsFinder(fetch_config)
-    
+    cacheSession = limitedfilecache.get_cache(
+        options.http_cache_dir, one_gigabyte,
+        logger=get_default_logger('Limited File Cache'))
+
+    set_http_cache_session(cacheSession)
+
+    return BuildsFinder(fetch_config)
+
+def cli(args=sys.argv[1:]):
+    build_finder = get_build_finder(args)
     revisions = build_finder.get_build_infos(options.start_rev,
                                              options.end_rev,
                                              range=60*60*12)

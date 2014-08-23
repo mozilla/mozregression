@@ -4,6 +4,9 @@ import datetime
 import tempfile
 import shutil
 import os
+import requests
+from cachecontrol import CacheControl
+import mozregression.limitedfilecache
 from mozregression import utils, errors
 
 class TestUrlLinks(unittest.TestCase):
@@ -11,7 +14,7 @@ class TestUrlLinks(unittest.TestCase):
     def test_url_no_links(self, get):
         get.return_value = Mock(text='')
         self.assertEquals(utils.url_links(''), [])
-    
+
     @patch('requests.get')
     def test_url_with_links(self, get):
         get.return_value = Mock(text="""
@@ -20,7 +23,8 @@ class TestUrlLinks(unittest.TestCase):
         <a href="thing2/">thing2</a>
         </body>
         """)
-        self.assertEquals(utils.url_links(''), ['thing/', 'thing2/'])
+        self.assertEquals(utils.url_links(''),
+                          ['thing/', 'thing2/'])
     
     @patch('requests.get')
     def test_url_with_links_regex(self, get):
@@ -30,7 +34,9 @@ class TestUrlLinks(unittest.TestCase):
         <a href="thing2/">thing2</a>
         </body>
         """)
-        self.assertEquals(utils.url_links('', regex="thing2.*"), ['thing2/'])
+        self.assertEquals(
+            utils.url_links('', regex="thing2.*"),
+            ['thing2/'])
 
 class TestParseDate(unittest.TestCase):
     def test_valid_date(self):
@@ -38,7 +44,8 @@ class TestParseDate(unittest.TestCase):
         self.assertEquals(date, datetime.date(2014, 7, 5))
 
     def test_invalid_date(self):
-        self.assertRaises(errors.DateFormatError, utils.parse_date, "invalid_format")
+        self.assertRaises(errors.DateFormatError, utils.parse_date,
+                          "invalid_format")
 
 class TestParseBits(unittest.TestCase):
     @patch('mozregression.utils.mozinfo')
@@ -112,6 +119,35 @@ class TestRelease(unittest.TestCase):
         date = utils.date_of_release(441)
         self.assertEquals(date, None)
 
+
+class TestHTTPCache(unittest.TestCase):
+    def setUp(self):
+        self.addCleanup(utils.set_http_cache_session, None)
+
+    def make_cache(self):
+        return mozregression.limitedfilecache.get_cache(
+            '/fakedir', utils.one_gigabyte, logger=None)
+
+    def test_basic(self):
+        self.assertEquals(utils.get_http_session(), requests)
+
+    def test_none_returns_requests(self):
+        utils.set_http_cache_session(self.make_cache())
+        utils.set_http_cache_session(None)
+        self.assertEquals(utils.get_http_session(), requests)
+
+    def test_get_http_session(self):
+        utils.set_http_cache_session(self.make_cache())
+        a_session = utils.get_http_session()
+
+        # verify session exists
+        self.assertTrue(isinstance(a_session, requests.Session))
+
+        # turns out CacheControl is just a function not a class
+        # so it makes verifying that we're actually using it
+        # a little messy
+        for k, v in a_session.adapters.items():
+            self.assertTrue(isinstance(v.cache, mozregression.limitedfilecache.LimitedFileCache))
 
 if __name__ == '__main__':
     unittest.main()

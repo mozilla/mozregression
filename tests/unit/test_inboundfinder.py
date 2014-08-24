@@ -1,6 +1,6 @@
 import unittest
 from mock import patch, Mock
-from mozregression import inboundfinder
+from mozregression import inboundfinder, errors
 
 class TestPushLogsFinder(unittest.TestCase):
     def test_pushlog_url(self):
@@ -94,7 +94,7 @@ class TestFirefoxBuildsFinder(ConcreteBuildsFinder):
                 self.assert_build_url(os, bits, good_url, inbound_branch)
 
     def test_build_finder_win64(self):
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(errors.Win64NoAvailableBuildError):
             self.assert_build_url('win', 64, "")
 
 class TestB2GBuildsFinder(ConcreteBuildsFinder):
@@ -111,5 +111,5 @@ class TestB2GBuildsFinder(ConcreteBuildsFinder):
                 self.assert_build_url(os, bits, good_url, inbound_branch)
 
     def test_build_finder_win64(self):
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(errors.Win64NoAvailableBuildError):
             self.assert_build_url('win', 64, "")

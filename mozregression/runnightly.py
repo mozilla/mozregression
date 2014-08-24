@@ -114,8 +114,8 @@ class Nightly(object):
             if not self.persist:
                 self.remove_lastdest()
 
-            self.dest = self.lastdest = dest
             download_url(url, dest)
+            self.dest = self.lastdest = dest
             return True
         else:
             return False

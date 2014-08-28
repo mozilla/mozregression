@@ -10,7 +10,7 @@ import sys
 from optparse import OptionParser
 
 from mozregression import errors
-from mozregression.utils import get_date
+from mozregression.utils import get_date, accept_release, date_of_release
 from mozregression.runnightly import NightlyRunner, parse_bits
 from mozregression.runinbound import InboundRunner
 
@@ -54,6 +54,7 @@ class Bisector(object):
                   " currently supported."
             sys.exit()
 
+    @accept_release(1, 2)
     def print_range(self, good_date=None, bad_date=None):
         def _print_date_revision(name, revision, date):
             if date and revision:
@@ -67,6 +68,7 @@ class Bisector(object):
 
         print "Pushlog:\n" + self.get_pushlog_url(good_date, bad_date) + "\n"
 
+    @accept_release(1, 2)
     def _ensure_metadata(self, good_date, bad_date):
         print "Ensuring we have enough metadata to get a pushlog..."
         if not self.last_good_revision:
@@ -156,6 +158,7 @@ class Bisector(object):
             self.print_range()
             self.offer_build(self.last_good_revision, self.first_bad_revision)
 
+    @accept_release(1, 2)
     def bisect_nightlies(self, good_date, bad_date, skips=0):
         mid_date = good_date + (bad_date - good_date) / 2
 
@@ -227,6 +230,7 @@ class Bisector(object):
             # parameters, it does the same thing again
             self.bisect_nightlies(good_date, bad_date)
 
+    @accept_release(1, 2)
     def get_pushlog_url(self, good_date, bad_date):
         # if we don't have precise revisions, we need to resort to just
         # using handwavey dates
@@ -253,6 +257,10 @@ def cli():
     parser.add_option("-g", "--good", dest="good_date",
                       help="last known good nightly build",
                       metavar="YYYY-MM-DD", default=None)
+    parser.add_option("--bad-release", dest="bad_release",
+                      help="first known bad nightly build. This option is ignored if --bad is provided.")
+    parser.add_option("--good-release", dest="good_release",
+                      help="last known good nightly build. This option is ignored if --good is provided.")
     parser.add_option("-e", "--addon", dest="addons",
                       help="an addon to install; repeat for multiple addons",
                       metavar="PATH1", default=[], action="append")
@@ -309,6 +317,10 @@ def cli():
                             first_bad_revision=options.first_bad_revision)
         app = bisector.bisect_inbound
     else:
+        if options.good_release and not options.good_date:
+            options.good_date = date_of_release(options.good_release)
+        if options.bad_release and not options.bad_date:
+            options.bad_date = date_of_release(options.bad_release)
         if not options.good_date:
             options.good_date = "2009-01-01"
             print "No 'good' date specified, using " + options.good_date

@@ -4,6 +4,7 @@ import datetime
 import tempfile
 import shutil
 import os
+import re
 from mozregression import utils
 
 class TestUrlLinks(unittest.TestCase):
@@ -91,6 +92,44 @@ class TestDownloadUrl(unittest.TestCase):
         
         self.assertEquals(self.data, open(fname).read())
         self.assertIn("Downloading build from: http://toto", ''.join(stdout_data))
+
+
+class TestRelease(unittest.TestCase):
+    def test_valid_release_to_date(self):
+        date = utils.date_of_release(8)
+        self.assertEquals(date, "2011-08-16")
+        date = utils.date_of_release(34)
+        self.assertEquals(date, "2014-06-09")
+        date = utils.date_of_release(39)
+        self.assertEquals(date, "2015-02-16")
+
+    def test_invalid_release_to_date(self):
+        date = utils.date_of_release(4)
+        self.assertEquals(date, None)
+        date = utils.date_of_release(441)
+        self.assertEquals(date, None)
+
+    def test_valid_decoration(self):
+        @utils.accept_release(2, 4)
+        def func(self, param1, good_date, param2, bad_date):
+            res1, res2 = None, None
+            if type(good_date) is str:
+                r = re.compile(r'(\d{4})\-(\d{1,2})\-(\d{1,2})')
+                matched = r.match(good_date)
+                if matched:
+                    res1 = good_date
+            if type(bad_date) is str:
+                matched = r.match(bad_date)
+                if matched:
+                    res2 = bad_date
+            return res1, res2
+        res = func(self, None, "2011-04-12", None, 5)
+        self.assertEquals(res, ("2011-04-12", "2011-04-12"))
+        res = func(self, None, 28, None, "1011-01-01")
+        self.assertEquals(res, ("2013-12-09", "1011-01-01"))
+        res = func(self, None, 30, None, 40)
+        self.assertEquals(res, ("2014-03-17", "2015-03-30"))
+
 
 if __name__ == '__main__':
     unittest.main()

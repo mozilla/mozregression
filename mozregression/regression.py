@@ -10,6 +10,7 @@ import sys
 from optparse import OptionParser
 
 from mozregression import errors
+from mozregression import __version__
 from mozregression.utils import get_date
 from mozregression.runnightly import NightlyRunner, parse_bits
 from mozregression.runinbound import InboundRunner
@@ -284,8 +285,14 @@ def cli():
                       help="first known bad revision (use with --inbound)")
     parser.add_option("--good-rev", dest="last_good_revision",
                       help="last known good revision (use with --inbound)")
+    parser.add_option("--version", dest="version", action="store_true",
+                      help="print the mozregression version number and exits")
 
     (options, args) = parser.parse_args()
+
+    if options.version:
+        print __version__
+        sys.exit(0)
 
     options.bits = parse_bits(options.bits)
 

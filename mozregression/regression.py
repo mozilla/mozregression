@@ -11,7 +11,7 @@ from optparse import OptionParser
 
 from mozregression import errors
 from mozregression import __version__
-from mozregression.utils import get_date
+from mozregression.utils import get_date, date_of_release
 from mozregression.runnightly import NightlyRunner, parse_bits
 from mozregression.runinbound import InboundRunner
 
@@ -254,6 +254,12 @@ def cli():
     parser.add_option("-g", "--good", dest="good_date",
                       help="last known good nightly build",
                       metavar="YYYY-MM-DD", default=None)
+    parser.add_option("--bad-release", dest="bad_release",
+                      help="first known bad nightly build. This option is "\
+                         "incompatible with --bad.")
+    parser.add_option("--good-release", dest="good_release",
+                      help="last known good nightly build. This option is "\
+                         "incompatible with --good.")
     parser.add_option("-e", "--addon", dest="addons",
                       help="an addon to install; repeat for multiple addons",
                       metavar="PATH1", default=[], action="append")
@@ -316,6 +322,16 @@ def cli():
                             first_bad_revision=options.first_bad_revision)
         app = bisector.bisect_inbound
     else:
+        if options.good_release and options.good_date:
+            raise Exception("Options '--good_release' and '--good_date' "\
+                            "are incompatible.")
+        elif options.good_release:
+            options.good_date = date_of_release(options.good_release)
+        if options.bad_release and options.bad_date:
+            raise Exception("Options '--bad_release' and '--bad_date' "\
+                            "are incompatible.")
+        elif options.bad_release:
+            options.bad_date = date_of_release(options.bad_release)
         if not options.good_date:
             options.good_date = "2009-01-01"
             print "No 'good' date specified, using " + options.good_date

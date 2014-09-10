@@ -168,9 +168,9 @@ class Bisector(object):
             self.print_range(good_date, bad_date)
             if self.appname in ('firefox', 'fennec', 'b2g'):
                 print "... attempting to bisect inbound builds (starting " \
-                    "from previous day, to make sure no inbound revision is " \
+                    "from previous week, to make sure no inbound revision is " \
                     "missed)"
-                prev_date = good_date - datetime.timedelta(days=1)
+                prev_date = good_date - datetime.timedelta(days=7)
                 _, self.last_good_revision = \
                     self.nightly_runner.get_build_info(prev_date)
                 self.bisect_inbound()

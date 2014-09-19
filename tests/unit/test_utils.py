@@ -4,6 +4,7 @@ import datetime
 import tempfile
 import shutil
 import os
+import re
 from mozregression import utils
 
 class TestUrlLinks(unittest.TestCase):
@@ -91,6 +92,23 @@ class TestDownloadUrl(unittest.TestCase):
         
         self.assertEquals(self.data, open(fname).read())
         self.assertIn("Downloading build from: http://toto", ''.join(stdout_data))
+
+
+class TestRelease(unittest.TestCase):
+    def test_valid_release_to_date(self):
+        date = utils.date_of_release(8)
+        self.assertEquals(date, "2011-08-16")
+        date = utils.date_of_release(15)
+        self.assertEquals(date, "2012-06-05")
+        date = utils.date_of_release(34)
+        self.assertEquals(date, "2014-09-02")
+
+    def test_invalid_release_to_date(self):
+        date = utils.date_of_release(4)
+        self.assertEquals(date, None)
+        date = utils.date_of_release(441)
+        self.assertEquals(date, None)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -11,7 +11,7 @@ from optparse import OptionParser
 
 from mozregression import errors
 from mozregression import __version__
-from mozregression.utils import get_date
+from mozregression.utils import get_date, date_of_release
 from mozregression.runnightly import NightlyRunner, parse_bits
 from mozregression.runinbound import InboundRunner
 
@@ -247,13 +247,21 @@ class Bisector(object):
 
 
 def cli():
+    default_bad_date = str(datetime.date.today())
+    default_good_date = "2009-01-01"
     parser = OptionParser()
     parser.add_option("-b", "--bad", dest="bad_date",
                       help="first known bad nightly build, default is today",
-                      metavar="YYYY-MM-DD", default=str(datetime.date.today()))
+                      metavar="YYYY-MM-DD", default=None)
     parser.add_option("-g", "--good", dest="good_date",
                       help="last known good nightly build",
                       metavar="YYYY-MM-DD", default=None)
+    parser.add_option("--bad-release", dest="bad_release", type=int,
+                      help="first known bad nightly build. This option is "
+                         "incompatible with --bad.")
+    parser.add_option("--good-release", dest="good_release", type=int,
+                      help="last known good nightly build. This option is "
+                         "incompatible with --good.")
     parser.add_option("-e", "--addon", dest="addons",
                       help="an addon to install; repeat for multiple addons",
                       metavar="PATH1", default=[], action="append")
@@ -316,9 +324,33 @@ def cli():
                             first_bad_revision=options.first_bad_revision)
         app = bisector.bisect_inbound
     else:
-        if not options.good_date:
-            options.good_date = "2009-01-01"
+        if not options.bad_release and not options.bad_date:
+            options.bad_date = default_bad_date
+            print "No 'bad' date specified, using " + options.bad_date
+        elif options.bad_release and options.bad_date:
+            raise Exception("Options '--bad_release' and '--bad_date' "
+                            "are incompatible.")
+        elif options.bad_release:
+            options.bad_date = date_of_release(options.bad_release)
+            if options.bad_date is None:
+                raise Exception("Unable to find a matching date for release " +
+                                str(options.bad_release))
+            print "Using 'bad' date " + options.bad_date + " for release " + \
+                  str(options.bad_release)
+        if not options.good_release and not options.good_date:
+            options.good_date = default_good_date
             print "No 'good' date specified, using " + options.good_date
+        elif options.good_release and options.good_date:
+            raise Exception("Options '--good_release' and '--good_date' "
+                            "are incompatible.")
+        elif options.good_release:
+            options.good_date = date_of_release(options.good_release)
+            if options.good_date is None:
+                raise Exception("Unable to find a matching date for release " +
+                                str(options.good_release))
+            print "Using 'good' date " + options.good_date + " for release " + \
+                  str(options.good_release)
+
         nightly_runner = NightlyRunner(appname=options.app, addons=options.addons,
                                        inbound_branch=options.inbound_branch,
                                        profile=options.profile,

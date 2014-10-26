@@ -305,7 +305,7 @@ def cli():
     options.bits = parse_bits(options.bits)
 
     inbound_runner = None
-    if options.app in ("firefox", "fennec", "b2g"):
+    if options.app in ("firefox", "fennec", "b2g") and not (mozinfo.os == 'win' and options.bits == 64):
         inbound_runner = InboundRunner(appname=options.app,
                                        addons=options.addons,
                                        inbound_branch=options.inbound_branch,

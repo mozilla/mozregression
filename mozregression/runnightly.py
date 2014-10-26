@@ -41,8 +41,9 @@ class Nightly(object):
     def _get_os_regex_suffix(bits, with_ext=True):
         if mozinfo.os == "win":
             if bits == 64:
-                raise errors.Win64NoAvailableBuildError()
-            suffix, ext = ".*win32", ".zip"
+                suffix, ext = ".*win64-x86_64", ".zip"
+            else:
+                suffix, ext = ".*win32", ".zip"
         elif mozinfo.os == "linux":
             if bits == 64:
                 suffix, ext = ".*linux-x86_64", ".tar.bz2"

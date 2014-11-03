@@ -7,11 +7,12 @@
 import datetime
 import mozinfo
 import sys
+import math
 from optparse import OptionParser
 
 from mozregression import errors
 from mozregression import __version__
-from mozregression.utils import get_date, date_of_release
+from mozregression.utils import get_date, date_of_release, format_date
 from mozregression.runnightly import NightlyRunner, parse_bits
 from mozregression.runinbound import InboundRunner
 
@@ -157,6 +158,17 @@ class Bisector(object):
             self.print_range()
             self.offer_build(self.last_good_revision, self.first_bad_revision)
 
+    def print_nightly_regression_progress(self, good_date, bad_date,
+                                          next_good_date, next_bad_date):
+        next_days_range = (next_bad_date - next_good_date).days
+        print ("Narrowed regression window from [%s, %s] (%d days)"
+               " to [%s, %s] (%d days) (~%d steps left)"
+        ) % (format_date(good_date), format_date(bad_date),
+             (bad_date - good_date).days,
+             format_date(next_good_date), format_date(next_bad_date),
+             next_days_range,
+             round(math.sqrt(next_days_range)))
+
     def bisect_nightlies(self, good_date, bad_date, skips=0):
         mid_date = good_date + (bad_date - good_date) / 2
 
@@ -202,9 +214,13 @@ class Bisector(object):
         self.nightly_runner.stop()
         if verdict == 'g':
             self.last_good_revision = info['application_changeset']
+            self.print_nightly_regression_progress(good_date, bad_date,
+                                                   mid_date, bad_date)
             self.bisect_nightlies(mid_date, bad_date)
         elif verdict == 'b':
             self.first_bad_revision = info['application_changeset']
+            self.print_nightly_regression_progress(good_date, bad_date,
+                                                   good_date, mid_date)
             self.bisect_nightlies(good_date, mid_date)
         elif verdict == 's':
             # skip -- go 1 day further down

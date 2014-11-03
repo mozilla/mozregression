@@ -11,6 +11,10 @@ from BeautifulSoup import BeautifulSoup
 import requests
 
 
+def format_date(date):
+    return date.strftime('%Y-%m-%d')
+
+
 def get_date(date_string):
     regex = re.compile(r'(\d{4})\-(\d{1,2})\-(\d{1,2})')
     matched = regex.match(date_string)

@@ -16,9 +16,9 @@
     <div id="content">
       <div class="section" id="installation">
         <div class="section-header">
-          Install
+          Install or upgrade
         </div><p><code>mozregression</code> is a Python package, installable via <code>setuptools</code>
-           or <code>pip</code> if you know how to do that, otherwise follow along with the OS-specific instructions:</p>
+           or <code>pip</code> if you know how to do that, otherwise follow along with the OS-specific instructions (these will also work for upgrading your existing copy of mozregression, just skip the steps before using easy_install or pip):</p>
           <div class="sub-section">
             <div class="sub-section-header">
               Windows
@@ -33,7 +33,7 @@
                 <li>
                   Type this into the command-line and press Enter:
                 <pre class="code-example">
-easy_install mozregression
+easy_install -U mozregression
 </pre>
                 </li>
               </ol>
@@ -48,7 +48,7 @@ easy_install mozregression
               <pre class="code-example">
 curl -O http://peak.telecommunity.com/dist/ez_setup.py
 sudo python ez_setup.py
-sudo easy_install mozregression
+sudo easy_install -U mozregression
 </pre>
             </div>
           </div>
@@ -60,14 +60,14 @@ sudo easy_install mozregression
               Run these commands in the Terminal:
               <pre class="code-example">
 sudo apt-get install python-pip
-sudo pip install mozregression
+sudo pip install -U mozregression
 </pre>
           </div>
           </div>
-        </div>
+      </div>
    <div class="main-section" id="usage">
       <div class="section-header">
-        How To Use
+        How to use
       </div>
         <p>Let's say you just found a bug in the current nightly build and you know that bug
           didn't exist in the nightly from a few months ago. You want to find the regression
@@ -98,7 +98,7 @@ Pushlog: http://hg.mozilla.org/mozilla-central/pushloghtml?fromchange=36f5cf6b2d
     </div>
     <div class="main-section" id="code">
       <div class="section-header">
-        Other Options
+        Other options
       </div>
       Run Thunderbird nightlies:
 <pre class="code-example">

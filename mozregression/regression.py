@@ -161,13 +161,17 @@ class Bisector(object):
     def print_nightly_regression_progress(self, good_date, bad_date,
                                           next_good_date, next_bad_date):
         next_days_range = (next_bad_date - next_good_date).days
+        if next_days_range <= 1:
+            steps_left = 0
+        else:
+            steps_left = round(math.sqrt(next_days_range))
         print ("Narrowed regression window from [%s, %s] (%d days)"
                " to [%s, %s] (%d days) (~%d steps left)"
         ) % (format_date(good_date), format_date(bad_date),
              (bad_date - good_date).days,
              format_date(next_good_date), format_date(next_bad_date),
              next_days_range,
-             round(math.sqrt(next_days_range)))
+             steps_left)
 
     def bisect_nightlies(self, good_date, bad_date, skips=0):
         mid_date = good_date + (bad_date - good_date) / 2

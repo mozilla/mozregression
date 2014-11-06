@@ -17,6 +17,12 @@ from mozregression.runnightly import NightlyRunner, parse_bits
 from mozregression.runinbound import InboundRunner
 
 
+def compute_steps_left(steps):
+    if steps <= 1:
+        return 0
+    return round(math.sqrt(steps))
+
+
 class Bisector(object):
 
     curr_date = ''
@@ -96,6 +102,13 @@ class Bisector(object):
 
         return verdict
 
+    def print_inbound_regression_progress(self, revisions, revisions_left):
+        print ("Narrowed inbound regression window from [%s, %s] (%d revisions)"
+               " to [%s, %s] (%d revisions) (~%d steps left)"
+        ) % (revisions[0]['revision'], revisions[-1]['revision'], len(revisions),
+             revisions_left[0]['revision'], revisions_left[-1]['revision'],
+             len(revisions_left), compute_steps_left(len(revisions_left)))
+
     def bisect_inbound(self, inbound_revisions=None):
         if not inbound_revisions:
             print "Getting inbound builds between %s and %s" % (
@@ -148,10 +161,14 @@ class Bisector(object):
                                                   self.first_bad_revision)
             return
 
-        if len(inbound_revisions) > 1 and verdict == 'g':
-            self.bisect_inbound(inbound_revisions[(mid+1):])
-        elif len(inbound_revisions) > 1 and verdict == 'b':
-            self.bisect_inbound(inbound_revisions[:mid])
+        if len(inbound_revisions) > 1 and verdict in ('g', 'b'):
+            if verdict == 'g':
+                revisions_left = inbound_revisions[(mid+1):]
+            else:
+                revisions_left = inbound_revisions[:mid]
+            self.print_inbound_regression_progress(inbound_revisions,
+                                                   revisions_left)
+            self.bisect_inbound(revisions_left)
         else:
             # no more inbounds to be bisect, we must build
             print "No more inbounds to bisect"
@@ -161,13 +178,13 @@ class Bisector(object):
     def print_nightly_regression_progress(self, good_date, bad_date,
                                           next_good_date, next_bad_date):
         next_days_range = (next_bad_date - next_good_date).days
-        print ("Narrowed regression window from [%s, %s] (%d days)"
+        print ("Narrowed nightly regression window from [%s, %s] (%d days)"
                " to [%s, %s] (%d days) (~%d steps left)"
         ) % (format_date(good_date), format_date(bad_date),
              (bad_date - good_date).days,
              format_date(next_good_date), format_date(next_bad_date),
              next_days_range,
-             round(math.sqrt(next_days_range)))
+             compute_steps_left(next_days_range))
 
     def bisect_nightlies(self, good_date, bad_date, skips=0):
         mid_date = good_date + (bad_date - good_date) / 2

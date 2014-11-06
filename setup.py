@@ -33,6 +33,7 @@ setup(name="mozregression",
                           'mozversion >= 0.5',
                           'requests >= 2.1',
                           'futures >= 2.1.6',
+                          'mozdevice >= 0.43'
                           ],
       tests_require=['mock'],
       test_suite='tests',

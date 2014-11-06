@@ -8,7 +8,6 @@ import datetime
 import os
 import mozinstall
 import re
-import subprocess
 import sys
 import tempfile
 import mozinfo
@@ -22,10 +21,7 @@ import requests
 from mozregression import errors
 from mozregression.utils import get_date, download_url, url_links
 
-
-subprocess._cleanup = lambda: None  # mikeal's fix for subprocess threading bug
-# XXX please reference this issue with a URL!
-
+from mozdevice import ADBAndroid, ADBHost
 
 class Nightly(object):
 
@@ -246,31 +242,40 @@ class FennecNightly(Nightly):
     bits = None
     build_base_repo_name = "mobile"
 
+    def get_device_status(self):
+        self.adbhost = ADBHost()
+        if self.adbhost.devices():
+            return True
+        if "y" == raw_input("WARNING: no device connected."
+                            " Connect a device and try again.\n"
+                            "Try again? (y or n): "):
+            return self.get_device_status()
+        raise Exception("Aborting!")
+
     def __init__(self, inbound_branch=None, bits=mozinfo.bits, persist=None):
         self.inbound_branch = inbound_branch
         self.persist = persist
-        if "y" != raw_input("WARNING: bisecting nightly fennec builds will"
-                            " clobber your existing nightly profile."
-                            " Continue? (y or n)"):
-            raise Exception("Aborting!")
+        if self.get_device_status():
+            self.adb = ADBAndroid()
+            if "y" != raw_input("WARNING: bisecting nightly fennec builds will"
+                                " clobber your existing nightly profile."
+                                " Continue? (y or n)"):
+                raise Exception("Aborting!")
 
     def get_inbound_branch(self, date):
         return "mozilla-central-android"
 
     def install(self):
-        subprocess.check_call(["adb", "uninstall", "org.mozilla.fennec"])
-        subprocess.check_call(["adb", "install", self.dest])
+        self.adb.uninstall_app("org.mozilla.fennec")
+        self.adb.install_app(self.dest)
         return True
 
     def start(self, profile, addons, cmdargs):
-        subprocess.check_call(["adb", "shell", "am start -n %s" % self.binary])
+        self.adb.launch_fennec("org.mozilla.fennec")
         return True
 
     def stop(self):
-        # TODO: kill fennec (don't really care though since uninstalling
-        # it kills it)
-        # PID = $(adb shell ps | grep org.mozilla.fennec | awk '{ print $2 }')
-        # adb shell run-as org.mozilla.fennec kill $PID
+        self.adb.stop_application("org.mozilla.fennec")
         return True
 
     def get_app_info(self):

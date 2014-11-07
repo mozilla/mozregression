@@ -383,9 +383,8 @@ def cli():
 
     if options.inbound:
         if not options.last_good_revision or not options.first_bad_revision:
-            print "If bisecting inbound, both --good-rev and --bad-rev " \
-                " must be set"
-            sys.exit(1)
+            sys.exit("If bisecting inbound, both --good-rev and --bad-rev"
+                     " must be set")
         bisector = Bisector(None, inbound_runner, appname=options.app,
                             last_good_revision=options.last_good_revision,
                             first_bad_revision=options.first_bad_revision)
@@ -395,26 +394,26 @@ def cli():
             options.bad_date = default_bad_date
             print "No 'bad' date specified, using " + options.bad_date
         elif options.bad_release and options.bad_date:
-            raise Exception("Options '--bad_release' and '--bad_date' "
-                            "are incompatible.")
+            sys.exit("Options '--bad_release' and '--bad_date' are"
+                     " incompatible.")
         elif options.bad_release:
             options.bad_date = date_of_release(options.bad_release)
             if options.bad_date is None:
-                raise Exception("Unable to find a matching date for release " +
-                                str(options.bad_release))
+                sys.exit("Unable to find a matching date for release "
+                         + str(options.bad_release))
             print "Using 'bad' date " + options.bad_date + " for release " + \
                   str(options.bad_release)
         if not options.good_release and not options.good_date:
             options.good_date = default_good_date
             print "No 'good' date specified, using " + options.good_date
         elif options.good_release and options.good_date:
-            raise Exception("Options '--good_release' and '--good_date' "
-                            "are incompatible.")
+            sys.exit("Options '--good_release' and '--good_date'"
+                     " are incompatible.")
         elif options.good_release:
             options.good_date = date_of_release(options.good_release)
             if options.good_date is None:
-                raise Exception("Unable to find a matching date for release " +
-                                str(options.good_release))
+                sys.exit("Unable to find a matching date for release "
+                         + str(options.good_release))
             print "Using 'good' date " + options.good_date + " for release " + \
                   str(options.good_release)
 

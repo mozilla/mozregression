@@ -280,7 +280,15 @@ class Bisector(object):
 
 
 def parse_args():
-    parser = ArgumentParser()
+    usage = ("\n"
+             " %(prog)s [OPTIONS]"
+             " [[--bad BAD_DATE]|[--bad-release BAD_RELEASE]]"
+             " [[--good GOOD_DATE]|[--good-release GOOD_RELEASE]]"
+             "\n"
+             " %(prog)s [OPTIONS]"
+             " --inbound --bad-rev BAD_REV --good-rev GOOD_REV")
+
+    parser = ArgumentParser(usage=usage)
     parser.add_argument("--version", action="version", version=__version__,
                         help="print the mozregression version number and exits")
 

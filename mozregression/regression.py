@@ -8,7 +8,7 @@ import datetime
 import mozinfo
 import sys
 import math
-from optparse import OptionParser
+from argparse import ArgumentParser
 
 from mozregression import errors
 from mozregression import __version__
@@ -279,63 +279,97 @@ class Bisector(object):
             self.found_repo, self.last_good_revision, self.first_bad_revision)
 
 
+def parse_args():
+    usage = ("\n"
+             " %(prog)s [OPTIONS]"
+             " [[--bad BAD_DATE]|[--bad-release BAD_RELEASE]]"
+             " [[--good GOOD_DATE]|[--good-release GOOD_RELEASE]]"
+             "\n"
+             " %(prog)s [OPTIONS]"
+             " --inbound --bad-rev BAD_REV --good-rev GOOD_REV")
+
+    parser = ArgumentParser(usage=usage)
+    parser.add_argument("--version", action="version", version=__version__,
+                        help="print the mozregression version number and exits")
+
+    parser.add_argument("-b", "--bad",
+                        metavar="YYYY-MM-DD",
+                        dest="bad_date",
+                        help="first known bad nightly build, default is today")
+
+    parser.add_argument("-g", "--good",
+                        metavar="YYYY-MM-DD",
+                        dest="good_date",
+                        help="last known good nightly build")
+
+    parser.add_argument("--bad-release",
+                        type=int,
+                        help=("first known bad nightly build. This option is"
+                              " incompatible with --bad."))
+
+    parser.add_argument("--good-release",
+                        type=int,
+                        help=("last known good nightly build. This option is"
+                              " incompatible with --good."))
+
+    parser.add_argument("--inbound",
+                        action="store_true",
+                        help=("use inbound instead of nightlies (use --good-rev"
+                              " and --bad-rev options"))
+
+    parser.add_argument("--bad-rev", dest="first_bad_revision",
+                        help="first known bad revision (use with --inbound)")
+
+    parser.add_argument("--good-rev", dest="last_good_revision",
+                        help="last known good revision (use with --inbound)")
+
+    parser.add_argument("-e", "--addon",
+                        dest="addons",
+                        action='append',
+                        default=[],
+                        metavar="PATH1",
+                        help="an addon to install; repeat for multiple addons")
+
+    parser.add_argument("-p", "--profile",
+                        metavar="PATH",
+                        help="profile to use with nightlies")
+
+    parser.add_argument("-a", "--arg",
+                        dest="cmdargs",
+                        action='append',
+                        default=[],
+                        metavar="ARG1",
+                        help=("a command-line argument to pass to the"
+                              " application; repeat for multiple arguments"))
+
+    parser.add_argument("-n", "--app",
+                        choices=('firefox', 'fennec', 'thunderbird', 'b2g'),
+                        default="firefox",
+                        help="application name. Default: %(default)s")
+
+    parser.add_argument("--inbound-branch",
+                        metavar="[tracemonkey|mozilla-1.9.2]",
+                        help="inbound branch name on ftp.mozilla.org")
+
+    parser.add_argument("--bits",
+                        choices=("32", "64"),
+                        default=mozinfo.bits,
+                        help=("force 32 or 64 bit version (only applies to"
+                              " x86_64 boxes). Default: %(default)s bits"))
+
+    parser.add_argument("--persist",
+                        help="the directory in which files are to persist")
+
+
+    options = parser.parse_args()
+    options.bits = parse_bits(options.bits)
+    return options
+
+
 def cli():
     default_bad_date = str(datetime.date.today())
     default_good_date = "2009-01-01"
-    parser = OptionParser()
-    parser.add_option("-b", "--bad", dest="bad_date",
-                      help="first known bad nightly build, default is today",
-                      metavar="YYYY-MM-DD", default=None)
-    parser.add_option("-g", "--good", dest="good_date",
-                      help="last known good nightly build",
-                      metavar="YYYY-MM-DD", default=None)
-    parser.add_option("--bad-release", dest="bad_release", type=int,
-                      help="first known bad nightly build. This option is "
-                         "incompatible with --bad.")
-    parser.add_option("--good-release", dest="good_release", type=int,
-                      help="last known good nightly build. This option is "
-                         "incompatible with --good.")
-    parser.add_option("-e", "--addon", dest="addons",
-                      help="an addon to install; repeat for multiple addons",
-                      metavar="PATH1", default=[], action="append")
-    parser.add_option("-p", "--profile", dest="profile",
-                      help="profile to use with nightlies", metavar="PATH")
-    parser.add_option("-a", "--arg", dest="cmdargs",
-                      help="a command-line argument to pass to the application;"
-                           " repeat for multiple arguments",
-                      metavar="ARG1", default=[], action="append")
-    parser.add_option("-n", "--app", dest="app",
-                      help="application name  (firefox, fennec,"
-                      " thunderbird or b2g)",
-                      metavar="[firefox|fennec|thunderbird|b2g]",
-                      default="firefox")
-    parser.add_option("--inbound-branch", dest="inbound_branch",
-                      help="inbound branch name on ftp.mozilla.org",
-                      metavar="[tracemonkey|mozilla-1.9.2]", default=None)
-    parser.add_option("--bits", dest="bits",
-                      help="force 32 or 64 bit version (only applies to"
-                      " x86_64 boxes)",
-                      choices=("32", "64"), default=mozinfo.bits)
-    parser.add_option("--persist", dest="persist",
-                      help="the directory in which files are to persist ie."
-                      " /Users/someuser/Documents")
-    parser.add_option("--inbound", action="store_true", dest="inbound",
-                      help="use inbound instead of nightlies (use --good-rev"
-                      " and --bad-rev options")
-    parser.add_option("--bad-rev", dest="first_bad_revision",
-                      help="first known bad revision (use with --inbound)")
-    parser.add_option("--good-rev", dest="last_good_revision",
-                      help="last known good revision (use with --inbound)")
-    parser.add_option("--version", dest="version", action="store_true",
-                      help="print the mozregression version number and exits")
-
-    (options, args) = parser.parse_args()
-
-    if options.version:
-        print __version__
-        sys.exit(0)
-
-    options.bits = parse_bits(options.bits)
+    options = parse_args()
 
     inbound_runner = None
     if options.app in ("firefox", "fennec", "b2g") and not (mozinfo.os == 'win' and options.bits == 64):
@@ -349,9 +383,8 @@ def cli():
 
     if options.inbound:
         if not options.last_good_revision or not options.first_bad_revision:
-            print "If bisecting inbound, both --good-rev and --bad-rev " \
-                " must be set"
-            sys.exit(1)
+            sys.exit("If bisecting inbound, both --good-rev and --bad-rev"
+                     " must be set")
         bisector = Bisector(None, inbound_runner, appname=options.app,
                             last_good_revision=options.last_good_revision,
                             first_bad_revision=options.first_bad_revision)
@@ -361,26 +394,26 @@ def cli():
             options.bad_date = default_bad_date
             print "No 'bad' date specified, using " + options.bad_date
         elif options.bad_release and options.bad_date:
-            raise Exception("Options '--bad_release' and '--bad_date' "
-                            "are incompatible.")
+            sys.exit("Options '--bad_release' and '--bad_date' are"
+                     " incompatible.")
         elif options.bad_release:
             options.bad_date = date_of_release(options.bad_release)
             if options.bad_date is None:
-                raise Exception("Unable to find a matching date for release " +
-                                str(options.bad_release))
+                sys.exit("Unable to find a matching date for release "
+                         + str(options.bad_release))
             print "Using 'bad' date " + options.bad_date + " for release " + \
                   str(options.bad_release)
         if not options.good_release and not options.good_date:
             options.good_date = default_good_date
             print "No 'good' date specified, using " + options.good_date
         elif options.good_release and options.good_date:
-            raise Exception("Options '--good_release' and '--good_date' "
-                            "are incompatible.")
+            sys.exit("Options '--good_release' and '--good_date'"
+                     " are incompatible.")
         elif options.good_release:
             options.good_date = date_of_release(options.good_release)
             if options.good_date is None:
-                raise Exception("Unable to find a matching date for release " +
-                                str(options.good_release))
+                sys.exit("Unable to find a matching date for release "
+                         + str(options.good_release))
             print "Using 'good' date " + options.good_date + " for release " + \
                   str(options.good_release)
 

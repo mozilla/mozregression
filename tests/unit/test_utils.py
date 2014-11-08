@@ -4,7 +4,7 @@ import datetime
 import tempfile
 import shutil
 import os
-from mozregression import utils
+from mozregression import utils, errors
 
 class TestUrlLinks(unittest.TestCase):
     @patch('requests.get')
@@ -36,15 +36,9 @@ class TestGetDate(unittest.TestCase):
     def test_valid_date(self):
         date = utils.get_date("2014-07-05")
         self.assertEquals(date, datetime.date(2014, 7, 5))
-    
-    @patch('sys.stdout')
-    def test_invalid_date(self, stdout):
-        stdout_data = []
-        stdout.write = lambda text: stdout_data.append(text)
-        
-        date = utils.get_date("invalid_format")
-        self.assertIsNone(date)
-        self.assertIn("Incorrect date format", ''.join(stdout_data))
+
+    def test_invalid_date(self):
+        self.assertRaises(errors.DateFormatError, utils.get_date, "invalid_format")
 
 class TestDownloadUrl(unittest.TestCase):
     def setUp(self):

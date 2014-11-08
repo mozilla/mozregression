@@ -111,7 +111,10 @@ class Nightly(object):
             if not self.persist:
                 self.remove_lastdest()
 
-            download_url(url, dest)
+            if os.path.exists(dest):
+                print "Using local file: %s" % dest
+            else:
+                download_url(url, dest)
             self.dest = self.lastdest = dest
             return True
         else:

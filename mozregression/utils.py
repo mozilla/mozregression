@@ -33,10 +33,6 @@ def update_download_progress(percent):
 
 
 def download_url(url, dest=None, message="Downloading build from:"):
-    if os.path.exists(dest):
-        print "Using local file: %s" % dest
-        return
-
     if message:
         print "%s %s" % (message, url)
 

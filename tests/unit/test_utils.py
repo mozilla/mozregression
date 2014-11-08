@@ -45,19 +45,6 @@ class TestDownloadUrl(unittest.TestCase):
         self.tempdir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.tempdir)
     
-    @patch('sys.stdout')
-    def test_already_downloaded(self, stdout):
-        stdout_data = []
-        stdout.write = lambda text: stdout_data.append(text)
-        
-        fname = os.path.join(self.tempdir, 'something')
-        with open(fname, 'w') as f:
-            f.write("1")
-        
-        utils.download_url('', fname)
-        
-        self.assertIn("Using local file", "".join(stdout_data))
-    
     @patch('requests.get')
     @patch('sys.stdout')
     def test_already_downloaded(self, stdout, get):

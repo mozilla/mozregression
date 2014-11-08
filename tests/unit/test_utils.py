@@ -44,34 +44,29 @@ class TestDownloadUrl(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.tempdir)
-    
+
     @patch('requests.get')
-    @patch('sys.stdout')
-    def test_already_downloaded(self, stdout, get):
-        stdout_data = []
-        stdout.write = lambda text: stdout_data.append(text)
-        
+    def test_download(self, get):
         self.data = """
         hello,
         this is a response.
         """ * (1024 * 16)
-        
+
         def iter_content(chunk_size=1):
             rest = self.data
             while rest:
                 chunk = rest[:chunk_size]
                 rest = rest[chunk_size:]
                 yield chunk
-        
+
         response = Mock(headers={'Content-length': str(len(self.data))},
                         iter_content=iter_content)
         get.return_value = response
-        
+
         fname = os.path.join(self.tempdir, 'some.content')
         utils.download_url('http://toto', fname)
-        
+
         self.assertEquals(self.data, open(fname).read())
-        self.assertIn("Downloading build from: http://toto", ''.join(stdout_data))
 
 
 class TestRelease(unittest.TestCase):

@@ -1,6 +1,10 @@
 import os
+import sys
 from setuptools import setup
 from mozregression import __version__
+
+if sys.version_info < (2, 7) or sys.version_info > (3, 0):
+    sys.exit("mozregression currently require python >=2.7 and <3.")
 
 desc = """Regression range finder for Mozilla nightly builds"""
 long_desc = """Interactive regression range finder for Mozilla nightly builds.

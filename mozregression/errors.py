@@ -13,3 +13,8 @@ class WinTooOldBuildError(MozRegressionError):
         MozRegressionError.__init__(self,
                                     "Can't run Windows builds before"
                                     " 2010-03-18")
+
+class DateFormatError(MozRegressionError):
+    def __init__(self, date_string):
+        MozRegressionError.__init__(self,
+                                    "Incorrect date format: `%s`" % date_string)

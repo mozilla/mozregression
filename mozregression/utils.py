@@ -6,10 +6,10 @@ import datetime
 import os
 import re
 import sys
-
 from BeautifulSoup import BeautifulSoup
 import requests
 
+from mozregression import errors
 
 def format_date(date):
     return date.strftime('%Y-%m-%d')
@@ -19,8 +19,7 @@ def get_date(date_string):
     regex = re.compile(r'(\d{4})\-(\d{1,2})\-(\d{1,2})')
     matched = regex.match(date_string)
     if not matched:
-        print "Incorrect date format"
-        return
+        raise errors.DateFormatError(date_string)
     return datetime.date(int(matched.group(1)),
                          int(matched.group(2)),
                          int(matched.group(3)))
@@ -34,10 +33,6 @@ def update_download_progress(percent):
 
 
 def download_url(url, dest=None, message="Downloading build from:"):
-    if os.path.exists(dest):
-        print "Using local file: %s" % dest
-        return
-
     if message:
         print "%s %s" % (message, url)
 

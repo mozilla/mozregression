@@ -144,7 +144,7 @@ class InboundBuildData(object):
             else:
                 return mid
 
-    def _fetch(self, ids):
+    def _fetch(self, ids, max_retry=3):
         """
         Internal method to fetch some data.
         """
@@ -154,22 +154,35 @@ class InboundBuildData(object):
         print "We got %d inbound folders, we need to fetch %s" % (size,
                                                                   sorted(builds_to_get))
 
-        with futures.ThreadPoolExecutor(max_workers=8) as executor:
-            futures_results = {}
-            for i in builds_to_get:
-                build_url, timestamp = self._cache[i][1], self._cache[i][2]
-                future = executor.submit(self._get_valid_build,
-                                         build_url,
-                                         timestamp,
-                                         self.raw_revisions)
-                futures_results[future] = i
-            for future in futures.as_completed(futures_results):
-                i = futures_results[future]
-                if future.exception() is not None:
-                    sys.exit("Retrieving valid builds from %r generated an"
-                             " exception: %s" % (self._cache[i][1],
-                                                 future.exception()))
-                self._cache[i][0] = future.result()
+        nb_try = 0
+        while builds_to_get:
+            nb_try += 1
+            with futures.ThreadPoolExecutor(max_workers=8) as executor:
+                futures_results = {}
+                for i in builds_to_get:
+                    build_url, timestamp = self._cache[i][1], self._cache[i][2]
+                    future = executor.submit(self._get_valid_build,
+                                             build_url,
+                                             timestamp,
+                                             self.raw_revisions)
+                    futures_results[future] = i
+                for future in futures.as_completed(futures_results):
+                    i = futures_results[future]
+                    exc = future.exception()
+                    if exc is not None:
+                        must_raise = True
+                        if isinstance(exc, requests.HTTPError):
+                            if nb_try < max_retry:
+                                print "Got HTTPError - retrying"
+                                must_raise = False
+                        if must_raise:
+                            raise errors.DownloadError(
+                                "Retrieving valid builds from %r generated an"
+                                " exception: %s" % (self._cache[i][1],
+                                                    exc))
+                    else:
+                        builds_to_get.remove(i)
+                        self._cache[i][0] = future.result()
         # filter the builds that were invalids
         self._cache = [c for c in self._cache if c[0] is not False]
         print "Now we got %d inbound folders - %d were bad" % (len(self),

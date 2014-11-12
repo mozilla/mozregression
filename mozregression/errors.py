@@ -18,3 +18,6 @@ class DateFormatError(MozRegressionError):
     def __init__(self, date_string):
         MozRegressionError.__init__(self,
                                     "Incorrect date format: `%s`" % date_string)
+
+class DownloadError(MozRegressionError):
+    pass

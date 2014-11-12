@@ -123,16 +123,16 @@ class Bisector(object):
                                  self.first_bad_revision,
                                  range=60*60*12)
 
-            if not inbound_revisions:
-                print "Oh noes, no (more) inbound revisions :("
-                self.offer_build(self.last_good_revision,
-                                 self.first_bad_revision)
-                return
+        mid = inbound_revisions.mid_point()
+        if mid == 0:
+            print "Oh noes, no (more) inbound revisions :("
+            self.offer_build(self.last_good_revision,
+                             self.first_bad_revision)
+            return
         # hardcode repo to mozilla-central (if we use inbound, we may be
         # missing some revisions that went into the nightlies which we may
         # also be comparing against...)
 
-        mid = len(inbound_revisions) / 2
         print "Testing inbound build with timestamp %s," \
               " revision %s" % (inbound_revisions[mid]['timestamp'],
                                 inbound_revisions[mid]['revision'])
@@ -166,6 +166,7 @@ class Bisector(object):
                 revisions_left = inbound_revisions[(mid+1):]
             else:
                 revisions_left = inbound_revisions[:mid]
+            revisions_left.ensure_limits()
             self.print_inbound_regression_progress(inbound_revisions,
                                                    revisions_left)
             self.bisect_inbound(revisions_left)

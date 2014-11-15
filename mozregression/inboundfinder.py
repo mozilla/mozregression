@@ -61,7 +61,7 @@ class InboundBuildData(object):
         self._cache = cache
         self.raw_revisions = raw_revisions
         self.half_window_range = half_window_range
-        self._logger = get_default_logger('mozregression')
+        self._logger = get_default_logger('Inbound Build Finder')
 
     def __len__(self):
         return len(self._cache)

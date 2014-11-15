@@ -67,7 +67,7 @@ class Nightly(object):
         self.build_regex = self._get_build_regex(self.name, bits) + "$"
         self.build_info_regex = \
             self._get_build_regex(self.name, bits, with_ext=False) + "\.txt$"
-        self._logger = get_default_logger('mozregression')
+        self._logger = get_default_logger('Regression Runner')
 
     def get_inbound_branch(self, date):
         raise NotImplementedError
@@ -193,8 +193,11 @@ class Nightly(object):
         else:
             profile = self.profile_class()
 
-        self.runner = Runner(binary=self.binary, cmdargs=cmdargs,
-                             profile=profile)
+        process_args = {'processOutputLine': [self._logger.debug]}
+        self.runner = Runner(binary=self.binary,
+                             cmdargs=cmdargs,
+                             profile=profile,
+                             process_args=process_args)
         self.runner.start()
         return True
 
@@ -315,7 +318,7 @@ class NightlyRunner(object):
         self.persist = persist
         self.cmdargs = list(cmdargs)
         self.inbound_branch = inbound_branch
-        self._logger = get_default_logger('mozregression')
+        self._logger = get_default_logger('Regression Runner')
 
     def install(self, date=datetime.date.today()):
         if not self.app.download(date=date):

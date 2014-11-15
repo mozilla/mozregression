@@ -36,7 +36,7 @@ class Bisector(object):
         self.appname = appname
         self.last_good_revision = last_good_revision
         self.first_bad_revision = first_bad_revision
-        self._logger = get_default_logger('mozregression')
+        self._logger = get_default_logger('Bisector')
 
     def find_regression_chset(self, last_good_revision, first_bad_revision):
         # Uses mozcommitbuilder to bisect on changesets

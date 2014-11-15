@@ -20,6 +20,7 @@ class FirefoxInbound(FirefoxNightly):
         self.bits = bits
         self.inbound_branch = inbound_branch
         self.build_finder = FirefoxBuildsFinder(bits=bits, inbound_branch=inbound_branch)
+        self._logger = get_default_logger('Regression Runner')
 
     def get_build_url(self, timestamp):
         base_url = "%s%s/" % (self.build_finder.build_base_url, timestamp)
@@ -40,6 +41,7 @@ class FennecInbound(FennecNightly):
         self.persist = persist
         self.inbound_branch = inbound_branch
         self.build_finder = FennecBuildsFinder(inbound_branch=inbound_branch)
+        self._logger = get_default_logger('Regression Runner')
 
     def get_build_url(self, timestamp):
         base_url = "%s%s/" % (self.build_finder.build_base_url, timestamp)
@@ -94,7 +96,7 @@ class InboundRunner(NightlyRunner):
         self.persist = persist
         self.inbound_branch = inbound_branch
         self.cmdargs = list(cmdargs)
-        self._logger = get_default_logger('mozregression')
+        self._logger = get_default_logger('Regression Runner')
 
     def print_resume_info(self, last_good_revision, first_bad_revision):
         self._logger.info('mozregression --good-rev=%s --bad-rev=%s%s'

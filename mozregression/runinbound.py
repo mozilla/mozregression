@@ -1,6 +1,7 @@
 import sys
 import mozinfo
 from optparse import OptionParser
+from mozlog.structured import get_default_logger
 
 from mozregression.runnightly import FennecNightly, FirefoxNightly, \
     B2GNightly, NightlyRunner, parse_bits
@@ -93,10 +94,13 @@ class InboundRunner(NightlyRunner):
         self.persist = persist
         self.inbound_branch = inbound_branch
         self.cmdargs = list(cmdargs)
+        self._logger = get_default_logger('mozregression')
 
     def print_resume_info(self, last_good_revision, first_bad_revision):
-        print 'mozregression --good-rev=%s --bad-rev=%s%s' % (
-            last_good_revision, first_bad_revision, self.get_resume_options())
+        self._logger.info('mozregression --good-rev=%s --bad-rev=%s%s'
+                          % (last_good_revision,
+                             first_bad_revision,
+                             self.get_resume_options()))
 
 
 def cli(args=sys.argv[1:]):
@@ -121,8 +125,7 @@ def cli(args=sys.argv[1:]):
 
     options, args = parser.parse_args(args)
     if not options.timestamp:
-        print "timestamp must be specified"
-        sys.exit(1)
+        sys.exit("timestamp must be specified")
     options.bits = parse_bits(options.bits)
     runner = InboundRunner(addons=options.addons, profile=options.profile,
                            bits=options.bits, persist=options.persist,

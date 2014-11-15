@@ -3,6 +3,7 @@ import sys
 from optparse import OptionParser
 import requests
 import copy
+from mozlog.structured import get_default_logger
 
 from mozregression import errors
 from mozregression.utils import url_links
@@ -60,6 +61,7 @@ class InboundBuildData(object):
         self._cache = cache
         self.raw_revisions = raw_revisions
         self.half_window_range = half_window_range
+        self._logger = get_default_logger('mozregression')
 
     def __len__(self):
         return len(self._cache)
@@ -95,11 +97,11 @@ class InboundBuildData(object):
             # data to fetch for higher bound will be 8 (full range) instead
             # of 4.
             if self[0] is None:
-                print "We need to fetch the inbound lower limit"
+                self._logger.debug("We need to fetch the inbound lower limit")
                 bound = min(size, self.half_window_range*2)
                 range_min.extend(range(0, bound))
             if self[-1] is None:
-                print "We need to fetch the inbound higher limit"
+                self._logger.debug("We need to fetch the inbound higher limit")
                 bound = max(0, size - self.half_window_range*2)
                 range_max.extend(range(bound, size))
 
@@ -134,7 +136,8 @@ class InboundBuildData(object):
                 return 0
 
             if self[mid] is None:
-                print 'We need to fetch the inbound mid point %d' % mid
+                self._logger.debug('We need to fetch the inbound mid point %d'
+                                   % mid)
                 # we need to fetch the middle of the data
                 rmax = min(size, mid + self.half_window_range)
                 rmin = max(0, mid - self.half_window_range)
@@ -151,8 +154,8 @@ class InboundBuildData(object):
         # filter the already downloaded data
         builds_to_get = [i for i in ids if self[i] is None]
         size = len(self)
-        print "We got %d inbound folders, we need to fetch %s" % (size,
-                                                                  sorted(builds_to_get))
+        self._logger.debug("We got %d inbound folders, we need to fetch %s"
+                           % (size, sorted(builds_to_get)))
 
         nb_try = 0
         while builds_to_get:
@@ -173,7 +176,7 @@ class InboundBuildData(object):
                         must_raise = True
                         if isinstance(exc, requests.HTTPError):
                             if nb_try < max_retry:
-                                print "Got HTTPError - retrying"
+                                self._logger.warn("Got HTTPError - retrying")
                                 must_raise = False
                         if must_raise:
                             raise errors.DownloadError(
@@ -185,8 +188,8 @@ class InboundBuildData(object):
                         self._cache[i][0] = future.result()
         # filter the builds that were invalids
         self._cache = [c for c in self._cache if c[0] is not False]
-        print "Now we got %d inbound folders - %d were bad" % (len(self),
-                                                               size - len(self))
+        self._logger.debug("Now we got %d inbound folders - %d were bad"
+                           % (len(self), size - len(self)))
 
     def _get_valid_build(self, build_url, timestamp, raw_revisions):
         builds = []
@@ -316,8 +319,7 @@ def cli(args=sys.argv[1:]):
 
     options, args = parser.parse_args(args)
     if not options.start_rev or not options.end_rev:
-        print "start revision and end revision must be specified"
-        sys.exit(1)
+        sys.exit("start revision and end revision must be specified")
 
     build_finders = {
         'firefox': FirefoxBuildsFinder,
@@ -336,9 +338,9 @@ def cli(args=sys.argv[1:]):
     revisions = build_finder.get_build_infos(options.start_rev,
                                              options.end_rev,
                                              range=60*60*12)
-    print "Revision, Timestamp"
+    print("Revision, Timestamp")
     for revision in revisions:
-        print revision['revision'], revision['timestamp']
+        print("%s %s" % (revision['revision'], revision['timestamp']))
 
 if __name__ == "__main__":
     cli()

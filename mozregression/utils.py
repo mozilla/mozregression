@@ -32,10 +32,7 @@ def update_download_progress(percent):
         sys.stdout.write("\n")
 
 
-def download_url(url, dest=None, message="Downloading build from:"):
-    if message:
-        print "%s %s" % (message, url)
-
+def download_url(url, dest=None):
     chunk_size = 16 * 1024
     bytes_so_far = 0.0
     tmp_file = dest + ".part"

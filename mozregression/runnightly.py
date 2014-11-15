@@ -17,6 +17,7 @@ from mozrunner import Runner
 from optparse import OptionParser
 import mozversion
 import requests
+from mozlog.structured import get_default_logger
 
 from mozregression import errors
 from mozregression.utils import get_date, download_url, url_links
@@ -66,6 +67,7 @@ class Nightly(object):
         self.build_regex = self._get_build_regex(self.name, bits) + "$"
         self.build_info_regex = \
             self._get_build_regex(self.name, bits, with_ext=False) + "\.txt$"
+        self._logger = get_default_logger('mozregression')
 
     def get_inbound_branch(self, date):
         raise NotImplementedError
@@ -112,8 +114,9 @@ class Nightly(object):
                 self.remove_lastdest()
 
             if os.path.exists(dest):
-                print "Using local file: %s" % dest
+                self._logger.info("Using local file: %s" % dest)
             else:
+                self._logger.info("Downloading build from: %s" % url)
                 download_url(url, dest)
             self.dest = self.lastdest = dest
             return True
@@ -133,7 +136,7 @@ class Nightly(object):
     def get_build_info(self, date):
         url = self._get_build_url(date, self.build_info_regex, 'builds info')
         if url is not None:
-            print "Getting %s" % url
+            self._logger.info("Getting %s" % url)
             response = requests.get(url)
             if response.status_code == 200:
                 for line in response.text.splitlines():
@@ -170,8 +173,9 @@ class Nightly(object):
                 for link in url_links(url + dirlink, regex=regex):
                     matches.append(url + dirlink + link)
         if not matches:
-            print "Tried to get %s from %s that match '%s' but didn't find any." % \
-                  (what, url, self.build_regex)
+            self._logger.info("Tried to get %s from %s that match '%s'"
+                              " but didn't find any."
+                              % (what, url, self.build_regex))
             return None
         else:
             return sorted(matches)[-1] # the most recent build url
@@ -311,12 +315,13 @@ class NightlyRunner(object):
         self.persist = persist
         self.cmdargs = list(cmdargs)
         self.inbound_branch = inbound_branch
+        self._logger = get_default_logger('mozregression')
 
     def install(self, date=datetime.date.today()):
         if not self.app.download(date=date):
-            print "Could not find build from %s" % date
+            self._logger.info("Could not find build from %s" % date)
             return False  # download failed
-        print "Installing nightly"
+        self._logger.info("Installing nightly")
         return self.app.install()
 
     def start(self, date=datetime.date.today()):
@@ -324,9 +329,10 @@ class NightlyRunner(object):
             return False
         info = self.get_app_info()
         if info is not None:
-            print "Starting nightly (revision: %s)" % info['application_changeset']
+            self._logger.info("Starting nightly (revision: %s)"
+                              % info['application_changeset'])
         else:
-            print "Starting nightly"
+            self._logger.info("Starting nightly")
         if not self.app.start(self.profile, self.addons, self.cmdargs):
             return False
         return True
@@ -343,9 +349,9 @@ class NightlyRunner(object):
     def get_build_info(self, date=datetime.date.today()):
         result = self.app.get_build_info(date)
         if result is None:
-            print ("Failed to retrieve build repository and revision from the"
-                   " build dir. Let's try to install it to get the required"
-                   " metadata...")
+            self._logger.info("Failed to retrieve build repository and revision"
+                              " from the build dir. Let's try to install it to"
+                              " get the required metadata...")
             self.install(date)
             info = self.get_app_info()
             result = (info['application_repository'],
@@ -375,8 +381,10 @@ class NightlyRunner(object):
         return info
 
     def print_resume_info(self, good_date_string, bad_date_string):
-        print 'mozregression --good=%s --bad=%s%s' % (
-            good_date_string, bad_date_string, self.get_resume_options())
+        self._logger.info('mozregression --good=%s --bad=%s%s'
+                          % (good_date_string,
+                             bad_date_string,
+                             self.get_resume_options()))
 
 
 def parse_bits(option_bits):

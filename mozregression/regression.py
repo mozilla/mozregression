@@ -9,6 +9,7 @@ import mozinfo
 import sys
 import math
 from argparse import ArgumentParser
+from mozlog.structured import commandline, get_default_logger
 
 from mozregression import errors
 from mozregression import __version__
@@ -35,6 +36,7 @@ class Bisector(object):
         self.appname = appname
         self.last_good_revision = last_good_revision
         self.first_bad_revision = first_bad_revision
+        self._logger = get_default_logger('mozregression')
 
     def find_regression_chset(self, last_good_revision, first_bad_revision):
         # Uses mozcommitbuilder to bisect on changesets
@@ -42,10 +44,10 @@ class Bisector(object):
         from mozcommitbuilder import builder
         commit_builder = builder.Builder()
 
-        print "\n Narrowed changeset range from " + last_good_revision \
-            + " to " + first_bad_revision + "\n"
+        self._logger.info(" Narrowed changeset range from %s to %s"
+                          % (last_good_revision, first_bad_revision))
 
-        print "Time to do some bisecting and building!"
+        self._logger.info("Time to do some bisecting and building!")
         commit_builder.bisect(last_good_revision, first_bad_revision)
         quit()
 
@@ -58,25 +60,26 @@ class Bisector(object):
         if self.appname == "firefox":
             self.find_regression_chset(last_good_revision, first_bad_revision)
         else:
-            print "Bisection on anything other than firefox is not" \
-                  " currently supported."
-            sys.exit()
+            sys.exit("Bisection on anything other than firefox is not"
+                     " currently supported.")
 
     def print_range(self, good_date=None, bad_date=None):
         def _print_date_revision(name, revision, date):
             if date and revision:
-                print "%s revision: %s (%s)" % (name, revision, date)
+                self._logger.info("%s revision: %s (%s)"
+                                  % (name, revision, date))
             elif revision:
-                print "%s revision: %s" % (name, revision)
+                self._logger.info("%s revision: %s" % (name, revision))
             elif date:
-                print "%s build: %s" % (name, date)
+                self._logger.info("%s build: %s" % (name, date))
         _print_date_revision("Last good", self.last_good_revision, good_date)
         _print_date_revision("First bad", self.first_bad_revision, bad_date)
 
-        print "Pushlog:\n" + self.get_pushlog_url(good_date, bad_date) + "\n"
+        self._logger.info("Pushlog:\n%s\n"
+                          % self.get_pushlog_url(good_date, bad_date))
 
     def _ensure_metadata(self, good_date, bad_date):
-        print "Ensuring we have enough metadata to get a pushlog..."
+        self._logger.info("Ensuring we have enough metadata to get a pushlog...")
         if not self.last_good_revision:
             self.found_repo, self.last_good_revision = \
                 self.nightly_runner.get_build_info(good_date)
@@ -103,16 +106,22 @@ class Bisector(object):
         return verdict
 
     def print_inbound_regression_progress(self, revisions, revisions_left):
-        print ("Narrowed inbound regression window from [%s, %s] (%d revisions)"
-               " to [%s, %s] (%d revisions) (~%d steps left)"
-        ) % (revisions[0]['revision'], revisions[-1]['revision'], len(revisions),
-             revisions_left[0]['revision'], revisions_left[-1]['revision'],
-             len(revisions_left), compute_steps_left(len(revisions_left)))
+        self._logger.info("Narrowed inbound regression window from [%s, %s]"
+                          " (%d revisions) to [%s, %s] (%d revisions)"
+                          " (~%d steps left)"
+                          % (revisions[0]['revision'],
+                             revisions[-1]['revision'],
+                             len(revisions),
+                             revisions_left[0]['revision'],
+                             revisions_left[-1]['revision'],
+                             len(revisions_left),
+                             compute_steps_left(len(revisions_left))))
 
     def bisect_inbound(self, inbound_revisions=None):
         if not inbound_revisions:
-            print "Getting inbound builds between %s and %s" % (
-                self.last_good_revision, self.first_bad_revision)
+            self._logger.info("Getting inbound builds between %s and %s"
+                              % (self.last_good_revision,
+                                 self.first_bad_revision))
             # anything within twelve hours is potentially within the range
             # (should be a tighter but some older builds have wrong timestamps,
             # see https://bugzilla.mozilla.org/show_bug.cgi?id=1018907 ...
@@ -125,7 +134,7 @@ class Bisector(object):
 
         mid = inbound_revisions.mid_point()
         if mid == 0:
-            print "Oh noes, no (more) inbound revisions :("
+            self._logger.info("Oh noes, no (more) inbound revisions :(")
             self.offer_build(self.last_good_revision,
                              self.first_bad_revision)
             return
@@ -133,9 +142,10 @@ class Bisector(object):
         # missing some revisions that went into the nightlies which we may
         # also be comparing against...)
 
-        print "Testing inbound build with timestamp %s," \
-              " revision %s" % (inbound_revisions[mid]['timestamp'],
-                                inbound_revisions[mid]['revision'])
+        self._logger.info("Testing inbound build with timestamp %s,"
+                          " revision %s"
+                          % (inbound_revisions[mid]['timestamp'],
+                             inbound_revisions[mid]['revision']))
         self.inbound_runner.start(inbound_revisions[mid]['timestamp'])
 
         verdict = self._get_verdict('inbound', offer_skip=False)
@@ -151,12 +161,12 @@ class Bisector(object):
             self.bisect_inbound(inbound_revisions=inbound_revisions)
             return
         elif verdict == 'e':
-            print 'Newest known good inbound revision: %s' \
-                % self.last_good_revision
-            print 'Oldest known bad inbound revision: %s' \
-                % self.first_bad_revision
+            self._logger.info('Newest known good inbound revision: %s'
+                              % self.last_good_revision)
+            self._logger.info('Oldest known bad inbound revision: %s'
+                              % self.first_bad_revision)
 
-            print 'To resume, run:'
+            self._logger.info('To resume, run:')
             self.inbound_runner.print_resume_info(self.last_good_revision,
                                                   self.first_bad_revision)
             return
@@ -172,20 +182,23 @@ class Bisector(object):
             self.bisect_inbound(revisions_left)
         else:
             # no more inbounds to be bisect, we must build
-            print "No more inbounds to bisect"
+            self._logger.info("No more inbounds to bisect")
             self.print_range()
             self.offer_build(self.last_good_revision, self.first_bad_revision)
 
     def print_nightly_regression_progress(self, good_date, bad_date,
                                           next_good_date, next_bad_date):
         next_days_range = (next_bad_date - next_good_date).days
-        print ("Narrowed nightly regression window from [%s, %s] (%d days)"
-               " to [%s, %s] (%d days) (~%d steps left)"
-        ) % (format_date(good_date), format_date(bad_date),
-             (bad_date - good_date).days,
-             format_date(next_good_date), format_date(next_bad_date),
-             next_days_range,
-             compute_steps_left(next_days_range))
+        self._logger.info("Narrowed nightly regression window from"
+                          " [%s, %s] (%d days) to [%s, %s] (%d days)"
+                          " (~%d steps left)"
+                          % (format_date(good_date),
+                             format_date(bad_date),
+                             (bad_date - good_date).days,
+                             format_date(next_good_date),
+                             format_date(next_bad_date),
+                             next_days_range,
+                             compute_steps_left(next_days_range)))
 
     def bisect_nightlies(self, good_date, bad_date, skips=0):
         mid_date = good_date + (bad_date - good_date) / 2
@@ -193,25 +206,25 @@ class Bisector(object):
         mid_date += datetime.timedelta(days=skips)
 
         if mid_date == bad_date or mid_date == good_date:
-            print "Got as far as we can go bisecting nightlies..."
+            self._logger.info("Got as far as we can go bisecting nightlies...")
             self._ensure_metadata(good_date, bad_date)
             self.print_range(good_date, bad_date)
             if self.appname in ('firefox', 'fennec', 'b2g'):
-                print "... attempting to bisect inbound builds (starting " \
-                    "from previous week, to make sure no inbound revision is " \
-                    "missed)"
+                self._logger.info("... attempting to bisect inbound builds"
+                                  " (starting from previous week, to make"
+                                  " sure no inbound revision is missed)")
                 prev_date = good_date - datetime.timedelta(days=7)
                 _, self.last_good_revision = \
                     self.nightly_runner.get_build_info(prev_date)
                 self.bisect_inbound()
                 return
             else:
-                print "(no more options with %s)" % self.appname
+                self._logger.info("(no more options with %s)" % self.appname)
                 sys.exit()
 
         info = None
         while 1:
-            print "Running nightly for %s" % mid_date
+            self._logger.info("Running nightly for %s" % mid_date)
             if self.nightly_runner.start(mid_date):
                 info = self.nightly_runner.get_app_info()
                 self.found_repo = info['application_repository']
@@ -251,9 +264,10 @@ class Bisector(object):
             bad_date_string = '%04d-%02d-%02d' % (bad_date.year,
                                                   bad_date.month,
                                                   bad_date.day)
-            print 'Newest known good nightly: %s' % good_date_string
-            print 'Oldest known bad nightly: %s' % bad_date_string
-            print 'To resume, run:'
+            self._logger.info('Newest known good nightly: %s'
+                              % good_date_string)
+            self._logger.info('Oldest known bad nightly: %s' % bad_date_string)
+            self._logger.info('To resume, run:')
             self.nightly_runner.print_resume_info(good_date_string,
                                                   bad_date_string)
             return
@@ -361,7 +375,7 @@ def parse_args():
     parser.add_argument("--persist",
                         help="the directory in which files are to persist")
 
-
+    commandline.add_logging_group(parser)
     options = parser.parse_args()
     options.bits = parse_bits(options.bits)
     return options
@@ -371,6 +385,7 @@ def cli():
     default_bad_date = str(datetime.date.today())
     default_good_date = "2009-01-01"
     options = parse_args()
+    logger = commandline.setup_logging("mozregression", options, {"mach": sys.stdout})
 
     inbound_runner = None
     if options.app in ("firefox", "fennec", "b2g") and not (mozinfo.os == 'win' and options.bits == 64):
@@ -393,7 +408,7 @@ def cli():
     else:
         if not options.bad_release and not options.bad_date:
             options.bad_date = default_bad_date
-            print "No 'bad' date specified, using " + options.bad_date
+            logger.info("No 'bad' date specified, using %s" % options.bad_date)
         elif options.bad_release and options.bad_date:
             sys.exit("Options '--bad_release' and '--bad_date' are"
                      " incompatible.")
@@ -402,11 +417,12 @@ def cli():
             if options.bad_date is None:
                 sys.exit("Unable to find a matching date for release "
                          + str(options.bad_release))
-            print "Using 'bad' date " + options.bad_date + " for release " + \
-                  str(options.bad_release)
+            logger.info("Using 'bad' date %s for release %s"
+                        % (options.bad_date, options.bad_release))
         if not options.good_release and not options.good_date:
             options.good_date = default_good_date
-            print "No 'good' date specified, using " + options.good_date
+            logger.info("No 'good' date specified, using %s"
+                        % options.good_date)
         elif options.good_release and options.good_date:
             sys.exit("Options '--good_release' and '--good_date'"
                      " are incompatible.")
@@ -415,8 +431,8 @@ def cli():
             if options.good_date is None:
                 sys.exit("Unable to find a matching date for release "
                          + str(options.good_release))
-            print "Using 'good' date " + options.good_date + " for release " + \
-                  str(options.good_release)
+            logger.info("Using 'good' date %s for release %s"
+                        % (options.good_date, options.good_release))
 
         nightly_runner = NightlyRunner(appname=options.app, addons=options.addons,
                                        inbound_branch=options.inbound_branch,

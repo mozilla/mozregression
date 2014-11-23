@@ -21,7 +21,7 @@ from mozregression.runinbound import InboundRunner
 def compute_steps_left(steps):
     if steps <= 1:
         return 0
-    return round(math.sqrt(steps))
+    return math.trunc(math.log(steps, 2))
 
 
 class Bisector(object):

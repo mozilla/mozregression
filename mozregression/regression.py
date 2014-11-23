@@ -16,6 +16,7 @@ from mozregression import __version__
 from mozregression.utils import get_date, date_of_release, format_date
 from mozregression.runnightly import NightlyRunner, parse_bits
 from mozregression.runinbound import InboundRunner
+from mozregression.inboundfinder import get_repo_url
 
 
 def compute_steps_left(steps):
@@ -118,6 +119,9 @@ class Bisector(object):
                              compute_steps_left(len(revisions_left))))
 
     def bisect_inbound(self, inbound_revisions=None):
+        self.found_repo = get_repo_url(
+            inbound_branch=self.inbound_runner.inbound_branch)
+
         if not inbound_revisions:
             self._logger.info("Getting inbound builds between %s and %s"
                               % (self.last_good_revision,
@@ -135,6 +139,7 @@ class Bisector(object):
         mid = inbound_revisions.mid_point()
         if mid == 0:
             self._logger.info("Oh noes, no (more) inbound revisions :(")
+            self.print_range()
             self.offer_build(self.last_good_revision,
                              self.first_bad_revision)
             return
@@ -151,7 +156,6 @@ class Bisector(object):
         verdict = self._get_verdict('inbound', offer_skip=False)
         self.inbound_runner.stop()
         info = self.inbound_runner.get_app_info()
-        self.found_repo = info['application_repository']
         if verdict == 'g':
             self.last_good_revision = info['application_changeset']
         elif verdict == 'b':

@@ -9,6 +9,8 @@ from mozregression import errors
 from mozregression.utils import url_links
 from concurrent import futures
 
+def get_repo_url(path='integration', inbound_branch='mozilla-inbound'):
+    return "https://hg.mozilla.org/%s/%s" % (path, inbound_branch)
 
 class PushLogsFinder(object):
     """
@@ -22,11 +24,9 @@ class PushLogsFinder(object):
         self.inbound_branch = inbound_branch
 
     def pushlog_url(self):
-        return 'https://hg.mozilla.org/%s/%s/json-pushes' \
-            '?fromchange=%s&tochange=%s' % (self.path,
-                                            self.inbound_branch,
-                                            self.start_rev,
-                                            self.end_rev)
+        return '%s/json-pushes?fromchange=%s&tochange=%s' % (
+            get_repo_url(self.path, self.inbound_branch),
+            self.start_rev, self.end_rev)
 
     def get_pushlogs(self):
         """

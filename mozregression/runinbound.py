@@ -18,8 +18,8 @@ class FirefoxInbound(FirefoxNightly):
         self.persist = persist
         self.build_regex = self._get_build_regex(self.name, bits)
         self.bits = bits
-        self.inbound_branch = inbound_branch
         self.build_finder = FirefoxBuildsFinder(bits=bits, inbound_branch=inbound_branch)
+        self.inbound_branch = inbound_branch or FirefoxBuildsFinder.default_inbound_branch
         self._logger = get_default_logger('Regression Runner')
 
     def get_build_url(self, timestamp):
@@ -39,7 +39,7 @@ class FennecInbound(FennecNightly):
 
     def __init__(self, persist=None, inbound_branch=None):
         self.persist = persist
-        self.inbound_branch = inbound_branch
+        self.inbound_branch = inbound_branch or FennecBuildsFinder.default_inbound_branch
         self.build_finder = FennecBuildsFinder(inbound_branch=inbound_branch)
         self._logger = get_default_logger('Regression Runner')
 
@@ -59,7 +59,8 @@ class B2GInbound(B2GNightly):
     repo_name = None
 
     def __init__(self, **kwargs):
-        self.inbound_branch = kwargs['inbound_branch']
+        self.inbound_branch = (kwargs['inbound_branch'] or
+                               B2GBuildsFinder.default_inbound_branch)
         B2GNightly.__init__(self, **kwargs)
         self.build_finder = B2GBuildsFinder(bits=self.bits,
                                             inbound_branch=self.inbound_branch)
@@ -94,7 +95,7 @@ class InboundRunner(NightlyRunner):
         self.addons = addons
         self.profile = profile
         self.persist = persist
-        self.inbound_branch = inbound_branch
+        self.inbound_branch = self.app.inbound_branch
         self.cmdargs = list(cmdargs)
         self._logger = get_default_logger('Regression Runner')
 

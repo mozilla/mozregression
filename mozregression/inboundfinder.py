@@ -176,7 +176,7 @@ class InboundBuildData(object):
                         must_raise = True
                         if isinstance(exc, requests.HTTPError):
                             if nb_try < max_retry:
-                                self._logger.warn("Got HTTPError - retrying")
+                                self._logger.warning("Got HTTPError - retrying")
                                 must_raise = False
                         if must_raise:
                             raise errors.DownloadError(

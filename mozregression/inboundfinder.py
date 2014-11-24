@@ -192,7 +192,6 @@ class InboundBuildData(object):
                            % (len(self), size - len(self)))
 
     def _get_valid_build(self, build_url, timestamp, raw_revisions):
-        builds = []
         for link in url_links(build_url, regex=r'^.+\.txt$'):
             url = "%s/%s" % (build_url, link)
             response = requests.get(url)

@@ -59,9 +59,9 @@ class B2GInbound(B2GNightly):
     repo_name = None
 
     def __init__(self, **kwargs):
+        B2GNightly.__init__(self, **kwargs)
         self.inbound_branch = (kwargs['inbound_branch'] or
                                B2GBuildsFinder.default_inbound_branch)
-        B2GNightly.__init__(self, **kwargs)
         self.build_finder = B2GBuildsFinder(bits=self.bits,
                                             inbound_branch=self.inbound_branch)
 

@@ -208,7 +208,7 @@ class InboundBuildData(object):
                 for revision in raw_revisions:
                     if remote_revision in revision:
                         return {
-                            'revision': revision,
+                            'revision': revision[:8],
                             'timestamp': timestamp,
                         }
         return False

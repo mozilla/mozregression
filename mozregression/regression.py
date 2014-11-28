@@ -13,8 +13,9 @@ from mozlog.structured import commandline, get_default_logger
 
 from mozregression import errors
 from mozregression import __version__
-from mozregression.utils import get_date, date_of_release, format_date
-from mozregression.runnightly import NightlyRunner, parse_bits
+from mozregression.utils import (parse_date, date_of_release, format_date,
+                                 parse_bits)
+from mozregression.runnightly import NightlyRunner
 from mozregression.runinbound import InboundRunner
 from mozregression.inboundfinder import get_repo_url
 
@@ -446,8 +447,8 @@ def cli():
                                        persist=options.persist)
         bisector = Bisector(nightly_runner, inbound_runner,
                             appname=options.app)
-        app = lambda: bisector.bisect_nightlies(get_date(options.good_date),
-                                                get_date(options.bad_date))
+        app = lambda: bisector.bisect_nightlies(parse_date(options.good_date),
+                                                parse_date(options.bad_date))
     try:
         app()
     except KeyboardInterrupt:

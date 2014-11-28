@@ -32,13 +32,26 @@ class TestUrlLinks(unittest.TestCase):
         """)
         self.assertEquals(utils.url_links('', regex="thing2.*"), ['thing2/'])
 
-class TestGetDate(unittest.TestCase):
+class TestParseDate(unittest.TestCase):
     def test_valid_date(self):
-        date = utils.get_date("2014-07-05")
+        date = utils.parse_date("2014-07-05")
         self.assertEquals(date, datetime.date(2014, 7, 5))
 
     def test_invalid_date(self):
-        self.assertRaises(errors.DateFormatError, utils.get_date, "invalid_format")
+        self.assertRaises(errors.DateFormatError, utils.parse_date, "invalid_format")
+
+class TestParseBits(unittest.TestCase):
+    @patch('mozregression.utils.mozinfo')
+    def test_parse_32(self, mozinfo):
+        mozinfo.bits = 32
+        self.assertEqual(utils.parse_bits('32'), 32)
+        self.assertEqual(utils.parse_bits('64'), 32)
+
+    @patch('mozregression.utils.mozinfo')
+    def test_parse_64(self, mozinfo):
+        mozinfo.bits = 64
+        self.assertEqual(utils.parse_bits('32'), 32)
+        self.assertEqual(utils.parse_bits('64'), 64)
 
 class TestDownloadUrl(unittest.TestCase):
     def setUp(self):

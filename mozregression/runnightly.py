@@ -20,8 +20,8 @@ import requests
 from mozlog.structured import get_default_logger
 
 from mozregression import errors
-from mozregression.utils import (get_date, download_url, url_links,
-                                 get_build_regex)
+from mozregression.utils import (parse_date, download_url, url_links,
+                                 get_build_regex, parse_bits)
 
 from mozdevice import ADBAndroid, ADBHost
 
@@ -366,15 +366,6 @@ class NightlyRunner(object):
                              self.get_resume_options()))
 
 
-def parse_bits(option_bits):
-    """returns the correctly typed bits"""
-    if option_bits == "32":
-        return 32
-    else:
-        # if 64 bits is passed on a 32 bit system, it won't be honored
-        return mozinfo.bits
-
-
 def cli(args=sys.argv[1:]):
     """moznightly command line entry point"""
 
@@ -411,7 +402,7 @@ def cli(args=sys.argv[1:]):
                            profile=options.profile,
                            inbound_branch=options.inbound_branch,
                            bits=options.bits, persist=options.persist)
-    runner.start(get_date(options.date))
+    runner.start(parse_date(options.date))
     try:
         runner.wait()
     except KeyboardInterrupt:

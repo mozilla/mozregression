@@ -3,10 +3,10 @@ import mozinfo
 from mozlog.structured import get_default_logger
 
 from mozregression.runnightly import FennecNightly, FirefoxNightly, \
-    B2GNightly, NightlyRunner, parse_bits
+    B2GNightly, NightlyRunner
 from mozregression.inboundfinder import FirefoxBuildsFinder, \
     FennecBuildsFinder, B2GBuildsFinder
-from mozregression.utils import url_links, get_date
+from mozregression.utils import url_links, parse_date, parse_bits
 
 
 def inbound_factory(klass, finder_klass):
@@ -103,7 +103,7 @@ def cli(args=sys.argv[1:]):
     runner = InboundRunner(addons=options.addons, profile=options.profile,
                            bits=options.bits, persist=options.persist,
                            inbound_branch=options.inbound_branch)
-    runner.start(get_date(options.date))
+    runner.start(parse_date(options.date))
     try:
         runner.wait()
     except KeyboardInterrupt:

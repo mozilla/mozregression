@@ -16,7 +16,7 @@ def format_date(date):
     return date.strftime('%Y-%m-%d')
 
 
-def get_date(date_string):
+def parse_date(date_string):
     regex = re.compile(r'(\d{4})\-(\d{1,2})\-(\d{1,2})')
     matched = regex.match(date_string)
     if not matched:
@@ -24,6 +24,15 @@ def get_date(date_string):
     return datetime.date(int(matched.group(1)),
                          int(matched.group(2)),
                          int(matched.group(3)))
+
+
+def parse_bits(option_bits):
+    """returns the correctly typed bits"""
+    if option_bits == "32":
+        return 32
+    else:
+        # if 64 bits is passed on a 32 bit system, it won't be honored
+        return mozinfo.bits
 
 
 def update_download_progress(percent):

@@ -246,10 +246,7 @@ class FennecNightly(Nightly):
     app_name = 'fennec'
     name = 'fennec'
     profile_class = FirefoxProfile
-    build_regex = r'fennec-.*\.apk'
-    build_info_regex = r'fennec-.*\.txt'
     binary = 'org.mozilla.fennec/.App'
-    bits = None
     build_base_repo_name = "mobile"
 
     def get_device_status(self):
@@ -263,8 +260,11 @@ class FennecNightly(Nightly):
         raise Exception("Aborting!")
 
     def __init__(self, inbound_branch=None, bits=mozinfo.bits, persist=None):
-        self.inbound_branch = inbound_branch
-        self.persist = persist
+        Nightly.__init__(self, inbound_branch=inbound_branch,
+                               bits=bits,
+                               persist=persist)
+        self.build_regex = r'fennec-.*\.apk'
+        self.build_info_regex = r'fennec-.*\.txt'
         if self.get_device_status():
             self.adb = ADBAndroid()
             if "y" != raw_input("WARNING: bisecting nightly fennec builds will"

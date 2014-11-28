@@ -20,7 +20,8 @@ import requests
 from mozlog.structured import get_default_logger
 
 from mozregression import errors
-from mozregression.utils import get_date, download_url, url_links
+from mozregression.utils import (get_date, download_url, url_links,
+                                 get_build_regex)
 
 from mozdevice import ADBAndroid, ADBHost
 
@@ -34,39 +35,14 @@ class Nightly(object):
     profile_class = Profile
     build_base_repo_name = "firefox"
 
-    @staticmethod
-    def _get_os_regex_suffix(bits, with_ext=True):
-        if mozinfo.os == "win":
-            if bits == 64:
-                suffix, ext = ".*win64-x86_64", ".zip"
-            else:
-                suffix, ext = ".*win32", ".zip"
-        elif mozinfo.os == "linux":
-            if bits == 64:
-                suffix, ext = ".*linux-x86_64", ".tar.bz2"
-            else:
-                suffix, ext = ".*linux-i686", ".tar.bz2"
-        elif mozinfo.os == "mac":
-            suffix, ext = r".*mac.*", "\.dmg"
-
-        if with_ext:
-            return '%s%s' % (suffix, ext)
-        else:
-            return suffix
-
-    @staticmethod
-    def _get_build_regex(name, bits, with_ext=True):
-        name_prefix = name if ".*%s" % name is not None else ''
-        suffix = Nightly._get_os_regex_suffix(bits, with_ext)
-        return "%s%s" % (name_prefix, suffix)
-
     def __init__(self, inbound_branch=None, bits=mozinfo.bits, persist=None):
         self.inbound_branch = inbound_branch
         self.bits = bits
         self.persist = persist
-        self.build_regex = self._get_build_regex(self.name, bits) + "$"
+        os = mozinfo.os
+        self.build_regex = get_build_regex(self.name, os, bits) + "$"
         self.build_info_regex = \
-            self._get_build_regex(self.name, bits, with_ext=False) + "\.txt$"
+            get_build_regex(self.name, os, bits, with_ext=False) + "\.txt$"
         self._logger = get_default_logger('Regression Runner')
 
     def get_inbound_branch(self, date):

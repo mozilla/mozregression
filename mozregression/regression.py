@@ -392,7 +392,7 @@ def cli():
     logger = commandline.setup_logging("mozregression", options, {"mach": sys.stdout})
 
     inbound_runner = None
-    if options.app in ("firefox", "fennec", "b2g") and not (mozinfo.os == 'win' and options.bits == 64):
+    if options.app in ("firefox", "fennec", "b2g"):
         inbound_runner = InboundRunner(appname=options.app,
                                        addons=options.addons,
                                        inbound_branch=options.inbound_branch,

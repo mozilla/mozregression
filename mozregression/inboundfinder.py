@@ -277,7 +277,7 @@ class FennecBuildsFinder(BuildsFinder):
 class FirefoxBuildsFinder(BuildsFinder):
     build_base_os_part = {
         'linux': {32: 'linux', 64: 'linux64'},
-        'win': {32: 'win32'},
+        'win': {32: 'win32', 64: 'win64'},
         'mac': {64: 'macosx64'}
     }
     root_build_base_url = 'http://inbound-archive.pub.build.mozilla.org/pub' \
@@ -285,8 +285,6 @@ class FirefoxBuildsFinder(BuildsFinder):
     default_inbound_branch = 'mozilla-inbound'
 
     def _get_build_base_url(self, inbound_branch):
-        if self.os == "win" and self.bits == 64:
-            raise errors.Win64NoAvailableBuildError()
         return self.root_build_base_url % \
                 (inbound_branch, self.build_base_os_part[self.os][self.bits])
 

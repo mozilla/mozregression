@@ -78,7 +78,8 @@ class TestFirefoxBuildsFinder(ConcreteBuildsFinder):
     builder_class = inboundfinder.FirefoxBuildsFinder
     def test_build_finder(self):
         configs = [('linux', 64, 'linux64'), ('linux', 32, 'linux'),
-                   ('win', 32, 'win32'), ('mac', 64, 'macosx64')]
+                   ('win', 32, 'win32'), ('win', 64, 'win64'),
+                   ('mac', 64, 'macosx64')]
         for inbound_branch in (None, 'test-branch'):
             for (os, bits, suffix) in configs:
                 expected_branch = inbound_branch if inbound_branch else 'mozilla-inbound'
@@ -87,15 +88,12 @@ class TestFirefoxBuildsFinder(ConcreteBuildsFinder):
                            (expected_branch, suffix)
                 self.assert_build_url(os, bits, good_url, inbound_branch)
 
-    def test_build_finder_win64(self):
-        with self.assertRaises(errors.Win64NoAvailableBuildError):
-            self.assert_build_url('win', 64, "")
-
 class TestB2GBuildsFinder(ConcreteBuildsFinder):
     builder_class = inboundfinder.B2GBuildsFinder
     def test_build_finder(self):
         configs = [('linux', 64, 'linux64'), ('linux', 32, 'linux32'),
-                   ('win', 32, 'win32'), ('mac', 64, 'macosx64')]
+                   ('win', 32, 'win32'), ('win', 64, 'win64'),
+                   ('mac', 64, 'macosx64')]
         for inbound_branch in (None, 'test-branch'):
             for (os, bits, suffix) in configs:
                 expected_branch = inbound_branch if inbound_branch else 'b2g-inbound'
@@ -103,7 +101,3 @@ class TestB2GBuildsFinder(ConcreteBuildsFinder):
                            '/tinderbox-builds/%s-%s_gecko/' % \
                            (expected_branch, suffix)
                 self.assert_build_url(os, bits, good_url, inbound_branch)
-
-    def test_build_finder_win64(self):
-        with self.assertRaises(errors.Win64NoAvailableBuildError):
-            self.assert_build_url('win', 64, "")

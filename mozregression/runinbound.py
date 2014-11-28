@@ -1,6 +1,5 @@
 import sys
 import mozinfo
-from optparse import OptionParser
 from mozlog.structured import get_default_logger
 
 from mozregression.runnightly import FennecNightly, FirefoxNightly, \
@@ -10,17 +9,15 @@ from mozregression.inboundfinder import FirefoxBuildsFinder, \
 from mozregression.utils import url_links, get_date
 
 
-class FirefoxInbound(FirefoxNightly):
-
-    repo_name = None
-
+def inbound_factory(klass, finder_klass):
     def __init__(self, bits=mozinfo.bits, persist=None, inbound_branch=None):
-        self.persist = persist
-        self.build_regex = self._get_build_regex(self.name, bits)
-        self.bits = bits
-        self.build_finder = FirefoxBuildsFinder(bits=bits, inbound_branch=inbound_branch)
-        self.inbound_branch = inbound_branch or FirefoxBuildsFinder.default_inbound_branch
-        self._logger = get_default_logger('Regression Runner')
+        if not inbound_branch:
+            inbound_branch = finder_klass.default_inbound_branch
+        klass.__init__(self, bits=bits,
+                             persist=persist,
+                             inbound_branch=inbound_branch)
+        self.build_finder = finder_klass(bits=bits,
+                                         inbound_branch=inbound_branch)
 
     def get_build_url(self, timestamp):
         base_url = "%s%s/" % (self.build_finder.build_base_url, timestamp)
@@ -30,50 +27,22 @@ class FirefoxInbound(FirefoxNightly):
         return matches[-1]  # the most recent build url
 
     def get_inbound_branch(self, date):
-        return "mozilla-inbound"
+        return self.build_finder.default_inbound_branch
+
+    return type(klass.__name__.replace('Nightly', 'Inbound'),
+                (klass,),
+                dict(__init__=__init__,
+                     get_build_url=get_build_url,
+                     get_inbound_branch=get_inbound_branch))
 
 
-class FennecInbound(FennecNightly):
-
-    repo_name = None
-
-    def __init__(self, persist=None, inbound_branch=None):
-        self.persist = persist
-        self.inbound_branch = inbound_branch or FennecBuildsFinder.default_inbound_branch
-        self.build_finder = FennecBuildsFinder(inbound_branch=inbound_branch)
-        self._logger = get_default_logger('Regression Runner')
-
-    def get_build_url(self, timestamp):
-        base_url = "%s%s/" % (self.build_finder.build_base_url, timestamp)
-        matches = [base_url + url
-                   for url in url_links(base_url, regex=self.build_regex)]
-        matches.sort()
-        return matches[-1]  # the most recent build url
-
-    def get_inbound_branch(self, date):
-        return "mozilla-inbound"
+FirefoxInbound = inbound_factory(FirefoxNightly, FirefoxBuildsFinder)
 
 
-class B2GInbound(B2GNightly):
+FennecInbound = inbound_factory(FennecNightly, FennecBuildsFinder)
 
-    repo_name = None
 
-    def __init__(self, **kwargs):
-        B2GNightly.__init__(self, **kwargs)
-        self.inbound_branch = (kwargs['inbound_branch'] or
-                               B2GBuildsFinder.default_inbound_branch)
-        self.build_finder = B2GBuildsFinder(bits=self.bits,
-                                            inbound_branch=self.inbound_branch)
-
-    def get_build_url(self, timestamp):
-        base_url = "%s%s/" % (self.build_finder.build_base_url, timestamp)
-        matches = [base_url + url
-                   for url in url_links(base_url, regex=self.build_regex)]
-        matches.sort()
-        return matches[-1]  # the most recent build url
-
-    def get_inbound_branch(self, date):
-        return "b2g-inbound"
+B2GInbound = inbound_factory(B2GNightly, B2GBuildsFinder)
 
 
 class InboundRunner(NightlyRunner):
@@ -107,6 +76,7 @@ class InboundRunner(NightlyRunner):
 
 
 def cli(args=sys.argv[1:]):
+    from optparse import OptionParser
     parser = OptionParser()
     parser.add_option("--timestamp", dest="timestamp", help="timestamp of "
                       "inbound build")

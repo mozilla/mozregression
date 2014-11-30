@@ -5,7 +5,7 @@ import requests
 import copy
 from mozlog.structured import get_default_logger
 
-from mozregression.build_data import InboundBuildData
+from mozregression.build_data import InboundBuildData, BuildFolderInfoFetcher
 from mozregression.utils import url_links
 
 def get_repo_url(path='integration', inbound_branch='mozilla-inbound'):
@@ -42,8 +42,10 @@ class BuildsFinder(object):
     """
     Find builds information for builds within two revisions.
     """
-    def __init__(self, bits=mozinfo.bits, os=mozinfo.os,
-                 inbound_branch=None):
+    def __init__(self, build_regex, build_info_regex, bits=mozinfo.bits,
+                 os=mozinfo.os, inbound_branch=None):
+        self.build_regex = build_regex
+        self.build_info_regex = build_info_regex
         self.bits = bits
         self.os = os
         self.inbound_branch = inbound_branch or self.default_inbound_branch
@@ -84,8 +86,11 @@ class BuildsFinder(object):
 
         data = sorted(build_urls_in_range, key=lambda b: b[1])
 
+        info_fetcher = BuildFolderInfoFetcher(self.build_regex,
+                                              self.build_info_regex)
+
         raw_revisions = [push['changesets'][-1] for push in pushlogs]
-        return InboundBuildData(data, raw_revisions)
+        return InboundBuildData(data, info_fetcher, raw_revisions)
 
 
 class FennecBuildsFinder(BuildsFinder):

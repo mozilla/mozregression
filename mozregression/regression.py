@@ -18,7 +18,9 @@ from mozregression.utils import (parse_date, date_of_release, format_date,
 from mozregression.runnightly import NightlyRunner
 from mozregression.runinbound import InboundRunner
 from mozregression.inboundfinder import get_repo_url
-
+from mozregression.build_data import (BuildFolderInfoFetcher,
+                                      NightlyUrlBuilder,
+                                      NightlyBuildData)
 
 def compute_steps_left(steps):
     if steps <= 1:
@@ -32,12 +34,14 @@ class Bisector(object):
     found_repo = None
 
     def __init__(self, nightly_runner, inbound_runner, appname="firefox",
-                 last_good_revision=None, first_bad_revision=None):
+                 last_good_revision=None, first_bad_revision=None,
+                 nightly_data=None):
         self.nightly_runner = nightly_runner
         self.inbound_runner = inbound_runner
         self.appname = appname
         self.last_good_revision = last_good_revision
         self.first_bad_revision = first_bad_revision
+        self.nightly_data = nightly_data
         self._logger = get_default_logger('Bisector')
 
     def find_regression_chset(self, last_good_revision, first_bad_revision):
@@ -80,15 +84,19 @@ class Bisector(object):
         self._logger.info("Pushlog:\n%s\n"
                           % self.get_pushlog_url(good_date, bad_date))
 
-    def _ensure_metadata(self, good_date, bad_date):
+    def _ensure_metadata(self):
         self._logger.info("Ensuring we have enough metadata to get a pushlog...")
         if not self.last_good_revision:
-            self.found_repo, self.last_good_revision = \
-                self.nightly_runner.get_build_info(good_date)
+            url = self.nightly_data[0]['build_txt_url']
+            infos = self.nightly_data.info_fetcher.find_build_info_txt(url)
+            self.found_repo = infos['repository']
+            self.last_good_revision = infos['changeset']
 
         if not self.first_bad_revision:
-            self.found_repo, self.first_bad_revision = \
-                self.nightly_runner.get_build_info(bad_date)
+            url = self.nightly_data[-1]['build_txt_url']
+            infos = self.nightly_data.info_fetcher.find_build_info_txt(url)
+            self.found_repo = infos['repository']
+            self.first_bad_revision = infos['changeset']
 
     def _get_verdict(self, build_type, offer_skip=True):
         verdict = ""
@@ -152,7 +160,8 @@ class Bisector(object):
                           " revision %s"
                           % (inbound_revisions[mid]['timestamp'],
                              inbound_revisions[mid]['revision']))
-        self.inbound_runner.start(inbound_revisions[mid]['timestamp'])
+        self.inbound_runner.start(inbound_revisions[mid]['build_url'],
+                                  inbound_revisions[mid]['timestamp'])
 
         verdict = self._get_verdict('inbound', offer_skip=False)
         self.inbound_runner.stop()
@@ -206,43 +215,41 @@ class Bisector(object):
                              next_days_range,
                              compute_steps_left(next_days_range)))
 
-    def bisect_nightlies(self, good_date, bad_date, skips=0):
-        mid_date = good_date + (bad_date - good_date) / 2
+    def bisect_nightlies(self):
+        mid = self.nightly_data.mid_point()
 
-        mid_date += datetime.timedelta(days=skips)
+        if len(self.nightly_data) == 0:
+            sys.exit("Unable to get valid builds within the given"
+                     " range. You should try to launch mozregression"
+                     " again with a larger date range.")
+
+        good_date = self.nightly_data.get_date_for_index(0)
+        bad_date = self.nightly_data.get_date_for_index(-1)
+        mid_date = self.nightly_data.get_date_for_index(mid)
 
         if mid_date == bad_date or mid_date == good_date:
             self._logger.info("Got as far as we can go bisecting nightlies...")
-            self._ensure_metadata(good_date, bad_date)
+            self._ensure_metadata()
             self.print_range(good_date, bad_date)
             if self.appname in ('firefox', 'fennec', 'b2g'):
                 self._logger.info("... attempting to bisect inbound builds"
                                   " (starting from previous week, to make"
                                   " sure no inbound revision is missed)")
                 prev_date = good_date - datetime.timedelta(days=7)
-                _, self.last_good_revision = \
-                    self.nightly_runner.get_build_info(prev_date)
+                url = self.nightly_data.url_builder.get_url(prev_date)
+                infos = self.nightly_data.info_fetcher.find_build_info(url, True)
+                self.last_good_revision = infos['changeset']
+                self.nightly_runner.cleanup()
                 self.bisect_inbound()
                 return
             else:
                 self._logger.info("(no more options with %s)" % self.appname)
                 sys.exit()
 
-        info = None
-        while 1:
-            self._logger.info("Running nightly for %s" % mid_date)
-            if self.nightly_runner.start(mid_date):
-                info = self.nightly_runner.get_app_info()
-                self.found_repo = info['application_repository']
-                if mid_date == bad_date:
-                    self.print_range(good_date, bad_date)
-                break
-            else:
-                if mid_date == bad_date:
-                    sys.exit("Unable to get valid builds within the given"
-                             " range. You should try to launch mozregression"
-                             " again with a larger date range.")
-            mid_date += datetime.timedelta(days=1)
+        self._logger.info("Running nightly for %s" % mid_date)
+        self.nightly_runner.start(self.nightly_data[mid]['build_url'], mid_date)
+        info = self.nightly_runner.get_app_info()
+        self.found_repo = info['application_repository']
 
         self.prev_date = self.curr_date
         self.curr_date = mid_date
@@ -253,15 +260,14 @@ class Bisector(object):
             self.last_good_revision = info['application_changeset']
             self.print_nightly_regression_progress(good_date, bad_date,
                                                    mid_date, bad_date)
-            self.bisect_nightlies(mid_date, bad_date)
+            self.nightly_data = self.nightly_data[(mid+1):]
         elif verdict == 'b':
             self.first_bad_revision = info['application_changeset']
             self.print_nightly_regression_progress(good_date, bad_date,
                                                    good_date, mid_date)
-            self.bisect_nightlies(good_date, mid_date)
+            self.nightly_data = self.nightly_data[:mid]
         elif verdict == 's':
-            # skip -- go 1 day further down
-            self.bisect_nightlies(good_date, bad_date, skips=skips+1)
+            del self.nightly_data[mid]
         elif verdict == 'e':
             self.nightly_runner.stop()
             good_date_string = '%04d-%02d-%02d' % (good_date.year,
@@ -277,10 +283,7 @@ class Bisector(object):
             self.nightly_runner.print_resume_info(good_date_string,
                                                   bad_date_string)
             return
-        else:
-            # retry -- since we're just calling ourselves with the same
-            # parameters, it does the same thing again
-            self.bisect_nightlies(good_date, bad_date)
+        self.bisect_nightlies()
 
     def get_pushlog_url(self, good_date, bad_date):
         # if we don't have precise revisions, we need to resort to just
@@ -446,10 +449,14 @@ def cli():
                                        cmdargs=options.cmdargs,
                                        bits=options.bits,
                                        persist=options.persist)
+        info_fetcher = BuildFolderInfoFetcher(nightly_runner.app.build_regex,
+                                              nightly_runner.app.build_info_regex)
+        url_builder = NightlyUrlBuilder(nightly_runner.app.build_base_repo_name,
+                                        nightly_runner.app.get_inbound_branch)
+        nightly_data = NightlyBuildData(parse_date(options.good_date), parse_date(options.bad_date), info_fetcher, url_builder)
         bisector = Bisector(nightly_runner, inbound_runner,
-                            appname=options.app)
-        app = lambda: bisector.bisect_nightlies(parse_date(options.good_date),
-                                                parse_date(options.bad_date))
+                            appname=options.app, nightly_data=nightly_data)
+        app = bisector.bisect_nightlies
     try:
         app()
     except KeyboardInterrupt:

@@ -1,5 +1,7 @@
 import unittest
 import requests
+import datetime
+from mock import patch, Mock
 from mozregression import build_data, errors
 
 class MyBuildData(build_data.BuildData):
@@ -33,6 +35,10 @@ class TestBuildData(unittest.TestCase):
         new_data = self.build_data[10:]
         self.assertEqual(len(self.build_data), 20)
         self.assertEqual(len(new_data), 10)
+
+    def test_del(self):
+        del self.build_data[10]
+        self.assertEqual(len(self.build_data), 19)
 
     def test_mid_point(self):
         mid = self.build_data.mid_point()
@@ -104,6 +110,85 @@ class TestBuildData(unittest.TestCase):
         new_data = self.build_data[:10]
         new_data.raises_for_indexes[5] = 3
         self.assertRaises(errors.DownloadError, new_data.mid_point)
+
+class TestBuildFolderInfoFetcher(unittest.TestCase):
+    def setUp(self):
+        self.info_fetcher = build_data.BuildFolderInfoFetcher(r'app_test.*.tar.bz2$',
+                                                              r'app_test.*.txt$')
+
+    @patch('mozregression.build_data.url_links')
+    def test_find_build_info(self, url_links):
+        url_links.return_value =  [
+            'file1.txt.gz',
+            'file2.txt',
+            'app_test01linux-x86_64.txt',
+            'app_test01linux-x86_64.tar.bz2',
+        ]
+        expected = {
+            'build_txt_url': 'http://foo/app_test01linux-x86_64.txt',
+            'build_url': 'http://foo/app_test01linux-x86_64.tar.bz2',
+        }
+        self.assertEqual(self.info_fetcher.find_build_info('http://foo'), expected)
+
+    @patch('requests.get')
+    def test_find_build_info_txt(self, get):
+        response = Mock(text="20141101030205\nhttps://hg.mozilla.org/mozilla-central/rev/b695d9575654\n")
+        get.return_value = response
+        expected = {
+            'repository': 'https://hg.mozilla.org/mozilla-central',
+            'changeset': 'b695d9575654',
+        }
+        self.assertEqual(self.info_fetcher.find_build_info_txt('http://foo.txt'), expected)
+
+class MyMozBuildData(build_data.MozBuildData):
+    def get_build_url(self, i):
+        return 'http://foo/%d' % i
+
+class TestMozBuildData(unittest.TestCase):
+    def setUp(self):
+        info_fetcher = build_data.BuildFolderInfoFetcher(r'app_test.*.tar.bz2$',
+                                                         r'app_test.*.txt$')
+        self.build_data = MyMozBuildData(range(3), info_fetcher)
+
+    @patch('mozregression.build_data.url_links')
+    def test_fetch_builds(self, url_links):
+        def _url_links(url):
+            if url.endswith('0/'):
+                # build folder 0 is empty
+                return []
+            if url.endswith('1/'):
+                # build folder 1 lacks the build file
+                return ['app_test01linux-x86_64.txt']
+            # build folder 2 must be valid
+            return ['app_test01linux-x86_64.txt', 'app_test01linux-x86_64.tar.bz2']
+        url_links.side_effect = _url_links
+
+        self.build_data.mid_point()
+        self.assertEqual(len(self.build_data), 1)
+        expected = {
+            'build_url': 'http://foo/2/app_test01linux-x86_64.tar.bz2',
+            'build_txt_url': 'http://foo/2/app_test01linux-x86_64.txt'
+        }
+        self.assertEqual(self.build_data[0], expected)
+
+class TestNightlyUrlBuilder(unittest.TestCase):
+    def setUp(self):
+        def get_inbound_branch(date):
+            return 'foo'
+        self.url_builder = build_data.NightlyUrlBuilder('bar', get_inbound_branch)
+
+    @patch('mozregression.build_data.url_links')
+    def test_get_url(self, url_links):
+        url_links.return_value = [
+            '2014-11-01-03-02-05-mozilla-central/',
+            '2014-11-01-03-02-05-foo/',
+            'foo',
+            'bar/'
+        ]
+        url = self.url_builder.get_url(datetime.date(2014, 11, 01))
+        self.assertEqual(url, 'http://ftp.mozilla.org/pub/mozilla.org/bar/nightly/2014/11/2014-11-01-03-02-05-foo/')
+        url = self.url_builder.get_url(datetime.date(2014, 11, 02))
+        self.assertEqual(url, None)
 
 if __name__ == '__main__':
     unittest.main()

@@ -81,23 +81,17 @@ class Nightly(object):
                                 "%s--%s--%s" % (date_str, inbound_branch, dest))
         return dest
 
-    def download(self, date=datetime.date.today(), dest=None):
-        url = self.get_build_url(date)
-        if url:
-            if not dest:
-                dest = self.get_destination(url, date)
-            if not self.persist:
-                self.remove_lastdest()
+    def download(self, url, date):
+        dest = self.get_destination(url, date)
+        if not self.persist:
+            self.remove_lastdest()
 
-            if os.path.exists(dest):
-                self._logger.info("Using local file: %s" % dest)
-            else:
-                self._logger.info("Downloading build from: %s" % url)
-                download_url(url, dest)
-            self.dest = self.lastdest = dest
-            return True
+        if os.path.exists(dest):
+            self._logger.info("Using local file: %s" % dest)
         else:
-            return False
+            self._logger.info("Downloading build from: %s" % url)
+            download_url(url, dest)
+        self.dest = self.lastdest = dest
 
     def install(self):
         if not self.name:
@@ -107,54 +101,6 @@ class Nightly(object):
         self.binary = mozinstall.get_binary(
             mozinstall.install(src=self.dest, dest=self.tempdir),
             self.name)
-        return True
-
-    def get_build_info(self, date):
-        url = self._get_build_url(date, self.build_info_regex, 'builds info')
-        if url is not None:
-            self._logger.info("Getting %s" % url)
-            response = requests.get(url)
-            if response.status_code == 200:
-                for line in response.text.splitlines():
-                    if '/rev/' in line:
-                        # returns [repository, changeset]
-                        return line.split('/rev/')
-
-    def get_build_url(self, datestamp):
-        return self._get_build_url(datestamp, self.build_regex, 'builds')
-
-    def _get_build_url(self, datestamp, regex, what):
-        url = "http://ftp.mozilla.org/pub/mozilla.org/" + \
-            self.build_base_repo_name + "/nightly/"
-        year = str(datestamp.year)
-        month = "%02d" % datestamp.month
-        day = "%02d" % datestamp.day
-        inbound_branch = self.get_inbound_branch(datestamp)
-        url += year + "/" + month + "/"
-
-        link_regex = '^' + year + '-' + month + '-' + day + '-' \
-                     + r'[\d-]+' + inbound_branch + '/$'
-        cachekey = year + '-' + month
-        if cachekey in self._monthlinks:
-            monthlinks = self._monthlinks[cachekey]
-        else:
-            monthlinks = url_links(url)
-            self._monthlinks[cachekey] = monthlinks
-
-        # first parse monthly list to get correct directory
-        matches = []
-        for dirlink in monthlinks:
-            if re.match(link_regex, dirlink):
-                # now parse the page for the correct build url
-                for link in url_links(url + dirlink, regex=regex):
-                    matches.append(url + dirlink + link)
-        if not matches:
-            self._logger.info("Tried to get %s from %s that match '%s'"
-                              " but didn't find any."
-                              % (what, url, self.build_regex))
-            return None
-        else:
-            return sorted(matches)[-1] # the most recent build url
 
     # functions for invoking nightly
 
@@ -175,7 +121,6 @@ class Nightly(object):
                              profile=profile,
                              process_args=process_args)
         self.runner.start()
-        return True
 
     def stop(self):
         self.runner.stop()
@@ -254,15 +199,12 @@ class FennecNightly(Nightly):
     def install(self):
         self.adb.uninstall_app("org.mozilla.fennec")
         self.adb.install_app(self.dest)
-        return True
 
     def start(self, profile, addons, cmdargs):
         self.adb.launch_fennec("org.mozilla.fennec")
-        return True
 
     def stop(self):
         self.adb.stop_application("org.mozilla.fennec")
-        return True
 
     def get_app_info(self):
         return mozversion.get_version(binary=self.dest)
@@ -296,25 +238,20 @@ class NightlyRunner(object):
         self.inbound_branch = inbound_branch
         self._logger = get_default_logger('Regression Runner')
 
-    def install(self, date=datetime.date.today()):
-        if not self.app.download(date=date):
-            self._logger.info("Could not find build from %s" % date)
-            return False  # download failed
+    def install(self, url, date):
+        self.app.download(url, date)
         self._logger.info("Installing nightly")
-        return self.app.install()
+        self.app.install()
 
-    def start(self, date=datetime.date.today()):
-        if not self.install(date):
-            return False
+    def start(self, url, date):
+        self.install(url, date)
         info = self.get_app_info()
         if info is not None:
             self._logger.info("Starting nightly (revision: %s)"
                               % info['application_changeset'])
         else:
             self._logger.info("Starting nightly")
-        if not self.app.start(self.profile, self.addons, self.cmdargs):
-            return False
-        return True
+        self.app.start(self.profile, self.addons, self.cmdargs)
 
     def stop(self):
         self.app.stop()
@@ -324,18 +261,6 @@ class NightlyRunner(object):
 
     def cleanup(self):
         self.app.cleanup()
-
-    def get_build_info(self, date=datetime.date.today()):
-        result = self.app.get_build_info(date)
-        if result is None:
-            self._logger.info("Failed to retrieve build repository and revision"
-                              " from the build dir. Let's try to install it to"
-                              " get the required metadata...")
-            self.install(date)
-            info = self.get_app_info()
-            result = (info['application_repository'],
-                      info['application_changeset'])
-        return result
 
     def get_app_info(self):
         return self.app.get_app_info()

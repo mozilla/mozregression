@@ -31,6 +31,10 @@ class TestPushLogsFinder(unittest.TestCase):
 
 class FakeBuildsFinder(inboundfinder.BuildsFinder):
     default_inbound_branch = 'mozregression-test'
+
+    def __init__(self):
+        inboundfinder.BuildsFinder.__init__(self, '', '')
+
     def _get_build_base_url(self, inbound_branch):
         return "/"
 
@@ -59,7 +63,7 @@ class TestBuildsFinder(unittest.TestCase):
 class ConcreteBuildsFinder(unittest.TestCase):
     builder_class = None
     def assert_build_url(self, os, bits, url, inbound_branch=None):
-        build_finder = self.builder_class(os=os, bits=bits, inbound_branch=inbound_branch)
+        build_finder = self.builder_class('', '', os=os, bits=bits, inbound_branch=inbound_branch)
         self.assertEquals(build_finder.build_base_url, url)
 
 class TestFennecBuildsFinder(ConcreteBuildsFinder):

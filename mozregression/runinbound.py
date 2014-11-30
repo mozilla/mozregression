@@ -16,15 +16,10 @@ def inbound_factory(klass, finder_klass):
         klass.__init__(self, bits=bits,
                              persist=persist,
                              inbound_branch=inbound_branch)
-        self.build_finder = finder_klass(bits=bits,
+        self.build_finder = finder_klass(self.build_regex,
+                                         self.build_info_regex,
+                                         bits=bits,
                                          inbound_branch=inbound_branch)
-
-    def get_build_url(self, timestamp):
-        base_url = "%s%s/" % (self.build_finder.build_base_url, timestamp)
-        matches = [base_url + url
-                   for url in url_links(base_url, regex=self.build_regex)]
-        matches.sort()
-        return matches[-1]  # the most recent build url
 
     def get_inbound_branch(self, date):
         return self.build_finder.default_inbound_branch
@@ -32,7 +27,6 @@ def inbound_factory(klass, finder_klass):
     return type(klass.__name__.replace('Nightly', 'Inbound'),
                 (klass,),
                 dict(__init__=__init__,
-                     get_build_url=get_build_url,
                      get_inbound_branch=get_inbound_branch))
 
 

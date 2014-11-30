@@ -2,9 +2,13 @@ from concurrent import futures
 import requests
 from mozlog.structured import get_default_logger
 import copy
+import re
+import threading
+import datetime
 
 from mozregression import errors
 from mozregression.utils import url_links
+
 
 class BuildData(object):
     """
@@ -23,6 +27,7 @@ class BuildData(object):
      - len(data) # size
      - data[1:]  # splice
      - data[0]   # get data
+     - del data[i] # delete index
 
     Subclasses must implement :meth:`_create_fetch_task`.
     """
@@ -56,6 +61,9 @@ class BuildData(object):
 
     def __getitem__(self, i):
         return self._cache[i][0]
+
+    def __delitem__(self, i):
+        del self._cache[i]
 
     def get_associated_data(self, i):
         return self._cache[i][1]
@@ -180,38 +188,190 @@ class BuildData(object):
         self._logger.debug("Now we got %d folders - %d were bad"
                            % (len(self), size - len(self)))
 
+class BuildFolderInfoFetcher(object):
+    """
+    Allow to retrieve information from build folders.
 
-class InboundBuildData(BuildData):
-    def __init__(self, associated_data, raw_revisions, half_window_range=4):
+    :param build_regex: a regexp or string regexp that can match the build file.
+    :param build_info_regex: a regexp or string regexp that can match the build
+                             info file (.txt).
+    """
+    def __init__(self, build_regex, build_info_regex):
+        if isinstance(build_regex, basestring):
+            build_regex = re.compile(build_regex)
+        if isinstance(build_info_regex, basestring):
+            build_info_regex = re.compile(build_info_regex)
+        self.build_regex = build_regex
+        self.build_info_regex = build_info_regex
+
+    def find_build_info(self, url, read_txt_content=False):
+        """
+        Retrieve information from a build folder url.
+
+        Returns a dict with keys build_url and build_txt_url if respectively
+        a build file and a build info file are found for the url.
+
+        If read_txt_content is True, the dict is updated with data found
+        by calling :meth:`find_build_info_txt`
+        """
+        data = {}
+        if not url.endswith('/'):
+            url += '/'
+        for link in url_links(url):
+            if not 'build_url' in data and self.build_regex.match(link):
+                data['build_url'] = url + link
+            elif not 'build_txt_url' in data and self.build_info_regex.match(link):
+                data['build_txt_url'] = url + link
+
+        if read_txt_content and 'build_txt_url' in data:
+            data.update(self.find_build_info_txt(data['build_txt_url']))
+
+        return data
+
+    def find_build_info_txt(self, url):
+        """
+        Retrieve information from a build information txt file.
+
+        Returns a dict with keys repository and changeset if information
+        is found.
+        """
+        data = {}
+        response = requests.get(url)
+        for line in response.text.splitlines():
+            if '/rev/' in line:
+                repository, changeset = line.split('/rev/')
+                data['repository'] = repository
+                data['changeset'] = changeset
+                break
+        return data
+
+class MozBuildData(BuildData):
+    """
+    A BuildData like class that is able to understand the format of
+    mozilla build folders with the help of :class:`BuildFolderInfoFetcher`.
+
+    Subclasses must implement :meth:`get_build_url`.
+    """
+    def __init__(self, associated_data, info_fetcher,
+                 half_window_range=4, read_txt_content=False):
         BuildData.__init__(self, associated_data,
                            half_window_range=half_window_range)
-        self.raw_revisions = raw_revisions
+        self.info_fetcher = info_fetcher
+        self.read_txt_content = read_txt_content
+
+    def get_build_url(self, i):
+        """
+        Must return the url of a build folder for the given index.
+
+        Be careful that you are in a thread here.
+        """
+        raise NotImplementedError
+
+    def is_valid_build(self, build_info):
+        """
+        Indicate if a build folder is valid. By default, it check for the
+        existence of the build file and the build info file.
+
+        Be careful that you are in a thread here.
+        """
+        return 'build_url' in build_info and 'build_txt_url' in build_info
 
     def _create_fetch_task(self, executor, i):
-        build_url, timestamp = self.get_associated_data(i)
-        return executor.submit(self._get_valid_build,
-                               build_url,
-                               timestamp,
-                               self.raw_revisions)
+        return executor.submit(self._get_valid_build, i)
 
-    def _get_valid_build(self, build_url, timestamp, raw_revisions):
-        for link in url_links(build_url, regex=r'^.+\.txt$'):
-            url = "%s/%s" % (build_url, link)
-            response = requests.get(url)
-            remote_revision = None
-            for line in response.iter_lines():
-                # Filter out Keep-Alive new lines.
-                if not line:
-                    continue
-                parts = line.split('/rev/')
-                if len(parts) == 2:
-                    remote_revision = parts[1]
-                    break  # for line
-            if remote_revision:
-                for revision in raw_revisions:
-                    if remote_revision in revision:
-                        return {
-                            'revision': revision[:8],
-                            'timestamp': timestamp,
-                        }
+    def _get_valid_build(self, i):
+        build_url = self.get_build_url(i)
+        build_info = self.info_fetcher.find_build_info(build_url,
+                                                       self.read_txt_content)
+        if self.is_valid_build(build_info):
+            return build_info
+        else:
+            return False
+
+class InboundBuildData(MozBuildData):
+    def __init__(self, associated_data, info_fetcher, raw_revisions, **kwargs):
+        MozBuildData.__init__(self, associated_data, info_fetcher, **kwargs)
+        self.raw_revisions = raw_revisions
+        self.read_txt_content = True
+
+    def get_build_url(self, i):
+        return self.get_associated_data(i)[0]
+
+    def _set_data(self, i, data):
+        if data is not False:
+            data['timestamp'] = self.get_associated_data(i)[1]
+            data['revision'] = data['changeset'][:8]
+        MozBuildData._set_data(self, i, data)
+
+    def is_valid_build(self, build_info):
+        valid = MozBuildData.is_valid_build(self, build_info)
+        if valid:
+            # check that revision is in range
+            remote_revision = build_info['changeset']
+            for revision in self.raw_revisions:
+                if remote_revision in revision:
+                    return True
         return False
+
+class NightlyUrlBuilder(object):
+    """
+    Build a url for a nightly build folder.
+
+    A nightly url as the following format:
+    http://ftp.mozilla.org/pub/mozilla.org/%s/nightly/2014/11/2014-11-22-03-02-04-%s/
+
+    Where the first %s will be given by the parameter `base_repo_name`,
+    and the second will be given by the function `get_build_folder_part`.
+
+    :param base_repo_name: folder name for the nightly build url
+    :param get_build_folder_part: a function that takes a date and returns
+        the appropriate last part of the url
+    """
+    def __init__(self, base_repo_name, get_build_folder_part):
+        self.base_url = ("http://ftp.mozilla.org/pub/mozilla.org/"
+                         "%s/nightly") % base_repo_name
+        self.get_build_folder_part = get_build_folder_part
+        self._cache_months = {}
+        self._lock = threading.Lock()
+
+    def _get_month_links(self, url):
+        with self._lock:
+            if url not in self._cache_months:
+                self._cache_months[url] = url_links(url)
+            return self._cache_months[url]
+
+    def get_url(self, date):
+        """
+        Get the url of the build folder for a given date.
+
+        This methods needs to be thread-safe as it is used in
+        :meth:`NightlyBuildData.get_build_url`.
+        """
+        url = "%s/%04d/%02d/" % (self.base_url, date.year, date.month)
+        month_links = self._get_month_links(url)
+
+        inbound_branch = self.get_build_folder_part(date)
+        link_regex = re.compile(r'^%04d-%02d-%02d-[\d-]+%s/$'
+                                % (date.year, date.month, date.day,
+                                   inbound_branch))
+        # first parse monthly list to get correct directory
+        matches = []
+        for dirlink in month_links:
+            if link_regex.match(dirlink):
+                return url + dirlink
+
+
+class NightlyBuildData(MozBuildData):
+    def __init__(self, good_date, bad_date, info_fetcher, url_builder, **kwargs):
+        associated_data = range((bad_date - good_date).days + 1)
+        MozBuildData.__init__(self, associated_data, info_fetcher, **kwargs)
+        self.start_date = good_date
+        self.url_builder = url_builder
+
+    def get_date_for_index(self, i):
+        days = self.get_associated_data(i)
+        return self.start_date + datetime.timedelta(days=days)
+
+    def get_build_url(self, i):
+        date = self.get_date_for_index(i)
+        return self.url_builder.get_url(date)

@@ -15,8 +15,7 @@ from mozregression import errors
 from mozregression import __version__
 from mozregression.utils import (parse_date, date_of_release, format_date,
                                  parse_bits)
-from mozregression.runinbound import InboundRunner
-from mozregression.inboundfinder import get_repo_url
+from mozregression.inboundfinder import get_repo_url, BuildsFinder
 from mozregression.build_data import NightlyBuildData
 from mozregression.fetch_configs import create_config
 from mozregression.launchers import create_launcher
@@ -32,11 +31,8 @@ class Bisector(object):
     curr_date = ''
     found_repo = None
 
-    def __init__(self, fetch_config, inbound_runner, appname="firefox",
-                 last_good_revision=None, first_bad_revision=None,
-                 options=None):
-        self.inbound_runner = inbound_runner
-        self.appname = appname
+    def __init__(self, fetch_config, options,
+                 last_good_revision=None, first_bad_revision=None):
         self.last_good_revision = last_good_revision
         self.first_bad_revision = first_bad_revision
         self.fetch_config = fetch_config
@@ -70,7 +66,7 @@ class Bisector(object):
         if verdict != "y":
             sys.exit()
 
-        if self.appname == "firefox":
+        if self.fetch_config.app_name == "firefox":
             self.find_regression_chset(last_good_revision, first_bad_revision)
         else:
             sys.exit("Bisection on anything other than firefox is not"
@@ -135,8 +131,7 @@ class Bisector(object):
                              compute_steps_left(len(revisions_left))))
 
     def bisect_inbound(self, inbound_revisions=None):
-        self.found_repo = get_repo_url(
-            inbound_branch=self.inbound_runner.inbound_branch)
+        self.found_repo = get_repo_url(inbound_branch=self.fetch_config.inbound_branch)
 
         if inbound_revisions is None:
             self._logger.info("Getting inbound builds between %s and %s"
@@ -147,10 +142,10 @@ class Bisector(object):
             # see https://bugzilla.mozilla.org/show_bug.cgi?id=1018907 ...
             # we can change this at some point in the future, after those builds
             # expire)
-            inbound_revisions = self.inbound_runner.app.build_finder \
-                .get_build_infos(self.last_good_revision,
-                                 self.first_bad_revision,
-                                 range=60*60*12)
+            build_finder = BuildsFinder(self.fetch_config)
+            inbound_revisions = build_finder.get_build_infos(self.last_good_revision,
+                                                             self.first_bad_revision,
+                                                             range=60*60*12)
 
         mid = inbound_revisions.mid_point()
         if mid == 0:
@@ -167,12 +162,18 @@ class Bisector(object):
                           " revision %s"
                           % (inbound_revisions[mid]['timestamp'],
                              inbound_revisions[mid]['revision']))
-        self.inbound_runner.start(inbound_revisions[mid]['build_url'],
-                                  inbound_revisions[mid]['timestamp'])
+        build_url = inbound_revisions[mid]['build_url']
+        persist_prefix='%s-%s-' % (inbound_revisions[mid]['timestamp'],
+                                   self.fetch_config.inbound_branch)
+        launcher = create_launcher(self.fetch_config.app_name,
+                                   build_url,
+                                   persist=self.options.persist,
+                                   persist_prefix=persist_prefix)
+        launcher.start()
 
         verdict = self._get_verdict('inbound', offer_skip=False)
-        self.inbound_runner.stop()
-        info = self.inbound_runner.get_app_info()
+        info = launcher.get_app_info()
+        launcher.stop()
         if verdict == 'g':
             self.last_good_revision = info['application_changeset']
         elif verdict == 'b':
@@ -188,8 +189,8 @@ class Bisector(object):
                               % self.first_bad_revision)
 
             self._logger.info('To resume, run:')
-            self.inbound_runner.print_resume_info(self.last_good_revision,
-                                                  self.first_bad_revision)
+            self.print_inbound_resume_info(self.last_good_revision,
+                                           self.first_bad_revision)
             return
 
         if len(inbound_revisions) > 1 and verdict in ('g', 'b'):
@@ -238,7 +239,7 @@ class Bisector(object):
             self._logger.info("Got as far as we can go bisecting nightlies...")
             self._ensure_metadata()
             self.print_range(good_date, bad_date)
-            if self.appname in ('firefox', 'fennec', 'b2g'):
+            if self.fetch_config.is_inbound():
                 self._logger.info("... attempting to bisect inbound builds"
                                   " (starting from previous week, to make"
                                   " sure no inbound revision is missed)")
@@ -249,7 +250,8 @@ class Bisector(object):
                 self.bisect_inbound()
                 return
             else:
-                self._logger.info("(no more options with %s)" % self.appname)
+                self._logger.info("(no more options with %s)"
+                                  % self.fetch_config.app_name)
                 sys.exit()
 
         build_url = self.nightly_data[mid]['build_url']
@@ -332,6 +334,12 @@ class Bisector(object):
         self._logger.info('mozregression --good=%s --bad=%s%s'
                           % (good_date_string,
                              bad_date_string,
+                             self.get_resume_options()))
+
+    def print_inbound_resume_info(self, last_good_revision, first_bad_revision):
+        self._logger.info('mozregression --good-rev=%s --bad-rev=%s%s'
+                          % (last_good_revision,
+                             first_bad_revision,
                              self.get_resume_options()))
 
 def parse_args():
@@ -427,24 +435,22 @@ def cli():
     options = parse_args()
     logger = commandline.setup_logging("mozregression", options, {"mach": sys.stdout})
 
-    inbound_runner = None
-    if options.app in ("firefox", "fennec", "b2g"):
-        inbound_runner = InboundRunner(appname=options.app,
-                                       addons=options.addons,
-                                       inbound_branch=options.inbound_branch,
-                                       profile=options.profile,
-                                       cmdargs=options.cmdargs,
-                                       bits=options.bits,
-                                       persist=options.persist)
+    fetch_config = create_config(options.app, mozinfo.os, options.bits)
+
+    if fetch_config.is_inbound():
+        # this can be useful for both inbound and nightly, because we
+        # can go to inbound from nightly.
+        fetch_config.set_inbound_branch(options.inbound_branch)
 
     if options.inbound:
+        if not fetch_config.is_inbound():
+            sys.exit('Unable to bissect inbound for `%s`' % fetch_config.app_name)
         if not options.last_good_revision or not options.first_bad_revision:
             sys.exit("If bisecting inbound, both --good-rev and --bad-rev"
                      " must be set")
-        bisector = Bisector(None, inbound_runner, appname=options.app,
+        bisector = Bisector(fetch_config, options,
                             last_good_revision=options.last_good_revision,
-                            first_bad_revision=options.first_bad_revision,
-                            options=options)
+                            first_bad_revision=options.first_bad_revision)
         app = bisector.bisect_inbound
     else:
         if not options.bad_release and not options.bad_date:
@@ -475,11 +481,7 @@ def cli():
             logger.info("Using 'good' date %s for release %s"
                         % (options.good_date, options.good_release))
 
-        fetch_config = create_config(options.app, mozinfo.os, options.bits)
-
-        bisector = Bisector(fetch_config, inbound_runner,
-                            appname=options.app,
-                            options=options)
+        bisector = Bisector(fetch_config, options)
         app = bisector.bisect_nightlies
     try:
         app()

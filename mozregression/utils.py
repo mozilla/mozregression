@@ -12,6 +12,22 @@ import requests
 
 from mozregression import errors
 
+class ClassRegistry(object):
+    def __init__(self, attr_name='name'):
+        self._classes = {}
+        self.attr_name = attr_name
+
+    def register(self, name):
+        assert name not in self._classes
+        def wrapper(klass):
+            self._classes[name] = klass
+            setattr(klass, self.attr_name, name)
+            return klass
+        return wrapper
+
+    def get(self, name):
+        return self._classes[name]
+
 def format_date(date):
     return date.strftime('%Y-%m-%d')
 

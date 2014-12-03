@@ -123,7 +123,7 @@ class Bisector(object):
         self.found_repo = get_repo_url(
             inbound_branch=self.inbound_runner.inbound_branch)
 
-        if not inbound_revisions:
+        if inbound_revisions is None:
             self._logger.info("Getting inbound builds between %s and %s"
                               % (self.last_good_revision,
                                  self.first_bad_revision))
@@ -182,8 +182,9 @@ class Bisector(object):
             else:
                 revisions_left = inbound_revisions[:mid]
             revisions_left.ensure_limits()
-            self.print_inbound_regression_progress(inbound_revisions,
-                                                   revisions_left)
+            if len(revisions_left) > 0:
+                self.print_inbound_regression_progress(inbound_revisions,
+                                                       revisions_left)
             self.bisect_inbound(revisions_left)
         else:
             # no more inbounds to be bisect, we must build

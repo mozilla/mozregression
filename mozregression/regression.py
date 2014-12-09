@@ -243,9 +243,17 @@ class Bisector(object):
                 self._logger.info("... attempting to bisect inbound builds"
                                   " (starting from previous week, to make"
                                   " sure no inbound revision is missed)")
-                prev_date = good_date - datetime.timedelta(days=7)
-                url = self.nightly_data.url_builder.get_url(prev_date)
-                infos = self.nightly_data.info_fetcher.find_build_info(url, True)
+                infos = {}
+                days = 6
+                while not 'changeset' in infos:
+                    days += 1
+                    prev_date = good_date - datetime.timedelta(days=days)
+                    url = self.nightly_data.url_builder.get_url(prev_date)
+                    infos = self.nightly_data.info_fetcher.find_build_info(url, True)
+                if days > 7:
+                    self._logger.info("At least one build folder was"
+                                      " invalid, we have to start from"
+                                      " %d days ago." % days)
                 self.last_good_revision = infos['changeset']
                 self.bisect_inbound()
                 return

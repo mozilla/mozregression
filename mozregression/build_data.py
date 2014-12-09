@@ -250,7 +250,7 @@ class MozBuildData(BuildData):
     A BuildData like class that is able to understand the format of
     mozilla build folders with the help of :class:`BuildFolderInfoFetcher`.
 
-    Subclasses must implement :meth:`get_build_url`.
+    Subclasses must implement :meth:`get_build_urls`.
     """
     def __init__(self, associated_data, info_fetcher,
                  half_window_range=4, read_txt_content=False):
@@ -259,9 +259,9 @@ class MozBuildData(BuildData):
         self.info_fetcher = info_fetcher
         self.read_txt_content = read_txt_content
 
-    def get_build_url(self, i):
+    def get_build_urls(self, i):
         """
-        Must return the url of a build folder for the given index.
+        Must return a list of build folder urls for the given index.
 
         Be careful that you are in a thread here.
         """
@@ -280,13 +280,12 @@ class MozBuildData(BuildData):
         return executor.submit(self._get_valid_build, i)
 
     def _get_valid_build(self, i):
-        build_url = self.get_build_url(i)
-        build_info = self.info_fetcher.find_build_info(build_url,
-                                                       self.read_txt_content)
-        if self.is_valid_build(build_info):
-            return build_info
-        else:
-            return False
+        for build_url in self.get_build_urls(i):
+            build_info = self.info_fetcher.find_build_info(build_url,
+                                                           self.read_txt_content)
+            if self.is_valid_build(build_info):
+                return build_info
+        return False
 
 class InboundBuildData(MozBuildData):
     def __init__(self, associated_data, info_fetcher, raw_revisions, **kwargs):
@@ -294,8 +293,9 @@ class InboundBuildData(MozBuildData):
         self.raw_revisions = raw_revisions
         self.read_txt_content = True
 
-    def get_build_url(self, i):
-        return self.get_associated_data(i)[0]
+    def get_build_urls(self, i):
+        # there is only one candidate for the inbound build url at a given index
+        return (self.get_associated_data(i)[0],)
 
     def _set_data(self, i, data):
         if data is not False:
@@ -340,12 +340,12 @@ class NightlyUrlBuilder(object):
                 self._cache_months[url] = url_links(url)
             return self._cache_months[url]
 
-    def get_url(self, date):
+    def get_urls(self, date):
         """
-        Get the url of the build folder for a given date.
+        Get the url list of the build folder for a given date.
 
         This methods needs to be thread-safe as it is used in
-        :meth:`NightlyBuildData.get_build_url`.
+        :meth:`NightlyBuildData.get_build_urls`.
         """
         url = "%s/%04d/%02d/" % (self.base_url, date.year, date.month)
         month_links = self._get_month_links(url)
@@ -358,7 +358,10 @@ class NightlyUrlBuilder(object):
         matches = []
         for dirlink in month_links:
             if link_regex.match(dirlink):
-                return url + dirlink
+                matches.append(url + dirlink)
+        # the most recent build urls first
+        matches.reverse()
+        return matches
 
 
 class NightlyBuildData(MozBuildData):
@@ -377,6 +380,14 @@ class NightlyBuildData(MozBuildData):
         days = self.get_associated_data(i)
         return self.start_date + datetime.timedelta(days=days)
 
-    def get_build_url(self, i):
+    def get_build_urls(self, i):
         date = self.get_date_for_index(i)
-        return self.url_builder.get_url(date)
+        return self.url_builder.get_urls(date)
+
+    def get_build_infos_for_date(self, date, read_txt_content=True):
+        for build_url in self.url_builder.get_urls(date):
+            build_info = self.info_fetcher.find_build_info(build_url,
+                                                           read_txt_content)
+            if self.is_valid_build(build_info):
+                return build_info
+        return {}

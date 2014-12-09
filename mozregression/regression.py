@@ -248,8 +248,7 @@ class Bisector(object):
                 while not 'changeset' in infos:
                     days += 1
                     prev_date = good_date - datetime.timedelta(days=days)
-                    url = self.nightly_data.url_builder.get_url(prev_date)
-                    infos = self.nightly_data.info_fetcher.find_build_info(url, True)
+                    infos = self.nightly_data.get_build_infos_for_date(prev_date)
                 if days > 7:
                     self._logger.info("At least one build folder was"
                                       " invalid, we have to start from"

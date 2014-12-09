@@ -141,8 +141,8 @@ class TestBuildFolderInfoFetcher(unittest.TestCase):
         self.assertEqual(self.info_fetcher.find_build_info_txt('http://foo.txt'), expected)
 
 class MyMozBuildData(build_data.MozBuildData):
-    def get_build_url(self, i):
-        return 'http://foo/%d' % i
+    def get_build_urls(self, i):
+        return ['http://foo/%d' % i]
 
 class TestMozBuildData(unittest.TestCase):
     def setUp(self):
@@ -185,10 +185,10 @@ class TestNightlyUrlBuilder(unittest.TestCase):
             'foo',
             'bar/'
         ]
-        url = self.url_builder.get_url(datetime.date(2014, 11, 01))
-        self.assertEqual(url, 'http://ftp.mozilla.org/pub/mozilla.org/bar/nightly/2014/11/2014-11-01-03-02-05-foo/')
-        url = self.url_builder.get_url(datetime.date(2014, 11, 02))
-        self.assertEqual(url, None)
+        urls = self.url_builder.get_urls(datetime.date(2014, 11, 01))
+        self.assertEqual(urls[0], 'http://ftp.mozilla.org/pub/mozilla.org/bar/nightly/2014/11/2014-11-01-03-02-05-foo/')
+        urls = self.url_builder.get_urls(datetime.date(2014, 11, 02))
+        self.assertEqual(urls, [])
 
 if __name__ == '__main__':
     unittest.main()

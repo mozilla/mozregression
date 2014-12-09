@@ -336,11 +336,6 @@ def parse_args():
                         help=("last known good nightly build. This option is"
                               " incompatible with --good."))
 
-    parser.add_argument("--inbound",
-                        action="store_true",
-                        help=("use inbound instead of nightlies (use --good-rev"
-                              " and --bad-rev options"))
-
     parser.add_argument("--bad-rev", dest="first_bad_revision",
                         help="first known bad revision (use with --inbound)")
 
@@ -372,6 +367,7 @@ def parse_args():
                         help="application name. Default: %(default)s")
 
     parser.add_argument("--inbound-branch",
+                        default="mozilla-inbound",
                         metavar="[tracemonkey|mozilla-1.9.2]",
                         help="inbound branch name on ftp.mozilla.org")
 
@@ -406,7 +402,7 @@ def cli():
                                        bits=options.bits,
                                        persist=options.persist)
 
-    if options.inbound:
+    if options.inbound_branch:
         if not options.last_good_revision or not options.first_bad_revision:
             sys.exit("If bisecting inbound, both --good-rev and --bad-rev"
                      " must be set")

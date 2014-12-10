@@ -2,7 +2,7 @@ import unittest
 import requests
 import datetime
 from mock import patch, Mock
-from mozregression import build_data, errors
+from mozregression import build_data, errors, fetch_configs
 
 class MyBuildData(build_data.BuildData):
     exc_to_raise = Exception('err')
@@ -173,9 +173,9 @@ class TestMozBuildData(unittest.TestCase):
 
 class TestNightlyUrlBuilder(unittest.TestCase):
     def setUp(self):
-        def get_inbound_branch(date):
-            return 'foo'
-        self.url_builder = build_data.NightlyUrlBuilder('bar', get_inbound_branch)
+        fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
+        fetch_config.set_nightly_repo('foo')
+        self.url_builder = build_data.NightlyUrlBuilder(fetch_config)
 
     @patch('mozregression.build_data.url_links')
     def test_get_url(self, url_links):
@@ -186,7 +186,7 @@ class TestNightlyUrlBuilder(unittest.TestCase):
             'bar/'
         ]
         urls = self.url_builder.get_urls(datetime.date(2014, 11, 01))
-        self.assertEqual(urls[0], 'http://ftp.mozilla.org/pub/mozilla.org/bar/nightly/2014/11/2014-11-01-03-02-05-foo/')
+        self.assertEqual(urls[0], 'http://ftp.mozilla.org/pub/mozilla.org/firefox/nightly/2014/11/2014-11-01-03-02-05-foo/')
         urls = self.url_builder.get_urls(datetime.date(2014, 11, 02))
         self.assertEqual(urls, [])
 

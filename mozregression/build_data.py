@@ -315,22 +315,11 @@ class InboundBuildData(MozBuildData):
 
 class NightlyUrlBuilder(object):
     """
-    Build a url for a nightly build folder.
-
-    A nightly url as the following format:
-    http://ftp.mozilla.org/pub/mozilla.org/%s/nightly/2014/11/2014-11-22-03-02-04-%s/
-
-    Where the first %s will be given by the parameter `base_repo_name`,
-    and the second will be given by the function `get_build_folder_part`.
-
-    :param base_repo_name: folder name for the nightly build url
-    :param get_build_folder_part: a function that takes a date and returns
-        the appropriate last part of the url
+    Build a url for a nightly build folder for a given instance of
+    :class:`mozregression.fetch_configs.NightlyConfigMixin`.
     """
-    def __init__(self, base_repo_name, get_build_folder_part):
-        self.base_url = ("http://ftp.mozilla.org/pub/mozilla.org/"
-                         "%s/nightly") % base_repo_name
-        self.get_build_folder_part = get_build_folder_part
+    def __init__(self, fetch_config):
+        self.fetch_config = fetch_config
         self._cache_months = {}
         self._lock = threading.Lock()
 
@@ -347,13 +336,11 @@ class NightlyUrlBuilder(object):
         This methods needs to be thread-safe as it is used in
         :meth:`NightlyBuildData.get_build_urls`.
         """
-        url = "%s/%04d/%02d/" % (self.base_url, date.year, date.month)
+        url = self.fetch_config.get_nighly_base_url(date)
+        link_regex = re.compile(self.fetch_config.get_nightly_repo_regex(date))
+
         month_links = self._get_month_links(url)
 
-        inbound_branch = self.get_build_folder_part(date)
-        link_regex = re.compile(r'^%04d-%02d-%02d-[\d-]+%s/$'
-                                % (date.year, date.month, date.day,
-                                   inbound_branch))
         # first parse monthly list to get correct directory
         matches = []
         for dirlink in month_links:
@@ -371,8 +358,7 @@ class NightlyBuildData(MozBuildData):
                                               fetch_config.build_info_regex())
         MozBuildData.__init__(self, associated_data, info_fetcher, **kwargs)
         self.start_date = good_date
-        url_builder = NightlyUrlBuilder(fetch_config.nightly_base_repo_name,
-                                        fetch_config.nightly_inbound_branch)
+        url_builder = NightlyUrlBuilder(fetch_config)
         self.url_builder = url_builder
         self.fetch_config = fetch_config
 

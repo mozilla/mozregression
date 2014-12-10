@@ -33,12 +33,30 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
     def test_build_info_regex(self):
         self.assertEqual(self.conf.build_info_regex(), self.build_info_regex)
 
-    def test_nightly_base_repo_name(self):
-        self.assertEqual(self.conf.nightly_base_repo_name, 'firefox')
+    def test_get_nighly_base_url(self):
+        base_url = self.conf.get_nighly_base_url(datetime.date(2008, 6, 27))
+        self.assertEqual(base_url, 'http://ftp.mozilla.org/pub/mozilla.org/firefox/nightly/2008/06/')
 
-    def test_nightly_inbound_branch(self):
-        self.assertEqual(self.conf.nightly_inbound_branch(datetime.date(2008, 6, 15)), 'trunk')
-        self.assertEqual(self.conf.nightly_inbound_branch(datetime.date(2008, 6, 27)), 'mozilla-central')
+    def test_nightly_repo_regex(self):
+        repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008, 6, 15))
+        self.assertEqual(repo_regex, '^2008-06-15-[\\d-]+trunk/$')
+        repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008, 6, 27))
+        self.assertEqual(repo_regex, '^2008-06-27-[\\d-]+mozilla-central/$')
+
+    def test_set_nightly_repo(self):
+        self.conf.set_nightly_repo('foo-bar')
+        repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008, 6, 27))
+        self.assertEqual(repo_regex, '^2008-06-27-[\\d-]+foo-bar/$')
+        # with a value of None, default is applied
+        self.conf.set_nightly_repo(None)
+        repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008, 6, 27))
+        self.assertEqual(repo_regex, '^2008-06-27-[\\d-]+mozilla-central/$')
+
+    def test_can_go_inbound(self):
+        self.assertTrue(self.conf.can_go_inbound())
+        # if nightly_repo is set, we can not bissect inbound
+        self.conf.set_nightly_repo('foo-bar')
+        self.assertFalse(self.conf.can_go_inbound())
 
     def test_inbound_base_url(self):
         inbound_base_url = '%s/mozilla-inbound-%s/' % (self.base_inbound_url,

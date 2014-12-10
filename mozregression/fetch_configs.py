@@ -47,15 +47,68 @@ class CommonConfig(object):
 
 class NightlyConfigMixin(object):
     """
-    Define the nightly-related required configuration.
+    Define the nightly-related required configuration to find nightly builds.
+
+    A nightly build url is divided in 2 parts here:
+
+    1. the base part as returned by :meth:`get_nighly_base_url`
+    2. the final part, which can be found using :meth:`get_nighly_repo_regex`
+
+    The final part contains a repo name, which is returned by
+    :meth:`get_nightly_repo`.
+
+    Note that subclasses must implement :meth:`_get_nightly_repo` to
+    provide a default value.
     """
     nightly_base_repo_name = "firefox"
+    nightly_repo = None
 
-    def nightly_inbound_branch(self, date):
+    def get_nighly_base_url(self, date):
+        """
+        Returns the base part of the nightly build url for a given date.
+        """
+        return ("http://ftp.mozilla.org/pub/mozilla.org/%s/nightly/%04d/%02d/"
+                % (self.nightly_base_repo_name, date.year, date.month))
+
+    def set_nightly_repo(self, repo):
+        """
+        Allow to define the repo name.
+
+        If None, :meth:`_get_nightly_repo` will be called to return a value
+        when :meth:`get_nightly_repo` is called.
+        """
+        self.nightly_repo = repo
+
+    def get_nightly_repo(self, date):
+        """
+        Returns the repo name for a given date.
+        """
+        return self.nightly_repo or self._get_nightly_repo(date)
+
+    def _get_nightly_repo(self, date):
+        """
+        Returns a default repo name for a given date.
+        """
         raise NotImplementedError
 
+    def get_nightly_repo_regex(self, date):
+        """
+        Returns a string regex that can match the last folder name for a given
+        date.
+        """
+        repo = self.get_nightly_repo(date)
+        return (r'^%04d-%02d-%02d-[\d-]+%s/$'
+                % (date.year, date.month, date.day, repo))
+
+    def can_go_inbound(self):
+        """
+        Indicate if we can bissect inbound from this nightly config.
+        """
+        # we can go on inbound if no nightly repo has been specified.
+        return self.is_inbound() and not self.nightly_repo
+
 class FireFoxNightlyConfigMixin(NightlyConfigMixin):
-    def nightly_inbound_branch(self, date):
+    def _get_nightly_repo(self, date):
         if date < datetime.date(2008, 6, 17):
             return "trunk"
         else:
@@ -64,7 +117,7 @@ class FireFoxNightlyConfigMixin(NightlyConfigMixin):
 class ThunderbirdNightlyConfigMixin(NightlyConfigMixin):
     nightly_base_repo_name = 'thunderbird'
 
-    def nightly_inbound_branch(self, date):
+    def _get_nightly_repo(self, date):
         # sneaking this in here
         if self.os == "win" and date < datetime.date(2010, 03, 18):
             # no .zip package for Windows, can't use the installer
@@ -82,13 +135,13 @@ class ThunderbirdNightlyConfigMixin(NightlyConfigMixin):
 class B2GNightlyConfigMixin(NightlyConfigMixin):
     nightly_base_repo_name = 'b2g'
 
-    def nightly_inbound_branch(self, date):
+    def _get_nightly_repo(self, date):
         return "mozilla-central"
 
 class FennecNightlyConfigMixin(NightlyConfigMixin):
     nightly_base_repo_name = "mobile"
 
-    def nightly_inbound_branch(self, date):
+    def _get_nightly_repo(self, date):
         return "mozilla-central-android"
 
 class InboundConfigMixin(object):

@@ -239,7 +239,7 @@ class Bisector(object):
             self._logger.info("Got as far as we can go bisecting nightlies...")
             self._ensure_metadata()
             self.print_range(good_date, bad_date)
-            if self.fetch_config.is_inbound():
+            if self.fetch_config.can_go_inbound():
                 self._logger.info("... attempting to bisect inbound builds"
                                   " (starting from previous week, to make"
                                   " sure no inbound revision is missed)")
@@ -257,12 +257,20 @@ class Bisector(object):
                 self.bisect_inbound()
                 return
             else:
-                self._logger.info("(no more options with %s)"
-                                  % self.fetch_config.app_name)
+                message = ("Can not bissect inbound for application `%s`"
+                           % self.fetch_config.app_name)
+                if self.fetch_config.is_inbound():
+                    # the config is able to bissect inbound but not
+                    # for this repo.
+                    message += (" because the repo `%s` was specified"
+                                % self.options.repo)
+                self._logger.info(message + '.')
                 sys.exit()
 
         build_url = self.nightly_data[mid]['build_url']
-        persist_prefix = '%s-' % mid_date
+        persist_prefix = ('%s-%s-'
+                          % (mid_date,
+                             self.fetch_config.get_nightly_repo(mid_date)))
         self._logger.info("Running nightly for %s" % mid_date)
         launcher = create_launcher(self.fetch_config.app_name,
                                    build_url,
@@ -417,8 +425,12 @@ def parse_args():
                         default="firefox",
                         help="application name. Default: %(default)s")
 
+    parser.add_argument("--repo",
+                        metavar="[mozilla-aurora|mozilla-beta|...]",
+                        help="repository name used for nightly hunting")
+
     parser.add_argument("--inbound-branch",
-                        metavar="[tracemonkey|mozilla-1.9.2]",
+                        metavar="[b2g-inbound|fx-team|...]",
                         help="inbound branch name on ftp.mozilla.org")
 
     parser.add_argument("--bits",
@@ -460,6 +472,9 @@ def cli():
                             first_bad_revision=options.first_bad_revision)
         app = bisector.bisect_inbound
     else:
+        # TODO: currently every fetch_config is nightly aware. Shoud we test
+        # for this to be sure here ?
+        fetch_config.set_nightly_repo(options.repo)
         if not options.bad_release and not options.bad_date:
             options.bad_date = default_bad_date
             logger.info("No 'bad' date specified, using %s" % options.bad_date)

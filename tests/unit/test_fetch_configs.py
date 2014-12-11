@@ -1,7 +1,7 @@
 import unittest
 import datetime
 
-from mozregression.fetch_configs import (FirefoxConfig, create_config)
+from mozregression.fetch_configs import (FirefoxConfig, create_config, errors)
 
 class TestFirefoxConfigLinux64(unittest.TestCase):
     app_name = 'firefox'
@@ -92,6 +92,39 @@ class TestFirefoxConfigMac(TestFirefoxConfigLinux64):
     build_regex = r'firefox.*mac.*\.dmg$'
     build_info_regex = r'firefox.*mac.*\.txt$'
     base_inbound_url_ext = 'macosx64'
+
+class TestThunderbirdConfig(unittest.TestCase):
+    os = 'linux'
+    bits = 64
+    def setUp(self):
+        self.conf = create_config('thunderbird', self.os, self.bits)
+
+    def test_nightly_repo_regex_before_2008_07_26(self):
+        repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008, 7, 25))
+        self.assertEqual(repo_regex, '^2008-07-25-[\\d-]+trunk/$')
+
+    def test_nightly_repo_regex_before_2009_01_09(self):
+        repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2009, 1, 8))
+        self.assertEqual(repo_regex, '^2009-01-08-[\\d-]+comm-central/$')
+
+    def test_nightly_repo_regex_before_2010_08_21(self):
+        repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2010, 8, 20))
+        self.assertEqual(repo_regex, '^2010-08-20-[\\d-]+comm-central-trunk/$')
+
+    def test_nightly_repo_regex_since_2010_08_21(self):
+        repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2010, 8, 21))
+        self.assertEqual(repo_regex, '^2010-08-21-[\\d-]+comm-central/$')
+
+
+class TestThunderbirdConfigWin(TestThunderbirdConfig):
+    os = 'win'
+    def test_nightly_repo_regex_before_2008_07_26(self):
+        with self.assertRaises(errors.WinTooOldBuildError):
+            TestThunderbirdConfig.test_nightly_repo_regex_before_2008_07_26(self)
+
+    def test_nightly_repo_regex_before_2009_01_09(self):
+        with self.assertRaises(errors.WinTooOldBuildError):
+            TestThunderbirdConfig.test_nightly_repo_regex_before_2009_01_09(self)
 
 if __name__ == '__main__':
     unittest.main()

@@ -31,9 +31,12 @@ class BuildData(object):
 
     Subclasses must implement :meth:`_create_fetch_task`.
     """
-    def __init__(self, associated_data, half_window_range=4):
+
+    half_window_range = 4
+    max_workers = 8
+
+    def __init__(self, associated_data):
         self._cache = [[None, ad] for ad in associated_data]
-        self.half_window_range = half_window_range
         self._logger = get_default_logger('Build Finder')
 
     def _create_fetch_task(self, executor, i):
@@ -162,10 +165,11 @@ class BuildData(object):
         self._logger.debug("We got %d folders, we need to fetch %s"
                            % (size, sorted(builds_to_get)))
 
+        max_workers = self.max_workers
         nb_try = 0
         while builds_to_get:
             nb_try += 1
-            with futures.ThreadPoolExecutor(max_workers=8) as executor:
+            with futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                 futures_results = {}
                 for i in builds_to_get:
                     future = self._create_fetch_task(executor, i)
@@ -253,29 +257,19 @@ class MozBuildData(BuildData):
     A BuildData like class that is able to understand the format of
     mozilla build folders with the help of :class:`BuildFolderInfoFetcher`.
 
-    Subclasses must implement :meth:`get_build_urls`.
+    Subclasses must implement :meth:`_get_valid_build`.
     """
-    def __init__(self, associated_data, info_fetcher,
-                 half_window_range=4, read_txt_content=False):
-        BuildData.__init__(self, associated_data,
-                           half_window_range=half_window_range)
+    def __init__(self, associated_data, info_fetcher):
+        BuildData.__init__(self, associated_data)
         self.info_fetcher = info_fetcher
-        self.read_txt_content = read_txt_content
 
-    def get_build_urls(self, i):
-        """
-        Must return a list of build folder urls for the given index.
-
-        Be careful that you are in a thread here.
-        """
-        raise NotImplementedError
-
-    def is_valid_build(self, build_info):
+    def _is_valid_build(self, build_info):
         """
         Indicate if a build folder is valid. By default, it check for the
         existence of the build file and the build info file.
 
-        Be careful that you are in a thread here.
+        This must be used in :meth:`_get_valid_build` to ensure that a build
+        is valid.
         """
         return 'build_url' in build_info and 'build_txt_url' in build_info
 
@@ -283,22 +277,25 @@ class MozBuildData(BuildData):
         return executor.submit(self._get_valid_build, i)
 
     def _get_valid_build(self, i):
-        for build_url in self.get_build_urls(i):
-            build_info = self.info_fetcher.find_build_info(build_url,
-                                                           self.read_txt_content)
-            if self.is_valid_build(build_info):
-                return build_info
-        return False
+        """
+        Must return build information (a dict) for the given index or False
+        if no valid build is found.
+
+        Be careful that you are in a thread here.
+        """
+        raise NotImplementedError
 
 class InboundBuildData(MozBuildData):
-    def __init__(self, associated_data, info_fetcher, raw_revisions, **kwargs):
-        MozBuildData.__init__(self, associated_data, info_fetcher, **kwargs)
+    def __init__(self, associated_data, info_fetcher, raw_revisions):
+        MozBuildData.__init__(self, associated_data, info_fetcher)
         self.raw_revisions = raw_revisions
-        self.read_txt_content = True
 
-    def get_build_urls(self, i):
-        # there is only one candidate for the inbound build url at a given index
-        return (self.get_associated_data(i)[0],)
+    def _get_valid_build(self, i):
+        build_url = self.get_associated_data(i)[0]
+        build_info = self.info_fetcher.find_build_info(build_url, True)
+        if self._is_valid_build(build_info):
+            return build_info
+        return False
 
     def _set_data(self, i, data):
         if data is not False:
@@ -306,8 +303,8 @@ class InboundBuildData(MozBuildData):
             data['revision'] = data['changeset'][:8]
         MozBuildData._set_data(self, i, data)
 
-    def is_valid_build(self, build_info):
-        valid = MozBuildData.is_valid_build(self, build_info)
+    def _is_valid_build(self, build_info):
+        valid = MozBuildData._is_valid_build(self, build_info)
         if valid:
             # check that revision is in range
             remote_revision = build_info['changeset']
@@ -337,7 +334,7 @@ class NightlyUrlBuilder(object):
         Get the url list of the build folder for a given date.
 
         This methods needs to be thread-safe as it is used in
-        :meth:`NightlyBuildData.get_build_urls`.
+        :meth:`NightlyBuildData.get_build_url`.
         """
         url = self.fetch_config.get_nighly_base_url(date)
         link_regex = re.compile(self.fetch_config.get_nightly_repo_regex(date))
@@ -355,11 +352,16 @@ class NightlyUrlBuilder(object):
 
 
 class NightlyBuildData(MozBuildData):
-    def __init__(self, good_date, bad_date, fetch_config, **kwargs):
+    half_window_range = 1
+    # max_workers here is not the real number of threads - see
+    # see :meth:`_get_valid_build_for_date`
+    max_workers = 3
+
+    def __init__(self, good_date, bad_date, fetch_config):
         associated_data = range((bad_date - good_date).days + 1)
         info_fetcher = BuildFolderInfoFetcher(fetch_config.build_regex(),
                                               fetch_config.build_info_regex())
-        MozBuildData.__init__(self, associated_data, info_fetcher, **kwargs)
+        MozBuildData.__init__(self, associated_data, info_fetcher)
         self.start_date = good_date
         url_builder = NightlyUrlBuilder(fetch_config)
         self.url_builder = url_builder
@@ -369,14 +371,54 @@ class NightlyBuildData(MozBuildData):
         days = self.get_associated_data(i)
         return self.start_date + datetime.timedelta(days=days)
 
-    def get_build_urls(self, i):
-        date = self.get_date_for_index(i)
-        return self.url_builder.get_urls(date)
+    def _get_valid_build(self, i):
+        return self._get_valid_build_for_date(self.get_date_for_index(i))
+
+    def _get_valid_build_for_date(self, date, read_txt_content=False):
+        # getting a valid build for a given date on nightly is tricky.
+        # there is multiple possible builds folders for one date,
+        # and some of them may be invalid (without binary for example)
+
+        # to save time, we will try multiple build folders at the same
+        # time in some threads. The first good one found is returned.
+        build_urls = self.url_builder.get_urls(date)
+
+        # by default we will check 2 build urls at once. That will lead us
+        # to a maximum of 3 * 2 = 6 threads.
+        max_workers = 2
+        while build_urls:
+            some = build_urls[:max_workers]
+            with futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures_results = {}
+                valid_builds = []
+                for i, url in enumerate(some):
+                    future = executor.submit(self.info_fetcher.find_build_info, url)
+                    futures_results[future] = i
+                for future in futures.as_completed(futures_results):
+                    i = futures_results[future]
+                    infos = future.result()
+                    if infos and self._is_valid_build(infos):
+                        valid_builds.append((i, infos))
+                if valid_builds:
+                    valid_builds = sorted(valid_builds, key=lambda (i, url): i)
+                    build_infos = valid_builds[0][1]
+                    if read_txt_content:
+                        txt_url = build_infos['build_txt_url']
+                        txt_infos = self.info_fetcher.find_build_info_txt(txt_url)
+                        build_infos.update(txt_infos)
+                    return build_infos
+            build_urls = build_urls[max_workers:]
+        return False
+
+    def mid_point(self):
+        size = len(self)
+        if size == 0:
+            return 0
+        # nightly builds are not often broken. There are good chances
+        # that trying to fetch mid point and limits at the same time
+        # will gives us enough information. This will save time in most cases.
+        self._fetch(set([0, size/2, size-1]))
+        return MozBuildData.mid_point(self)
 
     def get_build_infos_for_date(self, date, read_txt_content=True):
-        for build_url in self.url_builder.get_urls(date):
-            build_info = self.info_fetcher.find_build_info(build_url,
-                                                           read_txt_content)
-            if self.is_valid_build(build_info):
-                return build_info
-        return {}
+        return self._get_valid_build_for_date(date, read_txt_content) or {}

@@ -90,14 +90,14 @@ class Bisector(object):
     def _ensure_metadata(self):
         self._logger.info("Ensuring we have enough metadata to get a pushlog...")
         if not self.last_good_revision:
-            url = self.nightly_data[0]['build_txt_url']
-            infos = self.nightly_data.info_fetcher.find_build_info_txt(url)
+            date = self.nightly_data.get_date_for_index(0)
+            infos = self.nightly_data.get_build_infos_for_date(date)
             self.found_repo = infos['repository']
             self.last_good_revision = infos['changeset']
 
         if not self.first_bad_revision:
-            url = self.nightly_data[-1]['build_txt_url']
-            infos = self.nightly_data.info_fetcher.find_build_info_txt(url)
+            date = self.nightly_data.get_date_for_index(-1)
+            infos = self.nightly_data.get_build_infos_for_date(date)
             self.found_repo = infos['repository']
             self.first_bad_revision = infos['changeset']
 

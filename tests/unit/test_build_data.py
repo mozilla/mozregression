@@ -149,37 +149,6 @@ class TestBuildFolderInfoFetcher(unittest.TestCase):
         }
         self.assertEqual(self.info_fetcher.find_build_info_txt('http://foo.txt'), expected)
 
-class MyMozBuildData(build_data.MozBuildData):
-    def get_build_urls(self, i):
-        return ['http://foo/%d' % i]
-
-class TestMozBuildData(unittest.TestCase):
-    def setUp(self):
-        info_fetcher = build_data.BuildFolderInfoFetcher(r'app_test.*.tar.bz2$',
-                                                         r'app_test.*.txt$')
-        self.build_data = MyMozBuildData(range(3), info_fetcher)
-
-    @patch('mozregression.build_data.url_links')
-    def test_fetch_builds(self, url_links):
-        def _url_links(url):
-            if url.endswith('0/'):
-                # build folder 0 is empty
-                return []
-            if url.endswith('1/'):
-                # build folder 1 lacks the build file
-                return ['app_test01linux-x86_64.txt']
-            # build folder 2 must be valid
-            return ['app_test01linux-x86_64.txt', 'app_test01linux-x86_64.tar.bz2']
-        url_links.side_effect = _url_links
-
-        self.build_data.mid_point()
-        self.assertEqual(len(self.build_data), 1)
-        expected = {
-            'build_url': 'http://foo/2/app_test01linux-x86_64.tar.bz2',
-            'build_txt_url': 'http://foo/2/app_test01linux-x86_64.txt'
-        }
-        self.assertEqual(self.build_data[0], expected)
-
 class TestNightlyUrlBuilder(unittest.TestCase):
     def setUp(self):
         fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
@@ -198,6 +167,81 @@ class TestNightlyUrlBuilder(unittest.TestCase):
         self.assertEqual(urls[0], 'http://ftp.mozilla.org/pub/mozilla.org/firefox/nightly/2014/11/2014-11-01-03-02-05-foo/')
         urls = self.url_builder.get_urls(datetime.date(2014, 11, 02))
         self.assertEqual(urls, [])
+
+class TestNightlyBuildData(unittest.TestCase):
+    def setUp(self):
+        good_date = datetime.date(2014, 11, 10)
+        bad_date = datetime.date(2014, 11, 20)
+        fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
+
+        self.build_data = build_data.NightlyBuildData(good_date, bad_date, fetch_config)
+
+    def test_date_for_index(self):
+        date = self.build_data.get_date_for_index(0)
+        self.assertEqual(date, datetime.date(2014, 11, 10))
+        date = self.build_data.get_date_for_index(-1)
+        self.assertEqual(date, datetime.date(2014, 11, 20))
+        date = self.build_data.get_date_for_index(5)
+        self.assertEqual(date, datetime.date(2014, 11, 15))
+
+    @patch('mozregression.build_data.BuildFolderInfoFetcher.find_build_info_txt')
+    @patch('mozregression.build_data.BuildFolderInfoFetcher.find_build_info')
+    @patch('mozregression.build_data.NightlyUrlBuilder.get_urls')
+    def test_get_valid_build_for_date(self, get_urls, find_build_info, find_build_info_txt):
+        get_urls.return_value = [
+            'http://ftp.mozilla.org/pub/mozilla.org/bar/nightly/2014/11/2014-11-15-08-02-05-mozilla-central/',
+            'http://ftp.mozilla.org/pub/mozilla.org/bar/nightly/2014/11/2014-11-15-04-02-05-mozilla-central/',
+            'http://ftp.mozilla.org/pub/mozilla.org/bar/nightly/2014/11/2014-11-15-03-02-05-mozilla-central/',
+            'http://ftp.mozilla.org/pub/mozilla.org/bar/nightly/2014/11/2014-11-15-02-02-05-mozilla-central/',
+            'http://ftp.mozilla.org/pub/mozilla.org/bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/',
+        ]
+
+        def my_find_build_info(url):
+            # say only the last build url is invalid
+            if url in get_urls.return_value[:-1]:
+                return {}
+            return {
+                'build_txt_url': url,
+                'build_url': url,
+            }
+        find_build_info.side_effect = my_find_build_info
+        result = self.build_data._get_valid_build_for_date(datetime.date(2014, 11, 15), True)
+        # we must have found the last build url valid
+        self.assertEqual(result, {
+            'build_txt_url': get_urls.return_value[-1],
+            'build_url': get_urls.return_value[-1],
+        })
+
+    @patch('mozregression.build_data.NightlyUrlBuilder.get_urls')
+    def test_get_valid_build_for_date_no_data(self, get_urls):
+        get_urls.return_value = []
+        result = self.build_data._get_valid_build_for_date(datetime.date(2014, 11, 15))
+        self.assertEqual(False, result)
+
+    @patch('mozregression.build_data.NightlyBuildData._get_valid_build_for_date')
+    def test_get_valid_build(self, _get_valid_build_for_date):
+        self.build_data._get_valid_build(5)
+        _get_valid_build_for_date.assert_called_with(datetime.date(2014, 11, 15))
+
+    @patch('mozregression.build_data.NightlyBuildData._get_valid_build_for_date')
+    def test_build_infos_for_date(self, _get_valid_build_for_date):
+        _get_valid_build_for_date.return_value = False
+        date = datetime.date(2015, 11, 15)
+        result = self.build_data.get_build_infos_for_date(date)
+        _get_valid_build_for_date.assert_called_with(date, True)
+        self.assertEqual(result, {})
+
+    @patch('mozregression.build_data.NightlyBuildData._fetch')
+    @patch('mozregression.build_data.MozBuildData.mid_point')
+    def test_mid_point(self, mid_point, _fetch):
+        # test with no data
+        self.assertEqual(self.build_data[:0].mid_point(), 0)
+
+        mid_point.return_value = 5
+        result = self.build_data.mid_point()
+        _fetch.assert_called_with(set([0, 5, 10]))
+        mid_point.assert_called()
+        self.assertEqual(result, 5)
 
 if __name__ == '__main__':
     unittest.main()

@@ -143,7 +143,7 @@ def get_build_regex(name, os, bits, with_ext=True):
     else:
         return regex
 
-def date_of_release(release):
+def releases():
     """Provide the date of a release.
     The date is a string formated as "yyyy-mm-dd",
     and the release an integer.
@@ -180,6 +180,20 @@ def date_of_release(release):
         33: "2014-07-21",
         34: "2014-09-02",
     }
-    if release in releases:
-        return releases[release]
-    return None
+    return releases
+
+def date_of_release(release):
+    """Provide the date of a release.
+    The date is a string formated as "yyyy-mm-dd",
+    and the release an integer.
+    """
+    return releases().get(release)
+
+def formatted_valid_release_dates():
+    """Returns a formatted string (ready to be printed) representing the valid release dates.
+    """
+    message = "Valid releases: \n"
+    for key, value in releases().iteritems():
+        message += '% 3s: %s\n' % (key, value)
+
+    return message

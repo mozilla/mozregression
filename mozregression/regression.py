@@ -16,7 +16,7 @@ from mozregression import errors
 from mozregression import __version__
 from mozregression.utils import (parse_date, date_of_release, format_date,
                                  parse_bits, set_http_cache_session,
-                                 one_gigabyte)
+                                 one_gigabyte, formatted_valid_release_dates)
 from mozregression.inboundfinder import get_repo_url, BuildsFinder
 from mozregression.build_data import NightlyBuildData
 from mozregression.fetch_configs import create_config
@@ -384,6 +384,10 @@ def parse_args():
                         dest="good_date",
                         help="last known good nightly build")
 
+    parser.add_argument("--list-releases",
+                        action="store_true",
+                        help="list all known releases and exit")
+
     parser.add_argument("--bad-release",
                         type=int,
                         help=("first known bad nightly build. This option is"
@@ -459,6 +463,10 @@ def get_app():
     default_good_date = "2009-01-01"
     options = parse_args()
     logger = commandline.setup_logging("mozregression", options, {"mach": sys.stdout})
+ 
+    if options.list_releases:
+        print(formatted_valid_release_dates())
+        return
 
     fetch_config = create_config(options.app, mozinfo.os, options.bits)
 
@@ -497,7 +505,7 @@ def get_app():
             options.bad_date = date_of_release(options.bad_release)
             if options.bad_date is None:
                 sys.exit("Unable to find a matching date for release "
-                         + str(options.bad_release))
+                         + str(options.bad_release) + "\n" + formatted_valid_release_dates())
             logger.info("Using 'bad' date %s for release %s"
                         % (options.bad_date, options.bad_release))
         if not options.good_release and not options.good_date:
@@ -511,7 +519,7 @@ def get_app():
             options.good_date = date_of_release(options.good_release)
             if options.good_date is None:
                 sys.exit("Unable to find a matching date for release "
-                         + str(options.good_release))
+                         + str(options.good_release) + "\n" + formatted_valid_release_dates())
             logger.info("Using 'good' date %s for release %s"
                         % (options.good_date, options.good_release))
 

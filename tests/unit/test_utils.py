@@ -113,6 +113,20 @@ class TestRelease(unittest.TestCase):
         date = utils.date_of_release(34)
         self.assertEquals(date, "2014-09-02")
 
+    def test_valid_formatted_release_dates(self):
+        formatted_output = utils.formatted_valid_release_dates()
+        firefox_releases = utils.releases()
+
+        for line in formatted_output.splitlines():
+            if "Valid releases: " in line:
+                continue
+
+            fields = line.translate(None, " ").split(":")
+            version = int(fields[0])
+            date = fields[1]
+            self.assertTrue(firefox_releases.has_key(version))
+            self.assertEquals(date, firefox_releases[version])
+
     def test_invalid_release_to_date(self):
         date = utils.date_of_release(4)
         self.assertEquals(date, None)

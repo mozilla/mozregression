@@ -133,9 +133,12 @@ class BuildData(object):
             self.ensure_limits()
 
             size = len(self)
-            mid = size / 2
-            if mid == 0:
+            if size < 3:
+                # let's say that the middle point is 0 if there not at least
+                # 2 points.
                 return 0
+
+            mid = size / 2
 
             if self[mid] is None:
                 self._logger.debug('We need to fetch the mid point %d'

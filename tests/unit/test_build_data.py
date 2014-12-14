@@ -93,6 +93,15 @@ class TestBuildData(unittest.TestCase):
         # further calls won't break
         self.assertEqual(self.build_data.mid_point(), 0)
 
+    def test_mid_point_when_not_enough_data(self):
+        # make two points valids only
+        invalid_indexes = range(18)
+        for i in invalid_indexes:
+            self.build_data._cache[i][1] = False
+
+        mid = self.build_data.mid_point()
+        self.assertEqual(mid, 0)
+
     def test_fetch_exception(self):
         # fetching index 10 will raise an exception
         self.build_data.raises_for_indexes[10] = 1

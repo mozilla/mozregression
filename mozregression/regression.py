@@ -133,7 +133,7 @@ class Bisector(object):
                              len(revisions_left),
                              compute_steps_left(len(revisions_left))))
 
-    def prepare_bisect(self, inbound_revisions=None):
+    def bisect_inbound(self, inbound_revisions=None):
         self.found_repo = get_repo_url(inbound_branch=self.fetch_config.inbound_branch)
 
         if inbound_revisions is None:
@@ -168,13 +168,11 @@ class Bisector(object):
         build_url = inbound_revisions[mid]['build_url']
         persist_prefix='%s--%s--' % (inbound_revisions[mid]['timestamp'],
                                    self.fetch_config.inbound_branch)
-        return create_launcher(self.fetch_config.app_name,
+        launcher = create_launcher(self.fetch_config.app_name,
                                    build_url,
                                    persist=self.options.persist,
                                    persist_prefix=persist_prefix)
 
-    def bisect_inbound(self, inbound_revisions=None):
-        launcher = self.prepare_bisect(inbound_revisions)
         launcher.start()
 
         verdict = self._get_verdict('inbound', offer_skip=False)
@@ -456,13 +454,9 @@ def parse_args():
     options.bits = parse_bits(options.bits)
     return options
 
-
-def get_default_dates():
-    return (str(datetime.date.today()), "2009-01-01")
-
-
 def get_app():
-    (default_bad_date, default_good_date) = get_default_dates()
+    default_bad_date = str(datetime.date.today())
+    default_good_date = "2009-01-01"
     options = parse_args()
     logger = commandline.setup_logging("mozregression", options, {"mach": sys.stdout})
 

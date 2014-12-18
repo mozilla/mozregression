@@ -42,9 +42,10 @@ class Bisector(object):
             profile=options.profile,
             cmdargs=options.cmdargs,
         )
-        self.nightly_data = NightlyBuildData(parse_date(options.good_date),
-                                             parse_date(options.bad_date),
-                                             fetch_config)
+        if not options.inbound:
+            self.nightly_data = NightlyBuildData(parse_date(options.good_date),
+                                                 parse_date(options.bad_date),
+                                                 fetch_config)
         self._logger = get_default_logger('Bisector')
 
     def find_regression_chset(self, last_good_revision, first_bad_revision):

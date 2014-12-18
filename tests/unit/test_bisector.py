@@ -36,13 +36,14 @@ class TestBisector(unittest.TestCase):
         get_build_infos.return_value = self.build_data
 
         expected_base = 'http://some_url'
-        expected_full_url = '%s-%s-' % (expected_base,
+        expected_full_url = '%s--%s--' % (expected_base,
                                         self.fetch_config.inbound_branch)
         mid_mock = Mock(__getitem__= lambda a, b: expected_base)
         getitem.return_value = mid_mock
 
         create_launcher.side_effect = TestBisector.fake_create_launcher
 
+        print self.bisector.prepare_bisect()[1:]
         self.assertEqual(self.bisector.prepare_bisect()[1:],
             (expected_base, self.persist, expected_full_url))
 

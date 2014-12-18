@@ -19,12 +19,22 @@ class TestPushLogsFinder(unittest.TestCase):
 
     @patch('requests.get')
     def test_get_pushlogs(self, get):
-        get.return_value = Mock(json=lambda:{
-            1456: {'date': 1},
-            1234: {'date': 12},
-            5789: {'date': 5},
-        })
+        def my_get(url):
+            result = None
+            if url.endswith('?changeset=azerty'):
+                # return one value for this particular changeset
+                result = Mock(json=lambda: {1456: {'date': 1}})
+            elif url.endswith('?fromchange=azerty&tochange=uiop'):
+                # here comes the changeset between ou fake ones,
+                # qzerty (not included) and uiop.
+                result = Mock(json=lambda: {
+                    1234: {'date': 12},
+                    5789: {'date': 5},
+                })
+            return result
+        get.side_effect = my_get
         finder = inboundfinder.PushLogsFinder("azerty", "uiop")
+        # check that changesets are merged and ordered
         self.assertEquals(finder.get_pushlogs(), [
             {'date': 1},
             {'date': 5},

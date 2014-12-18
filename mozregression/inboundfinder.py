@@ -31,10 +31,21 @@ class PushLogsFinder(object):
         """
         Returns pushlog json objects (python dicts) sorted by date.
         """
+        # the first changeset is not taken into account in the result.
+        # let's add it directly with this request
+        chset_url = '%s/json-pushes?changeset=%s' % (
+            get_repo_url(self.path, self.inbound_branch),
+            self.start_rev)
+        response = get_http_session().get(chset_url)
+        response.raise_for_status()
+        chsets = response.json()
+
+        # now fetch all remaining changesets
         response = get_http_session().get(self.pushlog_url())
         response.raise_for_status()
+        chsets.update(response.json())
         # sort pushlogs by date
-        return sorted(response.json().itervalues(),
+        return sorted(chsets.itervalues(),
                       key=lambda push: push['date'])
 
 

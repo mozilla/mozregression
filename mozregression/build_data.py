@@ -7,7 +7,7 @@ import threading
 import datetime
 
 from mozregression import errors
-from mozregression.utils import url_links
+from mozregression.utils import url_links, get_http_session
 
 
 class BuildData(object):
@@ -182,6 +182,7 @@ class BuildData(object):
                         if isinstance(exc, requests.HTTPError):
                             if nb_try < max_try:
                                 self._logger.warning("Got HTTPError - retrying")
+                                self._logger.warning(exc)
                                 must_raise = False
                         if must_raise:
                             raise errors.DownloadError(
@@ -243,7 +244,7 @@ class BuildFolderInfoFetcher(object):
         is found.
         """
         data = {}
-        response = requests.get(url)
+        response = get_http_session().get(url)
         for line in response.text.splitlines():
             if '/rev/' in line:
                 repository, changeset = line.split('/rev/')

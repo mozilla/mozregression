@@ -9,7 +9,9 @@ import sys
 from BeautifulSoup import BeautifulSoup
 import mozinfo
 import requests
+import limitedfilecache
 
+from mozlog.structured import get_default_logger
 from mozregression import errors
 
 class ClassRegistry(object):
@@ -27,6 +29,16 @@ class ClassRegistry(object):
 
     def get(self, name):
         return self._classes[name]
+
+CACHE_SESSION = None
+one_gigabyte = 1000000000
+
+def set_http_cache_session(a_cache_session):
+    global CACHE_SESSION
+    CACHE_SESSION = a_cache_session
+
+def get_http_session():
+   return CACHE_SESSION or requests
 
 def format_date(date):
     return date.strftime('%Y-%m-%d')
@@ -62,7 +74,7 @@ def download_url(url, dest=None):
     chunk_size = 16 * 1024
     bytes_so_far = 0.0
     tmp_file = dest + ".part"
-    request = requests.get(url, stream=True)
+    request = get_http_session().get(url, stream=True)
     total_size = int(request.headers['Content-length'].strip())
     if dest is None:
         dest = os.path.basename(url)
@@ -84,7 +96,7 @@ def download_url(url, dest=None):
 
 
 def url_links(url, regex=None, auth=None):
-    response = requests.get(url, auth=auth)
+    response = get_http_session().get(url, auth=auth)
     response.raise_for_status()
 
     soup = BeautifulSoup(response.text)

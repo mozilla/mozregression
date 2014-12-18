@@ -1,3 +1,5 @@
 mozcommitbuilder.egg-info/*
 dist/*
 *.pyc
+*.swp
+.DS_Store

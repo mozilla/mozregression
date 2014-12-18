@@ -9,12 +9,14 @@ import mozinfo
 import sys
 import math
 from argparse import ArgumentParser
+import limitedfilecache
 from mozlog.structured import commandline, get_default_logger
 
 from mozregression import errors
 from mozregression import __version__
 from mozregression.utils import (parse_date, date_of_release, format_date,
-                                 parse_bits)
+                                 parse_bits, set_http_cache_session,
+                                 one_gigabyte)
 from mozregression.inboundfinder import get_repo_url, BuildsFinder
 from mozregression.build_data import NightlyBuildData
 from mozregression.fetch_configs import create_config
@@ -131,7 +133,7 @@ class Bisector(object):
                              len(revisions_left),
                              compute_steps_left(len(revisions_left))))
 
-    def bisect_inbound(self, inbound_revisions=None):
+    def prepare_bisect(self, inbound_revisions=None):
         self.found_repo = get_repo_url(inbound_branch=self.fetch_config.inbound_branch)
 
         if inbound_revisions is None:
@@ -166,10 +168,13 @@ class Bisector(object):
         build_url = inbound_revisions[mid]['build_url']
         persist_prefix='%s--%s--' % (inbound_revisions[mid]['timestamp'],
                                    self.fetch_config.inbound_branch)
-        launcher = create_launcher(self.fetch_config.app_name,
+        return create_launcher(self.fetch_config.app_name,
                                    build_url,
                                    persist=self.options.persist,
                                    persist_prefix=persist_prefix)
+
+    def bisect_inbound(self, inbound_revisions=None):
+        launcher = self.prepare_bisect(inbound_revisions)
         launcher.start()
 
         verdict = self._get_verdict('inbound', offer_skip=False)
@@ -443,15 +448,21 @@ def parse_args():
     parser.add_argument("--persist",
                         help="the directory in which files are to persist")
 
+    parser.add_argument("--http-cache-dir", dest="http_cache_dir",
+                        help="the directory for caching http requests")
+
     commandline.add_logging_group(parser)
     options = parser.parse_args()
     options.bits = parse_bits(options.bits)
     return options
 
 
-def cli():
-    default_bad_date = str(datetime.date.today())
-    default_good_date = "2009-01-01"
+def get_default_dates():
+    return (str(datetime.date.today()), "2009-01-01")
+
+
+def get_app():
+    (default_bad_date, default_good_date) = get_default_dates()
     options = parse_args()
     logger = commandline.setup_logging("mozregression", options, {"mach": sys.stdout})
 
@@ -462,6 +473,12 @@ def cli():
         # can go to inbound from nightly.
         fetch_config.set_inbound_branch(options.inbound_branch)
 
+    cacheSession = limitedfilecache.get_cache(
+        options.http_cache_dir, one_gigabyte,
+        logger=get_default_logger('Limited File Cache'))
+
+    set_http_cache_session(cacheSession)
+
     if options.inbound:
         if not fetch_config.is_inbound():
             sys.exit('Unable to bissect inbound for `%s`' % fetch_config.app_name)
@@ -471,7 +488,7 @@ def cli():
         bisector = Bisector(fetch_config, options,
                             last_good_revision=options.last_good_revision,
                             first_bad_revision=options.first_bad_revision)
-        app = bisector.bisect_inbound
+        return bisector.bisect_inbound
     else:
         # TODO: currently every fetch_config is nightly aware. Shoud we test
         # for this to be sure here ?
@@ -505,7 +522,10 @@ def cli():
                         % (options.good_date, options.good_release))
 
         bisector = Bisector(fetch_config, options)
-        app = bisector.bisect_nightlies
+        return bisector.bisect_nightlies
+
+def cli():
+    app = get_app()
     try:
         app()
     except KeyboardInterrupt:

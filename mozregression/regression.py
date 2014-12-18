@@ -164,7 +164,7 @@ class Bisector(object):
                           % (inbound_revisions[mid]['timestamp'],
                              inbound_revisions[mid]['revision']))
         build_url = inbound_revisions[mid]['build_url']
-        persist_prefix='%s-%s-' % (inbound_revisions[mid]['timestamp'],
+        persist_prefix='%s--%s--' % (inbound_revisions[mid]['timestamp'],
                                    self.fetch_config.inbound_branch)
         launcher = create_launcher(self.fetch_config.app_name,
                                    build_url,
@@ -269,7 +269,7 @@ class Bisector(object):
                 sys.exit()
 
         build_url = self.nightly_data[mid]['build_url']
-        persist_prefix = ('%s-%s-'
+        persist_prefix = ('%s--%s--'
                           % (mid_date,
                              self.fetch_config.get_nightly_repo(mid_date)))
         self._logger.info("Running nightly for %s" % mid_date)

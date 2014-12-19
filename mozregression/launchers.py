@@ -146,7 +146,7 @@ class FennecLauncher(Launcher):
         if "y" == raw_input("WARNING: no device connected."
                             " Connect a device and try again.\n"
                             "Try again? (y or n): "):
-            return self.get_device_status()
+            return self._get_device_status()
         raise Exception("Aborting!")
 
     def _install(self, dest):

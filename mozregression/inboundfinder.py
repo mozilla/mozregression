@@ -73,8 +73,8 @@ class BuildsFinder(object):
                                   path), timestamp)
                       for path, timestamp in self._extract_paths()]
 
-        build_urls_in_range = filter(lambda (u, t): t > (start_time - range)
-                                     and t < (end_time + range), build_urls)
+        build_urls_in_range = filter(lambda b: b[1] > (start_time - range)
+                                     and b[1] < (end_time + range), build_urls)
 
         data = sorted(build_urls_in_range, key=lambda b: b[1])
 

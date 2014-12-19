@@ -401,7 +401,7 @@ class NightlyBuildData(MozBuildData):
                     if infos and self._is_valid_build(infos):
                         valid_builds.append((i, infos))
                 if valid_builds:
-                    valid_builds = sorted(valid_builds, key=lambda (i, url): i)
+                    valid_builds = sorted(valid_builds, key=lambda b: b[0])
                     build_infos = valid_builds[0][1]
                     if read_txt_content:
                         txt_url = build_infos['build_txt_url']

@@ -22,8 +22,7 @@ setup(name="mozregression",
       packages=['mozregression'],
       entry_points="""
           [console_scripts]
-          mozregression = mozregression.regression:cli
-          moznightly = mozregression.runnightly:cli
+          mozregression = mozregression.main:cli
         """,
       platforms =['Any'],
       install_requires = ['mozcommitbuilder >= 0.4.10',

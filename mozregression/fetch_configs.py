@@ -119,7 +119,7 @@ class ThunderbirdNightlyConfigMixin(NightlyConfigMixin):
 
     def _get_nightly_repo(self, date):
         # sneaking this in here
-        if self.os == "win" and date < datetime.date(2010, 03, 18):
+        if self.os == "win" and date < datetime.date(2010, 3, 18):
             # no .zip package for Windows, can't use the installer
             raise errors.WinTooOldBuildError()
 

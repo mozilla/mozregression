@@ -122,6 +122,7 @@ class Bisector(object):
         return verdict
 
     def print_inbound_regression_progress(self, revisions, revisions_left):
+        self.print_range()
         self._logger.info("Narrowed inbound regression window from [%s, %s]"
                           " (%d revisions) to [%s, %s] (%d revisions)"
                           " (~%d steps left)"
@@ -215,6 +216,7 @@ class Bisector(object):
 
     def print_nightly_regression_progress(self, good_date, bad_date,
                                           next_good_date, next_bad_date):
+        self.print_range()
         next_days_range = (next_bad_date - next_good_date).days
         self._logger.info("Narrowed nightly regression window from"
                           " [%s, %s] (%d days) to [%s, %s] (%d days)"

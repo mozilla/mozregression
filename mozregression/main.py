@@ -13,7 +13,7 @@ from mozlog.structured import commandline, get_default_logger
 from mozregression import errors
 from mozregression import limitedfilecache
 from mozregression import __version__
-from mozregression.utils import (parse_date, date_of_release, format_date,
+from mozregression.utils import (parse_date, date_of_release,
                                  parse_bits, set_http_cache_session,
                                  one_gigabyte, formatted_valid_release_dates)
 from mozregression.fetch_configs import create_config

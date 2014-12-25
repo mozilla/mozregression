@@ -9,9 +9,7 @@ import sys
 from BeautifulSoup import BeautifulSoup
 import mozinfo
 import requests
-import limitedfilecache
 
-from mozlog.structured import get_default_logger
 from mozregression import errors
 
 class ClassRegistry(object):

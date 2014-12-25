@@ -1,7 +1,6 @@
 import mozinfo
 import sys
 from optparse import OptionParser
-import copy
 import limitedfilecache
 from mozlog.structured import get_default_logger
 

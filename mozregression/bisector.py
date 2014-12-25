@@ -9,7 +9,6 @@ import sys
 import datetime
 from mozlog.structured import get_default_logger
 from mozregression.launchers import create_launcher
-from mozregression.utils import format_date
 from mozregression.build_data import NightlyBuildData
 from mozregression.inboundfinder import BuildsFinder
 
@@ -151,11 +150,11 @@ class NightlyHandler(BisectorHandler):
         self._logger.info("Narrowed nightly regression window from"
                           " [%s, %s] (%d days) to [%s, %s] (%d days)"
                           " (~%d steps left)"
-                          % (format_date(self.good_date),
-                             format_date(self.bad_date),
+                          % (self.good_date,
+                             self.bad_date,
                              (self.bad_date - self.good_date).days,
-                             format_date(next_good_date),
-                             format_date(next_bad_date),
+                             next_good_date,
+                             next_bad_date,
                              next_days_range,
                              compute_steps_left(next_days_range)))
 

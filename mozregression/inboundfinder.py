@@ -1,11 +1,11 @@
 import mozinfo
 import sys
 from optparse import OptionParser
-import limitedfilecache
+from mozregression import limitedfilecache
 from mozlog.structured import get_default_logger
 
 from mozregression.build_data import InboundBuildData, BuildFolderInfoFetcher
-from mozregression.utils import url_links, get_http_session, set_http_cache_session, one_gigabyte
+from mozregression.utils import url_links, get_http_session, set_http_cache_session
 
 def get_repo_url(path='integration', inbound_branch='mozilla-inbound'):
     return "https://hg.mozilla.org/%s/%s" % (path, inbound_branch)
@@ -121,7 +121,7 @@ def get_build_finder(args):
     fetch_config = create_config(options.app, options.os, options.bits)
 
     cacheSession = limitedfilecache.get_cache(
-        options.http_cache_dir, one_gigabyte,
+        options.http_cache_dir, limitedfilecache.ONE_GIGABYTE,
         logger=get_default_logger('Limited File Cache'))
 
     set_http_cache_session(cacheSession)

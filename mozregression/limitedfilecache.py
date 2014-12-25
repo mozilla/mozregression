@@ -9,6 +9,8 @@ import warnings
 from cachecontrol import CacheControl
 from cachecontrol.caches import FileCache
 
+ONE_GIGABYTE = 1000000000
+
 def get_cache(directory, max_bytes, logger):
     forever = True if directory else False
     if forever:
@@ -21,7 +23,7 @@ def get_cache(directory, max_bytes, logger):
 
 class LimitedFileCache(FileCache):
     def __init__(self, directory, forever=False, filemode=0o0600,
-        dirmode=0o0700, max_bytes=1000000000, logger=warnings):
+        dirmode=0o0700, max_bytes=ONE_GIGABYTE, logger=warnings):
         FileCache.__init__(self, directory, forever, filemode, dirmode)
         self.max_bytes = max_bytes
         self.curr_bytes = 0

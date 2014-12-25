@@ -15,7 +15,7 @@ from mozregression import limitedfilecache
 from mozregression import __version__
 from mozregression.utils import (parse_date, date_of_release,
                                  parse_bits, set_http_cache_session,
-                                 one_gigabyte, formatted_valid_release_dates)
+                                 formatted_valid_release_dates)
 from mozregression.fetch_configs import create_config
 from mozregression.bisector import BisectRunner
 
@@ -132,7 +132,7 @@ def cli(argv=None):
         sys.exit()
 
     cache_session = limitedfilecache.get_cache(
-        options.http_cache_dir, one_gigabyte,
+        options.http_cache_dir, limitedfilecache.ONE_GIGABYTE,
         logger=get_default_logger('Limited File Cache'))
     set_http_cache_session(cache_session)
 

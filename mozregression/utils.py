@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+"""
+Utility functions and classes for mozregression.
+"""
+
 import datetime
 import os
 import re
@@ -12,13 +16,24 @@ import requests
 
 from mozregression import errors
 
+
 class ClassRegistry(object):
+    """
+    A registry to store classes identified by a unique name.
+
+    :param attr_name: On each registered class, the unique name will be saved
+                      under this class attribute name.
+    """
     def __init__(self, attr_name='name'):
         self._classes = {}
         self.attr_name = attr_name
 
     def register(self, name):
+        """
+        Register a class with a given name.
+        """
         assert name not in self._classes
+
         def wrapper(klass):
             self._classes[name] = klass
             setattr(klass, self.attr_name, name)
@@ -26,23 +41,34 @@ class ClassRegistry(object):
         return wrapper
 
     def get(self, name):
+        """
+        Returns a registered class.
+        """
         return self._classes[name]
 
+
 CACHE_SESSION = None
-one_gigabyte = 1000000000
+
 
 def set_http_cache_session(a_cache_session):
+    """
+    Define a cache http session.
+    """
     global CACHE_SESSION
     CACHE_SESSION = a_cache_session
 
-def get_http_session():
-   return CACHE_SESSION or requests
 
-def format_date(date):
-    return date.strftime('%Y-%m-%d')
+def get_http_session():
+    """
+    Returns the defined http session.
+    """
+    return CACHE_SESSION or requests
 
 
 def parse_date(date_string):
+    """
+    Returns a date from a string.
+    """
     regex = re.compile(r'(\d{4})\-(\d{1,2})\-(\d{1,2})')
     matched = regex.match(date_string)
     if not matched:
@@ -53,7 +79,9 @@ def parse_date(date_string):
 
 
 def parse_bits(option_bits):
-    """returns the correctly typed bits"""
+    """
+    Returns the correctly typed bits.
+    """
     if option_bits == "32":
         return 32
     else:
@@ -62,6 +90,9 @@ def parse_bits(option_bits):
 
 
 def update_download_progress(percent):
+    """
+    Print realtime status of downloaded file.
+    """
     sys.stdout.write("===== Downloaded %d%% =====\r" % percent)
     sys.stdout.flush()
     if percent >= 100:
@@ -69,6 +100,9 @@ def update_download_progress(percent):
 
 
 def download_url(url, dest=None):
+    """
+    Download a file given an url.
+    """
     chunk_size = 16 * 1024
     bytes_so_far = 0.0
     tmp_file = dest + ".part"
@@ -94,6 +128,9 @@ def download_url(url, dest=None):
 
 
 def url_links(url, regex=None, auth=None):
+    """
+    Returns a list of links that can be found on a given web page.
+    """
     response = get_http_session().get(url, auth=auth)
     response.raise_for_status()
 
@@ -141,12 +178,14 @@ def get_build_regex(name, os, bits, with_ext=True):
     else:
         return regex
 
+
 def releases():
-    """Provide the date of a release.
-    The date is a string formated as "yyyy-mm-dd",
-    and the release an integer.
     """
-    releases = {
+    Provide the list of releases with their associated dates.
+
+    The date is a string formated as "yyyy-mm-dd", and the release an integer.
+    """
+    return {
         5: "2011-04-12",
         6: "2011-05-24",
         7: "2011-07-05",
@@ -178,17 +217,19 @@ def releases():
         33: "2014-07-21",
         34: "2014-09-02",
     }
-    return releases
+
 
 def date_of_release(release):
-    """Provide the date of a release.
-    The date is a string formated as "yyyy-mm-dd",
-    and the release an integer.
+    """
+    Provide the date of a release.
     """
     return releases().get(release)
 
+
 def formatted_valid_release_dates():
-    """Returns a formatted string (ready to be printed) representing the valid release dates.
+    """
+    Returns a formatted string (ready to be printed) representing
+    the valid release dates.
     """
     message = "Valid releases: \n"
     for key, value in releases().iteritems():

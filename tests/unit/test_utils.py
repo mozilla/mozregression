@@ -6,8 +6,7 @@ import shutil
 import os
 import requests
 from cachecontrol import CacheControl
-import mozregression.limitedfilecache
-from mozregression import utils, errors
+from mozregression import utils, errors, limitedfilecache
 
 class TestUrlLinks(unittest.TestCase):
     @patch('requests.get')
@@ -139,8 +138,8 @@ class TestHTTPCache(unittest.TestCase):
         self.addCleanup(utils.set_http_cache_session, None)
 
     def make_cache(self):
-        return mozregression.limitedfilecache.get_cache(
-            '/fakedir', utils.one_gigabyte, logger=None)
+        return limitedfilecache.get_cache(
+            '/fakedir', limitedfilecache.ONE_GIGABYTE, logger=None)
 
     def test_basic(self):
         self.assertEquals(utils.get_http_session(), requests)
@@ -161,7 +160,7 @@ class TestHTTPCache(unittest.TestCase):
         # so it makes verifying that we're actually using it
         # a little messy
         for k, v in a_session.adapters.items():
-            self.assertTrue(isinstance(v.cache, mozregression.limitedfilecache.LimitedFileCache))
+            self.assertTrue(isinstance(v.cache, limitedfilecache.LimitedFileCache))
 
 if __name__ == '__main__':
     unittest.main()

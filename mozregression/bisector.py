@@ -9,8 +9,7 @@ import sys
 import datetime
 from mozlog.structured import get_default_logger
 from mozregression.launchers import create_launcher
-from mozregression.build_data import NightlyBuildData
-from mozregression.inboundfinder import BuildsFinder
+from mozregression.build_data import NightlyBuildData, InboundBuildData
 
 def compute_steps_left(steps):
     if steps <= 1:
@@ -352,10 +351,10 @@ class BisectRunner(object):
         # see https://bugzilla.mozilla.org/show_bug.cgi?id=1018907 ...
         # we can change this at some point in the future, after those builds
         # expire)
-        build_finder = BuildsFinder(self.fetch_config)
-        inbound_data = build_finder.get_build_infos(good_rev,
-                                                    bad_rev,
-                                                    range=60*60*12)
+        inbound_data = InboundBuildData(self.fetch_config,
+                                        good_rev,
+                                        bad_rev,
+                                        range=60*60*12)
         handler = InboundHandler(self.fetch_config,
                                  persist=self.options.persist,
                                  launcher_kwargs=self.launcher_kwargs)

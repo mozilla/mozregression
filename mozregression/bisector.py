@@ -58,6 +58,19 @@ class BisectorHandler(object):
         """
         raise NotImplementedError
 
+    def initialize(self):
+        """
+        Initialize some data at the beginning of a bisection process.
+
+        This will only be called if there is some build data.
+        """
+        if self.found_repo is None:
+            self.found_repo = self.build_data[0]['repository']
+        if self.last_good_revision is None:
+            self.last_good_revision = self.build_data[0]['changeset']
+        if self.first_bad_revision is None:
+            self.first_bad_revision = self.build_data[-1]['changeset']
+
     def start_launcher(self, index):
         """
         Create and returns a :class:`mozregression.launchers.Launcher`
@@ -79,18 +92,13 @@ class BisectorHandler(object):
         return "%s/pushloghtml?fromchange=%s&tochange=%s" % (
             self.found_repo, self.last_good_revision, self.first_bad_revision)
 
-    def _get_str_range(self):
-        return ('revision: %s' % self.last_good_revision,
-                'revision: %s' % self.first_bad_revision)
-
     def print_range(self):
         """
         Log the state of the current state of the bisection process, with an
         appropriate pushlog url.
         """
-        good, bad = self._get_str_range()
-        self._logger.info("Last good %s" % good)
-        self._logger.info("First bad %s" % bad)
+        self._logger.info("Last good revision: %s" % self.last_good_revision)
+        self._logger.info("First bad revision: %s" % self.first_bad_revision)
         self._logger.info("Pushlog:\n%s\n" % self.get_pushlog_url())
 
     def build_good(self, mid, new_data):
@@ -156,25 +164,6 @@ class NightlyHandler(BisectorHandler):
                              next_bad_date,
                              next_days_range,
                              compute_steps_left(next_days_range)))
-
-    def ensure_metadata(self):
-        if not self.last_good_revision:
-            date = self.build_data.get_date_for_index(0)
-            infos = self.build_data.get_build_infos_for_date(date)
-            self.found_repo = infos['repository']
-            self.last_good_revision = infos['changeset']
-
-        if not self.first_bad_revision:
-            date = self.build_data.get_date_for_index(-1)
-            infos = self.build_data.get_build_infos_for_date(date)
-            self.found_repo = infos['repository']
-            self.first_bad_revision = infos['changeset']
-
-    def _get_str_range(self):
-        good, bad = BisectorHandler._get_str_range(self)
-        good += ' (%s)' % self.good_date
-        bad += ' (%s)' % self.bad_date
-        return good, bad
 
 class InboundHandler(BisectorHandler):
     build_type = 'inbound'
@@ -247,6 +236,8 @@ class Bisector(object):
                 self.handler.no_data()
                 return self.NO_DATA
 
+            self.handler.initialize()
+
             if mid == 0:
                 self.handler.finished()
                 return self.FINISHED
@@ -301,8 +292,6 @@ class BisectRunner(object):
         result = bisector.bisect(build_data)
         if result == Bisector.FINISHED:
             self._logger.info("Got as far as we can go bisecting nightlies...")
-            self._logger.info("Ensuring we have enough metadata to get a pushlog...")
-            handler.ensure_metadata()
             handler.print_range()
             if self.fetch_config.can_go_inbound():
                 self._logger.info("... attempting to bisect inbound builds"
@@ -358,8 +347,6 @@ class BisectRunner(object):
         handler = InboundHandler(self.fetch_config,
                                  persist=self.options.persist,
                                  launcher_kwargs=self.launcher_kwargs)
-        handler.last_good_revision = good_rev
-        handler.first_bad_revision = bad_rev
         bisector = Bisector(handler)
         result = bisector.bisect(inbound_data)
         if result == Bisector.FINISHED:

@@ -243,5 +243,79 @@ class TestNightlyBuildData(unittest.TestCase):
         mid_point.assert_called()
         self.assertEqual(result, 5)
 
+class TestPushLogsFinder(unittest.TestCase):
+    def test_pushlog_url(self):
+        finder = build_data.PushLogsFinder("azerty", "uiop")
+        good_url = 'https://hg.mozilla.org/integration/mozilla-inbound/json-pushes' \
+                   '?fromchange=azerty&tochange=uiop'
+        self.assertEquals(finder.pushlog_url(), good_url)
+
+    def test_custom_pushlog_url(self):
+        finder = build_data.PushLogsFinder("1", "2", path="3", inbound_branch="4")
+        good_url = 'https://hg.mozilla.org/3/4/json-pushes' \
+                   '?fromchange=1&tochange=2'
+        self.assertEquals(finder.pushlog_url(), good_url)
+
+    @patch('requests.get')
+    def test_get_pushlogs(self, get):
+        def my_get(url):
+            result = None
+            if url.endswith('?changeset=azerty'):
+                # return one value for this particular changeset
+                result = Mock(json=lambda: {1456: {'date': 1}})
+            elif url.endswith('?fromchange=azerty&tochange=uiop'):
+                # here comes the changeset between ou fake ones,
+                # qzerty (not included) and uiop.
+                result = Mock(json=lambda: {
+                    1234: {'date': 12},
+                    5789: {'date': 5},
+                })
+            return result
+        get.side_effect = my_get
+        finder = build_data.PushLogsFinder("azerty", "uiop")
+        # check that changesets are merged and ordered
+        self.assertEquals(finder.get_pushlogs(), [
+            {'date': 1},
+            {'date': 5},
+            {'date': 12},
+        ])
+
+class TestInboundBuildData(unittest.TestCase):
+    @patch('mozregression.build_data.url_links')
+    @patch('mozregression.build_data.PushLogsFinder.get_pushlogs')
+    def create_inbound_build_data(self, good, bad, get_pushlogs, url_links):
+        fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
+        # create fake pushlog returns
+        pushlogs = [
+            {'date' : d, 'changesets': ['c' + str(d)]}
+            for d in xrange(int(good[1:]), int(bad[1:]))
+        ]
+        get_pushlogs.return_value = pushlogs
+        # returns 100 possible build folders
+        def inbound_links(url):
+            return ['%i/' % i for i in xrange(100)]
+        url_links.side_effect = inbound_links
+        return build_data.InboundBuildData(fetch_config, good, bad, range=5)
+
+    @patch('mozregression.build_data.BuildFolderInfoFetcher')
+    def test_create(self, BuildFolderInfoFetcher):
+        data = self.create_inbound_build_data('c40', 'c60')
+        # there is 20 + 4*2 build folders (because the range is 5)
+        self.assertEqual(len(data), 28)
+        # BuildFolderInfoFetcher has been called and is defined
+        BuildFolderInfoFetcher.assert_called_with(data.fetch_config.build_regex(),
+                                                  data.fetch_config.build_info_regex())
+        self.assertIsNotNone(data.info_fetcher)
+        # raw_revisions is defined
+        self.assertEquals(data.raw_revisions, ['c' + str(d) for d in range(40, 60)])
+
+    def test_create_empty(self):
+        data = self.create_inbound_build_data('c0', 'c0')
+        self.assertEqual(len(data), 0)
+
+    def test_create_only_one_rev(self):
+        data = self.create_inbound_build_data('c0', 'c1')
+        self.assertEqual(len(data), 0)
+
 if __name__ == '__main__':
     unittest.main()

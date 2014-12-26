@@ -286,10 +286,89 @@ class MozBuildData(BuildData):
         """
         raise NotImplementedError
 
+
+class PushLogsFinder(object):
+    """
+    Find pushlog json objects within two revisions on inbound.
+    """
+    def __init__(self, start_rev, end_rev, path='integration',
+                 inbound_branch='mozilla-inbound'):
+        self.start_rev = start_rev
+        self.end_rev = end_rev
+        self.path = path
+        self.inbound_branch = inbound_branch
+
+    def get_repo_url(self):
+        return "https://hg.mozilla.org/%s/%s" % (self.path,
+                                                 self.inbound_branch)
+
+    def pushlog_url(self):
+        return ('%s/json-pushes?fromchange=%s&tochange=%s'
+                % (self.get_repo_url(), self.start_rev, self.end_rev))
+
+    def get_pushlogs(self):
+        """
+        Returns pushlog json objects (python dicts) sorted by date.
+        """
+        # the first changeset is not taken into account in the result.
+        # let's add it directly with this request
+        chset_url = '%s/json-pushes?changeset=%s' % (
+            self.get_repo_url(),
+            self.start_rev)
+        response = get_http_session().get(chset_url)
+        response.raise_for_status()
+        chsets = response.json()
+
+        # now fetch all remaining changesets
+        response = get_http_session().get(self.pushlog_url())
+        response.raise_for_status()
+        chsets.update(response.json())
+        # sort pushlogs by date
+        return sorted(chsets.itervalues(),
+                      key=lambda push: push['date'])
+
+
 class InboundBuildData(MozBuildData):
-    def __init__(self, associated_data, info_fetcher, raw_revisions):
-        MozBuildData.__init__(self, associated_data, info_fetcher)
+    """
+    Fetch build information for all builds between start_rev and end_rev.
+    """
+    def __init__(self, fetch_config, start_rev, end_rev, range=60*60*4):
+        self.fetch_config = fetch_config
+        pushlogs_finder = PushLogsFinder(start_rev,
+                                         end_rev,
+                                         inbound_branch=fetch_config.inbound_branch)
+
+        pushlogs = pushlogs_finder.get_pushlogs()
+
+        if len(pushlogs) < 2:
+            # if we have 0 or 1 pushlog entry, we can not bisect.
+            data, info_fetcher, raw_revisions = [], None, []
+        else:
+            start_time = pushlogs[0]['date']
+            end_time = pushlogs[-1]['date']
+            
+            build_urls = [("%s%s/" % (self.fetch_config.inbound_base_url(),
+                                      path), timestamp)
+                          for path, timestamp in self._extract_paths()]
+
+            build_urls_in_range = filter(lambda b: b[1] > (start_time - range)
+                                         and b[1] < (end_time + range), build_urls)
+
+            data = sorted(build_urls_in_range, key=lambda b: b[1])
+
+            info_fetcher = BuildFolderInfoFetcher(fetch_config.build_regex(),
+                                                  fetch_config.build_info_regex())
+
+            raw_revisions = [push['changesets'][-1] for push in pushlogs]
+
+        MozBuildData.__init__(self, data, info_fetcher)
         self.raw_revisions = raw_revisions
+
+    def _extract_paths(self):
+        paths = filter(lambda l: l.isdigit(),
+                       map(lambda l: l.strip('/'),
+                           url_links(self.fetch_config.inbound_base_url())))
+        return [(p, int(p)) for p in paths]
 
     def _get_valid_build(self, i):
         build_url = self.get_associated_data(i)[0]

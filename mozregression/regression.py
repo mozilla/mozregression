@@ -201,7 +201,7 @@ class Bisector(object):
             if verdict == 'g':
                 revisions_left = inbound_revisions[mid:]
             else:
-                revisions_left = inbound_revisions[:mid]
+                revisions_left = inbound_revisions[:mid+1]
             revisions_left.ensure_limits()
             if len(revisions_left) > 0:
                 self.print_inbound_regression_progress(inbound_revisions,
@@ -298,7 +298,7 @@ class Bisector(object):
             self.first_bad_revision = info['application_changeset']
             self.print_nightly_regression_progress(good_date, bad_date,
                                                    good_date, mid_date)
-            self.nightly_data = self.nightly_data[:mid]
+            self.nightly_data = self.nightly_data[:mid+1]
         elif verdict == 's':
             del self.nightly_data[mid]
         elif verdict == 'e':

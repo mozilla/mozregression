@@ -75,7 +75,7 @@ class BuildsFinder(object):
         pushlogs = pushlogs_finder.get_pushlogs()
 
         if not pushlogs:
-            return []
+            return InboundBuildData([], None, [])
 
         start_time = pushlogs[0]['date']
         end_time = pushlogs[-1]['date']

@@ -1,3 +1,13 @@
+#!/usr/bin/env python
+
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+"""
+Define the launcher classes, responsible of running the tested applications.
+"""
+
 from mozlog.structured import get_default_logger
 from mozprofile import FirefoxProfile, ThunderbirdProfile, Profile
 from mozrunner import Runner
@@ -9,6 +19,7 @@ import tempfile
 import os
 
 from mozregression.utils import ClassRegistry, download_url
+
 
 class Launcher(object):
     """
@@ -72,11 +83,12 @@ class Launcher(object):
     def _install(self, dest):
         raise NotImplementedError
 
-    def _start(self):
+    def _start(self, **kwargs):
         raise NotImplementedError
 
     def _stop(self):
         raise NotImplementedError
+
 
 class MozRunnerLauncher(Launcher):
     tempdir = None
@@ -113,7 +125,9 @@ class MozRunnerLauncher(Launcher):
     def _get_app_info(self):
         return mozversion.get_version(binary=self.binary)
 
+
 REGISTRY = ClassRegistry('app_name')
+
 
 def create_launcher(name, url, persist=None, persist_prefix=''):
     """
@@ -123,17 +137,21 @@ def create_launcher(name, url, persist=None, persist_prefix=''):
                               persist=persist,
                               persist_prefix=persist_prefix)
 
+
 @REGISTRY.register('firefox')
 class FirefoxLauncher(MozRunnerLauncher):
     profile_class = FirefoxProfile
+
 
 @REGISTRY.register('thunderbird')
 class ThunderbirdLauncher(MozRunnerLauncher):
     profile_class = ThunderbirdProfile
 
+
 @REGISTRY.register('b2g')
 class B2GLauncher(MozRunnerLauncher):
     pass
+
 
 @REGISTRY.register('fennec')
 class FennecLauncher(Launcher):
@@ -161,7 +179,7 @@ class FennecLauncher(Launcher):
         # get info now, as dest may be removed
         self.app_info = mozversion.get_version(binary=dest)
 
-    def _start(self, **args):
+    def _start(self, **kwargs):
         self.adb.launch_fennec("org.mozilla.fennec")
 
     def _stop(self):

@@ -4,6 +4,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+"""
+Entry point for the mozregression command line.
+"""
+
 import mozinfo
 import datetime
 import sys
@@ -13,13 +17,17 @@ from mozlog.structured import commandline, get_default_logger
 from mozregression import errors
 from mozregression import limitedfilecache
 from mozregression import __version__
-from mozregression.utils import (parse_date, date_of_release, format_date,
+from mozregression.utils import (parse_date, date_of_release,
                                  parse_bits, set_http_cache_session,
-                                 one_gigabyte, formatted_valid_release_dates)
+                                 formatted_valid_release_dates)
 from mozregression.fetch_configs import create_config
 from mozregression.bisector import BisectRunner
 
+
 def parse_args(argv=None):
+    """
+    Parse command line options.
+    """
     usage = ("\n"
              " %(prog)s [OPTIONS]"
              " [[--bad BAD_DATE]|[--bad-release BAD_RELEASE]]"
@@ -36,7 +44,8 @@ def parse_args(argv=None):
     parser.add_argument("-b", "--bad",
                         metavar="YYYY-MM-DD",
                         dest="bad_date",
-                        help="first known bad nightly build, default is today.")
+                        help=("first known bad nightly build, default is"
+                              " today."))
 
     parser.add_argument("-g", "--good",
                         metavar="YYYY-MM-DD",
@@ -49,8 +58,8 @@ def parse_args(argv=None):
 
     parser.add_argument("--bad-release",
                         type=int,
-                        help=("first known bad nightly build. This option is"
-                              " incompatible with --bad."))
+                        help=("first known bad nightly build. This option"
+                              " is incompatible with --bad."))
 
     parser.add_argument("--good-release",
                         type=int,
@@ -59,21 +68,23 @@ def parse_args(argv=None):
 
     parser.add_argument("--inbound",
                         action="store_true",
-                        help=("use inbound instead of nightlies (use --good-rev"
-                              " and --bad-rev options."))
+                        help=("use inbound instead of nightlies (use"
+                              " --good-rev and --bad-rev options."))
 
     parser.add_argument("--bad-rev", dest="first_bad_revision",
-                        help="first known bad revision (use with --inbound).")
+                        help=("first known bad revision (use with"
+                              " --inbound)."))
 
     parser.add_argument("--good-rev", dest="last_good_revision",
-                        help="last known good revision (use with --inbound).")
+                        help=("last known good revision (use with"
+                              " --inbound)."))
 
     parser.add_argument("-e", "--addon",
                         dest="addons",
                         action='append',
                         default=[],
                         metavar="PATH1",
-                        help="an addon to install; repeat for multiple addons.")
+                        help="addon to install; repeat for multiple addons.")
 
     parser.add_argument("-p", "--profile",
                         metavar="PATH",
@@ -122,17 +133,22 @@ def parse_args(argv=None):
 
 
 def cli(argv=None):
+    """
+    main entry point of mozregression command line.
+    """
     default_bad_date = str(datetime.date.today())
     default_good_date = "2009-01-01"
     options = parse_args(argv)
-    logger = commandline.setup_logging("mozregression", options, {"mach": sys.stdout})
+    logger = commandline.setup_logging("mozregression",
+                                       options,
+                                       {"mach": sys.stdout})
 
     if options.list_releases:
         print(formatted_valid_release_dates())
         sys.exit()
 
     cache_session = limitedfilecache.get_cache(
-        options.http_cache_dir, one_gigabyte,
+        options.http_cache_dir, limitedfilecache.ONE_GIGABYTE,
         logger=get_default_logger('Limited File Cache'))
     set_http_cache_session(cache_session)
 
@@ -146,7 +162,8 @@ def cli(argv=None):
 
     if options.inbound:
         if not fetch_config.is_inbound():
-            sys.exit('Unable to bissect inbound for `%s`' % fetch_config.app_name)
+            sys.exit('Unable to bissect inbound for `%s`'
+                     % fetch_config.app_name)
         if not options.last_good_revision or not options.first_bad_revision:
             sys.exit("If bisecting inbound, both --good-rev and --bad-rev"
                      " must be set")

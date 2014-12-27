@@ -240,7 +240,7 @@ class TestNightlyBuildData(unittest.TestCase):
         mid_point.return_value = 5
         result = self.build_data.mid_point()
         _fetch.assert_called_with(set([0, 5, 10]))
-        mid_point.assert_called()
+        self.assertTrue(mid_point.called)
         self.assertEqual(result, 5)
 
 class TestPushLogsFinder(unittest.TestCase):

@@ -106,7 +106,7 @@ class TestMozRunnerLauncher(unittest.TestCase):
         self.assertEqual(kwargs['process_args'], {'processOutputLine': [self.launcher._logger.debug]})
         self.assertIsInstance(kwargs['profile'], Profile)
         # runner is started
-        Runner.start.assert_called_once()
+        self.launcher.runner.start.assert_called_once_with()
 
     @patch('mozregression.launchers.Runner')
     @patch('mozregression.launchers.MozRunnerLauncher.profile_class')
@@ -114,7 +114,7 @@ class TestMozRunnerLauncher(unittest.TestCase):
         self.launcher.start(addons=['my-addon'])
         profile_class.assert_called_once_with(addons=['my-addon'])
         # runner is started
-        Runner.start.assert_called_once()
+        self.launcher.runner.start.assert_called_once_with()
 
     @patch('mozregression.launchers.Runner')
     @patch('mozregression.launchers.MozRunnerLauncher.profile_class')
@@ -123,7 +123,7 @@ class TestMozRunnerLauncher(unittest.TestCase):
         profile_class.assert_called_once_with(profile='my-profile',
                                               addons=['my-addon'])
         # runner is started
-        Runner.start.assert_called_once()
+        self.launcher.runner.start.assert_called_once_with()
 
     @patch('mozregression.launchers.Runner')
     @patch('mozregression.launchers.mozversion')

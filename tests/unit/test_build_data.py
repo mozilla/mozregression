@@ -205,7 +205,7 @@ class TestNightlyBuildData(unittest.TestCase):
                 'build_url': url,
             }
         find_build_info.side_effect = my_find_build_info
-        result = self.build_data._get_valid_build_for_date(datetime.date(2014, 11, 15), True)
+        result = self.build_data._get_valid_build_for_date(datetime.date(2014, 11, 15))
         # we must have found the last build url valid
         self.assertEqual(result, {
             'build_txt_url': get_urls.return_value[-1],
@@ -228,7 +228,7 @@ class TestNightlyBuildData(unittest.TestCase):
         _get_valid_build_for_date.return_value = False
         date = datetime.date(2015, 11, 15)
         result = self.build_data.get_build_infos_for_date(date)
-        _get_valid_build_for_date.assert_called_with(date, True)
+        _get_valid_build_for_date.assert_called_with(date)
         self.assertEqual(result, {})
 
     @patch('mozregression.build_data.NightlyBuildData._fetch')
@@ -240,7 +240,7 @@ class TestNightlyBuildData(unittest.TestCase):
         mid_point.return_value = 5
         result = self.build_data.mid_point()
         _fetch.assert_called_with(set([0, 5, 10]))
-        mid_point.assert_called()
+        self.assertTrue(mid_point.called)
         self.assertEqual(result, 5)
 
 class TestPushLogsFinder(unittest.TestCase):

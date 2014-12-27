@@ -454,7 +454,7 @@ class NightlyBuildData(MozBuildData):
     def _get_valid_build(self, i):
         return self._get_valid_build_for_date(self.get_date_for_index(i))
 
-    def _get_valid_build_for_date(self, date, read_txt_content=False):
+    def _get_valid_build_for_date(self, date):
         # getting a valid build for a given date on nightly is tricky.
         # there is multiple possible builds folders for one date,
         # and some of them may be invalid (without binary for example)
@@ -482,10 +482,9 @@ class NightlyBuildData(MozBuildData):
                 if valid_builds:
                     valid_builds = sorted(valid_builds, key=lambda b: b[0])
                     build_infos = valid_builds[0][1]
-                    if read_txt_content:
-                        txt_url = build_infos['build_txt_url']
-                        txt_infos = self.info_fetcher.find_build_info_txt(txt_url)
-                        build_infos.update(txt_infos)
+                    txt_url = build_infos['build_txt_url']
+                    txt_infos = self.info_fetcher.find_build_info_txt(txt_url)
+                    build_infos.update(txt_infos)
                     return build_infos
             build_urls = build_urls[max_workers:]
         return False
@@ -500,5 +499,5 @@ class NightlyBuildData(MozBuildData):
         self._fetch(set([0, size/2, size-1]))
         return MozBuildData.mid_point(self)
 
-    def get_build_infos_for_date(self, date, read_txt_content=True):
-        return self._get_valid_build_for_date(date, read_txt_content) or {}
+    def get_build_infos_for_date(self, date):
+        return self._get_valid_build_for_date(date) or {}

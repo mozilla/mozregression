@@ -19,6 +19,17 @@ class TestBisectorHandler(unittest.TestCase):
             {'build_url': 'http://build_url_0'}
         ])
 
+    def test_initialize(self):
+        self.handler.set_build_data([
+            {'changeset': '1', 'repository': 'my'},
+            {},
+            {'changeset': '3', 'repository': 'my'},
+        ])
+        self.handler.initialize()
+        self.assertEqual(self.handler.found_repo, 'my')
+        self.assertEqual(self.handler.last_good_revision, '1')
+        self.assertEqual(self.handler.first_bad_revision, '3')
+
     @patch('mozregression.bisector.BisectorHandler.launcher_persist_prefix')
     @patch('mozregression.bisector.create_launcher')
     def test_start_launcher(self, create_launcher, launcher_persist_prefix):
@@ -169,13 +180,14 @@ class TestInboundHandler(unittest.TestCase):
         self.assertIn('1 steps left', log[0])
 
 class MyBuildData(list):
+    ensure_limits_called = False
     def mid_point(self):
         if len(self) < 3:
             return 0
         return len(self) / 2
 
     def ensure_limits(self):
-        pass
+        self.ensure_limits_called = True
 
     def __getslice__(self, smin, smax):
         return MyBuildData(list.__getslice__(self, smin, smax))
@@ -196,7 +208,7 @@ class TestBisector(unittest.TestCase):
         result = self.bisector.bisect(build_data)
         # test that handler methods where called
         self.handler.set_build_data.assert_called_with(build_data)
-        self.handler.no_data.assert_called()
+        self.handler.no_data.assert_called_once_with()
         # check return code
         self.assertEqual(result, Bisector.NO_DATA)
 
@@ -205,7 +217,7 @@ class TestBisector(unittest.TestCase):
         result = self.bisector.bisect(build_data)
         # test that handler methods where called
         self.handler.set_build_data.assert_called_with(build_data)
-        self.handler.finished.assert_called()
+        self.handler.finished.assert_called_once_with()
         # check return code
         self.assertEqual(result, Bisector.FINISHED)
 
@@ -232,11 +244,12 @@ class TestBisector(unittest.TestCase):
             call(MyBuildData([3, 4])),
         ])
         # ensure that the launcher was stopped
-        test_result['launcher'].stop.assert_called()
+        test_result['launcher'].stop.assert_called_with()
         # ensure that we called the handler's methods
+        self.handler.initialize.assert_called_with()
         self.handler.build_good.assert_called_with(2, MyBuildData([3, 4, 5]))
         self.handler.build_bad.assert_called_with(1, MyBuildData([3, 4]))
-        self.handler.build_data.ensure_limits.assert_called()
+        self.assertTrue(self.handler.build_data.ensure_limits_called)
         # bisection is finished
         self.assertEqual(test_result['result'], Bisector.FINISHED)
 
@@ -256,11 +269,12 @@ class TestBisector(unittest.TestCase):
             call(MyBuildData([1, 3])),
         ])
         # ensure that the launcher was stopped
-        test_result['launcher'].stop.assert_called()
+        test_result['launcher'].stop.assert_called_with()
         # ensure that we called the handler's methods
+        self.handler.initialize.assert_called_with()
         self.handler.build_retry.assert_called_with(1)
         self.handler.build_skip.assert_called_with(1)
-        self.handler.build_data.ensure_limits.assert_called()
+        self.assertTrue(self.handler.build_data.ensure_limits_called)
         # bisection is finished
         self.assertEqual(test_result['result'], Bisector.FINISHED)
 
@@ -269,6 +283,7 @@ class TestBisector(unittest.TestCase):
         # check that set_build_data was called
         self.handler.set_build_data.assert_has_calls([call(MyBuildData(range(20)))])
         # ensure that we called the handler's method
+        self.handler.initialize.assert_called_once_with()
         self.handler.user_exit.assert_called_with(10)
         # user exit
         self.assertEqual(test_result['result'], Bisector.USER_EXIT)

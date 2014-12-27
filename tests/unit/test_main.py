@@ -83,7 +83,7 @@ class TestMainCli(unittest.TestCase):
     @patch('mozregression.main.formatted_valid_release_dates')
     def test_list_releases(self, formatted_valid_release_dates):
         exitcode = self.do_cli(['--list-releases'])
-        formatted_valid_release_dates.assert_called_once()
+        formatted_valid_release_dates.assert_called_once_with()
         self.assertIn(exitcode, (0, None))
 
     def test_bad_date_and_bad_release_are_incompatible(self):

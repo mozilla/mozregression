@@ -8,8 +8,11 @@ import math
 import sys
 import datetime
 from mozlog.structured import get_default_logger
+
 from mozregression.launchers import create_launcher
 from mozregression.build_data import NightlyBuildData, InboundBuildData
+from mozregression.utils import yes_or_exit
+
 
 def compute_steps_left(steps):
     if steps <= 1:
@@ -402,10 +405,8 @@ class BisectRunner(object):
         quit()
 
     def offer_build(self, last_good_revision, first_bad_revision):
-        verdict = raw_input("do you want to bisect further by fetching"
-                            " the repository and building? (y or n) ")
-        if verdict != "y":
-            sys.exit()
+        yes_or_exit("do you want to bisect further by fetching"
+                    " the repository and building?", exit_msg=None)
 
         if self.fetch_config.app_name == "firefox":
             self.find_regression_chset(last_good_revision, first_bad_revision)

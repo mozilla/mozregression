@@ -18,7 +18,7 @@ import mozinstall
 import tempfile
 import os
 
-from mozregression.utils import ClassRegistry, download_url
+from mozregression.utils import ClassRegistry, download_url, yes_or_exit
 
 
 class Launcher(object):
@@ -157,23 +157,15 @@ class B2GLauncher(MozRunnerLauncher):
 class FennecLauncher(Launcher):
     app_info = None
 
-    def _get_device_status(self):
-        self.adbhost = ADBHost()
-        if self.adbhost.devices():
-            return True
-        if "y" == raw_input("WARNING: no device connected."
-                            " Connect a device and try again.\n"
-                            "Try again? (y or n): "):
-            return self._get_device_status()
-        raise Exception("Aborting!")
-
     def _install(self, dest):
-        if self._get_device_status():
-            self.adb = ADBAndroid()
-            if "y" != raw_input("WARNING: bisecting nightly fennec builds will"
-                                " clobber your existing nightly profile."
-                                " Continue? (y or n)"):
-                raise Exception("Aborting!")
+        while not ADBHost().devices():
+            yes_or_exit("WARNING: no device connected. Connect a device"
+                        " and try again.\nTry again?")
+
+        self.adb = ADBAndroid()
+        yes_or_exit("WARNING: bisecting nightly fennec builds will clobber"
+                    " your existing nightly profile. Continue?")
+
         self.adb.uninstall_app("org.mozilla.fennec")
         self.adb.install_app(dest)
         # get info now, as dest may be removed

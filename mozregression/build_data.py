@@ -36,8 +36,11 @@ class BuildData(object):
     max_workers = 8
 
     def __init__(self, associated_data):
-        self._cache = [[None, ad] for ad in associated_data]
+        self.set_cache(associated_data)
         self._logger = get_default_logger('Build Finder')
+
+    def set_cache(self, associated_data):
+        self._cache = [[None, ad] for ad in associated_data]
 
     def _create_fetch_task(self, executor, i):
         """
@@ -333,36 +336,49 @@ class InboundBuildData(MozBuildData):
     Fetch build information for all builds between start_rev and end_rev.
     """
     def __init__(self, fetch_config, start_rev, end_rev, range=60*60*4):
+        MozBuildData.__init__(self, [], None)
         self.fetch_config = fetch_config
-        pushlogs_finder = PushLogsFinder(start_rev,
-                                         end_rev,
-                                         inbound_branch=fetch_config.inbound_branch)
+        self.raw_revisions = []
+        pushlogs_finder = \
+            PushLogsFinder(start_rev, end_rev,
+                           inbound_branch=fetch_config.inbound_branch)
 
         pushlogs = pushlogs_finder.get_pushlogs()
+        self._logger.debug('Found %d pushlog entries using `%s`'
+                           % (len(pushlogs), pushlogs_finder.pushlog_url()))
 
         if len(pushlogs) < 2:
             # if we have 0 or 1 pushlog entry, we can not bisect.
-            data, info_fetcher, raw_revisions = [], None, []
-        else:
-            start_time = pushlogs[0]['date']
-            end_time = pushlogs[-1]['date']
-            
-            build_urls = [("%s%s/" % (self.fetch_config.inbound_base_url(),
-                                      path), timestamp)
-                          for path, timestamp in self._extract_paths()]
+            return
 
-            build_urls_in_range = filter(lambda b: b[1] > (start_time - range)
-                                         and b[1] < (end_time + range), build_urls)
+        start_time = pushlogs[0]['date'] - range
+        end_time = pushlogs[-1]['date'] + range
+        inbound_base_url = self.fetch_config.inbound_base_url()
+        self._logger.debug(('We will look in `%s` to find build folders'
+                            ' between %s and %s')
+                           % (inbound_base_url, start_time, end_time))
 
-            data = sorted(build_urls_in_range, key=lambda b: b[1])
+        build_urls = sorted([("%s%s/" % (inbound_base_url, path), timestamp)
+                             for path, timestamp in self._extract_paths()],
+                            key=lambda b: b[1])
 
-            info_fetcher = BuildFolderInfoFetcher(fetch_config.build_regex(),
-                                                  fetch_config.build_info_regex())
+        build_urls_in_range = [b for b in build_urls
+                               if b[1] > start_time and b[1] < end_time]
 
-            raw_revisions = [push['changesets'][-1] for push in pushlogs]
+        self._logger.debug(('Found %d build folders (from %s to %s), %d in'
+                            ' the range')
+                           % (len(build_urls),
+                              build_urls[0][1],
+                              build_urls[-1][1],
+                              len(build_urls_in_range)))
 
-        MozBuildData.__init__(self, data, info_fetcher)
-        self.raw_revisions = raw_revisions
+        self.set_cache(build_urls_in_range)
+
+        self.info_fetcher = \
+            BuildFolderInfoFetcher(fetch_config.build_regex(),
+                                   fetch_config.build_info_regex())
+
+        self.raw_revisions = [push['changesets'][-1] for push in pushlogs]
 
     def _extract_paths(self):
         paths = filter(lambda l: l.isdigit(),

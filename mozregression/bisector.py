@@ -367,7 +367,13 @@ class BisectRunner(object):
         else:
             # NO_DATA
             self._logger.info("No inbound data found.")
-            return 1
+            # check if we have found revisions
+            if not handler.build_data.raw_revisions:
+                return 1
+            # if we have, then these builds are probably too old
+            self._logger.info('There is no build dirs on inbound for these'
+                              ' changesets.')
+            self.offer_build(good_rev, bad_rev)
         return 0
 
     def print_resume_info(self, handler):
@@ -405,7 +411,7 @@ class BisectRunner(object):
         quit()
 
     def offer_build(self, last_good_revision, first_bad_revision):
-        yes_or_exit("do you want to bisect further by fetching"
+        yes_or_exit("Do you want to bisect further by fetching"
                     " the repository and building?", exit_msg=None)
 
         if self.fetch_config.app_name == "firefox":

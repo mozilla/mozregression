@@ -3,7 +3,7 @@ import unittest
 import tempfile
 import mozfile
 import os
-from mock import patch
+from mock import patch, Mock
 from mozprofile import FirefoxProfile, Profile
 
 class MyLauncher(launchers.Launcher):
@@ -132,3 +132,33 @@ class TestMozRunnerLauncher(unittest.TestCase):
         self.launcher.start()
         self.assertEqual(self.launcher.get_app_info(), {'some': 'infos'})
         mozversion.get_version.assert_called_once_with(binary='/binary')
+
+class TestFennecLauncher(unittest.TestCase):
+    @patch('mozregression.launchers.download_url')
+    @patch('mozregression.launchers.os.unlink')
+    @patch('mozregression.launchers.yes_or_exit')
+    @patch('mozregression.launchers.mozversion.get_version')
+    @patch('mozregression.launchers.ADBAndroid')
+    @patch('mozregression.launchers.ADBHost')
+    def create_launcher(self, ADBHost, ADBAndroid, get_version, *a):
+        self.adbhost = Mock()
+        ADBHost.return_value = self.adbhost
+        self.adb = Mock()
+        ADBAndroid.return_value = self.adb
+        get_version.return_value = 'version'
+        return launchers.FennecLauncher('http://binary')
+
+    def test_install(self):
+        launcher = self.create_launcher()
+        self.adbhost.devices.assert_called_with()
+        self.adb.uninstall_app.assert_called_with("org.mozilla.fennec")
+        self.adb.install_app.assert_called_with('binary')
+
+    def test_start_stop(self):
+        launcher = self.create_launcher()
+        launcher.start()
+        self.adb.launch_fennec.assert_called_once_with("org.mozilla.fennec")
+        # ensure get_app_info returns something
+        self.assertIsNotNone(launcher.get_app_info())
+        launcher.stop()
+        self.adb.stop_application.assert_called_once_with("org.mozilla.fennec")

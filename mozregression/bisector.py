@@ -35,7 +35,6 @@ class BisectorHandler(object):
         self.build_data = None
         self.last_good_revision = None
         self.first_bad_revision = None
-        self.found_repo = None
         self._logger = get_default_logger('Bisector')
 
     def set_build_data(self, build_data):
@@ -258,7 +257,6 @@ class Bisector(object):
                 # to
                 #          [G, ?, B]
                 build_data = build_data[mid:]
-                build_data.ensure_limits()
                 self.handler.build_good(mid, build_data)
             elif verdict == 'b':
                 # if build is bad, we have to split from
@@ -266,7 +264,6 @@ class Bisector(object):
                 # to
                 # [G, ?, ?, B]
                 build_data = build_data[:mid+1]
-                build_data.ensure_limits()
                 self.handler.build_bad(mid, build_data)
             elif verdict == 'r':
                 self.handler.build_retry(mid)

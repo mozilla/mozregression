@@ -36,7 +36,6 @@ class BisectorHandler(object):
         self.last_good_revision = None
         self.first_bad_revision = None
         self.found_repo = None
-        self.app_info = None
         self._logger = get_default_logger('Bisector')
 
     def set_build_data(self, build_data):
@@ -87,8 +86,10 @@ class BisectorHandler(object):
                                    persist=self.persist,
                                    persist_prefix=self.launcher_persist_prefix(index))
         launcher.start(**self.launcher_kwargs)
-        self.app_info = launcher.get_app_info()
-        self.found_repo = self.app_info['application_repository']
+        # keep this because it prints build info
+        launcher.get_app_info()
+        # TODO: is this useful ? Can we have different repository ?
+        self.found_repo = self.build_data[index]['repository']
         return launcher
 
     def get_pushlog_url(self):
@@ -107,18 +108,20 @@ class BisectorHandler(object):
     def build_good(self, mid, new_data):
         """
         Called by the Bisector when a build is good.
+
+        *new_data* is ensured to contain at least two elements.
         """
-        self.last_good_revision = self.app_info['application_changeset']
-        if len(new_data) > 1:
-            self._print_progress(new_data)
+        self.last_good_revision = new_data[0]['changeset']
+        self._print_progress(new_data)
 
     def build_bad(self, mid, new_data):
         """
         Called by the Bisector when a build is bad.
+
+        *new_data* is ensured to contain at least two elements.
         """
-        self.first_bad_revision = self.app_info['application_changeset']
-        if len(new_data) > 1:
-            self._print_progress(new_data)
+        self.first_bad_revision = new_data[-1]['changeset']
+        self._print_progress(new_data)
 
     def build_retry(self, mid):
         pass

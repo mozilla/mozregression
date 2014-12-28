@@ -16,7 +16,7 @@ class TestBisectorHandler(unittest.TestCase):
     def setUp(self):
         self.handler = BisectorHandler(create_config('firefox', 'linux', 64))
         self.handler.set_build_data([
-            {'build_url': 'http://build_url_0'}
+            {'build_url': 'http://build_url_0', 'repository': 'my'}
         ])
 
     def test_initialize(self):
@@ -33,8 +33,7 @@ class TestBisectorHandler(unittest.TestCase):
     @patch('mozregression.bisector.BisectorHandler.launcher_persist_prefix')
     @patch('mozregression.bisector.create_launcher')
     def test_start_launcher(self, create_launcher, launcher_persist_prefix):
-        app_info = {'application_repository': 'something'}
-        launcher = Mock(get_app_info=Mock(return_value=app_info))
+        launcher = Mock(get_app_info=Mock())
         create_launcher.return_value = launcher
         launcher_persist_prefix.return_value = 'something-'
 
@@ -45,9 +44,8 @@ class TestBisectorHandler(unittest.TestCase):
                                            persist_prefix='something-')
         # launcher is started
         launcher.start.assert_called_with(**self.handler.launcher_kwargs)
-        # app_info and found_repo are set
-        self.assertEqual(self.handler.app_info, app_info)
-        self.assertEqual(self.handler.found_repo, 'something')
+        # found_repo is set
+        self.assertEqual(self.handler.found_repo, 'my')
         # and launvher instance is returned
         self.assertEqual(result, launcher)
 
@@ -72,25 +70,16 @@ class TestBisectorHandler(unittest.TestCase):
 
     @patch('mozregression.bisector.BisectorHandler._print_progress')
     def test_build_good(self, _print_progress):
-        self.handler.app_info = {"application_changeset": '123'}
-        # call build_good with no new data points
-        self.handler.build_good(0, [])
+        self.handler.build_good(0, [{"changeset": '123'}, {"changeset": '456'}])
         self.assertEqual(self.handler.last_good_revision, '123')
-        _print_progress.assert_not_called()
-        # with at least two, _print_progress will be called
-        self.handler.build_good(0, [1, 2])
-        _print_progress.assert_called_with([1, 2])
+        _print_progress.assert_called_with([{"changeset": '123'}, {"changeset": '456'}])
 
     @patch('mozregression.bisector.BisectorHandler._print_progress')
     def test_build_bad(self, _print_progress):
-        self.handler.app_info = {"application_changeset": '123'}
-        # call build_bad with no new data points
-        self.handler.build_bad(0, [])
-        self.assertEqual(self.handler.first_bad_revision, '123')
-        _print_progress.assert_not_called()
         # with at least two, _print_progress will be called
-        self.handler.build_bad(0, [1, 2])
-        _print_progress.assert_called_with([1, 2])
+        self.handler.build_bad(0, [{"changeset": '123'}, {"changeset": '456'}])
+        self.assertEqual(self.handler.first_bad_revision, '456')
+        _print_progress.assert_called_with([{"changeset": '123'}, {"changeset": '456'}])
 
 class TestNightlyHandler(unittest.TestCase):
     def setUp(self):
@@ -140,6 +129,15 @@ class TestNightlyHandler(unittest.TestCase):
         self.assertIn('to [2014-11-15, 2014-11-20] (5 days)', log[0])
         self.assertIn('2 steps left', log[0])
 
+    def test_user_exit(self):
+        log = []
+        self.handler._logger = Mock(info = log.append)
+        self.handler.good_date = datetime.date(2014, 11, 10)
+        self.handler.bad_date = datetime.date(2014, 11, 20)
+        self.handler.user_exit(0)
+        self.assertEqual('Newest known good nightly: 2014-11-10', log[0])
+        self.assertEqual('Oldest known bad nightly: 2014-11-20', log[1])
+
 class TestInboundHandler(unittest.TestCase):
     def setUp(self):
         self.handler = InboundHandler(create_config('firefox', 'linux', 64))
@@ -178,6 +176,15 @@ class TestInboundHandler(unittest.TestCase):
         self.assertIn('from [12, 12345] (4 revisions)', log[0])
         self.assertIn('to [1234, 12345] (2 revisions)', log[0])
         self.assertIn('1 steps left', log[0])
+
+    def test_user_exit(self):
+        log = []
+        self.handler._logger = Mock(info = log.append)
+        self.handler.last_good_revision = '3'
+        self.handler.first_bad_revision = '1'
+        self.handler.user_exit(0)
+        self.assertEqual('Newest known good inbound revision: 3', log[0])
+        self.assertEqual('Oldest known bad inbound revision: 1', log[1])
 
 class MyBuildData(list):
     ensure_limits_called = False

@@ -35,8 +35,6 @@ class BisectorHandler(object):
         self.build_data = None
         self.last_good_revision = None
         self.first_bad_revision = None
-        self.found_repo = None
-        self.app_info = None
         self._logger = get_default_logger('Bisector')
 
     def set_build_data(self, build_data):
@@ -87,8 +85,10 @@ class BisectorHandler(object):
                                    persist=self.persist,
                                    persist_prefix=self.launcher_persist_prefix(index))
         launcher.start(**self.launcher_kwargs)
-        self.app_info = launcher.get_app_info()
-        self.found_repo = self.app_info['application_repository']
+        # keep this because it prints build info
+        launcher.get_app_info()
+        # TODO: is this useful ? Can we have different repository ?
+        self.found_repo = self.build_data[index]['repository']
         return launcher
 
     def get_pushlog_url(self):
@@ -107,18 +107,20 @@ class BisectorHandler(object):
     def build_good(self, mid, new_data):
         """
         Called by the Bisector when a build is good.
+
+        *new_data* is ensured to contain at least two elements.
         """
-        self.last_good_revision = self.app_info['application_changeset']
-        if len(new_data) > 1:
-            self._print_progress(new_data)
+        self.last_good_revision = new_data[0]['changeset']
+        self._print_progress(new_data)
 
     def build_bad(self, mid, new_data):
         """
         Called by the Bisector when a build is bad.
+
+        *new_data* is ensured to contain at least two elements.
         """
-        self.first_bad_revision = self.app_info['application_changeset']
-        if len(new_data) > 1:
-            self._print_progress(new_data)
+        self.first_bad_revision = new_data[-1]['changeset']
+        self._print_progress(new_data)
 
     def build_retry(self, mid):
         pass
@@ -168,6 +170,10 @@ class NightlyHandler(BisectorHandler):
                              next_days_range,
                              compute_steps_left(next_days_range)))
 
+    def user_exit(self, mid):
+        self._logger.info('Newest known good nightly: %s' % self.good_date)
+        self._logger.info('Oldest known bad nightly: %s'  % self.bad_date)
+
 class InboundHandler(BisectorHandler):
     build_type = 'inbound'
 
@@ -194,6 +200,12 @@ class InboundHandler(BisectorHandler):
                              new_data[-1]['revision'],
                              len(new_data),
                              compute_steps_left(len(new_data))))
+
+    def user_exit(self, mid):
+        self._logger.info('Newest known good inbound revision: %s'
+                          % self.last_good_revision)
+        self._logger.info('Oldest known bad inbound revision: %s'
+                          % self.first_bad_revision)
 
 class Bisector(object):
     """
@@ -255,7 +267,6 @@ class Bisector(object):
                 # to
                 #          [G, ?, B]
                 build_data = build_data[mid:]
-                build_data.ensure_limits()
                 self.handler.build_good(mid, build_data)
             elif verdict == 'b':
                 # if build is bad, we have to split from
@@ -263,7 +274,6 @@ class Bisector(object):
                 # to
                 # [G, ?, ?, B]
                 build_data = build_data[:mid+1]
-                build_data.ensure_limits()
                 self.handler.build_bad(mid, build_data)
             elif verdict == 'r':
                 self.handler.build_retry(mid)
@@ -322,10 +332,6 @@ class BisectRunner(object):
                                 % self.options.repo)
                 self._logger.info(message + '.')
         elif result == Bisector.USER_EXIT:
-            self._logger.info('Newest known good nightly: %s'
-                              % handler.good_date)
-            self._logger.info('Oldest known bad nightly: %s'
-                              % handler.bad_date)
             self.print_resume_info(handler)
         else:
             # NO_DATA
@@ -358,11 +364,6 @@ class BisectRunner(object):
             self.offer_build(handler.last_good_revision,
                              handler.first_bad_revision)
         elif result == Bisector.USER_EXIT:
-            self._logger.info('Newest known good inbound revision: %s'
-                              % handler.last_good_revision)
-            self._logger.info('Oldest known bad inbound revision: %s'
-                              % handler.first_bad_revision)
-
             self.print_resume_info(handler)
         else:
             # NO_DATA

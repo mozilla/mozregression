@@ -170,6 +170,10 @@ class NightlyHandler(BisectorHandler):
                              next_days_range,
                              compute_steps_left(next_days_range)))
 
+    def user_exit(self, mid):
+        self._logger.info('Newest known good nightly: %s' % self.good_date)
+        self._logger.info('Oldest known bad nightly: %s'  % self.bad_date)
+
 class InboundHandler(BisectorHandler):
     build_type = 'inbound'
 
@@ -196,6 +200,12 @@ class InboundHandler(BisectorHandler):
                              new_data[-1]['revision'],
                              len(new_data),
                              compute_steps_left(len(new_data))))
+
+    def user_exit(self, mid):
+        self._logger.info('Newest known good inbound revision: %s'
+                          % self.last_good_revision)
+        self._logger.info('Oldest known bad inbound revision: %s'
+                          % self.first_bad_revision)
 
 class Bisector(object):
     """
@@ -322,10 +332,6 @@ class BisectRunner(object):
                                 % self.options.repo)
                 self._logger.info(message + '.')
         elif result == Bisector.USER_EXIT:
-            self._logger.info('Newest known good nightly: %s'
-                              % handler.good_date)
-            self._logger.info('Oldest known bad nightly: %s'
-                              % handler.bad_date)
             self.print_resume_info(handler)
         else:
             # NO_DATA
@@ -358,11 +364,6 @@ class BisectRunner(object):
             self.offer_build(handler.last_good_revision,
                              handler.first_bad_revision)
         elif result == Bisector.USER_EXIT:
-            self._logger.info('Newest known good inbound revision: %s'
-                              % handler.last_good_revision)
-            self._logger.info('Oldest known bad inbound revision: %s'
-                              % handler.first_bad_revision)
-
             self.print_resume_info(handler)
         else:
             # NO_DATA

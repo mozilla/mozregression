@@ -129,6 +129,15 @@ class TestNightlyHandler(unittest.TestCase):
         self.assertIn('to [2014-11-15, 2014-11-20] (5 days)', log[0])
         self.assertIn('2 steps left', log[0])
 
+    def test_user_exit(self):
+        log = []
+        self.handler._logger = Mock(info = log.append)
+        self.handler.good_date = datetime.date(2014, 11, 10)
+        self.handler.bad_date = datetime.date(2014, 11, 20)
+        self.handler.user_exit(0)
+        self.assertEqual('Newest known good nightly: 2014-11-10', log[0])
+        self.assertEqual('Oldest known bad nightly: 2014-11-20', log[1])
+
 class TestInboundHandler(unittest.TestCase):
     def setUp(self):
         self.handler = InboundHandler(create_config('firefox', 'linux', 64))
@@ -167,6 +176,15 @@ class TestInboundHandler(unittest.TestCase):
         self.assertIn('from [12, 12345] (4 revisions)', log[0])
         self.assertIn('to [1234, 12345] (2 revisions)', log[0])
         self.assertIn('1 steps left', log[0])
+
+    def test_user_exit(self):
+        log = []
+        self.handler._logger = Mock(info = log.append)
+        self.handler.last_good_revision = '3'
+        self.handler.first_bad_revision = '1'
+        self.handler.user_exit(0)
+        self.assertEqual('Newest known good inbound revision: 3', log[0])
+        self.assertEqual('Oldest known bad inbound revision: 1', log[1])
 
 class MyBuildData(list):
     ensure_limits_called = False

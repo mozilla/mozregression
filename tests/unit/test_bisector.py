@@ -5,16 +5,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import unittest
-from mock import patch, Mock, call
+from mock import patch, Mock, call, MagicMock
 import datetime
 
-from mozregression.fetch_configs import create_config
 from mozregression.bisector import (BisectorHandler, NightlyHandler,
                                     InboundHandler, Bisector)
 
 class TestBisectorHandler(unittest.TestCase):
     def setUp(self):
-        self.handler = BisectorHandler(create_config('firefox', 'linux', 64))
+        self.handler = BisectorHandler()
         self.handler.set_build_data([
             {'build_url': 'http://build_url_0', 'repository': 'my'}
         ])
@@ -29,25 +28,6 @@ class TestBisectorHandler(unittest.TestCase):
         self.assertEqual(self.handler.found_repo, 'my')
         self.assertEqual(self.handler.last_good_revision, '1')
         self.assertEqual(self.handler.first_bad_revision, '3')
-
-    @patch('mozregression.bisector.BisectorHandler.launcher_persist_prefix')
-    @patch('mozregression.bisector.create_launcher')
-    def test_start_launcher(self, create_launcher, launcher_persist_prefix):
-        launcher = Mock(get_app_info=Mock())
-        create_launcher.return_value = launcher
-        launcher_persist_prefix.return_value = 'something-'
-
-        result = self.handler.start_launcher(0)
-        # create launcher is well called
-        create_launcher.assert_called_with('firefox', 'http://build_url_0',
-                                           persist=None,
-                                           persist_prefix='something-')
-        # launcher is started
-        launcher.start.assert_called_with(**self.handler.launcher_kwargs)
-        # found_repo is set
-        self.assertEqual(self.handler.found_repo, 'my')
-        # and launvher instance is returned
-        self.assertEqual(result, launcher)
 
     def test_get_pushlog_url(self):
         self.handler.found_repo = 'https://hg.mozilla.repo'
@@ -83,34 +63,22 @@ class TestBisectorHandler(unittest.TestCase):
 
 class TestNightlyHandler(unittest.TestCase):
     def setUp(self):
-        self.handler = NightlyHandler(create_config('firefox', 'linux', 64))
+        self.handler = NightlyHandler()
 
-    def test_launcher_persist_prefix(self):
-        # define a repo and a mid_date
-        self.handler.fetch_config.set_nightly_repo('myrepo')
-        self.handler.mid_date = datetime.date(2014, 11, 10)
-
-        prefix = self.handler.launcher_persist_prefix(1)
-        self.assertEqual(prefix, '2014-11-10--myrepo--')
-
-    @patch('mozregression.bisector.NightlyHandler.launcher_persist_prefix')
-    @patch('mozregression.bisector.BisectorHandler.start_launcher')
-    def test_start_launcher(self, start_launcher, launcher_persist_prefix):
-        get_date_for_index = Mock(side_effect=lambda i: i)
-        self.handler.build_data = Mock(get_date_for_index=get_date_for_index)
-        start_launcher.return_value = 'my_launcher'
-
-        launcher = self.handler.start_launcher(3)
-        # check we have called get_date_for_index
-        get_date_for_index.assert_has_calls([call(0), call(3), call(-1)],
-                                            any_order=True)
-        #  dates are well set
-        self.assertEqual(self.handler.mid_date, 3)
+    def test_build_infos(self):
+        def get_date_for_index(index):
+            return index
+        new_data = MagicMock(get_date_for_index=get_date_for_index)
+        self.handler.set_build_data(new_data)
+        result = self.handler.build_infos(1)
+        self.assertEqual(result, {
+            'build_type': 'nightly',
+            'build_date': 1,
+        })
+        # check that members are set
         self.assertEqual(self.handler.good_date, 0)
+        self.assertEqual(self.handler.mid_date, 1)
         self.assertEqual(self.handler.bad_date, -1)
-        # base BisectorHandler.start_launcher has been called and is returned
-        start_launcher.assert_called_with(self.handler, 3)
-        self.assertEqual(launcher, 'my_launcher')
 
     def test_print_progress(self):
         log = []
@@ -140,26 +108,16 @@ class TestNightlyHandler(unittest.TestCase):
 
 class TestInboundHandler(unittest.TestCase):
     def setUp(self):
-        self.handler = InboundHandler(create_config('firefox', 'linux', 64))
+        self.handler = InboundHandler()
 
-    def test_launcher_persist_prefix(self):
-        # define a repo and a mid_date
-        self.handler.fetch_config.set_inbound_branch('mybranch')
-        self.handler.set_build_data([{'timestamp': 123456789}])
-
-        prefix = self.handler.launcher_persist_prefix(0)
-        self.assertEqual(prefix, '123456789--mybranch--')
-
-    @patch('mozregression.bisector.NightlyHandler.launcher_persist_prefix')
-    @patch('mozregression.bisector.BisectorHandler.start_launcher')
-    def test_start_launcher(self, start_launcher, launcher_persist_prefix):
-        start_launcher.return_value = 'my_launcher'
-        self.handler.set_build_data([{'timestamp': 123456789, 'revision':'12'}])
-        launcher = self.handler.start_launcher(0)
-
-        # base BisectorHandler.start_launcher has been called and is returned
-        start_launcher.assert_called_with(self.handler, 0)
-        self.assertEqual(launcher, 'my_launcher')
+    def test_build_infos(self):
+        self.handler.set_build_data([{'changeset': '1', 'repository': 'my'}])
+        result = self.handler.build_infos(0)
+        self.assertEqual(result, {
+            'changeset': '1',
+            'repository': 'my',
+            'build_type': 'inbound'
+        })
 
     def test_print_progress(self):
         log = []
@@ -202,13 +160,8 @@ class MyBuildData(list):
 class TestBisector(unittest.TestCase):
     def setUp(self):
         self.handler = Mock()
-        self.bisector = Bisector(self.handler)
-
-    @patch('__builtin__.raw_input')
-    def test_get_verdict(self, raw_input):
-        raw_input.return_value = 'g'
-        verdict = self.bisector.get_verdict()
-        self.assertEqual(verdict, 'g')
+        self.test_runner = Mock()
+        self.bisector = Bisector(self.handler, self.test_runner)
 
     def test_bisect_no_data(self):
         build_data = MyBuildData()
@@ -230,13 +183,12 @@ class TestBisector(unittest.TestCase):
 
     def do_bisect(self, build_data, verdicts):
         iter_verdict = iter(verdicts)
-        self.bisector.get_verdict = Mock(side_effect=iter_verdict.next)
-        launcher = Mock()
-        self.handler.start_launcher.return_value = launcher
+        def evaluate(build_info):
+            return iter_verdict.next()
+        self.test_runner.evaluate = Mock(side_effect=evaluate)
         result = self.bisector.bisect(build_data)
         return {
             'result': result,
-            'launcher': launcher,
         }
 
     def test_bisect_case1(self):
@@ -250,8 +202,6 @@ class TestBisector(unittest.TestCase):
             # we answered bad
             call(MyBuildData([3, 4])),
         ])
-        # ensure that the launcher was stopped
-        test_result['launcher'].stop.assert_called_with()
         # ensure that we called the handler's methods
         self.handler.initialize.assert_called_with()
         self.handler.build_good.assert_called_with(2, MyBuildData([3, 4, 5]))
@@ -275,8 +225,6 @@ class TestBisector(unittest.TestCase):
             # we skipped one
             call(MyBuildData([1, 3])),
         ])
-        # ensure that the launcher was stopped
-        test_result['launcher'].stop.assert_called_with()
         # ensure that we called the handler's methods
         self.handler.initialize.assert_called_with()
         self.handler.build_retry.assert_called_with(1)

@@ -28,7 +28,7 @@ class Launcher(object):
     """
     def __init__(self, url, persist=None, persist_prefix=''):
         self._running = False
-        self._logger = get_default_logger('Regression Runner')
+        self._logger = get_default_logger('Test Runner')
 
         basename = os.path.basename(url)
         if persist:

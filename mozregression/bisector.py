@@ -9,7 +9,7 @@ import sys
 import datetime
 from mozlog.structured import get_default_logger
 
-from mozregression.launchers import create_launcher
+from mozregression.test_runner import ManualTestRunner
 from mozregression.build_data import NightlyBuildData, InboundBuildData
 from mozregression.utils import yes_or_exit
 
@@ -27,10 +27,7 @@ class BisectorHandler(object):
     """
     build_type = 'unknown'
 
-    def __init__(self, fetch_config, persist=None, launcher_kwargs=None):
-        self.fetch_config = fetch_config
-        self.persist = persist
-        self.launcher_kwargs = launcher_kwargs or {}
+    def __init__(self):
         self.found_repo = None
         self.build_data = None
         self.last_good_revision = None
@@ -47,11 +44,13 @@ class BisectorHandler(object):
         """
         self.build_data = build_data
 
-    def launcher_persist_prefix(self, index):
+    def build_infos(self, index):
         """
-        Returns an appropriate prefix for a downloaded build.
+        Compute build infos (a dict) when a build is about to be tested.
         """
-        raise NotImplementedError
+        infos = {'build_type': self.build_type}
+        infos.update(self.build_data[index])
+        return infos
 
     def _print_progress(self, new_data):
         """
@@ -71,25 +70,6 @@ class BisectorHandler(object):
             self.last_good_revision = self.build_data[0]['changeset']
         if self.first_bad_revision is None:
             self.first_bad_revision = self.build_data[-1]['changeset']
-
-    def start_launcher(self, index):
-        """
-        Create and returns a :class:`mozregression.launchers.Launcher`
-        that has been started.
-
-        This is called by the bisector when a build needs to be tested.
-        """
-        build_url = self.build_data[index]['build_url']
-        launcher = create_launcher(self.fetch_config.app_name,
-                                   build_url,
-                                   persist=self.persist,
-                                   persist_prefix=self.launcher_persist_prefix(index))
-        launcher.start(**self.launcher_kwargs)
-        # keep this because it prints build info
-        launcher.get_app_info()
-        # TODO: is this useful ? Can we have different repository ?
-        self.found_repo = self.build_data[index]['repository']
-        return launcher
 
     def get_pushlog_url(self):
         return "%s/pushloghtml?fromchange=%s&tochange=%s" % (
@@ -143,17 +123,15 @@ class NightlyHandler(BisectorHandler):
     bad_date = None
     mid_date = None
 
-    def launcher_persist_prefix(self, index):
-        return '%s--%s--' % (self.mid_date,
-                             self.fetch_config.get_nightly_repo(self.mid_date))
-
-    def start_launcher(self, mid):
+    def build_infos(self, index):
         # register dates
         self.good_date = self.build_data.get_date_for_index(0)
         self.bad_date = self.build_data.get_date_for_index(-1)
-        self.mid_date = self.build_data.get_date_for_index(mid)
-        self._logger.info("Running nightly for %s" % self.mid_date)
-        return BisectorHandler.start_launcher(self, mid)
+        self.mid_date = self.build_data.get_date_for_index(index)
+
+        infos = BisectorHandler.build_infos(self, index)
+        infos['build_date'] = self.mid_date
+        return infos
 
     def _print_progress(self, new_data):
         next_good_date = new_data.get_date_for_index(0)
@@ -176,18 +154,6 @@ class NightlyHandler(BisectorHandler):
 
 class InboundHandler(BisectorHandler):
     build_type = 'inbound'
-
-    def launcher_persist_prefix(self, index):
-        return '%s--%s--' % (self.build_data[index]['timestamp'],
-                             self.fetch_config.inbound_branch)
-
-    def start_launcher(self, mid):
-        data = self.build_data[mid]
-        self._logger.info("Testing inbound build with timestamp %s,"
-                          " revision %s"
-                          % (data['timestamp'],
-                             data['revision']))
-        return BisectorHandler.start_launcher(self, mid)
 
     def _print_progress(self, new_data):
         self._logger.info("Narrowed inbound regression window from [%s, %s]"
@@ -216,28 +182,9 @@ class Bisector(object):
     FINISHED = 2
     USER_EXIT = 3
 
-    def __init__(self, handler):
+    def __init__(self, handler, test_runner):
         self.handler = handler
-
-    def get_verdict(self, offer_skip=True):
-        options = ['good', 'bad']
-        if offer_skip:
-            options.append('skip')
-        options += ['retry', 'exit']
-        # allow user to just type one letter
-        allowed_inputs = options + [o[0] for o in options]
-        # format options to nice printing
-        formatted_options = (', '.join(["'%s'" % o for o in options[:-1]])
-                             + " or '%s'" % options[-1])
-        verdict = ""
-        while verdict not in allowed_inputs:
-            verdict = raw_input("Was this %s build good, bad, or broken?"
-                                " (type %s and press Enter): "
-                                % (self.handler.build_type,
-                                   formatted_options))
-
-        # shorten verdict to one character for processing...
-        return verdict[0]
+        self.test_runner = test_runner
 
     def bisect(self, build_data):
         """
@@ -257,9 +204,8 @@ class Bisector(object):
                 self.handler.finished()
                 return self.FINISHED
 
-            launcher = self.handler.start_launcher(mid)
-            verdict = self.get_verdict()
-            launcher.stop()
+            build_infos = self.handler.build_infos(mid)
+            verdict = self.test_runner.evaluate(build_infos)
 
             if verdict == 'g':
                 # if build is good, we have to split from
@@ -289,19 +235,20 @@ class BisectRunner(object):
     def __init__(self, fetch_config, options):
         self.fetch_config = fetch_config
         self.options = options
-        self.launcher_kwargs = dict(
+        launcher_kwargs = dict(
             addons=options.addons,
             profile=options.profile,
             cmdargs=options.cmdargs,
         )
+        self.test_runner = ManualTestRunner(fetch_config,
+                                            persist=options.persist,
+                                            launcher_kwargs=launcher_kwargs)
         self._logger = get_default_logger('Bisector')
 
     def bisect_nightlies(self, good_date, bad_date):
         build_data = NightlyBuildData(good_date, bad_date, self.fetch_config)
-        handler = NightlyHandler(self.fetch_config,
-                                 persist=self.options.persist,
-                                 launcher_kwargs=self.launcher_kwargs)
-        bisector = Bisector(handler)
+        handler = NightlyHandler()
+        bisector = Bisector(handler, self.test_runner)
         result = bisector.bisect(build_data)
         if result == Bisector.FINISHED:
             self._logger.info("Got as far as we can go bisecting nightlies...")
@@ -353,10 +300,8 @@ class BisectRunner(object):
                                         good_rev,
                                         bad_rev,
                                         range=60*60*12)
-        handler = InboundHandler(self.fetch_config,
-                                 persist=self.options.persist,
-                                 launcher_kwargs=self.launcher_kwargs)
-        bisector = Bisector(handler)
+        handler = InboundHandler()
+        bisector = Bisector(handler, self.test_runner)
         result = bisector.bisect(inbound_data)
         if result == Bisector.FINISHED:
             self._logger.info("Oh noes, no (more) inbound revisions :(")

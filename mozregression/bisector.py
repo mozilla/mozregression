@@ -261,7 +261,7 @@ class BisectRunner(object):
                 days = 6
                 while not 'changeset' in infos:
                     days += 1
-                    prev_date = good_date - datetime.timedelta(days=days)
+                    prev_date = handler.good_date - datetime.timedelta(days=days)
                     infos = handler.build_data.get_build_infos_for_date(prev_date)
                 if days > 7:
                     self._logger.info("At least one build folder was"

@@ -26,20 +26,20 @@ class TestBisectorHandler(unittest.TestCase):
         ])
         self.handler.initialize()
         self.assertEqual(self.handler.found_repo, 'my')
-        self.assertEqual(self.handler.last_good_revision, '1')
-        self.assertEqual(self.handler.first_bad_revision, '3')
+        self.assertEqual(self.handler.good_revision, '1')
+        self.assertEqual(self.handler.bad_revision, '3')
 
     def test_get_pushlog_url(self):
         self.handler.found_repo = 'https://hg.mozilla.repo'
-        self.handler.last_good_revision = '2'
-        self.handler.first_bad_revision = '6'
+        self.handler.good_revision = '2'
+        self.handler.bad_revision = '6'
         self.assertEqual(self.handler.get_pushlog_url(),
                          "https://hg.mozilla.repo/pushloghtml?fromchange=2&tochange=6")
 
     def test_print_range(self):
         self.handler.found_repo = 'https://hg.mozilla.repo'
-        self.handler.last_good_revision = '2'
-        self.handler.first_bad_revision = '6'
+        self.handler.good_revision = '2'
+        self.handler.bad_revision = '6'
         log = []
         self.handler._logger = Mock(info = log.append)
 
@@ -51,14 +51,14 @@ class TestBisectorHandler(unittest.TestCase):
     @patch('mozregression.bisector.BisectorHandler._print_progress')
     def test_build_good(self, _print_progress):
         self.handler.build_good(0, [{"changeset": '123'}, {"changeset": '456'}])
-        self.assertEqual(self.handler.last_good_revision, '123')
+        self.assertEqual(self.handler.good_revision, '123')
         _print_progress.assert_called_with([{"changeset": '123'}, {"changeset": '456'}])
 
     @patch('mozregression.bisector.BisectorHandler._print_progress')
     def test_build_bad(self, _print_progress):
         # with at least two, _print_progress will be called
         self.handler.build_bad(0, [{"changeset": '123'}, {"changeset": '456'}])
-        self.assertEqual(self.handler.first_bad_revision, '456')
+        self.assertEqual(self.handler.bad_revision, '456')
         _print_progress.assert_called_with([{"changeset": '123'}, {"changeset": '456'}])
 
 class TestNightlyHandler(unittest.TestCase):
@@ -138,8 +138,8 @@ class TestInboundHandler(unittest.TestCase):
     def test_user_exit(self):
         log = []
         self.handler._logger = Mock(info = log.append)
-        self.handler.last_good_revision = '3'
-        self.handler.first_bad_revision = '1'
+        self.handler.good_revision = '3'
+        self.handler.bad_revision = '1'
         self.handler.user_exit(0)
         self.assertEqual('Newest known good inbound revision: 3', log[0])
         self.assertEqual('Oldest known bad inbound revision: 1', log[1])

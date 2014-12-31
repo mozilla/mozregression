@@ -242,7 +242,7 @@ class BisectRunner(object):
         self._logger = get_default_logger('Bisector')
 
     def bisect_nightlies(self, good_date, bad_date):
-        build_data = NightlyBuildData(good_date, bad_date, self.fetch_config)
+        build_data = NightlyBuildData(self.fetch_config, good_date, bad_date)
         handler = NightlyHandler()
         bisector = Bisector(handler, self.test_runner)
         result = bisector.bisect(build_data)

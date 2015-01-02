@@ -165,40 +165,40 @@ class MyBuildData(list):
 
 class TestBisector(unittest.TestCase):
     def setUp(self):
-        self.handler = Mock()
+        self.handler = Mock(find_fix=False)
         self.test_runner = Mock()
-        self.bisector = Bisector(self.handler, self.test_runner)
+        self.bisector = Bisector(Mock(), self.test_runner)
 
-    def test_bisect_no_data(self):
+    def test__bisect_no_data(self):
         build_data = MyBuildData()
-        result = self.bisector.bisect(build_data)
+        result = self.bisector._bisect(self.handler, build_data)
         # test that handler methods where called
         self.handler.set_build_data.assert_called_with(build_data)
         self.handler.no_data.assert_called_once_with()
         # check return code
         self.assertEqual(result, Bisector.NO_DATA)
 
-    def test_bisect_finished(self):
+    def test__bisect_finished(self):
         build_data = MyBuildData([1])
-        result = self.bisector.bisect(build_data)
+        result = self.bisector._bisect(self.handler, build_data)
         # test that handler methods where called
         self.handler.set_build_data.assert_called_with(build_data)
         self.handler.finished.assert_called_once_with()
         # check return code
         self.assertEqual(result, Bisector.FINISHED)
 
-    def do_bisect(self, build_data, verdicts):
+    def do__bisect(self, build_data, verdicts):
         iter_verdict = iter(verdicts)
         def evaluate(build_info):
             return iter_verdict.next()
         self.test_runner.evaluate = Mock(side_effect=evaluate)
-        result = self.bisector.bisect(build_data)
+        result = self.bisector._bisect(self.handler, build_data)
         return {
             'result': result,
         }
 
-    def test_bisect_case1(self):
-        test_result = self.do_bisect(MyBuildData([1, 2, 3, 4, 5]), ['g', 'b'])
+    def test__bisect_case1(self):
+        test_result = self.do__bisect(MyBuildData([1, 2, 3, 4, 5]), ['g', 'b'])
         # check that set_build_data was called
         self.handler.set_build_data.assert_has_calls([
             # first call
@@ -216,8 +216,27 @@ class TestBisector(unittest.TestCase):
         # bisection is finished
         self.assertEqual(test_result['result'], Bisector.FINISHED)
 
-    def test_bisect_case2(self):
-        test_result = self.do_bisect(MyBuildData([1, 2, 3]), ['r', 's'])
+    def test__bisect_case1_hunt_fix(self):
+        self.handler.find_fix = True
+        test_result = self.do__bisect(MyBuildData([1, 2, 3, 4, 5]), ['g', 'b'])
+        # check that set_build_data was called
+        self.handler.set_build_data.assert_has_calls([
+            # first call
+            call(MyBuildData([1, 2, 3, 4, 5])),
+            # we answered good
+            call(MyBuildData([1, 2, 3])),
+            # we answered bad
+            call(MyBuildData([2, 3])),
+        ])
+        # ensure that we called the handler's methods
+        self.assertEqual(self.handler.initialize.mock_calls, [call()]*3)
+        self.handler.build_good.assert_called_once_with(2, MyBuildData([1, 2, 3]))
+        self.handler.build_bad.assert_called_once_with(1, MyBuildData([2, 3]))
+        # bisection is finished
+        self.assertEqual(test_result['result'], Bisector.FINISHED)
+
+    def test__bisect_case2(self):
+        test_result = self.do__bisect(MyBuildData([1, 2, 3]), ['r', 's'])
         # check that set_build_data was called
         self.handler.set_build_data.assert_has_calls([
             # first call
@@ -239,8 +258,8 @@ class TestBisector(unittest.TestCase):
         # bisection is finished
         self.assertEqual(test_result['result'], Bisector.FINISHED)
 
-    def test_bisect_user_exit(self):
-        test_result = self.do_bisect(MyBuildData(range(20)), ['e'])
+    def test__bisect_user_exit(self):
+        test_result = self.do__bisect(MyBuildData(range(20)), ['e'])
         # check that set_build_data was called
         self.handler.set_build_data.assert_has_calls([call(MyBuildData(range(20)))])
         # ensure that we called the handler's method
@@ -248,6 +267,30 @@ class TestBisector(unittest.TestCase):
         self.handler.user_exit.assert_called_with(10)
         # user exit
         self.assertEqual(test_result['result'], Bisector.USER_EXIT)
+
+    @patch('mozregression.bisector.Bisector._bisect')
+    def test_bisect(self, _bisect):
+        _bisect.return_value = 1
+        build_data = Mock()
+        build_data_class = Mock(return_value=build_data)
+        self.handler.build_data_class = build_data_class
+        result = self.bisector.bisect(self.handler, 'g', 'b', s=1)
+        build_data_class.assert_called_with(self.bisector.fetch_config,
+                                            'g', 'b', s=1)
+        self.assertFalse(build_data.reverse.called)
+        _bisect.assert_called_with(self.handler, build_data)
+        self.assertEqual(result, 1)
+
+    @patch('mozregression.bisector.Bisector._bisect')
+    def test_bisect_reverse(self, _bisect):
+        build_data = Mock()
+        build_data_class = Mock(return_value=build_data)
+        self.handler.build_data_class = build_data_class
+        self.handler.find_fix = True
+        self.bisector.bisect(self.handler, 'g', 'b', s=1)
+        build_data_class.assert_called_with(self.bisector.fetch_config,
+                                            'b', 'g', s=1)
+        _bisect.assert_called_with(self.handler, build_data)
 
 if __name__ == '__main__':
     unittest.main()

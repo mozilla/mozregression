@@ -79,6 +79,9 @@ def parse_args(argv=None):
                         help=("last known good revision (use with"
                               " --inbound)."))
 
+    parser.add_argument("--find-fix", action="store_true",
+                        help="Search for a bug fix instead of a regression.")
+
     parser.add_argument("-e", "--addon",
                         dest="addons",
                         action='append',

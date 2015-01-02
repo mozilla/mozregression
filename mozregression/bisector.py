@@ -27,7 +27,8 @@ class BisectorHandler(object):
     """
     build_type = 'unknown'
 
-    def __init__(self):
+    def __init__(self, find_fix=False):
+        self.find_fix = find_fix
         self.found_repo = None
         self.build_data = None
         self.good_revision = None
@@ -58,6 +59,9 @@ class BisectorHandler(object):
         """
         raise NotImplementedError
 
+    def _reverse_if_find_fix(self, var1, var2):
+        return (var1, var2) if not self.find_fix else (var2, var1)
+
     def initialize(self):
         """
         Initialize some data at the beginning of each step of a bisection
@@ -66,20 +70,26 @@ class BisectorHandler(object):
         This will only be called if there is some build data.
         """
         self.found_repo = self.build_data[0]['repository']
-        self.good_revision = self.build_data[0]['changeset']
-        self.bad_revision = self.build_data[-1]['changeset']
+        self.good_revision, self.bad_revision = \
+            self._reverse_if_find_fix(self.build_data[0]['changeset'],
+                                      self.build_data[-1]['changeset'])
 
     def get_pushlog_url(self):
+        first_rev, last_rev = self._reverse_if_find_fix(self.good_revision,
+                                                        self.bad_revision)
         return "%s/pushloghtml?fromchange=%s&tochange=%s" % (
-            self.found_repo, self.good_revision, self.bad_revision)
+            self.found_repo, first_rev, last_rev)
 
     def print_range(self):
         """
         Log the state of the current state of the bisection process, with an
         appropriate pushlog url.
         """
-        self._logger.info("Last good revision: %s" % self.good_revision)
-        self._logger.info("First bad revision: %s" % self.bad_revision)
+        words = self._reverse_if_find_fix('Last', 'First')
+        self._logger.info("%s good revision: %s" % (words[0],
+                                                    self.good_revision))
+        self._logger.info("%s bad revision: %s" % (words[1],
+                                                   self.bad_revision))
         self._logger.info("Pushlog:\n%s\n" % self.get_pushlog_url())
 
     def build_good(self, mid, new_data):
@@ -114,6 +124,7 @@ class BisectorHandler(object):
         pass
 
 class NightlyHandler(BisectorHandler):
+    build_data_class = NightlyBuildData
     build_type = 'nightly'
     good_date = None
     bad_date = None
@@ -121,8 +132,9 @@ class NightlyHandler(BisectorHandler):
     def initialize(self):
         BisectorHandler.initialize(self)
         # register dates
-        self.good_date = self.build_data.get_associated_data(0)
-        self.bad_date = self.build_data.get_associated_data(-1)
+        self.good_date, self.bad_date = \
+            self._reverse_if_find_fix(self.build_data.get_associated_data(0),
+                                     self.build_data.get_associated_data(-1))
 
     def build_infos(self, index):
         infos = BisectorHandler.build_infos(self, index)
@@ -132,23 +144,27 @@ class NightlyHandler(BisectorHandler):
     def _print_progress(self, new_data):
         next_good_date = new_data.get_associated_data(0)
         next_bad_date = new_data.get_associated_data(-1)
-        next_days_range = (next_bad_date - next_good_date).days
+        next_days_range = abs((next_bad_date - next_good_date).days)
         self._logger.info("Narrowed nightly regression window from"
                           " [%s, %s] (%d days) to [%s, %s] (%d days)"
                           " (~%d steps left)"
                           % (self.good_date,
                              self.bad_date,
-                             (self.bad_date - self.good_date).days,
+                             abs((self.bad_date - self.good_date).days),
                              next_good_date,
                              next_bad_date,
                              next_days_range,
                              compute_steps_left(next_days_range)))
 
     def user_exit(self, mid):
-        self._logger.info('Newest known good nightly: %s' % self.good_date)
-        self._logger.info('Oldest known bad nightly: %s'  % self.bad_date)
+        words = self._reverse_if_find_fix('Newest', 'Oldest')
+        self._logger.info('%s known good nightly: %s' % (words[0],
+                                                         self.good_date))
+        self._logger.info('%s known bad nightly: %s' % (words[1],
+                                                        self.bad_date))
 
 class InboundHandler(BisectorHandler):
+    build_data_class = InboundBuildData
     build_type = 'inbound'
 
     def _print_progress(self, new_data):
@@ -164,10 +180,11 @@ class InboundHandler(BisectorHandler):
                              compute_steps_left(len(new_data))))
 
     def user_exit(self, mid):
-        self._logger.info('Newest known good inbound revision: %s'
-                          % self.good_revision)
-        self._logger.info('Oldest known bad inbound revision: %s'
-                          % self.bad_revision)
+        words = self._reverse_if_find_fix('Newest', 'Oldest')
+        self._logger.info('%s known good inbound revision: %s'
+                          % (words[0], self.good_revision))
+        self._logger.info('%s known bad inbound revision: %s'
+                          % (words[1], self.bad_revision))
 
 class Bisector(object):
     """
@@ -178,53 +195,70 @@ class Bisector(object):
     FINISHED = 2
     USER_EXIT = 3
 
-    def __init__(self, handler, test_runner):
-        self.handler = handler
+    def __init__(self, fetch_config, test_runner):
+        self.fetch_config = fetch_config
         self.test_runner = test_runner
 
-    def bisect(self, build_data):
+    def bisect(self, handler, good, bad, **kwargs):
+        if handler.find_fix:
+            good, bad = bad, good
+        build_data = handler.build_data_class(self.fetch_config,
+                                              good,
+                                              bad,
+                                              **kwargs)
+        return self._bisect(handler, build_data)
+
+    def _bisect(self, handler, build_data):
         """
         Starts a bisection for a :class:`mozregression.build_data.BuildData`.
         """
         while True:
-            self.handler.set_build_data(build_data)
+            handler.set_build_data(build_data)
             mid = build_data.mid_point()
 
             if len(build_data) == 0:
-                self.handler.no_data()
+                handler.no_data()
                 return self.NO_DATA
 
-            self.handler.initialize()
+            handler.initialize()
 
             if mid == 0:
-                self.handler.finished()
+                handler.finished()
                 return self.FINISHED
 
-            build_infos = self.handler.build_infos(mid)
+            build_infos = handler.build_infos(mid)
             verdict = self.test_runner.evaluate(build_infos)
 
             if verdict == 'g':
-                # if build is good, we have to split from
+                # if build is good and we are looking for a regression, we
+                # have to split from
                 # [G, ?, ?, G, ?, B]
                 # to
                 #          [G, ?, B]
-                build_data = build_data[mid:]
-                self.handler.build_good(mid, build_data)
+                if not handler.find_fix:
+                    build_data = build_data[mid:]
+                else:
+                    build_data = build_data[:mid+1]
+                handler.build_good(mid, build_data)
             elif verdict == 'b':
-                # if build is bad, we have to split from
+                # if build is bad and we are looking for a regression, we
+                # have to split from
                 # [G, ?, ?, B, ?, B]
                 # to
                 # [G, ?, ?, B]
-                build_data = build_data[:mid+1]
-                self.handler.build_bad(mid, build_data)
+                if not handler.find_fix:
+                    build_data = build_data[:mid+1]
+                else:
+                    build_data = build_data[mid:]
+                handler.build_bad(mid, build_data)
             elif verdict == 'r':
-                self.handler.build_retry(mid)
+                handler.build_retry(mid)
             elif verdict == 's':
-                self.handler.build_skip(mid)
+                handler.build_skip(mid)
                 del build_data[mid]
             else:
                 # user exit
-                self.handler.user_exit(mid)
+                handler.user_exit(mid)
                 return self.USER_EXIT
 
 class BisectRunner(object):
@@ -236,16 +270,15 @@ class BisectRunner(object):
             profile=options.profile,
             cmdargs=options.cmdargs,
         )
-        self.test_runner = ManualTestRunner(fetch_config,
-                                            persist=options.persist,
-                                            launcher_kwargs=launcher_kwargs)
+        test_runner = ManualTestRunner(fetch_config,
+                                       persist=options.persist,
+                                       launcher_kwargs=launcher_kwargs)
+        self.bisector = Bisector(fetch_config, test_runner)
         self._logger = get_default_logger('Bisector')
 
     def bisect_nightlies(self, good_date, bad_date):
-        build_data = NightlyBuildData(self.fetch_config, good_date, bad_date)
-        handler = NightlyHandler()
-        bisector = Bisector(handler, self.test_runner)
-        result = bisector.bisect(build_data)
+        handler = NightlyHandler(find_fix=self.options.find_fix)
+        result = self.bisector.bisect(handler, good_date, bad_date)
         if result == Bisector.FINISHED:
             self._logger.info("Got as far as we can go bisecting nightlies...")
             handler.print_range()
@@ -255,16 +288,23 @@ class BisectRunner(object):
                                   " sure no inbound revision is missed)")
                 infos = {}
                 days = 6
+                first_date = min(handler.good_date, handler.bad_date)
                 while not 'changeset' in infos:
                     days += 1
-                    prev_date = handler.good_date - datetime.timedelta(days=days)
+                    prev_date = first_date - datetime.timedelta(days=days)
                     infos = handler.build_data.get_build_infos_for_date(prev_date)
                 if days > 7:
                     self._logger.info("At least one build folder was"
                                       " invalid, we have to start from"
                                       " %d days ago." % days)
-                return self.bisect_inbound(infos['changeset'],
-                                           handler.bad_revision)
+
+                if not handler.find_fix:
+                    good_rev = infos['changeset']
+                    bad_rev = handler.bad_revision
+                else:
+                    good_rev = handler.good_revision
+                    bad_rev = infos['changeset']
+                return self.bisect_inbound(good_rev, bad_rev)
             else:
                 message = ("Can not bissect inbound for application `%s`"
                            % self.fetch_config.app_name)
@@ -292,18 +332,15 @@ class BisectRunner(object):
         # see https://bugzilla.mozilla.org/show_bug.cgi?id=1018907 ...
         # we can change this at some point in the future, after those builds
         # expire)
-        inbound_data = InboundBuildData(self.fetch_config,
-                                        good_rev,
-                                        bad_rev,
-                                        range=60*60*12)
-        handler = InboundHandler()
-        bisector = Bisector(handler, self.test_runner)
-        result = bisector.bisect(inbound_data)
+        handler = InboundHandler(find_fix=self.options.find_fix)
+        result = self.bisector.bisect(handler, good_rev, bad_rev,
+                                      range=60*60*12)
         if result == Bisector.FINISHED:
             self._logger.info("Oh noes, no (more) inbound revisions :(")
             handler.print_range()
-            self.offer_build(handler.good_revision,
-                             handler.bad_revision)
+            if not handler.find_fix:
+                self.offer_build(handler.good_revision,
+                                 handler.bad_revision)
         elif result == Bisector.USER_EXIT:
             self.print_resume_info(handler)
         else:
@@ -315,7 +352,8 @@ class BisectRunner(object):
             # if we have, then these builds are probably too old
             self._logger.info('There is no build dirs on inbound for these'
                               ' changesets.')
-            self.offer_build(good_rev, bad_rev)
+            if not handler.find_fix:
+                self.offer_build(good_rev, bad_rev)
         return 0
 
     def print_resume_info(self, handler):
@@ -326,6 +364,8 @@ class BisectRunner(object):
                     % (handler.good_revision, handler.bad_revision))
         options = self.options
         info += ' --app=%s' % options.app
+        if options.find_fix:
+            info += ' --find-fix'
         if len(options.addons) > 0:
             info += ' --addons=%s' % ",".join(options.addons)
         if options.profile is not None:

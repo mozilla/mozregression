@@ -11,7 +11,6 @@ from mozlog.structured import get_default_logger
 
 from mozregression.test_runner import ManualTestRunner
 from mozregression.build_data import NightlyBuildData, InboundBuildData
-from mozregression.utils import yes_or_exit
 
 
 def compute_steps_left(steps):
@@ -338,22 +337,17 @@ class BisectRunner(object):
         if result == Bisector.FINISHED:
             self._logger.info("Oh noes, no (more) inbound revisions :(")
             handler.print_range()
-            if not handler.find_fix:
-                self.offer_build(handler.good_revision,
-                                 handler.bad_revision)
         elif result == Bisector.USER_EXIT:
             self.print_resume_info(handler)
         else:
             # NO_DATA
             self._logger.info("No inbound data found.")
             # check if we have found revisions
-            if not handler.build_data.raw_revisions:
-                return 1
-            # if we have, then these builds are probably too old
-            self._logger.info('There is no build dirs on inbound for these'
-                              ' changesets.')
-            if not handler.find_fix:
-                self.offer_build(good_rev, bad_rev)
+            if handler.build_data.raw_revisions:
+                # if we have, then these builds are probably too old
+                self._logger.info('There are no build dirs on inbound for'
+                                  ' these changesets.')
+            return 1
         return 0
 
     def print_resume_info(self, handler):
@@ -378,26 +372,3 @@ class BisectRunner(object):
 
         self._logger.info('To resume, run:')
         self._logger.info('mozregression %s' % info)
-
-    def find_regression_chset(self, last_good_revision, first_bad_revision):
-        # Uses mozcommitbuilder to bisect on changesets
-        # Only needed if they want to bisect, so we'll put the dependency here.
-        from mozcommitbuilder import builder
-        commit_builder = builder.Builder()
-
-        self._logger.info(" Narrowed changeset range from %s to %s"
-                          % (last_good_revision, first_bad_revision))
-
-        self._logger.info("Time to do some bisecting and building!")
-        commit_builder.bisect(last_good_revision, first_bad_revision)
-        quit()
-
-    def offer_build(self, last_good_revision, first_bad_revision):
-        yes_or_exit("Do you want to bisect further by fetching"
-                    " the repository and building?", exit_msg=None)
-
-        if self.fetch_config.app_name == "firefox":
-            self.find_regression_chset(last_good_revision, first_bad_revision)
-        else:
-            sys.exit("Bisection on anything other than firefox is not"
-                     " currently supported.")

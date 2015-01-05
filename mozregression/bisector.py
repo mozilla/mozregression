@@ -121,16 +121,16 @@ class NightlyHandler(BisectorHandler):
     build_type = 'nightly'
     good_date = None
     bad_date = None
-    mid_date = None
 
-    def build_infos(self, index):
+    def initialize(self):
+        BisectorHandler.initialize(self)
         # register dates
         self.good_date = self.build_data.get_date_for_index(0)
         self.bad_date = self.build_data.get_date_for_index(-1)
-        self.mid_date = self.build_data.get_date_for_index(index)
 
+    def build_infos(self, index):
         infos = BisectorHandler.build_infos(self, index)
-        infos['build_date'] = self.mid_date
+        infos['build_date'] = self.build_data.get_date_for_index(index)
         return infos
 
     def _print_progress(self, new_data):
@@ -151,6 +151,14 @@ class NightlyHandler(BisectorHandler):
     def user_exit(self, mid):
         self._logger.info('Newest known good nightly: %s' % self.good_date)
         self._logger.info('Oldest known bad nightly: %s'  % self.bad_date)
+
+    def build_good(self, mid, new_data):
+        self.good_date = self.build_data.get_date_for_index(mid)
+        BisectorHandler.build_good(self, mid, new_data)
+
+    def build_bad(self, mid, new_data):
+        self.bad_date = self.build_data.get_date_for_index(mid)
+        BisectorHandler.build_bad(self, mid, new_data)
 
 class InboundHandler(BisectorHandler):
     build_type = 'inbound'

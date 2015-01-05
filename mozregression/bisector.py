@@ -60,16 +60,14 @@ class BisectorHandler(object):
 
     def initialize(self):
         """
-        Initialize some data at the beginning of a bisection process.
+        Initialize some data at the beginning of each step of a bisection
+        process.
 
         This will only be called if there is some build data.
         """
-        if self.found_repo is None:
-            self.found_repo = self.build_data[0]['repository']
-        if self.good_revision is None:
-            self.good_revision = self.build_data[0]['changeset']
-        if self.bad_revision is None:
-            self.bad_revision = self.build_data[-1]['changeset']
+        self.found_repo = self.build_data[0]['repository']
+        self.good_revision = self.build_data[0]['changeset']
+        self.bad_revision = self.build_data[-1]['changeset']
 
     def get_pushlog_url(self):
         return "%s/pushloghtml?fromchange=%s&tochange=%s" % (
@@ -90,7 +88,6 @@ class BisectorHandler(object):
 
         *new_data* is ensured to contain at least two elements.
         """
-        self.good_revision = new_data[0]['changeset']
         self._print_progress(new_data)
 
     def build_bad(self, mid, new_data):
@@ -99,7 +96,6 @@ class BisectorHandler(object):
 
         *new_data* is ensured to contain at least two elements.
         """
-        self.bad_revision = new_data[-1]['changeset']
         self._print_progress(new_data)
 
     def build_retry(self, mid):
@@ -151,14 +147,6 @@ class NightlyHandler(BisectorHandler):
     def user_exit(self, mid):
         self._logger.info('Newest known good nightly: %s' % self.good_date)
         self._logger.info('Oldest known bad nightly: %s'  % self.bad_date)
-
-    def build_good(self, mid, new_data):
-        self.good_date = self.build_data.get_associated_data(mid)
-        BisectorHandler.build_good(self, mid, new_data)
-
-    def build_bad(self, mid, new_data):
-        self.bad_date = self.build_data.get_associated_data(mid)
-        BisectorHandler.build_bad(self, mid, new_data)
 
 class InboundHandler(BisectorHandler):
     build_type = 'inbound'

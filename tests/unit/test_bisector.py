@@ -51,14 +51,12 @@ class TestBisectorHandler(unittest.TestCase):
     @patch('mozregression.bisector.BisectorHandler._print_progress')
     def test_build_good(self, _print_progress):
         self.handler.build_good(0, [{"changeset": '123'}, {"changeset": '456'}])
-        self.assertEqual(self.handler.good_revision, '123')
         _print_progress.assert_called_with([{"changeset": '123'}, {"changeset": '456'}])
 
     @patch('mozregression.bisector.BisectorHandler._print_progress')
     def test_build_bad(self, _print_progress):
         # with at least two, _print_progress will be called
         self.handler.build_bad(0, [{"changeset": '123'}, {"changeset": '456'}])
-        self.assertEqual(self.handler.bad_revision, '456')
         _print_progress.assert_called_with([{"changeset": '123'}, {"changeset": '456'}])
 
 class TestNightlyHandler(unittest.TestCase):
@@ -87,24 +85,6 @@ class TestNightlyHandler(unittest.TestCase):
         self.assertEqual(self.handler.bad_date, -1)
 
         initialize.assert_called_with(self.handler)
-
-    @patch('mozregression.bisector.BisectorHandler.build_good')
-    def test_build_good(self, build_good):
-        def get_associated_data(index):
-            return index
-        self.handler.build_data = Mock(get_associated_data=get_associated_data)
-        self.handler.build_good(5, 'new_data')
-        self.assertEqual(self.handler.good_date, 5)
-        build_good.assert_called_with(self.handler, 5, 'new_data')
-
-    @patch('mozregression.bisector.BisectorHandler.build_bad')
-    def test_build_bad(self, build_bad):
-        def get_associated_data(index):
-            return index
-        self.handler.build_data = Mock(get_associated_data=get_associated_data)
-        self.handler.build_bad(5, 'new_data')
-        self.assertEqual(self.handler.bad_date, 5)
-        build_bad.assert_called_with(self.handler, 5, 'new_data')
 
     def test_print_progress(self):
         log = []

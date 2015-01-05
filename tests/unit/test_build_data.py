@@ -176,14 +176,6 @@ class TestNightlyBuildData(unittest.TestCase):
 
         self.build_data = build_data.NightlyBuildData(good_date, bad_date, fetch_config)
 
-    def test_date_for_index(self):
-        date = self.build_data.get_date_for_index(0)
-        self.assertEqual(date, datetime.date(2014, 11, 10))
-        date = self.build_data.get_date_for_index(-1)
-        self.assertEqual(date, datetime.date(2014, 11, 20))
-        date = self.build_data.get_date_for_index(5)
-        self.assertEqual(date, datetime.date(2014, 11, 15))
-
     @patch('mozregression.build_data.BuildFolderInfoFetcher.find_build_info_txt')
     @patch('mozregression.build_data.BuildFolderInfoFetcher.find_build_info')
     @patch('mozregression.build_data.NightlyUrlBuilder.get_urls')

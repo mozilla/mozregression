@@ -66,9 +66,9 @@ class TestNightlyHandler(unittest.TestCase):
         self.handler = NightlyHandler()
 
     def test_build_infos(self):
-        def get_date_for_index(index):
+        def get_associated_data(index):
             return index
-        new_data = MagicMock(get_date_for_index=get_date_for_index)
+        new_data = MagicMock(get_associated_data=get_associated_data)
         self.handler.set_build_data(new_data)
         result = self.handler.build_infos(1)
         self.assertEqual(result, {
@@ -78,9 +78,9 @@ class TestNightlyHandler(unittest.TestCase):
 
     @patch('mozregression.bisector.BisectorHandler.initialize')
     def test_initialize(self, initialize):
-        def get_date_for_index(index):
+        def get_associated_data(index):
             return index
-        self.handler.build_data = Mock(get_date_for_index=get_date_for_index)
+        self.handler.build_data = Mock(get_associated_data=get_associated_data)
         self.handler.initialize()
         # check that members are set
         self.assertEqual(self.handler.good_date, 0)
@@ -90,18 +90,18 @@ class TestNightlyHandler(unittest.TestCase):
 
     @patch('mozregression.bisector.BisectorHandler.build_good')
     def test_build_good(self, build_good):
-        def get_date_for_index(index):
+        def get_associated_data(index):
             return index
-        self.handler.build_data = Mock(get_date_for_index=get_date_for_index)
+        self.handler.build_data = Mock(get_associated_data=get_associated_data)
         self.handler.build_good(5, 'new_data')
         self.assertEqual(self.handler.good_date, 5)
         build_good.assert_called_with(self.handler, 5, 'new_data')
 
     @patch('mozregression.bisector.BisectorHandler.build_bad')
     def test_build_bad(self, build_bad):
-        def get_date_for_index(index):
+        def get_associated_data(index):
             return index
-        self.handler.build_data = Mock(get_date_for_index=get_date_for_index)
+        self.handler.build_data = Mock(get_associated_data=get_associated_data)
         self.handler.build_bad(5, 'new_data')
         self.assertEqual(self.handler.bad_date, 5)
         build_bad.assert_called_with(self.handler, 5, 'new_data')
@@ -111,12 +111,12 @@ class TestNightlyHandler(unittest.TestCase):
         self.handler._logger = Mock(info = log.append)
         self.handler.good_date = datetime.date(2014, 11, 10)
         self.handler.bad_date = datetime.date(2014, 11, 20)
-        def get_date_for_index(index):
+        def get_associated_data(index):
             if index == 0:
                 return datetime.date(2014, 11, 15)
             elif index == -1:
                 return datetime.date(2014, 11, 20)
-        new_data = Mock(get_date_for_index=get_date_for_index)
+        new_data = Mock(get_associated_data=get_associated_data)
 
         self.handler._print_progress(new_data)
         self.assertIn('from [2014-11-10, 2014-11-20] (10 days)', log[0])

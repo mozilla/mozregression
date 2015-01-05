@@ -125,17 +125,17 @@ class NightlyHandler(BisectorHandler):
     def initialize(self):
         BisectorHandler.initialize(self)
         # register dates
-        self.good_date = self.build_data.get_date_for_index(0)
-        self.bad_date = self.build_data.get_date_for_index(-1)
+        self.good_date = self.build_data.get_associated_data(0)
+        self.bad_date = self.build_data.get_associated_data(-1)
 
     def build_infos(self, index):
         infos = BisectorHandler.build_infos(self, index)
-        infos['build_date'] = self.build_data.get_date_for_index(index)
+        infos['build_date'] = self.build_data.get_associated_data(index)
         return infos
 
     def _print_progress(self, new_data):
-        next_good_date = new_data.get_date_for_index(0)
-        next_bad_date = new_data.get_date_for_index(-1)
+        next_good_date = new_data.get_associated_data(0)
+        next_bad_date = new_data.get_associated_data(-1)
         next_days_range = (next_bad_date - next_good_date).days
         self._logger.info("Narrowed nightly regression window from"
                           " [%s, %s] (%d days) to [%s, %s] (%d days)"
@@ -153,11 +153,11 @@ class NightlyHandler(BisectorHandler):
         self._logger.info('Oldest known bad nightly: %s'  % self.bad_date)
 
     def build_good(self, mid, new_data):
-        self.good_date = self.build_data.get_date_for_index(mid)
+        self.good_date = self.build_data.get_associated_data(mid)
         BisectorHandler.build_good(self, mid, new_data)
 
     def build_bad(self, mid, new_data):
-        self.bad_date = self.build_data.get_date_for_index(mid)
+        self.bad_date = self.build_data.get_associated_data(mid)
         BisectorHandler.build_bad(self, mid, new_data)
 
 class InboundHandler(BisectorHandler):

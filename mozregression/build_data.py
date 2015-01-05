@@ -454,21 +454,17 @@ class NightlyBuildData(MozBuildData):
     max_workers = 3
 
     def __init__(self, good_date, bad_date, fetch_config):
-        associated_data = range((bad_date - good_date).days + 1)
+        associated_data = [good_date + datetime.timedelta(days=i)
+                           for i in range((bad_date - good_date).days + 1)]
         info_fetcher = BuildFolderInfoFetcher(fetch_config.build_regex(),
                                               fetch_config.build_info_regex())
         MozBuildData.__init__(self, associated_data, info_fetcher)
-        self.start_date = good_date
         url_builder = NightlyUrlBuilder(fetch_config)
         self.url_builder = url_builder
         self.fetch_config = fetch_config
 
-    def get_date_for_index(self, i):
-        days = self.get_associated_data(i)
-        return self.start_date + datetime.timedelta(days=days)
-
     def _get_valid_build(self, i):
-        return self._get_valid_build_for_date(self.get_date_for_index(i))
+        return self._get_valid_build_for_date(self.get_associated_data(i))
 
     def _get_valid_build_for_date(self, date):
         # getting a valid build for a given date on nightly is tricky.

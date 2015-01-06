@@ -20,7 +20,7 @@ from mozregression import __version__
 from mozregression.utils import (parse_date, date_of_release,
                                  parse_bits, set_http_cache_session,
                                  formatted_valid_release_dates)
-from mozregression.fetch_configs import create_config
+from mozregression.fetch_configs import create_config, REGISTRY as FC_REGISTRY
 from mozregression.bisector import BisectRunner
 
 
@@ -102,7 +102,7 @@ def parse_args(argv=None):
                               " application; repeat for multiple arguments."))
 
     parser.add_argument("-n", "--app",
-                        choices=('firefox', 'fennec', 'thunderbird', 'b2g'),
+                        choices=FC_REGISTRY.names(),
                         default="firefox",
                         help="application name. Default: %(default)s.")
 

@@ -28,15 +28,19 @@ class ClassRegistry(object):
         self._classes = {}
         self.attr_name = attr_name
 
-    def register(self, name):
+    def register(self, name, attr_value=None):
         """
         Register a class with a given name.
+
+        :param name: name to identify the class
+        :param attr_value: If given, it will be used to define the value of
+                           the class attribute. If not given, *name* is used.
         """
         assert name not in self._classes
 
         def wrapper(klass):
             self._classes[name] = klass
-            setattr(klass, self.attr_name, name)
+            setattr(klass, self.attr_name, attr_value or name)
             return klass
         return wrapper
 
@@ -46,6 +50,11 @@ class ClassRegistry(object):
         """
         return self._classes[name]
 
+    def names(self):
+        """
+        Returns a list of registered class names.
+        """
+        return sorted(self._classes)
 
 CACHE_SESSION = None
 

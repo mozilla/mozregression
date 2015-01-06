@@ -142,7 +142,11 @@ class FennecNightlyConfigMixin(NightlyConfigMixin):
     nightly_base_repo_name = "mobile"
 
     def _get_nightly_repo(self, date):
-        return "mozilla-central-android"
+        if date < datetime.date(2014, 12, 6):
+            return "mozilla-central-android"
+        if date < datetime.date(2014, 12, 13):
+            return "mozilla-central-android-api-10"
+        return "mozilla-central-android-api-11"
 
 class InboundConfigMixin(object):
     """
@@ -219,3 +223,10 @@ class FennecConfig(CommonConfig,
 
     def build_info_regex(self):
         return r'fennec-.*\.txt'
+
+@REGISTRY.register('fennec-2.3', attr_value='fennec')
+class Fennec23Config(FennecConfig):
+    def _get_nightly_repo(self, date):
+        if date < datetime.date(2014, 12, 6):
+            return "mozilla-central-android"
+        return "mozilla-central-android-api-9"

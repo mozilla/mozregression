@@ -115,7 +115,6 @@ class TestThunderbirdConfig(unittest.TestCase):
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2010, 8, 21))
         self.assertEqual(repo_regex, '^2010-08-21-[\\d-]+comm-central/$')
 
-
 class TestThunderbirdConfigWin(TestThunderbirdConfig):
     os = 'win'
     def test_nightly_repo_regex_before_2008_07_26(self):
@@ -125,6 +124,31 @@ class TestThunderbirdConfigWin(TestThunderbirdConfig):
     def test_nightly_repo_regex_before_2009_01_09(self):
         with self.assertRaises(errors.WinTooOldBuildError):
             TestThunderbirdConfig.test_nightly_repo_regex_before_2009_01_09(self)
+
+class TestFennecConfig(unittest.TestCase):
+    def setUp(self):
+        self.conf = create_config('fennec', 'linux', 64)
+
+    def test_get_nightly_repo(self):
+        repo = self.conf.get_nightly_repo(datetime.date(2014, 12, 5))
+        self.assertEqual(repo, "mozilla-central-android")
+        repo = self.conf.get_nightly_repo(datetime.date(2014, 12, 10))
+        self.assertEqual(repo, "mozilla-central-android-api-10")
+        repo = self.conf.get_nightly_repo(datetime.date(2015, 1, 1))
+        self.assertEqual(repo, "mozilla-central-android-api-11")
+
+class TestFennec23Config(unittest.TestCase):
+    def setUp(self):
+        self.conf = create_config('fennec-2.3', 'linux', 64)
+
+    def test_class_attr_name(self):
+        self.assertEqual(self.conf.app_name, 'fennec')
+
+    def test_get_nightly_repo(self):
+        repo = self.conf.get_nightly_repo(datetime.date(2014, 12, 5))
+        self.assertEqual(repo, "mozilla-central-android")
+        repo = self.conf.get_nightly_repo(datetime.date(2015, 1, 1))
+        self.assertEqual(repo, "mozilla-central-android-api-9")
 
 if __name__ == '__main__':
     unittest.main()

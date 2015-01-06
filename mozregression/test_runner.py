@@ -10,8 +10,12 @@ and a default implementation :class:`ManualTestRunner`.
 """
 
 from mozlog.structured import get_default_logger
+import subprocess
+import shlex
+import os
 
 from mozregression.launchers import create_launcher
+from mozregression.errors import TestCommandError
 
 
 class TestRunner(object):
@@ -25,6 +29,28 @@ class TestRunner(object):
         self.persist = persist
         self.launcher_kwargs = launcher_kwargs or {}
         self.logger = get_default_logger('Test Runner')
+
+    def create_launcher(self, build_info):
+        """
+        Create and returns a :class:`mozregression.launchers.Launcher`.
+        """
+        if build_info['build_type'] == 'nightly':
+            date = build_info['build_date']
+            nightly_repo = self.fetch_config.get_nightly_repo(date)
+            persist_prefix = '%s--%s--' % (date, nightly_repo)
+            self.logger.info("Running nightly for %s" % date)
+        else:
+            persist_prefix = '%s--%s--' % (build_info['timestamp'],
+                                           self.fetch_config.inbound_branch)
+            self.logger.info("Testing inbound build with timestamp %s,"
+                             " revision %s"
+                             % (build_info['timestamp'],
+                                build_info['revision']))
+        build_url = build_info['build_url']
+        return create_launcher(self.fetch_config.app_name,
+                               build_url,
+                               persist=self.persist,
+                               persist_prefix=persist_prefix)
 
     def evaluate(self, build_info):
         """
@@ -58,29 +84,6 @@ class ManualTestRunner(TestRunner):
     A TestRunner subclass that run builds and ask for evaluation by
     prompting in the terminal.
     """
-    def create_launcher(self, build_info):
-        """
-        Create and returns a :class:`mozregression.launchers.Launcher`
-        that has been started.
-        """
-        if build_info['build_type'] == 'nightly':
-            date = build_info['build_date']
-            nightly_repo = self.fetch_config.get_nightly_repo(date)
-            persist_prefix = '%s--%s--' % (date, nightly_repo)
-            self.logger.info("Running nightly for %s" % date)
-        else:
-            persist_prefix = '%s--%s--' % (build_info['timestamp'],
-                                           self.fetch_config.inbound_branch)
-            self.logger.info("Testing inbound build with timestamp %s,"
-                             " revision %s"
-                             % (build_info['timestamp'],
-                                build_info['revision']))
-        build_url = build_info['build_url']
-        return create_launcher(self.fetch_config.app_name,
-                               build_url,
-                               persist=self.persist,
-                               persist_prefix=persist_prefix)
-
     def get_verdict(self, build_info):
         """
         Ask and returns the verdict.
@@ -108,3 +111,58 @@ class ManualTestRunner(TestRunner):
         verdict = self.get_verdict(build_info)
         launcher.stop()
         return verdict, app_infos
+
+
+def _raise_command_error(exc, msg=''):
+    raise TestCommandError("Unable to run the test command%s: `%s`"
+                           % (msg, exc))
+
+
+class CommandTestRunner(TestRunner):
+    """
+    A TestRunner subclass that evaluate builds given a shell command.
+
+    Some variables may be used to evaluate the builds:
+     - variables referenced in :meth:`TestRunner.evaluate`
+     - app_name (the tested application name: firefox, b2g...)
+     - binary (the path to the binary when applicable - not for fennec)
+
+    These variables can be used in two ways:
+    1. as environment variables. 'MOZREGRESSION_' is prepended and the
+       variables names are upcased. Example: MOZREGRESSION_BINARY
+    2. as placeholders in the command line. variables names must be enclosed
+       with curly brackets. Example:
+       `mozmill -app firefox -b {binary} -t path/to/test.js`
+    """
+    def __init__(self, fetch_config, command, **kwargs):
+        TestRunner.__init__(self, fetch_config, **kwargs)
+        self.command = command
+
+    def evaluate(self, build_info):
+        launcher = self.create_launcher(build_info)
+        app_info = launcher.get_app_info()
+        variables = dict((k, str(v)) for k, v in build_info.iteritems())
+        variables['app_name'] = launcher.app_name
+        if hasattr(launcher, 'binary'):
+            variables['binary'] = launcher.binary
+
+        env = dict(os.environ)
+        for k, v in variables.iteritems():
+            env['MOZREGRESSION_' + k.upper()] = v
+        try:
+            command = self.command.format(**variables)
+        except KeyError as exc:
+            _raise_command_error(exc, ' (formatting error)')
+        self.logger.info('Running test command: `%s`' % command)
+        cmdlist = shlex.split(command)
+        try:
+            retcode = subprocess.call(cmdlist, env=env)
+        except IndexError:
+            _raise_command_error("Empty command")
+        except OSError as exc:
+            _raise_command_error(exc,
+                                 " (%s not found or not executable)"
+                                 % cmdlist[0])
+        self.logger.info('Test command result: %d (build is %s)'
+                         % (retcode, 'good' if retcode == 0 else 'bad'))
+        return 'g' if retcode == 0 else 'b', app_info

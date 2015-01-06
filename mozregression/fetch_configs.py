@@ -209,9 +209,9 @@ class ThunderbirdConfig(CommonConfig,
     pass
 
 @REGISTRY.register('b2g')
-class BGConfig(CommonConfig,
-               B2GNightlyConfigMixin,
-               B2GInboundConfigMixin):
+class B2GConfig(CommonConfig,
+                B2GNightlyConfigMixin,
+                B2GInboundConfigMixin):
     pass
 
 @REGISTRY.register('fennec')

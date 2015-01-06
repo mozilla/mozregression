@@ -1,5 +1,6 @@
 import unittest
 import datetime
+import re
 
 from mozregression.fetch_configs import (FirefoxConfig, create_config, errors)
 
@@ -137,6 +138,19 @@ class TestFennecConfig(unittest.TestCase):
         repo = self.conf.get_nightly_repo(datetime.date(2015, 1, 1))
         self.assertEqual(repo, "mozilla-central-android-api-11")
 
+    def test_build_regex(self):
+        regex = re.compile(self.conf.build_regex())
+        self.assertTrue(regex.match('fennec-36.0a1.multi.android-arm.apk'))
+
+    def test_build_info_regex(self):
+        regex = re.compile(self.conf.build_info_regex())
+        self.assertTrue(regex.match('fennec-36.0a1.multi.android-arm.txt'))
+
+    def test_inbound_base_url(self):
+        expected = ("http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org"
+                    "/mobile/tinderbox-builds/mozilla-inbound-android/")
+        self.assertEqual(self.conf.inbound_base_url(), expected)
+
 class TestFennec23Config(unittest.TestCase):
     def setUp(self):
         self.conf = create_config('fennec-2.3', 'linux', 64)
@@ -149,6 +163,14 @@ class TestFennec23Config(unittest.TestCase):
         self.assertEqual(repo, "mozilla-central-android")
         repo = self.conf.get_nightly_repo(datetime.date(2015, 1, 1))
         self.assertEqual(repo, "mozilla-central-android-api-9")
+
+class TestB2GConfig(unittest.TestCase):
+    def setUp(self):
+        self.conf = create_config('b2g', 'linux', 64)
+
+    def test_get_nightly_repo(self):
+        repo = self.conf.get_nightly_repo(datetime.date(2014, 12, 5))
+        self.assertEqual(repo, "mozilla-central")
 
 if __name__ == '__main__':
     unittest.main()

@@ -174,7 +174,7 @@ class TestNightlyBuildData(unittest.TestCase):
         bad_date = datetime.date(2014, 11, 20)
         fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
 
-        self.build_data = build_data.NightlyBuildData(good_date, bad_date, fetch_config)
+        self.build_data = build_data.NightlyBuildData(fetch_config, good_date, bad_date)
 
     @patch('mozregression.build_data.BuildFolderInfoFetcher.find_build_info_txt')
     @patch('mozregression.build_data.BuildFolderInfoFetcher.find_build_info')

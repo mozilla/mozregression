@@ -453,7 +453,7 @@ class NightlyBuildData(MozBuildData):
     # see :meth:`_get_valid_build_for_date`
     max_workers = 3
 
-    def __init__(self, good_date, bad_date, fetch_config):
+    def __init__(self, fetch_config, good_date, bad_date):
         associated_data = [good_date + datetime.timedelta(days=i)
                            for i in range((bad_date - good_date).days + 1)]
         info_fetcher = BuildFolderInfoFetcher(fetch_config.build_regex(),

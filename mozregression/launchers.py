@@ -120,7 +120,14 @@ class MozRunnerLauncher(Launcher):
 
     def _stop(self):
         self.runner.stop()
-        rmtree(self.tempdir)
+
+    def __del__(self):
+        try:
+            Launcher.__del__(self)
+        finally:
+            # always remove tempdir
+            if self.tempdir is not None:
+                rmtree(self.tempdir)
 
     def _get_app_info(self):
         return mozversion.get_version(binary=self.binary)

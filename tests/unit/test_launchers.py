@@ -91,7 +91,6 @@ class TestMozRunnerLauncher(unittest.TestCase):
     def setUp(self, unlink, download_url, mozinstall):
         mozinstall.get_binary.return_value = '/binary'
         self.launcher = launchers.MozRunnerLauncher('http://binary')
-        self.addCleanup(self.launcher.stop)
 
     # patch profile_class else we will have some temporary dirs not deleted
     @patch('mozregression.launchers.MozRunnerLauncher.profile_class', spec=Profile)
@@ -136,6 +135,12 @@ class TestMozRunnerLauncher(unittest.TestCase):
         self.launcher_start()
         self.assertEqual(self.launcher.get_app_info(), {'some': 'infos'})
         mozversion.get_version.assert_called_once_with(binary='/binary')
+
+    def test_launcher_deleted_remove_tempdir(self):
+        tempdir = self.launcher.tempdir
+        self.assertTrue(os.path.isdir(tempdir))
+        del self.launcher
+        self.assertFalse(os.path.isdir(tempdir))
 
 class TestFennecLauncher(unittest.TestCase):
     @patch('mozregression.launchers.download_url')

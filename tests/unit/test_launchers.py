@@ -112,6 +112,7 @@ class TestMozRunnerLauncher(unittest.TestCase):
         self.assertIsInstance(kwargs['profile'], Profile)
         # runner is started
         self.launcher.runner.start.assert_called_once_with()
+        self.launcher.stop()
 
     @patch('mozregression.launchers.Runner')
     def test_start_with_addons(self, Runner):
@@ -119,6 +120,7 @@ class TestMozRunnerLauncher(unittest.TestCase):
         self.profile_class.assert_called_once_with(addons=['my-addon'])
         # runner is started
         self.launcher.runner.start.assert_called_once_with()
+        self.launcher.stop()
 
     @patch('mozregression.launchers.Runner')
     def test_start_with_profile_and_addons(self, Runner):
@@ -127,6 +129,7 @@ class TestMozRunnerLauncher(unittest.TestCase):
                                                    addons=['my-addon'])
         # runner is started
         self.launcher.runner.start.assert_called_once_with()
+        self.launcher.stop()
 
     @patch('mozregression.launchers.Runner')
     @patch('mozregression.launchers.mozversion')
@@ -135,6 +138,7 @@ class TestMozRunnerLauncher(unittest.TestCase):
         self.launcher_start()
         self.assertEqual(self.launcher.get_app_info(), {'some': 'infos'})
         mozversion.get_version.assert_called_once_with(binary='/binary')
+        self.launcher.stop()
 
     def test_launcher_deleted_remove_tempdir(self):
         tempdir = self.launcher.tempdir

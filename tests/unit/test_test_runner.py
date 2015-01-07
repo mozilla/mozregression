@@ -9,7 +9,7 @@ from mock import patch, Mock
 import datetime
 
 from mozregression.fetch_configs import create_config
-from mozregression import test_runner
+from mozregression import test_runner, errors
 
 class TestManualTestRunner(unittest.TestCase):
     def setUp(self):
@@ -68,3 +68,70 @@ class TestManualTestRunner(unittest.TestCase):
         get_verdict.assert_called_with(build_infos)
         launcher.stop.assert_called_with()
         self.assertEqual(result[0], 'g')
+
+class TestCommandTestRunner(unittest.TestCase):
+    def setUp(self):
+        fetch_config = create_config('firefox', 'linux', 64)
+        self.runner = test_runner.CommandTestRunner(fetch_config, 'my command')
+        self.launcher = Mock(app_name='myapp')
+        del self.launcher.binary  # block the auto attr binary on the mock
+
+    def test_create(self):
+        self.assertEqual(self.runner.command, 'my command')
+
+    @patch('mozregression.test_runner.CommandTestRunner.create_launcher')
+    @patch('subprocess.call')
+    def evaluate(self, call, create_launcher, build_info={}, retcode=0, subprocess_call_effect=None):
+        call.return_value = retcode
+        if subprocess_call_effect:
+            call.side_effect = subprocess_call_effect
+        self.subprocess_call = call
+        create_launcher.return_value = self.launcher
+        return self.runner.evaluate(build_info)[0]
+
+    def test_evaluate_retcode(self):
+        self.assertEqual('g', self.evaluate(retcode=0))
+        self.assertEqual('b', self.evaluate(retcode=1))
+
+    def test_supbrocess_call(self):
+         self.evaluate()
+         command = self.subprocess_call.mock_calls[0][1][0]
+         kwargs = self.subprocess_call.mock_calls[0][2]
+         self.assertEqual(command, ['my', 'command'])
+         self.assertIn('env', kwargs)
+
+    def test_env_vars(self):
+        self.evaluate(build_info={'my': 'var', 'int': 15})
+        expected = {
+            'MOZREGRESSION_MY': 'var',
+            'MOZREGRESSION_INT': '15',
+            'MOZREGRESSION_APP_NAME': 'myapp',
+        }
+        passed_env = self.subprocess_call.mock_calls[0][2]['env']
+        self.assertTrue(set(expected).issubset(set(passed_env)))
+
+    def test_command_placeholder_replaced(self):
+        self.runner.command = 'run {app_name} "1"'
+        self.evaluate()
+        command = self.subprocess_call.mock_calls[0][1][0]
+        self.assertEqual(command, ['run', 'myapp', '1'])
+
+        self.runner.command = 'run \'{binary}\' "{foo}"'
+        self.launcher.binary = 'mybinary'
+        self.evaluate(build_info={'foo': 12})
+        command = self.subprocess_call.mock_calls[0][1][0]
+        self.assertEqual(command, ['run', 'mybinary', '12'])
+
+    def test_command_placeholder_error(self):
+        self.runner.command = 'run {app_nam} "1"'
+        self.assertRaisesRegexp(errors.TestCommandError, 'formatting', self.evaluate)
+
+    def test_command_empty_error(self):
+        # in case the command line is empty, subprocess.call will raise IndexError
+        self.assertRaisesRegexp(errors.TestCommandError, 'Empty', self.evaluate,
+                                subprocess_call_effect=IndexError)
+
+    def test_command_missing_error(self):
+        # in case the command is missing or not executable, subprocess.call will raise IOError
+        self.assertRaisesRegexp(errors.TestCommandError, 'not found', self.evaluate,
+                                subprocess_call_effect=OSError)

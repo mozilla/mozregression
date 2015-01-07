@@ -23,6 +23,7 @@ from mozregression.utils import (parse_date, date_of_release,
 from mozregression.fetch_configs import create_config, REGISTRY as FC_REGISTRY
 from mozregression.bisector import BisectRunner
 from mozregression.launchers import REGISTRY as APP_REGISTRY
+from mozregression.test_runner import ManualTestRunner, CommandTestRunner
 
 
 def parse_args(argv=None):
@@ -121,6 +122,12 @@ def parse_args(argv=None):
                         help=("force 32 or 64 bit version (only applies to"
                               " x86_64 boxes). Default: %(default)s bits."))
 
+    parser.add_argument("-c", "--command",
+                        help=("Test command to evaluate builds automatically."
+                              " A return code of 0 will evaluate build as good,"
+                              " any other value will evaluate the build as"
+                              " bad."))
+
     parser.add_argument("--persist",
                         help=("the directory in which downloaded files are"
                               " to persist."))
@@ -157,7 +164,21 @@ def cli(argv=None):
     set_http_cache_session(cache_session)
 
     fetch_config = create_config(options.app, mozinfo.os, options.bits)
-    runner = BisectRunner(fetch_config, options)
+
+    if options.command is None:
+        launcher_kwargs = dict(
+            addons=options.addons,
+            profile=options.profile,
+            cmdargs=options.cmdargs,
+        )
+        test_runner = ManualTestRunner(fetch_config,
+                                       persist=options.persist,
+                                       launcher_kwargs=launcher_kwargs)
+    else:
+        test_runner = CommandTestRunner(fetch_config, options.command,
+                                        persist=options.persist)
+
+    runner = BisectRunner(fetch_config, test_runner, options)
 
     if fetch_config.is_inbound():
         # this can be useful for both inbound and nightly, because we

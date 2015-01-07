@@ -183,9 +183,15 @@ class B2GInboundConfigMixin(FirefoxInboundConfigMixin):
                            '/tinderbox-builds/%s-%s_gecko/')
 
 class FennecInboundConfigMixin(InboundConfigMixin):
+    inbound_branchs = ['mozilla-inbound-android']
     def inbound_base_urls(self):
         return ["http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org"
-                "/mobile/tinderbox-builds/%s-android/" % self.inbound_branch]
+                "/mobile/tinderbox-builds/%s/" % inbound_branch
+                for inbound_branch in self.inbound_branchs]
+
+    def set_inbound_branch(self, inbound_branch):
+        if inbound_branch:
+            self.inbound_branchs = [inbound_branch]
 
 # ------------ full config implementations ------------
 
@@ -218,6 +224,9 @@ class B2GConfig(CommonConfig,
 class FennecConfig(CommonConfig,
                    FennecNightlyConfigMixin,
                    FennecInboundConfigMixin):
+    inbound_branchs = (FennecInboundConfigMixin.inbound_branchs
+                       + ['mozilla-inbound-android-api-10',
+                          'mozilla-inbound-android-api-11'])
     def build_regex(self):
         return r'fennec-.*\.apk'
 
@@ -226,6 +235,9 @@ class FennecConfig(CommonConfig,
 
 @REGISTRY.register('fennec-2.3', attr_value='fennec')
 class Fennec23Config(FennecConfig):
+    inbound_branchs = (FennecInboundConfigMixin.inbound_branchs
+                       + ['mozilla-inbound-android-api-9'])
+
     def _get_nightly_repo(self, date):
         if date < datetime.date(2014, 12, 6):
             return "mozilla-central-android"

@@ -148,7 +148,21 @@ class TestFennecConfig(unittest.TestCase):
 
     def test_inbound_base_url(self):
         expected = ["http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org"
-                    "/mobile/tinderbox-builds/mozilla-inbound-android/"]
+                    "/mobile/tinderbox-builds/%s/" % inbound_branch
+                    for inbound_branch in ('mozilla-inbound-android',
+                                           'mozilla-inbound-android-api-10',
+                                           'mozilla-inbound-android-api-11')]
+        self.assertEqual(self.conf.inbound_base_urls(), expected)
+
+    def test_set_inbound_branch(self):
+        # inbound_branch evaluated to False won't change the behaviour
+        self.conf.set_inbound_branch(None)
+        self.test_inbound_base_url()
+
+        # valid inbound_branch will
+        self.conf.set_inbound_branch('my')
+        expected = ["http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org"
+                    "/mobile/tinderbox-builds/my/"]
         self.assertEqual(self.conf.inbound_base_urls(), expected)
 
 class TestFennec23Config(unittest.TestCase):

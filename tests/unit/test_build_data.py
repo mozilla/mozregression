@@ -284,7 +284,7 @@ class TestInboundBuildData(unittest.TestCase):
         ]
         get_pushlogs.return_value = pushlogs
         # returns 100 possible build folders
-        def inbound_links(url):
+        def inbound_links(url, regex=None):
             return ['%i/' % i for i in xrange(100)]
         url_links.side_effect = inbound_links
         return build_data.InboundBuildData(fetch_config, good, bad, range=5)

@@ -157,7 +157,7 @@ class InboundConfigMixin(object):
         if inbound_branch:
             self.inbound_branch = inbound_branch
 
-    def inbound_base_url(self):
+    def inbound_base_urls(self):
         raise NotImplementedError
 
 class FirefoxInboundConfigMixin(InboundConfigMixin):
@@ -169,10 +169,10 @@ class FirefoxInboundConfigMixin(InboundConfigMixin):
     root_build_base_url = ('http://inbound-archive.pub.build.mozilla.org/pub'
                            '/mozilla.org/firefox/tinderbox-builds/%s-%s/')
 
-    def inbound_base_url(self):
-        return (self.root_build_base_url
+    def inbound_base_urls(self):
+        return [self.root_build_base_url
                 % (self.inbound_branch,
-                   self.build_base_os_part[self.os][self.bits]))
+                   self.build_base_os_part[self.os][self.bits])]
 
 class B2GInboundConfigMixin(FirefoxInboundConfigMixin):
     inbound_branch = 'b2g-inbound'
@@ -183,9 +183,9 @@ class B2GInboundConfigMixin(FirefoxInboundConfigMixin):
                            '/tinderbox-builds/%s-%s_gecko/')
 
 class FennecInboundConfigMixin(InboundConfigMixin):
-    def inbound_base_url(self):
-        return ("http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org"
-                "/mobile/tinderbox-builds/%s-android/") % self.inbound_branch
+    def inbound_base_urls(self):
+        return ["http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org"
+                "/mobile/tinderbox-builds/%s-android/" % self.inbound_branch]
 
 # ------------ full config implementations ------------
 

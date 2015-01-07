@@ -353,14 +353,13 @@ class InboundBuildData(MozBuildData):
 
         start_time = pushlogs[0]['date'] - range
         end_time = pushlogs[-1]['date'] + range
-        inbound_base_url = self.fetch_config.inbound_base_url()
+        inbound_base_urls = self.fetch_config.inbound_base_urls()
         self._logger.debug(('We will look in `%s` to find build folders'
                             ' between %s and %s')
-                           % (inbound_base_url, start_time, end_time))
+                           % (', '.join(inbound_base_urls),
+                              start_time, end_time))
 
-        build_urls = sorted([("%s%s/" % (inbound_base_url, path), timestamp)
-                             for path, timestamp in self._extract_paths()],
-                            key=lambda b: b[1])
+        build_urls = sorted(self._extract_paths(), key=lambda b: b[1])
 
         build_urls_in_range = [b for b in build_urls
                                if b[1] > start_time and b[1] < end_time]
@@ -381,10 +380,21 @@ class InboundBuildData(MozBuildData):
         self.raw_revisions = [push['changesets'][-1] for push in pushlogs]
 
     def _extract_paths(self):
-        paths = filter(lambda l: l.isdigit(),
-                       map(lambda l: l.strip('/'),
-                           url_links(self.fetch_config.inbound_base_url())))
-        return [(p, int(p)) for p in paths]
+        base_urls = self.fetch_config.inbound_base_urls()
+        all_paths = []
+        with futures.ThreadPoolExecutor(max_workers=4) as executor:
+            futures_results = {}
+            for base_url in base_urls:
+                future = executor.submit(url_links, base_url, regex=r'^\d+/$')
+                futures_results[future] = base_url
+            for future in futures.as_completed(futures_results):
+                paths = future.result()
+                base_url = futures_results[future]
+                for path in paths:
+                    timestamp = path.rstrip('/')
+                    all_paths.append(("%s%s/" % (base_url, timestamp),
+                                      int(timestamp)))
+        return all_paths
 
     def _get_valid_build(self, i):
         build_url = self.get_associated_data(i)[0]

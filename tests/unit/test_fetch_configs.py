@@ -59,16 +59,16 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
         self.conf.set_nightly_repo('foo-bar')
         self.assertFalse(self.conf.can_go_inbound())
 
-    def test_inbound_base_url(self):
+    def test_inbound_base_urls(self):
         inbound_base_url = '%s/mozilla-inbound-%s/' % (self.base_inbound_url,
-                                                      self.base_inbound_url_ext)
-        self.assertEqual(self.conf.inbound_base_url(), inbound_base_url)
+                                                       self.base_inbound_url_ext)
+        self.assertEqual(self.conf.inbound_base_urls(), [inbound_base_url])
 
-    def test_custom_inbound_base_url(self):
+    def test_custom_inbound_base_urls(self):
         self.conf.set_inbound_branch('custom')
         inbound_base_url = '%s/custom-%s/' % (self.base_inbound_url,
-                                                      self.base_inbound_url_ext)
-        self.assertEqual(self.conf.inbound_base_url(), inbound_base_url)
+                                              self.base_inbound_url_ext)
+        self.assertEqual(self.conf.inbound_base_urls(), [inbound_base_url])
 
 class TestFirefoxConfigLinux32(TestFirefoxConfigLinux64):
     bits = 32
@@ -147,9 +147,9 @@ class TestFennecConfig(unittest.TestCase):
         self.assertTrue(regex.match('fennec-36.0a1.multi.android-arm.txt'))
 
     def test_inbound_base_url(self):
-        expected = ("http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org"
-                    "/mobile/tinderbox-builds/mozilla-inbound-android/")
-        self.assertEqual(self.conf.inbound_base_url(), expected)
+        expected = ["http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org"
+                    "/mobile/tinderbox-builds/mozilla-inbound-android/"]
+        self.assertEqual(self.conf.inbound_base_urls(), expected)
 
 class TestFennec23Config(unittest.TestCase):
     def setUp(self):

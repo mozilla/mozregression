@@ -93,12 +93,18 @@ class TestMozRunnerLauncher(unittest.TestCase):
         self.launcher = launchers.MozRunnerLauncher('http://binary')
         self.addCleanup(self.launcher.stop)
 
+    # patch profile_class else we will have some temporary dirs not deleted
+    @patch('mozregression.launchers.MozRunnerLauncher.profile_class', spec=Profile)
+    def launcher_start(self, profile_class, *args, **kwargs):
+        self.profile_class = profile_class
+        self.launcher.start(*args, **kwargs)
+
     def test_installed(self):
         self.assertEqual(self.launcher.binary, '/binary')
 
     @patch('mozregression.launchers.Runner')
     def test_start_no_args(self, Runner):
-        self.launcher.start()
+        self.launcher_start()
         kwargs = Runner.call_args[1]
 
         self.assertEqual(kwargs['cmdargs'], ())
@@ -109,19 +115,17 @@ class TestMozRunnerLauncher(unittest.TestCase):
         self.launcher.runner.start.assert_called_once_with()
 
     @patch('mozregression.launchers.Runner')
-    @patch('mozregression.launchers.MozRunnerLauncher.profile_class')
-    def test_start_with_addons(self, profile_class, Runner):
-        self.launcher.start(addons=['my-addon'])
-        profile_class.assert_called_once_with(addons=['my-addon'])
+    def test_start_with_addons(self, Runner):
+        self.launcher_start(addons=['my-addon'])
+        self.profile_class.assert_called_once_with(addons=['my-addon'])
         # runner is started
         self.launcher.runner.start.assert_called_once_with()
 
     @patch('mozregression.launchers.Runner')
-    @patch('mozregression.launchers.MozRunnerLauncher.profile_class')
-    def test_start_with_profile_and_addons(self, profile_class, Runner):
-        self.launcher.start(profile='my-profile', addons=['my-addon'])
-        profile_class.assert_called_once_with(profile='my-profile',
-                                              addons=['my-addon'])
+    def test_start_with_profile_and_addons(self, Runner):
+        self.launcher_start(profile='my-profile', addons=['my-addon'])
+        self.profile_class.assert_called_once_with(profile='my-profile',
+                                                   addons=['my-addon'])
         # runner is started
         self.launcher.runner.start.assert_called_once_with()
 
@@ -129,7 +133,7 @@ class TestMozRunnerLauncher(unittest.TestCase):
     @patch('mozregression.launchers.mozversion')
     def test_get_app_infos(self, mozversion, Runner):
         mozversion.get_version.return_value = {'some': 'infos'}
-        self.launcher.start()
+        self.launcher_start()
         self.assertEqual(self.launcher.get_app_info(), {'some': 'infos'})
         mozversion.get_version.assert_called_once_with(binary='/binary')
 

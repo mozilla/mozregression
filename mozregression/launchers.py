@@ -18,7 +18,8 @@ import mozinstall
 import tempfile
 import os
 
-from mozregression.utils import ClassRegistry, download_url, yes_or_exit
+from mozregression.utils import ClassRegistry, download_url
+from mozregression.errors import LauncherNotRunnable
 
 
 class Launcher(object):
@@ -26,6 +27,16 @@ class Launcher(object):
     Handle the logic of downloading a build file, installing and
     running an application.
     """
+
+    @classmethod
+    def check_is_runnable(cls):
+        """
+        Check that the launcher can be created and can run on the system.
+
+        :raises: :class:`LauncherNotRunnable`.
+        """
+        pass
+
     def __init__(self, url, persist=None, persist_prefix=''):
         self._running = False
         self._logger = get_default_logger('Test Runner')
@@ -163,16 +174,26 @@ class B2GLauncher(MozRunnerLauncher):
 @REGISTRY.register('fennec')
 class FennecLauncher(Launcher):
     app_info = None
+    adb = None
+
+    @classmethod
+    def check_is_runnable(cls):
+        # ADBHost().devices() seems to raise OSError when adb is not
+        # installed and in PATH. TODO: maybe fix this in mozdevice.
+        try:
+            devices = ADBHost().devices()
+        except OSError:
+            raise LauncherNotRunnable("adb (Android Debug Bridge) is not"
+                                      " installed or not in the PATH.")
+        if not devices:
+            raise LauncherNotRunnable("No android device connected."
+                                      " Connect a device and try again.")
+        if not raw_input("WARNING: bisecting fennec builds will clobber your"
+                         " existing profile. Type 'y' to continue:") == 'y':
+            raise LauncherNotRunnable('Aborted.')
 
     def _install(self, dest):
-        while not ADBHost().devices():
-            yes_or_exit("WARNING: no device connected. Connect a device"
-                        " and try again.\nTry again?")
-
         self.adb = ADBAndroid()
-        yes_or_exit("WARNING: bisecting nightly fennec builds will clobber"
-                    " your existing nightly profile. Continue?")
-
         self.adb.uninstall_app("org.mozilla.fennec")
         self.adb.install_app(dest)
         # get info now, as dest may be removed

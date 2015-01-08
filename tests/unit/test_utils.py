@@ -162,18 +162,5 @@ class TestHTTPCache(unittest.TestCase):
         for k, v in a_session.adapters.items():
             self.assertTrue(isinstance(v.cache, limitedfilecache.LimitedFileCache))
 
-class TestYesOrExit(unittest.TestCase):
-    @patch('__builtin__.raw_input')
-    def test_yes(self, raw_input):
-        raw_input.return_value = 'y'
-        utils.yes_or_exit('hello')
-        raw_input.assert_called_once_with('hello (y or n):')
-
-    @patch('__builtin__.raw_input')
-    def test_no(self, raw_input):
-        raw_input.return_value = 'n'
-        self.assertRaises(SystemExit, utils.yes_or_exit, 'hello')
-        raw_input.assert_called_once_with('hello (y or n):')
-
 if __name__ == '__main__':
     unittest.main()

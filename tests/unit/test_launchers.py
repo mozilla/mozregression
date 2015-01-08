@@ -5,6 +5,7 @@ import mozfile
 import os
 from mock import patch, Mock
 from mozprofile import FirefoxProfile, Profile
+from mozregression.errors import LauncherNotRunnable
 
 class MyLauncher(launchers.Launcher):
     installed = None
@@ -149,13 +150,9 @@ class TestMozRunnerLauncher(unittest.TestCase):
 class TestFennecLauncher(unittest.TestCase):
     @patch('mozregression.launchers.download_url')
     @patch('mozregression.launchers.os.unlink')
-    @patch('mozregression.launchers.yes_or_exit')
     @patch('mozregression.launchers.mozversion.get_version')
     @patch('mozregression.launchers.ADBAndroid')
-    @patch('mozregression.launchers.ADBHost')
-    def create_launcher(self, ADBHost, ADBAndroid, get_version, *a):
-        self.adbhost = Mock()
-        ADBHost.return_value = self.adbhost
+    def create_launcher(self, ADBAndroid, get_version, *a):
         self.adb = Mock()
         ADBAndroid.return_value = self.adb
         get_version.return_value = 'version'
@@ -163,7 +160,6 @@ class TestFennecLauncher(unittest.TestCase):
 
     def test_install(self):
         launcher = self.create_launcher()
-        self.adbhost.devices.assert_called_with()
         self.adb.uninstall_app.assert_called_with("org.mozilla.fennec")
         self.adb.install_app.assert_called_with('binary')
 
@@ -175,3 +171,25 @@ class TestFennecLauncher(unittest.TestCase):
         self.assertIsNotNone(launcher.get_app_info())
         launcher.stop()
         self.adb.stop_application.assert_called_once_with("org.mozilla.fennec")
+
+    @patch('mozregression.launchers.ADBHost')
+    @patch('__builtin__.raw_input')
+    def test_check_is_runnable(self, raw_input, ADBHost):
+        raw_input.return_value = 'y'
+        devices = Mock(return_value=True)
+        ADBHost.return_value = Mock(devices=devices)
+        # this won't raise errors
+        launchers.FennecLauncher.check_is_runnable()
+
+        # exception raised if answer is not 'y'
+        raw_input.return_value = 'n'
+        self.assertRaises(LauncherNotRunnable, launchers.FennecLauncher.check_is_runnable)
+
+        # exception raised if there is no device
+        raw_input.return_value = 'y'
+        devices.return_value = False
+        self.assertRaises(LauncherNotRunnable, launchers.FennecLauncher.check_is_runnable)
+
+        # or if ADBHost().devices() raise an unexpected IOError
+        devices.side_effect = OSError()
+        self.assertRaises(LauncherNotRunnable, launchers.FennecLauncher.check_is_runnable)

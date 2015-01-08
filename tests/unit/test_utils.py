@@ -87,6 +87,17 @@ class TestDownloadUrl(unittest.TestCase):
 
         self.assertEquals(self.data, open(fname).read())
 
+    @patch('requests.get')
+    @patch('mozfile.remove')
+    def test_download_with_exception_remove_tempfile(self, remove, get):
+        response = Mock(headers={'Content-length': '10'},
+                        iter_content=Mock(side_effect=Exception))
+        get.return_value = response
+
+        fname = os.path.join(self.tempdir, 'some.content')
+        self.assertRaises(Exception, utils.download_url, 'http://toto', fname)
+        remove.assert_called_once_with(fname + '.part')
+
 class TestGetBuildUrl(unittest.TestCase):
     def test_for_linux(self):
         self.assertEqual(utils.get_build_regex('test', 'linux', 32), r'test.*linux-i686\.tar.bz2')

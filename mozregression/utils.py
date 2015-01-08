@@ -250,13 +250,3 @@ def formatted_valid_release_dates():
         message += '% 3s: %s\n' % (key, value)
 
     return message
-
-
-def yes_or_exit(question, exit_msg="Aborting!"):
-    """
-    Ask a question via raw_input and exit if response is "n".
-
-    Note that " (y or n):" is appended to the question.
-    """
-    if "y" != raw_input(question + " (y or n):"):
-        sys.exit(exit_msg)

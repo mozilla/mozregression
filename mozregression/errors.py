@@ -45,3 +45,10 @@ class DownloadError(MozRegressionError):
     """
     Raised when a build can not be downloaded.
     """
+
+
+class LauncherNotRunnable(MozRegressionError):
+    """
+    Raised when a :class:`mozregression.launchers.Launcher` can not be
+    run on the system.
+    """

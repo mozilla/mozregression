@@ -22,6 +22,7 @@ from mozregression.utils import (parse_date, date_of_release,
                                  formatted_valid_release_dates)
 from mozregression.fetch_configs import create_config, REGISTRY as FC_REGISTRY
 from mozregression.bisector import BisectRunner
+from mozregression.launchers import REGISTRY as APP_REGISTRY
 
 
 def parse_args(argv=None):
@@ -209,6 +210,9 @@ def cli(argv=None):
         app = lambda: runner.bisect_nightlies(parse_date(options.good_date),
                                               parse_date(options.bad_date))
     try:
+        launcher_class = APP_REGISTRY.get(fetch_config.app_name)
+        launcher_class.check_is_runnable()
+
         sys.exit(app())
     except KeyboardInterrupt:
         sys.exit("\nInterrupted.")

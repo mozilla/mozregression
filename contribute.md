@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Contribute
-order: 3
+order: 40
 ---
 
 # Contribute to mozregression

@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Install
-order: 2
+order: 30
 ---
 
 # Install or upgrade

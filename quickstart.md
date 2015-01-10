@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Quick start
-order: 1
+order: 10
 ---
 
 # Quick start
@@ -30,5 +30,12 @@ regression range, something like this:
 ![My helpful screenshot]({{ site.baseurl }}/images/mozreg.png)
 
 Then mozregression will go on and do the same things with inbound builds
-to get you the smallest possible window range.
+to get you the smallest possible window range for inbounds.
 
+There is plenty of options for mozregression. See
+
+    mozregression -h
+
+To list them all. Have a look at the
+[usage]({{ "/usage.html" | prepend: site.baseurl }})
+section to learn more!

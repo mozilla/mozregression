@@ -421,6 +421,9 @@ class InboundBuildData(MozBuildData):
     def _is_valid_build(self, build_info):
         valid = MozBuildData._is_valid_build(self, build_info)
         if valid:
+            if not self._is_valid_txt_build_info(build_info,
+                                                 build_info['build_txt_url']):
+                return False
             # check that revision is in range
             remote_revision = build_info['changeset']
             for revision in self.raw_revisions:

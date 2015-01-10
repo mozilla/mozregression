@@ -197,11 +197,53 @@ class TestNightlyBuildData(unittest.TestCase):
                 'build_url': url,
             }
         find_build_info.side_effect = my_find_build_info
+
+        def my_find_build_info_txt(url):
+            return {
+                'changeset': '1',
+                'repository': 'my'
+            }
+        find_build_info_txt.side_effect = my_find_build_info_txt
         result = self.build_data._get_valid_build_for_date(datetime.date(2014, 11, 15))
         # we must have found the last build url valid
         self.assertEqual(result, {
             'build_txt_url': get_urls.return_value[-1],
             'build_url': get_urls.return_value[-1],
+            'changeset': '1',
+            'repository': 'my'
+        })
+
+    @patch('mozregression.build_data.BuildFolderInfoFetcher.find_build_info_txt')
+    @patch('mozregression.build_data.BuildFolderInfoFetcher.find_build_info')
+    @patch('mozregression.build_data.NightlyUrlBuilder.get_urls')
+    def test_get_valid_build_for_date_when_txt_content_is_invalid(self, get_urls, find_build_info, find_build_info_txt):
+        get_urls.return_value = [
+            'http://ftp.mozilla.org/pub/mozilla.org/bar/nightly/2014/11/2014-11-15-08-02-05-mozilla-central/',
+            'http://ftp.mozilla.org/pub/mozilla.org/bar/nightly/2014/11/2014-11-15-04-02-05-mozilla-central/',
+        ]
+
+        def my_find_build_info(url):
+            # every build url seems valid
+            return { 'build_txt_url': url, 'build_url': url }
+        find_build_info.side_effect = my_find_build_info
+
+        def my_find_build_info_txt(url):
+            # the first txt info file is not in fact (we can not extract info from this)
+            if url == get_urls.return_value[0]:
+                return {}
+            return {
+                'changeset': '1',
+                'repository': 'my'
+            }
+        find_build_info_txt.side_effect = my_find_build_info_txt
+
+        result = self.build_data._get_valid_build_for_date(datetime.date(2014, 11, 15))
+        # we must have found the second build url valid
+        self.assertEqual(result, {
+            'build_txt_url': get_urls.return_value[1],
+            'build_url': get_urls.return_value[1],
+            'changeset': '1',
+            'repository': 'my'
         })
 
     @patch('mozregression.build_data.NightlyUrlBuilder.get_urls')

@@ -277,6 +277,15 @@ class MozBuildData(BuildData):
         """
         return 'build_url' in build_info and 'build_txt_url' in build_info
 
+    def _is_valid_txt_build_info(self, txt_info, txt_url):
+        """
+        Ensure that reading a txt build info gave us enough data.
+        """
+        valid = 'changeset' in txt_info and 'repository' in txt_info
+        if not valid:
+            self._logger.error('Unable to get info from `%s`!' % txt_url)
+        return valid
+
     def _create_fetch_task(self, executor, i):
         return executor.submit(self._get_valid_build, i)
 
@@ -412,6 +421,9 @@ class InboundBuildData(MozBuildData):
     def _is_valid_build(self, build_info):
         valid = MozBuildData._is_valid_build(self, build_info)
         if valid:
+            if not self._is_valid_txt_build_info(build_info,
+                                                 build_info['build_txt_url']):
+                return False
             # check that revision is in range
             remote_revision = build_info['changeset']
             for revision in self.raw_revisions:
@@ -501,11 +513,15 @@ class NightlyBuildData(MozBuildData):
                     infos = future.result()
                     if infos and self._is_valid_build(infos):
                         valid_builds.append((i, infos))
-                if valid_builds:
-                    valid_builds = sorted(valid_builds, key=lambda b: b[0])
+                valid_builds = sorted(valid_builds, key=lambda b: b[0])
+                while valid_builds:
                     build_infos = valid_builds[0][1]
                     txt_url = build_infos['build_txt_url']
                     txt_infos = self.info_fetcher.find_build_info_txt(txt_url)
+                    # check that we have enough information
+                    if not self._is_valid_txt_build_info(txt_infos, txt_url):
+                        valid_builds.pop(0)
+                        continue
                     build_infos.update(txt_infos)
                     return build_infos
             build_urls = build_urls[max_workers:]

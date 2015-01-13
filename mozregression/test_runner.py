@@ -28,9 +28,15 @@ class TestRunner(object):
 
     def evaluate(self, build_info):
         """
-        Evaluate a given build. Must returns a letter that indicate the
-        state of the build: 'g', 'b', 's', 'r' or 'e' that indicates
-        respectively 'good', 'bad', 'skip', 'retry' or 'exit'.
+        Evaluate a given build. Must returns a tuple of (verdict, app_info).
+
+        The verdict must be a letter that indicate the state of the build:
+        'g', 'b', 's', 'r' or 'e' respectively for 'good', 'bad', 'skip',
+        'retry' or 'exit'.
+
+        The app_info is the return value of the
+        :meth:`mozregression.launchers.Launcher.get_app_info` for this
+        particular build.
 
         :param build_info: is a dict containing information about the build
                            to test. It is ensured to have the following keys:
@@ -98,8 +104,7 @@ class ManualTestRunner(TestRunner):
     def evaluate(self, build_info):
         launcher = self.create_launcher(build_info)
         launcher.start(**self.launcher_kwargs)
-        # keep this because it prints build info
-        launcher.get_app_info()
+        app_infos = launcher.get_app_info()
         verdict = self.get_verdict(build_info)
         launcher.stop()
-        return verdict
+        return verdict, app_infos

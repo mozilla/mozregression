@@ -149,6 +149,15 @@ class TestBuildFolderInfoFetcher(unittest.TestCase):
         }
         self.assertEqual(self.info_fetcher.find_build_info_txt('http://foo.txt'), expected)
 
+    @patch('requests.get')
+    def test_find_build_info_txt_old_format(self, get):
+        response = Mock(text="20110126030333 e0fc18b3bc41\n")
+        get.return_value = response
+        expected = {
+            'changeset': 'e0fc18b3bc41',
+        }
+        self.assertEqual(self.info_fetcher.find_build_info_txt('http://foo.txt'), expected)
+
 class TestNightlyUrlBuilder(unittest.TestCase):
     def setUp(self):
         fetch_config = fetch_configs.create_config('firefox', 'linux', 64)

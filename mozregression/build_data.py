@@ -473,6 +473,11 @@ class NightlyBuildData(MozBuildData):
         self.url_builder = url_builder
         self.fetch_config = fetch_config
 
+    def _is_valid_build(self, build_info):
+        # old nightly have no build txt info file, or the format is different
+        # and incomplete - just check for the package file.
+        return 'build_url' in build_info
+
     def _get_valid_build(self, i):
         return self._get_valid_build_for_date(self.get_associated_data(i))
 
@@ -504,9 +509,10 @@ class NightlyBuildData(MozBuildData):
                 if valid_builds:
                     valid_builds = sorted(valid_builds, key=lambda b: b[0])
                     build_infos = valid_builds[0][1]
-                    txt_url = build_infos['build_txt_url']
-                    txt_infos = self.info_fetcher.find_build_info_txt(txt_url)
-                    build_infos.update(txt_infos)
+                    if 'build_txt_url' in build_infos:
+                        txt_url = build_infos['build_txt_url']
+                        txt_infos = self.info_fetcher.find_build_info_txt(txt_url)
+                        build_infos.update(txt_infos)
                     return build_infos
             build_urls = build_urls[max_workers:]
         return False

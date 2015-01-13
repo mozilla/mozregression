@@ -67,4 +67,4 @@ class TestManualTestRunner(unittest.TestCase):
         launcher.start.assert_called_with()
         get_verdict.assert_called_with(build_infos)
         launcher.stop.assert_called_with()
-        self.assertEqual(result, 'g')
+        self.assertEqual(result[0], 'g')

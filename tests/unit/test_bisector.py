@@ -112,6 +112,40 @@ class TestNightlyHandler(unittest.TestCase):
         self.assertEqual('Newest known good nightly: 2014-11-10', log[0])
         self.assertEqual('Oldest known bad nightly: 2014-11-20', log[1])
 
+    def test_print_range_without_repo(self):
+        log = []
+        self.handler._logger = Mock(info=log.append, error=log.append)
+        self.handler.good_date = datetime.date(2014, 11, 10)
+        self.handler.bad_date = datetime.date(2014, 11, 20)
+        self.handler.print_range()
+        self.assertIn("no pushlog url available", log[0])
+        self.assertEqual('Newest known good nightly: 2014-11-10', log[1])
+        self.assertEqual('Oldest known bad nightly: 2014-11-20', log[2])
+
+    def test_print_range_rev_availables(self):
+        self.handler.found_repo = 'https://hg.mozilla.repo'
+        self.handler.good_revision = '2'
+        self.handler.bad_revision = '6'
+        log = []
+        self.handler._logger = Mock(info=log.append)
+
+        self.handler.print_range()
+        self.assertEqual(log[0], "Last good revision: 2")
+        self.assertEqual(log[1], "First bad revision: 6")
+        self.assertIn(self.handler.get_pushlog_url(), log[2])
+
+    def test_print_range_no_rev_availables(self):
+        self.handler.found_repo = 'https://hg.mozilla.repo'
+        self.handler.good_date = datetime.date(2014, 11, 10)
+        self.handler.bad_date = datetime.date(2014, 11, 20)
+        log = []
+        self.handler._logger = Mock(info=log.append)
+
+        self.handler.print_range()
+        self.assertEqual('Newest known good nightly: 2014-11-10', log[0])
+        self.assertEqual('Oldest known bad nightly: 2014-11-20', log[1])
+        self.assertIn("pushloghtml?startdate=2014-11-10&enddate=2014-11-20", log[2])
+
 class TestInboundHandler(unittest.TestCase):
     def setUp(self):
         self.handler = InboundHandler()
@@ -152,6 +186,14 @@ class TestInboundHandler(unittest.TestCase):
 
 class MyBuildData(list):
     ensure_limits_called = False
+    def __init__(self, data=()):
+        # init with a dict for value, as we assume that build_info is a dict
+        # Just override setdefault to not use it here
+        class MyDict(dict):
+            def setdefault(self, key, value):
+                pass
+        list.__init__(self, [MyDict({v:v}) for v in data])
+
     def mid_point(self):
         if len(self) < 3:
             return 0
@@ -161,7 +203,7 @@ class MyBuildData(list):
         self.ensure_limits_called = True
 
     def __getslice__(self, smin, smax):
-        return MyBuildData(list.__getslice__(self, smin, smax))
+        return MyBuildData([k.values()[0] for k in list.__getslice__(self, smin, smax)])
 
 class TestBisector(unittest.TestCase):
     def setUp(self):
@@ -190,7 +232,10 @@ class TestBisector(unittest.TestCase):
     def do__bisect(self, build_data, verdicts):
         iter_verdict = iter(verdicts)
         def evaluate(build_info):
-            return iter_verdict.next()
+            return iter_verdict.next(), {
+                'application_changeset': 'unused',
+                'application_repository': 'unused'
+            }
         self.test_runner.evaluate = Mock(side_effect=evaluate)
         result = self.bisector._bisect(self.handler, build_data)
         return {

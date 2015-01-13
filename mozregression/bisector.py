@@ -68,10 +68,16 @@ class BisectorHandler(object):
 
         This will only be called if there is some build data.
         """
-        self.found_repo = self.build_data[0]['repository']
+        # these values could be missing for old inbound builds
+        # until we tried the builds
+        repo = self.build_data[-1].get('repository')
+        if repo is not None:
+            # do not update repo if we can' find it now
+            # else we may override a previously defined one
+            self.found_repo = repo
         self.good_revision, self.bad_revision = \
-            self._reverse_if_find_fix(self.build_data[0]['changeset'],
-                                      self.build_data[-1]['changeset'])
+            self._reverse_if_find_fix(self.build_data[0].get('changeset'),
+                                      self.build_data[-1].get('changeset'))
 
     def get_pushlog_url(self):
         first_rev, last_rev = self._reverse_if_find_fix(self.good_revision,
@@ -155,12 +161,46 @@ class NightlyHandler(BisectorHandler):
                              next_days_range,
                              compute_steps_left(next_days_range)))
 
-    def user_exit(self, mid):
+    def _print_date_range(self):
         words = self._reverse_if_find_fix('Newest', 'Oldest')
         self._logger.info('%s known good nightly: %s' % (words[0],
                                                          self.good_date))
         self._logger.info('%s known bad nightly: %s' % (words[1],
                                                         self.bad_date))
+
+    def user_exit(self, mid):
+        self._print_date_range()
+
+    def are_revisions_available(self):
+        return self.good_revision is not None and self.bad_revision is not None
+
+    def print_range(self):
+        if self.found_repo is None:
+            # this may happen if we are bisecting old builds without
+            # enough tests of the builds.
+            self._logger.error("Sorry, but mozregression was unable to get"
+                               " a repository - no pushlog url available.")
+            # still we can print date range
+            self._print_date_range()
+        elif self.are_revisions_available():
+            BisectorHandler.print_range(self)
+        else:
+            self._print_date_range()
+            self._logger.info("Pushlog:\n%s\n" % self.get_pushlog_url())
+
+    def get_pushlog_url(self):
+        assert self.found_repo
+        if self.are_revisions_available():
+            return BisectorHandler.get_pushlog_url(self)
+        else:
+            # this must never happen, as we must have changesets
+            # if we have the repo. But let's be paranoid, and this is a good
+            # fallback
+            start, end = self._reverse_if_find_fix(self.good_date,
+                                                   self.bad_date)
+            return ("%s/pushloghtml?startdate=%s&enddate=%s\n"
+                    % (self.found_repo, start, end))
+            
 
 class InboundHandler(BisectorHandler):
     build_data_class = InboundBuildData
@@ -226,7 +266,16 @@ class Bisector(object):
                 return self.FINISHED
 
             build_infos = handler.build_infos(mid)
-            verdict = self.test_runner.evaluate(build_infos)
+            verdict, app_info = self.test_runner.evaluate(build_infos)
+
+            # update build_info in build_data if possible
+            # this is required as some old builds do not have information
+            # on the server
+            build_info = build_data[mid]
+            build_info.setdefault('changeset',
+                                  app_info.get('application_changeset'))
+            build_info.setdefault('repository',
+                                  app_info.get('application_repository'))
 
             if verdict == 'g':
                 # if build is good and we are looking for a regression, we
@@ -287,22 +336,34 @@ class BisectRunner(object):
                                   " sure no inbound revision is missed)")
                 infos = {}
                 days = 6
+                too_many_attempts = False
                 first_date = min(handler.good_date, handler.bad_date)
                 while not 'changeset' in infos:
                     days += 1
+                    if days >= 10:
+                        too_many_attempts = True
+                        break
                     prev_date = first_date - datetime.timedelta(days=days)
                     infos = handler.build_data.get_build_infos_for_date(prev_date)
-                if days > 7:
+                if days > 7 and not too_many_attempts:
                     self._logger.info("At least one build folder was"
                                       " invalid, we have to start from"
                                       " %d days ago." % days)
 
                 if not handler.find_fix:
-                    good_rev = infos['changeset']
+                    good_rev = infos.get('changeset')
                     bad_rev = handler.bad_revision
                 else:
                     good_rev = handler.good_revision
-                    bad_rev = infos['changeset']
+                    bad_rev = infos.get('changeset')
+                if bad_rev is None or good_rev is None:
+                    # old nightly builds do not have the changeset information
+                    # so we can't go on inbound. Anyway, these are probably too
+                    # old and won't even exists on inbound.
+                    self._logger.warning("Not enough changeset information to"
+                                         " produce initial inbound regression"
+                                         " range. Builds are probably too old.")
+                    return 1
                 return self.bisect_inbound(good_rev, bad_rev)
             else:
                 message = ("Can not bissect inbound for application `%s`"

@@ -78,8 +78,7 @@ class Launcher(object):
         """
         Return information about the application.
         """
-        if self._running:
-            return self._get_app_info()
+        raise NotImplementedError
 
     def __del__(self):
         self.stop()
@@ -87,9 +86,6 @@ class Launcher(object):
     def _download(self, url, dest):
         self._logger.info("Downloading build from: %s" % url)
         download_url(url, dest)
-
-    def _get_app_info(self):
-        raise NotImplementedError
 
     def _install(self, dest):
         raise NotImplementedError
@@ -140,7 +136,7 @@ class MozRunnerLauncher(Launcher):
             if self.tempdir is not None:
                 rmtree(self.tempdir)
 
-    def _get_app_info(self):
+    def get_app_info(self):
         return mozversion.get_version(binary=self.binary)
 
 
@@ -205,5 +201,5 @@ class FennecLauncher(Launcher):
     def _stop(self):
         self.adb.stop_application("org.mozilla.fennec")
 
-    def _get_app_info(self):
+    def get_app_info(self):
         return self.app_info

@@ -15,6 +15,7 @@
     letter-spacing: -1px;
     margin-bottom: 0;
     float: left;
+    text-shadow: -1px 0 black, 0 2px black, 2px 0 black, 0 -1px black;
 }
 
 .site-title a {
@@ -104,3 +105,11 @@
     }
 }
 
+h2 {
+    background-color: #9e2812;
+    background-image: linear-gradient(to bottom, #9e2812 0%, #6f0d0d 100%);
+    border-radius: 5px;
+    padding: 0 7px;
+    display: inline-block;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5);
+}

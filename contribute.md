@@ -2,6 +2,7 @@
 layout: default
 title: Contribute
 order: 40
+main_link: True
 ---
 
 # Contribute to mozregression

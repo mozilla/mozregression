@@ -2,6 +2,7 @@
 layout: default
 title: Quick start
 order: 10
+main_link: True
 ---
 
 # Quick start
@@ -37,5 +38,5 @@ There is plenty of options for mozregression. See
     mozregression -h
 
 To list them all. Have a look at the
-[usage]({{ "/usage.html" | prepend: site.baseurl }})
+[documentation]({{ "/documentation/" | prepend: site.baseurl }})
 section to learn more!

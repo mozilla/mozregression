@@ -2,6 +2,7 @@
 layout: default
 title: Home
 order: 0
+main_link: True
 ---
 
 # About mozregression

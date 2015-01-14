@@ -2,6 +2,7 @@
 layout: default
 title: Install
 order: 30
+main_link: True
 ---
 
 # Install or upgrade

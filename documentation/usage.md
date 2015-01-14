@@ -34,7 +34,15 @@ Some useful command line usage.
 
 ## Bisecting options
 
-- Bisecting from specific nightly project branch
+- Bisecting nightlies
+
+       mozregression  --good 2014-12-25 --bad 2015-01-07
+
+- Bisecting nightlies given firefox releases number
+
+       mozregression --good-release 33 --bad-release 34
+
+- Bisecting from a specific nightly project branch
 
        mozregression  --repo mozilla-aurora
 
@@ -63,3 +71,17 @@ Some useful command line usage.
 - Useful to understand what happens under the hood
 
        mozregression --log-mach-level debug
+
+## Miscellaneous
+
+- List all command line options
+
+       mozregression --help
+
+- Show the current version
+
+       mozregression --version
+
+- List firefox releases numbers
+
+       mozregression --list-releases

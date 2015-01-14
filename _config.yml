@@ -1,6 +1,7 @@
 # Site settings
 title: mozregression
 sub_title: regression range finder for Mozilla nightly and inbound builds
+github_url: https://github.com/mozilla/mozregression
 # description of the web site
 # It will appear in your document head meta (for Google search results)
 description: regression range finder for Mozilla nightly and inbound builds

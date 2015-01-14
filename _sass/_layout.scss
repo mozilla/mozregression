@@ -118,3 +118,9 @@ h2 {
     float: right;
     display: block;
 }
+
+@include media-query($on-palm) {
+    .hide-on-palm {
+        display: none;
+    }
+}

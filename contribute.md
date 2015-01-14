@@ -11,3 +11,5 @@ We welcome contributions to mozregression!
 
 See the [mozregression project page](https://wiki.mozilla.org/Auto-tools/Projects/Mozregression)
 for more information on how to contribute.
+
+Code source is maintained on [github]({{ site.github_url }}).

@@ -2,6 +2,7 @@
 layout: documentation
 title: Usage
 order: 20
+description: Some common command line options
 ---
 
 # Usage of mozregression

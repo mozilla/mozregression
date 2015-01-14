@@ -18,9 +18,10 @@
 
       <div class="trigger">
         {% assign pages = site.pages | sort:"order"  %}
-        {% for page in pages %}
-          {% if page.title %}
-          <a class="page-link" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl }}">{{ page.title }}</a>
+        {% for node in pages %}
+          {% if node.title %}
+          <a class="page-link{% if page.url == node.url %} current{% endif %}"
+             href="{{ node.url | replace:'index.html','' | prepend: site.baseurl }}">{{ node.title }}</a>
           {% endif %}
         {% endfor %}
       </div>

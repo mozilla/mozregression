@@ -1,7 +1,7 @@
 ---
 layout: documentation
 title: Usage
-order: 20
+doc_order: 0
 description: Some common command line options
 ---
 
@@ -54,6 +54,9 @@ Some useful command line usage.
 
         mozregression --find-fix
 
+- Automate mozregression run (see [Automatic bisection]({{"/documentation/automatic-bisection.html" | prepend: site.baseurl}}))
+
+       mozregression --command 'test-command {binary}'
 
 ## Network persistence
 

@@ -14,10 +14,9 @@ used by Mozilla developers and other community members to help find regressions.
 
 Currently, mozregression can works with:
 
-- **firefox** (the default)
-- **thunderbird**
-- **fennec**
-- **B2G**
+{% comment %}I am not able to write it with line breaks and keep good list formatting{% endcomment %}
+{% for app in site.data.mozregression_supported_apps %}{% assign first = site.data.mozregression_supported_apps | first %}
+- **{{app.name}}**{% if app == first %} (default){% endif %}{% endfor %}
 
 To get a feel for how mozregression works, you can see the (pretty old but still
 useful) video on

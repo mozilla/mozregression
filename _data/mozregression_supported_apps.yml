@@ -1,0 +1,9 @@
+# first value is the default for mozregression
+
+- name: firefox
+
+- name: thunderbird
+
+- name: fennec
+
+- name: B2G

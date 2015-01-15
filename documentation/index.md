@@ -9,7 +9,8 @@ main_link: True
 
 Here you can find some help to use **mozregression**.
 
-{% for node in site.pages %}
+{% assign pages = site.pages | sort:"doc_order"  %}
+{% for node in pages %}
 {% if node.layout == 'documentation' and node.url != '/documentation/index.html' %}
 - <a href="{{node.url | prepend: site.baseurl}}">{{ node.title }}</a>{% if node.description %} -- {{ node.description }}{% endif %}
 {% endif %}

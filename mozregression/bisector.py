@@ -9,7 +9,6 @@ import sys
 import datetime
 from mozlog.structured import get_default_logger
 
-from mozregression.test_runner import ManualTestRunner
 from mozregression.build_data import NightlyBuildData, InboundBuildData
 
 
@@ -310,17 +309,9 @@ class Bisector(object):
                 return self.USER_EXIT
 
 class BisectRunner(object):
-    def __init__(self, fetch_config, options):
+    def __init__(self, fetch_config, test_runner, options):
         self.fetch_config = fetch_config
         self.options = options
-        launcher_kwargs = dict(
-            addons=options.addons,
-            profile=options.profile,
-            cmdargs=options.cmdargs,
-        )
-        test_runner = ManualTestRunner(fetch_config,
-                                       persist=options.persist,
-                                       launcher_kwargs=launcher_kwargs)
         self.bisector = Bisector(fetch_config, test_runner)
         self._logger = get_default_logger('Bisector')
 

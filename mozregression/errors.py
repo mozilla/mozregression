@@ -52,3 +52,9 @@ class LauncherNotRunnable(MozRegressionError):
     Raised when a :class:`mozregression.launchers.Launcher` can not be
     run on the system.
     """
+
+
+class TestCommandError(MozRegressionError):
+    """
+    Raised on a user test command error.
+    """

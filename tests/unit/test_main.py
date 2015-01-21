@@ -21,7 +21,7 @@ class TestMainCli(unittest.TestCase):
     @patch('mozregression.main.BisectRunner')
     def do_cli(self, argv, BisectRunner, get_cache, set_http_cache_session,
                setup_logging):
-        def create_runner(fetch_config, options):
+        def create_runner(fetch_config, test_runner, options):
             self.runner.fetch_config = fetch_config
             self.runner.options = options
             return self.runner

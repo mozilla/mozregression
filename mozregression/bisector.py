@@ -413,11 +413,17 @@ class BisectRunner(object):
         if options.find_fix:
             info += ' --find-fix'
         if len(options.addons) > 0:
-            info += ' --addons=%s' % ",".join(options.addons)
+            info += ' ' + ' '.join('--addon=%s' % addon
+                                   for addon in options.addons)
+        if options.cmdargs is not None:
+            info += ' ' + ' '.join('--arg=%s' % arg
+                                   for arg in options.cmdargs)
         if options.profile is not None:
             info += ' --profile=%s' % options.profile
         if options.inbound_branch is not None:
             info += ' --inbound-branch=%s' % options.inbound_branch
+        if options.repo is not None:
+            info += ' --repo=%s' % options.repo
         info += ' --bits=%s' % options.bits
         if options.persist is not None:
             info += ' --persist=%s' % options.persist

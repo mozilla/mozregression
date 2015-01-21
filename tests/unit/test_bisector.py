@@ -9,7 +9,9 @@ from mock import patch, Mock, call, MagicMock
 import datetime
 
 from mozregression.bisector import (BisectorHandler, NightlyHandler,
-                                    InboundHandler, Bisector)
+                                    InboundHandler, Bisector,
+                                    BisectRunner)
+from mozregression.main import parse_args
 
 class TestBisectorHandler(unittest.TestCase):
     def setUp(self):
@@ -336,6 +338,78 @@ class TestBisector(unittest.TestCase):
         build_data_class.assert_called_with(self.bisector.fetch_config,
                                             'b', 'g', s=1)
         _bisect.assert_called_with(self.handler, build_data)
+
+class TestBisectRunner(unittest.TestCase):
+    @patch('mozregression.bisector.get_default_logger')
+    def setUp(self, get_default_logger):
+        self.fetch_config = Mock()
+        self.test_runner = Mock()
+        self.logger = Mock()
+        self.logs = []
+        get_default_logger.return_value = Mock(info=self.logs.append)
+        self.brunner = BisectRunner(self.fetch_config, self.test_runner, parse_args([]))
+
+    def test_create(self):
+        self.assertIsInstance(self.brunner.bisector, Bisector)
+
+    def print_resume_info(self, handler_klass, **kwargs):
+        # print_resume_info require some handlers attribute
+        handler = handler_klass()
+        if isinstance(handler, NightlyHandler):
+            handler.good_date = datetime.date(2015, 1, 1)
+            handler.bad_date = datetime.date(2015, 1, 11)
+        else:
+            handler.good_revision = '123'
+            handler.bad_revision = '456'
+
+        for k, v in kwargs.iteritems():
+            setattr(self.brunner.options, k, v)
+        self.brunner.print_resume_info(handler)
+        return self.logs[-1]
+
+    def test_print_resume_infos_nightly(self):
+        result = self.print_resume_info(NightlyHandler, bits=64)
+        self.assertIn('--bits=64', result)
+        self.assertIn('--good=2015-01-01', result)
+        self.assertIn('--bad=2015-01-11', result)
+        self.assertNotIn('--inbound', result)
+
+        self.assertNotIn('--find-fix', result)
+        result = self.print_resume_info(NightlyHandler, find_fix=True)
+        self.assertIn('--find-fix', result)
+
+        self.assertNotIn('--addon', result)
+        result = self.print_resume_info(NightlyHandler, addons=['1', '2'])
+        self.assertIn('--addon=1 --addon=2', result)
+
+        self.assertNotIn('--profile', result)
+        result = self.print_resume_info(NightlyHandler, profile='profile')
+        self.assertIn('--profile=profile', result)
+
+        self.assertNotIn('--inbound-branch', result)
+        result = self.print_resume_info(NightlyHandler, inbound_branch='i')
+        self.assertIn('--inbound-branch=i', result)
+
+        self.assertNotIn('--repo', result)
+        result = self.print_resume_info(NightlyHandler, repo='r')
+        self.assertIn('--repo=r', result)
+
+        self.assertNotIn('--persist', result)
+        result = self.print_resume_info(NightlyHandler, persist='/tmp')
+        self.assertIn('--persist=/tmp', result)
+
+        self.assertNotIn('--arg', result)
+        result = self.print_resume_info(NightlyHandler, cmdargs=['1', '2'])
+        self.assertIn('--arg=1 --arg=2', result)
+
+    def test_print_resume_infos_inbound(self):
+        result = self.print_resume_info(InboundHandler, bits=32, app='b2g')
+        self.assertIn('--bits=32', result)
+        self.assertIn('--app=b2g', result)
+        self.assertIn('--good-rev=123', result)
+        self.assertIn('--bad-rev=456', result)
+        self.assertIn('--inbound', result)
+
 
 if __name__ == '__main__':
     unittest.main()

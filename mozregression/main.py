@@ -161,7 +161,7 @@ def cli(argv=None):
     cache_session = limitedfilecache.get_cache(
         options.http_cache_dir, limitedfilecache.ONE_GIGABYTE,
         logger=get_default_logger('Limited File Cache'))
-    set_http_cache_session(cache_session)
+    set_http_cache_session(cache_session, get_defaults={"timeout": 10.0})
 
     fetch_config = create_config(options.app, mozinfo.os, options.bits)
 

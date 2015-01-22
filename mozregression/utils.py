@@ -60,12 +60,28 @@ class ClassRegistry(object):
 CACHE_SESSION = None
 
 
-def set_http_cache_session(a_cache_session):
+def set_http_cache_session(cache_session, get_defaults=None):
     """
     Define a cache http session.
+
+    :param cache_session: a customized request session (possibly using
+        CacheControl) or None to use a simple request session.
+    :param: get_defaults: if defined, it must be a dict that will provide
+        default values for calls to cache_session.get.
     """
     global CACHE_SESSION
-    CACHE_SESSION = a_cache_session
+    if get_defaults:
+        if cache_session is None:
+            cache_session = requests.Session()
+        # monkey patch to set default values to a session.get calls
+        # I don't see other ways to do this globally for timeout for example
+        _get = cache_session.get
+        def _default_get(*args, **kwargs):
+            for k, v in get_defaults.iteritems():
+                kwargs.setdefault(k, v)
+            return _get(*args, **kwargs)
+        cache_session.get = _default_get
+    CACHE_SESSION = cache_session
 
 
 def get_http_session():

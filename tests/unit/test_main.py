@@ -122,3 +122,7 @@ class TestMainCli(unittest.TestCase):
     def test_bisect_nightlies_with_find_fix_proposal(self):
         exitcode = self.do_cli(['--bad=2015-01-06', '--good=2015-01-21'])
         self.assertIn('--find-fix flag', exitcode)
+
+    def test_bisect_nightlies_with_find_fix_bad_usage(self):
+        exitcode = self.do_cli(['--good=2015-01-06', '--bad=2015-01-21', '--find-fix'])
+        self.assertIn('not use the --find-fix flag', exitcode)

@@ -196,6 +196,10 @@ def bisect_nightlies(runner, logger):
         raise MozRegressionError(("Good date %s is later than bad date %s."
                                   " Maybe you wanted to use the --find-fix"
                                   " flag ?") % (good_date, bad_date))
+    elif good_date < bad_date and options.find_fix:
+        raise MozRegressionError(("Bad date %s is later than good date %s."
+                                  " You should not use the --find-fix flag"
+                                  " in this case...") % (bad_date, good_date))
 
     return runner.bisect_nightlies(good_date, bad_date)
 

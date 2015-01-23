@@ -118,3 +118,7 @@ class TestMainCli(unittest.TestCase):
         # other exceptions are just thrown as usual, so we have complete stacktrace
         self.runner.bisect_nightlies.side_effect = NameError
         self.assertRaises(NameError, self.do_cli, [])
+
+    def test_bisect_nightlies_with_find_fix_proposal(self):
+        exitcode = self.do_cli(['--bad=2015-01-06', '--good=2015-01-21'])
+        self.assertIn('--find-fix flag', exitcode)

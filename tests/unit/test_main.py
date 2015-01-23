@@ -8,8 +8,8 @@ import unittest
 from mock import patch, Mock
 import datetime
 
-from mozregression import main
-from mozregression import errors
+from mozregression import main, utils, errors
+from mozregression.test_runner import CommandTestRunner
 
 class TestMainCli(unittest.TestCase):
     def setUp(self):
@@ -23,6 +23,7 @@ class TestMainCli(unittest.TestCase):
                setup_logging):
         def create_runner(fetch_config, test_runner, options):
             self.runner.fetch_config = fetch_config
+            self.runner.test_runner = test_runner
             self.runner.options = options
             return self.runner
         BisectRunner.side_effect = create_runner
@@ -126,3 +127,18 @@ class TestMainCli(unittest.TestCase):
     def test_bisect_nightlies_with_find_fix_bad_usage(self):
         exitcode = self.do_cli(['--good=2015-01-06', '--bad=2015-01-21', '--find-fix'])
         self.assertIn('not use the --find-fix flag', exitcode)
+
+    def test_commad_make_use_of_commandtestrunner(self):
+        exitcode = self.do_cli(['--command=my command'])
+        self.assertIsInstance(self.runner.test_runner, CommandTestRunner)
+
+    def test_releases_to_dates(self):
+        releases = sorted(utils.releases().items(), key=lambda v: v[0])
+        good = releases[0]
+        bad = releases[-1]
+        self.do_cli(['--good-release=%s' % good[0], '--bad-release=%s' % bad[0]])
+        self.runner.bisect_nightlies.assert_called_with(utils.parse_date(good[1]),
+                                                        utils.parse_date(bad[1]))
+
+if __name__ == '__main__':
+    unittest.main()

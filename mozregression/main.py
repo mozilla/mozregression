@@ -14,7 +14,7 @@ import sys
 from argparse import ArgumentParser
 from mozlog.structured import commandline, get_default_logger
 
-from mozregression import errors
+from mozregression.errors import MozRegressionError
 from mozregression import limitedfilecache
 from mozregression import __version__
 from mozregression.utils import (parse_date, date_of_release,
@@ -148,12 +148,66 @@ def parse_args(argv=None):
     return options
 
 
+def bisect_inbound(runner, logger):
+    fetch_config = runner.fetch_config
+    options = runner.options
+    if not fetch_config.is_inbound():
+        raise MozRegressionError('Unable to bissect inbound for `%s`'
+                                 % fetch_config.app_name)
+    if not options.last_good_revision or not options.first_bad_revision:
+        raise MozRegressionError("If bisecting inbound, both --good-rev"
+                                 " and --bad-rev must be set")
+    return runner.bisect_inbound(options.last_good_revision,
+                                 options.first_bad_revision)
+
+def bisect_nightlies(runner, logger):
+    default_bad_date = str(datetime.date.today())
+    default_good_date = "2009-01-01"
+    fetch_config = runner.fetch_config
+    options = runner.options
+    # TODO: currently every fetch_config is nightly aware. Shoud we test
+    # for this to be sure here ?
+    fetch_config.set_nightly_repo(options.repo)
+    if not options.bad_release and not options.bad_date:
+        options.bad_date = default_bad_date
+        logger.info("No 'bad' date specified, using %s" % options.bad_date)
+    elif options.bad_release and options.bad_date:
+        raise MozRegressionError("Options '--bad_release' and '--bad_date'"
+                                 " are incompatible.")
+    elif options.bad_release:
+        options.bad_date = date_of_release(options.bad_release)
+        if options.bad_date is None:
+            raise MozRegressionError(("Unable to find a matching date for"
+                                      " release %s\n%s")
+                                     % (options.bad_release,
+                                        formatted_valid_release_dates()))
+        logger.info("Using 'bad' date %s for release %s"
+                    % (options.bad_date, options.bad_release))
+    if not options.good_release and not options.good_date:
+        options.good_date = default_good_date
+        logger.info("No 'good' date specified, using %s"
+                    % options.good_date)
+    elif options.good_release and options.good_date:
+        raise MozRegressionError("Options '--good_release' and '--good_date'"
+                                 " are incompatible.")
+    elif options.good_release:
+        options.good_date = date_of_release(options.good_release)
+        if options.good_date is None:
+            raise MozRegressionError(("Unable to find a matching date for"
+                                      " release %s\n%s")
+                                     % (options.bad_release,
+                                        formatted_valid_release_dates()))
+        logger.info("Using 'good' date %s for release %s"
+                    % (options.good_date, options.good_release))
+
+    return runner.bisect_nightlies(parse_date(options.good_date),
+                                   parse_date(options.bad_date))
+
+
 def cli(argv=None):
     """
     main entry point of mozregression command line.
     """
-    default_bad_date = str(datetime.date.today())
-    default_good_date = "2009-01-01"
     options = parse_args(argv)
     logger = commandline.setup_logging("mozregression",
                                        options,
@@ -192,58 +246,17 @@ def cli(argv=None):
         fetch_config.set_inbound_branch(options.inbound_branch)
 
     if options.inbound:
-        if not fetch_config.is_inbound():
-            sys.exit('Unable to bissect inbound for `%s`'
-                     % fetch_config.app_name)
-        if not options.last_good_revision or not options.first_bad_revision:
-            sys.exit("If bisecting inbound, both --good-rev and --bad-rev"
-                     " must be set")
-        app = lambda: runner.bisect_inbound(options.last_good_revision,
-                                            options.first_bad_revision)
+        bisect = bisect_inbound
     else:
-        # TODO: currently every fetch_config is nightly aware. Shoud we test
-        # for this to be sure here ?
-        fetch_config.set_nightly_repo(options.repo)
-        if not options.bad_release and not options.bad_date:
-            options.bad_date = default_bad_date
-            logger.info("No 'bad' date specified, using %s" % options.bad_date)
-        elif options.bad_release and options.bad_date:
-            sys.exit("Options '--bad_release' and '--bad_date' are"
-                     " incompatible.")
-        elif options.bad_release:
-            options.bad_date = date_of_release(options.bad_release)
-            if options.bad_date is None:
-                sys.exit("Unable to find a matching date for release "
-                         + str(options.bad_release)
-                         + "\n" + formatted_valid_release_dates())
-            logger.info("Using 'bad' date %s for release %s"
-                        % (options.bad_date, options.bad_release))
-        if not options.good_release and not options.good_date:
-            options.good_date = default_good_date
-            logger.info("No 'good' date specified, using %s"
-                        % options.good_date)
-        elif options.good_release and options.good_date:
-            sys.exit("Options '--good_release' and '--good_date'"
-                     " are incompatible.")
-        elif options.good_release:
-            options.good_date = date_of_release(options.good_release)
-            if options.good_date is None:
-                sys.exit("Unable to find a matching date for release "
-                         + str(options.good_release)
-                         + "\n" + formatted_valid_release_dates())
-            logger.info("Using 'good' date %s for release %s"
-                        % (options.good_date, options.good_release))
-
-        app = lambda: runner.bisect_nightlies(parse_date(options.good_date),
-                                              parse_date(options.bad_date))
+        bisect = bisect_nightlies
     try:
         launcher_class = APP_REGISTRY.get(fetch_config.app_name)
         launcher_class.check_is_runnable()
 
-        sys.exit(app())
+        sys.exit(bisect(runner, logger))
     except KeyboardInterrupt:
         sys.exit("\nInterrupted.")
-    except errors.MozRegressionError as exc:
+    except MozRegressionError as exc:
         sys.exit(str(exc))
 
 

@@ -58,3 +58,12 @@ class TestCommandError(MozRegressionError):
     """
     Raised on a user test command error.
     """
+
+class UnavailableRelease(MozRegressionError):
+    """
+    Raised when firefox release is not available.
+    """
+    def __init__(self, release):
+        MozRegressionError.__init__(self,
+                                    "Unable to find a matching date for"
+                                    " release %s" % release)

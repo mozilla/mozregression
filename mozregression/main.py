@@ -14,7 +14,7 @@ import sys
 from argparse import ArgumentParser
 from mozlog.structured import commandline, get_default_logger
 
-from mozregression.errors import MozRegressionError
+from mozregression.errors import MozRegressionError, UnavailableRelease
 from mozregression import limitedfilecache
 from mozregression import __version__
 from mozregression.utils import (parse_date, date_of_release,
@@ -176,11 +176,6 @@ def bisect_nightlies(runner, logger):
                                  " are incompatible.")
     elif options.bad_release:
         options.bad_date = date_of_release(options.bad_release)
-        if options.bad_date is None:
-            raise MozRegressionError(("Unable to find a matching date for"
-                                      " release %s\n%s")
-                                     % (options.bad_release,
-                                        formatted_valid_release_dates()))
         logger.info("Using 'bad' date %s for release %s"
                     % (options.bad_date, options.bad_release))
     if not options.good_release and not options.good_date:
@@ -192,11 +187,6 @@ def bisect_nightlies(runner, logger):
                                  " are incompatible.")
     elif options.good_release:
         options.good_date = date_of_release(options.good_release)
-        if options.good_date is None:
-            raise MozRegressionError(("Unable to find a matching date for"
-                                      " release %s\n%s")
-                                     % (options.bad_release,
-                                        formatted_valid_release_dates()))
         logger.info("Using 'good' date %s for release %s"
                     % (options.good_date, options.good_release))
 
@@ -256,6 +246,8 @@ def cli(argv=None):
         sys.exit(bisect(runner, logger))
     except KeyboardInterrupt:
         sys.exit("\nInterrupted.")
+    except UnavailableRelease as exc:
+        sys.exit("%s\n%s" % (exc, formatted_valid_release_dates()))
     except MozRegressionError as exc:
         sys.exit(str(exc))
 

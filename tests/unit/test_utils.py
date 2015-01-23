@@ -173,5 +173,25 @@ class TestHTTPCache(unittest.TestCase):
         for k, v in a_session.adapters.items():
             self.assertTrue(isinstance(v.cache, limitedfilecache.LimitedFileCache))
 
+    def test_set_http_session_with_get_defaults(self):
+        original_get = Mock()
+        session = Mock(get=original_get)
+        utils.set_http_cache_session(session, get_defaults={"timeout": 10.0})
+        # default is applied
+        utils.get_http_session().get('url')
+        original_get.assert_called_with('url', timeout=10.0)
+        # this is just a default, it can be overriden
+        utils.get_http_session().get('url', timeout=5.0)
+        original_get.assert_called_with('url', timeout=5.0)
+        # you can still pass a None session
+        with patch('requests.Session') as Session:
+            Session.return_value = session
+            utils.set_http_cache_session(None, get_defaults={'timeout': 1.0})
+            # a new session has been returned
+            self.assertEquals(session, utils.get_http_session())
+            # with defaults patch too
+            utils.get_http_session().get('url')
+            original_get.assert_called_with('url', timeout=1.0)
+
 if __name__ == '__main__':
     unittest.main()

@@ -136,6 +136,11 @@ def parse_args(argv=None):
                         help=("the directory for caching http requests."
                               " If not set there will be an in-memory cache"
                               " used."))
+    parser.add_argument('--http-timeout', type=float, default=10.0,
+                        help=("Timeout in seconds to abort requests when there"
+                              " is no activity from the server. Default to"
+                              " %(default)s seconds - increase this if you"
+                              " are under a really slow network."))
 
     commandline.add_logging_group(parser)
     options = parser.parse_args(argv)
@@ -161,7 +166,8 @@ def cli(argv=None):
     cache_session = limitedfilecache.get_cache(
         options.http_cache_dir, limitedfilecache.ONE_GIGABYTE,
         logger=get_default_logger('Limited File Cache'))
-    set_http_cache_session(cache_session)
+    set_http_cache_session(cache_session,
+                           get_defaults={"timeout": options.http_timeout})
 
     fetch_config = create_config(options.app, mozinfo.os, options.bits)
 

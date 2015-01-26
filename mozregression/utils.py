@@ -253,7 +253,10 @@ def date_of_release(release):
     """
     Provide the date of a release.
     """
-    return releases().get(release)
+    try:
+        return releases()[release]
+    except KeyError:
+        raise errors.UnavailableRelease(release)
 
 
 def formatted_valid_release_dates():

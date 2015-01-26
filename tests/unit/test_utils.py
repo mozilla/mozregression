@@ -138,10 +138,10 @@ class TestRelease(unittest.TestCase):
             self.assertEquals(date, firefox_releases[version])
 
     def test_invalid_release_to_date(self):
-        date = utils.date_of_release(4)
-        self.assertEquals(date, None)
-        date = utils.date_of_release(441)
-        self.assertEquals(date, None)
+        with self.assertRaises(errors.UnavailableRelease):
+            utils.date_of_release(4)
+        with self.assertRaises(errors.UnavailableRelease):
+            utils.date_of_release(441)
 
 
 class TestHTTPCache(unittest.TestCase):

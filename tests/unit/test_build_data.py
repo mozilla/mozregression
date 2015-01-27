@@ -36,9 +36,13 @@ class TestBuildData(unittest.TestCase):
         self.assertEqual(len(self.build_data), 20)
         self.assertEqual(len(new_data), 10)
 
-    def test_del(self):
-        del self.build_data[10]
-        self.assertEqual(len(self.build_data), 19)
+    def test_deleted(self):
+        # make every point fetched
+        self.build_data.half_window_range = 10
+        self.build_data.ensure_limits()
+        new_data = self.build_data.deleted(10)
+        self.assertEqual(len(self.build_data), 20)
+        self.assertEqual([new_data[i] for i in range(19)], [i for i in range(20) if i != 10])
 
     def test_mid_point(self):
         mid = self.build_data.mid_point()

@@ -302,7 +302,7 @@ class Bisector(object):
                 handler.build_retry(mid)
             elif verdict == 's':
                 handler.build_skip(mid)
-                del build_data[mid]
+                build_data = build_data.deleted(mid)
             else:
                 # user exit
                 handler.user_exit(mid)

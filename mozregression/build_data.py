@@ -27,7 +27,7 @@ class BuildData(object):
      - len(data) # size
      - data[1:]  # splice
      - data[0]   # get data
-     - del data[i] # delete index
+     - data.deleted(i) # delete index on a new returned build data
 
     Subclasses must implement :meth:`_create_fetch_task`.
     """
@@ -68,8 +68,10 @@ class BuildData(object):
     def __getitem__(self, i):
         return self._cache[i][0]
 
-    def __delitem__(self, i):
-        del self._cache[i]
+    def deleted(self, pos, count=1):
+        new_data = copy.copy(self)
+        new_data._cache = self._cache[:pos] + self._cache[pos+count:]
+        return new_data
 
     def get_associated_data(self, i):
         return self._cache[i][1]

@@ -7,6 +7,7 @@
 import unittest
 from mock import patch, Mock
 import datetime
+import os
 
 from mozregression.fetch_configs import create_config
 from mozregression import test_runner, errors
@@ -16,7 +17,7 @@ class TestManualTestRunner(unittest.TestCase):
         fetch_config = create_config('firefox', 'linux', 64)
         fetch_config.set_nightly_repo('my-repo')
         fetch_config.set_inbound_branch('my-branch')
-        self.runner = test_runner.ManualTestRunner(fetch_config)
+        self.runner = test_runner.ManualTestRunner(fetch_config, persist='/path/to')
 
     @patch('mozregression.test_runner.create_launcher')
     def test_nightly_create_launcher(self, create_launcher):
@@ -29,7 +30,7 @@ class TestManualTestRunner(unittest.TestCase):
         })
         create_launcher.assert_called_with('firefox', 'http://my-url',
                                            persist_prefix='2014-12-25--my-repo--',
-                                           persist=None)
+                                           persist='/path/to')
         self.assertEqual(result_launcher, launcher)
 
     @patch('mozregression.test_runner.create_launcher')
@@ -44,7 +45,7 @@ class TestManualTestRunner(unittest.TestCase):
         })
         create_launcher.assert_called_with('firefox', 'http://my-url',
                                            persist_prefix='123--my-branch--',
-                                           persist=None)
+                                           persist='/path/to')
         self.assertEqual(result_launcher, launcher)
 
     @patch('__builtin__.raw_input')
@@ -68,6 +69,15 @@ class TestManualTestRunner(unittest.TestCase):
         get_verdict.assert_called_with(build_infos)
         launcher.stop.assert_called_with()
         self.assertEqual(result[0], 'g')
+
+    def test_persist_none_is_overidden(self):
+        runner = test_runner.ManualTestRunner(self.runner.fetch_config, persist=None)
+        persist = runner.persist
+        self.assertIsNotNone(persist)
+        self.assertTrue(os.path.isdir(persist))
+        # deleting the runner also delete the temp dir
+        del runner
+        self.assertFalse(os.path.exists(persist))
 
 class TestCommandTestRunner(unittest.TestCase):
     def setUp(self):

@@ -16,7 +16,7 @@ Currently, mozregression can works with:
 
 {% comment %}I am not able to write it with line breaks and keep good list formatting{% endcomment %}
 {% for app in site.data.mozregression_supported_apps %}{% assign first = site.data.mozregression_supported_apps | first %}
-- **{{app.name}}**{% if app == first %} (default){% endif %}{% endfor %}
+- **[{{app.name}}]({{app.url}})**{% if app.description %} ({{app.description}}){% endif %}{% if app == first %} - default{% endif %}{% endfor %}
 
 To get a feel for how mozregression works, you can see the (pretty old but still
 useful) video on

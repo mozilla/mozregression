@@ -7,8 +7,6 @@ main_link: True
 
 # Documentation
 
-Here you can find some help to use **mozregression**.
-
 {% assign pages = site.pages | sort:"doc_order"  %}
 {% for node in pages %}
 {% if node.layout == 'documentation' and node.url != '/documentation/index.html' %}

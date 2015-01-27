@@ -235,7 +235,7 @@ class TestBisector(unittest.TestCase):
 
     def do__bisect(self, build_data, verdicts):
         iter_verdict = iter(verdicts)
-        def evaluate(build_info):
+        def evaluate(build_info, allow_back=False):
             return iter_verdict.next(), {
                 'application_changeset': 'unused',
                 'application_repository': 'unused'

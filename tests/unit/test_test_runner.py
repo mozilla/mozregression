@@ -51,7 +51,7 @@ class TestManualTestRunner(unittest.TestCase):
     @patch('__builtin__.raw_input')
     def test_get_verdict(self, raw_input):
         raw_input.return_value = 'g'
-        verdict = self.runner.get_verdict({'build_type': 'inbound'})
+        verdict = self.runner.get_verdict({'build_type': 'inbound'}, False)
         self.assertEqual(verdict, 'g')
 
     @patch('mozregression.test_runner.ManualTestRunner.create_launcher')
@@ -66,7 +66,7 @@ class TestManualTestRunner(unittest.TestCase):
         create_launcher.assert_called_with(build_infos)
         launcher.get_app_info.assert_called_with()
         launcher.start.assert_called_with()
-        get_verdict.assert_called_with(build_infos)
+        get_verdict.assert_called_with(build_infos, False)
         launcher.stop.assert_called_with()
         self.assertEqual(result[0], 'g')
 

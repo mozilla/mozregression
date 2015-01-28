@@ -12,7 +12,7 @@ and *inbound* builds. It uses a binary search algorithm for quickly determining
 a changeset range corresponding to when a problem was introduced. It is widely
 used by Mozilla developers and other community members to help find regressions.
 
-Currently, mozregression can works with:
+Currently, mozregression can work with:
 
 {% comment %}I am not able to write it with line breaks and keep good list formatting{% endcomment %}
 {% for app in site.data.mozregression_supported_apps %}{% assign first = site.data.mozregression_supported_apps | first %}

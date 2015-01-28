@@ -54,6 +54,21 @@ class TestManualTestRunner(unittest.TestCase):
         verdict = self.runner.get_verdict({'build_type': 'inbound'}, False)
         self.assertEqual(verdict, 'g')
 
+        output = raw_input.call_args[0][0]
+        # bad is proposed
+        self.assertIn('bad', output)
+        # back is not
+        self.assertNotIn('back', output)
+
+    @patch('__builtin__.raw_input')
+    def test_get_verdict_allow_back(self, raw_input):
+        raw_input.return_value = 'back'
+        verdict = self.runner.get_verdict({'build_type': 'inbound'}, True)
+        output = raw_input.call_args[0][0]
+        # back is now proposed
+        self.assertIn('back', output)
+        self.assertEqual(verdict, 'back')
+
     @patch('mozregression.test_runner.ManualTestRunner.create_launcher')
     @patch('mozregression.test_runner.ManualTestRunner.get_verdict')
     def test_evaluate(self, get_verdict, create_launcher):

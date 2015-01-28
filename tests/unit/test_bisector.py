@@ -203,6 +203,11 @@ class MyBuildData(build_data.BuildData):
     def _return_data(self, data):
         return data
 
+    def __repr__(self):
+        # only useful when test fails
+        return '[%s]' % ', '.join([str(self.get_associated_data(i).keys()[0])
+                                   for i in range(len(self))])
+
     def __eq__(self, other):
         # for testing purpose, say that MyBuildData instances are equals
         # when there associated_data are equals.
@@ -300,6 +305,24 @@ class TestBisector(unittest.TestCase):
         self.handler.build_retry.assert_called_with(1)
         self.handler.build_skip.assert_called_with(1)
         self.assertTrue(self.handler.build_data.ensure_limits_called)
+        # bisection is finished
+        self.assertEqual(test_result['result'], Bisector.FINISHED)
+
+    def test__bisect_with_back(self):
+        test_result = self.do__bisect(MyBuildData([1, 2, 3, 4, 5]), ['g', 'back', 'b', 'g'])
+        # check that set_build_data was called
+        self.handler.set_build_data.assert_has_calls([
+            # first call
+            call(MyBuildData([1, 2, 3, 4, 5])),
+            # we answered good
+            call(MyBuildData([3, 4, 5])),
+            # oups! let's go back
+            call(MyBuildData([1, 2, 3, 4, 5])),
+            # we answered bad this time
+            call(MyBuildData([1, 2, 3])),
+            # then good
+            call(MyBuildData([2, 3])),
+        ])
         # bisection is finished
         self.assertEqual(test_result['result'], Bisector.FINISHED)
 

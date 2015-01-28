@@ -13,6 +13,8 @@ from mozlog.structured import get_default_logger
 import subprocess
 import shlex
 import os
+import tempfile
+import mozfile
 
 from mozregression.launchers import create_launcher
 from mozregression.errors import TestCommandError
@@ -84,6 +86,20 @@ class ManualTestRunner(TestRunner):
     A TestRunner subclass that run builds and ask for evaluation by
     prompting in the terminal.
     """
+    def __init__(self, fetch_config, persist=None, launcher_kwargs=None):
+        self.delete_persist = False
+        if persist is None:
+            # always keep the downloaded files for manual runner
+            # this allows to not re-download a file if a user retry a build.
+            persist = tempfile.mkdtemp()
+            self.delete_persist = True
+        TestRunner.__init__(self, fetch_config, persist=persist,
+                            launcher_kwargs=launcher_kwargs)
+
+    def __del__(self):
+        if self.delete_persist:
+            mozfile.remove(self.persist)
+
     def get_verdict(self, build_info):
         """
         Ask and returns the verdict.

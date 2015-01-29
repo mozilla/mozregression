@@ -124,13 +124,3 @@ h2 {
         display: none;
     }
 }
-
-@include media-query($on-small-device) {
-    #site-title {
-        font-size: 30px;
-    }
-
-    code, blockquote {
-        font-size: 10px;
-    }
-}

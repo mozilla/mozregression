@@ -69,7 +69,7 @@ Some useful command line usage.
        mozregression --http-cache-dir cache
 
 
-## Increase verbosity of mozregression
+## Increase verbosity
 
 - Useful to understand what happens under the hood
 

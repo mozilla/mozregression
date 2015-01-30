@@ -250,6 +250,7 @@ class Bisector(object):
         """
         Starts a bisection for a :class:`mozregression.build_data.BuildData`.
         """
+        previous_data = []
         while True:
             handler.set_build_data(build_data)
             mid = build_data.mid_point()
@@ -265,7 +266,9 @@ class Bisector(object):
                 return self.FINISHED
 
             build_infos = handler.build_infos(mid)
-            verdict, app_info = self.test_runner.evaluate(build_infos)
+            verdict, app_info = \
+                self.test_runner.evaluate(build_infos,
+                                          allow_back=bool(previous_data))
 
             # update build_info in build_data if possible
             # this is required as some old builds do not have information
@@ -282,6 +285,7 @@ class Bisector(object):
                 # [G, ?, ?, G, ?, B]
                 # to
                 #          [G, ?, B]
+                previous_data.append(build_data)
                 if not handler.find_fix:
                     build_data = build_data[mid:]
                 else:
@@ -293,6 +297,7 @@ class Bisector(object):
                 # [G, ?, ?, B, ?, B]
                 # to
                 # [G, ?, ?, B]
+                previous_data.append(build_data)
                 if not handler.find_fix:
                     build_data = build_data[:mid+1]
                 else:
@@ -302,7 +307,10 @@ class Bisector(object):
                 handler.build_retry(mid)
             elif verdict == 's':
                 handler.build_skip(mid)
-                del build_data[mid]
+                previous_data.append(build_data)
+                build_data = build_data.deleted(mid)
+            elif verdict == 'back':
+                build_data = previous_data.pop(-1)
             else:
                 # user exit
                 handler.user_exit(mid)

@@ -7,6 +7,7 @@ from mock import patch, Mock
 from mozprofile import FirefoxProfile, Profile
 from mozregression.errors import LauncherNotRunnable
 
+
 class MyLauncher(launchers.Launcher):
     installed = None
     started = False
@@ -20,6 +21,7 @@ class MyLauncher(launchers.Launcher):
 
     def _stop(self):
         self.stopped = True
+
 
 class TestLauncher(unittest.TestCase):
     def setUp(self):
@@ -63,7 +65,10 @@ class TestLauncher(unittest.TestCase):
         self.assertTrue(os.path.exists(expected_dest))
 
     def test_reuse_persist_file_on_create(self):
-        launcher = MyLauncher('http://foo/persist.zip', persist=self.tempdir, persist_prefix='123-')
+        launcher = MyLauncher('http://foo/persist.zip',
+                              persist=self.tempdir,
+                              persist_prefix='123-')
+
         expected_dest = os.path.join(self.tempdir, '123-persist.zip')
         # file is installed
         self.assertEqual(launcher.installed, expected_dest)
@@ -71,19 +76,22 @@ class TestLauncher(unittest.TestCase):
         self.assertTrue(os.path.exists('123-persist.zip'))
 
     def test_start_stop(self):
-        launcher = MyLauncher('http://foo/persist.zip', persist=self.tempdir, persist_prefix='123-')
+        launcher = MyLauncher('http://foo/persist.zip',
+                              persist=self.tempdir,
+                              persist_prefix='123-')
         self.assertFalse(launcher.started)
         launcher.start()
         # now it has been started
         self.assertTrue(launcher.started)
         # restarting won't do anything because it was not stopped
-        launcher.started=False
+        launcher.started = False
         launcher.start()
         self.assertFalse(launcher.started)
         # stop it, then start it again, this time _start is called again
         launcher.stop()
         launcher.start()
         self.assertTrue(launcher.started)
+
 
 class TestMozRunnerLauncher(unittest.TestCase):
     @patch('mozregression.launchers.mozinstall')
@@ -94,7 +102,8 @@ class TestMozRunnerLauncher(unittest.TestCase):
         self.launcher = launchers.MozRunnerLauncher('http://binary')
 
     # patch profile_class else we will have some temporary dirs not deleted
-    @patch('mozregression.launchers.MozRunnerLauncher.profile_class', spec=Profile)
+    @patch('mozregression.launchers.MozRunnerLauncher.\
+profile_class', spec=Profile)
     def launcher_start(self, profile_class, *args, **kwargs):
         self.profile_class = profile_class
         self.launcher.start(*args, **kwargs)
@@ -109,7 +118,8 @@ class TestMozRunnerLauncher(unittest.TestCase):
 
         self.assertEqual(kwargs['cmdargs'], ())
         self.assertEqual(kwargs['binary'], '/binary')
-        self.assertEqual(kwargs['process_args'], {'processOutputLine': [self.launcher._logger.debug]})
+        self.assertEqual(kwargs['process_args'],
+                         {'processOutputLine': [self.launcher._logger.debug]})
         self.assertIsInstance(kwargs['profile'], Profile)
         # runner is started
         self.launcher.runner.start.assert_called_once_with()
@@ -147,6 +157,7 @@ class TestMozRunnerLauncher(unittest.TestCase):
         del self.launcher
         self.assertFalse(os.path.isdir(tempdir))
 
+
 class TestFennecLauncher(unittest.TestCase):
     @patch('mozregression.launchers.download_url')
     @patch('mozregression.launchers.os.unlink')
@@ -183,13 +194,16 @@ class TestFennecLauncher(unittest.TestCase):
 
         # exception raised if answer is not 'y'
         raw_input.return_value = 'n'
-        self.assertRaises(LauncherNotRunnable, launchers.FennecLauncher.check_is_runnable)
+        self.assertRaises(LauncherNotRunnable,
+                          launchers.FennecLauncher.check_is_runnable)
 
         # exception raised if there is no device
         raw_input.return_value = 'y'
         devices.return_value = False
-        self.assertRaises(LauncherNotRunnable, launchers.FennecLauncher.check_is_runnable)
+        self.assertRaises(LauncherNotRunnable,
+                          launchers.FennecLauncher.check_is_runnable)
 
         # or if ADBHost().devices() raise an unexpected IOError
         devices.side_effect = OSError()
-        self.assertRaises(LauncherNotRunnable, launchers.FennecLauncher.check_is_runnable)
+        self.assertRaises(LauncherNotRunnable,
+                          launchers.FennecLauncher.check_is_runnable)

@@ -17,6 +17,7 @@ def compute_steps_left(steps):
         return 0
     return math.trunc(math.log(steps, 2))
 
+
 class BisectorHandler(object):
     """
     React to events of a :class:`Bisector`. This is intended to be subclassed.
@@ -127,6 +128,7 @@ class BisectorHandler(object):
     def user_exit(self, mid):
         pass
 
+
 class NightlyHandler(BisectorHandler):
     build_data_class = NightlyBuildData
     build_type = 'nightly'
@@ -138,7 +140,7 @@ class NightlyHandler(BisectorHandler):
         # register dates
         self.good_date, self.bad_date = \
             self._reverse_if_find_fix(self.build_data.get_associated_data(0),
-                                     self.build_data.get_associated_data(-1))
+                                      self.build_data.get_associated_data(-1))
 
     def build_infos(self, index):
         infos = BisectorHandler.build_infos(self, index)
@@ -199,7 +201,7 @@ class NightlyHandler(BisectorHandler):
                                                    self.bad_date)
             return ("%s/pushloghtml?startdate=%s&enddate=%s\n"
                     % (self.found_repo, start, end))
-            
+
 
 class InboundHandler(BisectorHandler):
     build_data_class = InboundBuildData
@@ -223,6 +225,7 @@ class InboundHandler(BisectorHandler):
                           % (words[0], self.good_revision))
         self._logger.info('%s known bad inbound revision: %s'
                           % (words[1], self.bad_revision))
+
 
 class Bisector(object):
     """
@@ -316,6 +319,7 @@ class Bisector(object):
                 handler.user_exit(mid)
                 return self.USER_EXIT
 
+
 class BisectRunner(object):
     def __init__(self, fetch_config, test_runner, options):
         self.fetch_config = fetch_config
@@ -337,13 +341,14 @@ class BisectRunner(object):
                 days = 6
                 too_many_attempts = False
                 first_date = min(handler.good_date, handler.bad_date)
-                while not 'changeset' in infos:
+                while 'changeset' not in infos:
                     days += 1
                     if days >= 10:
                         too_many_attempts = True
                         break
                     prev_date = first_date - datetime.timedelta(days=days)
-                    infos = handler.build_data.get_build_infos_for_date(prev_date)
+                    build_data = handler.build_data
+                    infos = build_data.get_build_infos_for_date(prev_date)
                 if days > 7 and not too_many_attempts:
                     self._logger.info("At least one build folder was"
                                       " invalid, we have to start from"
@@ -359,9 +364,9 @@ class BisectRunner(object):
                     # old nightly builds do not have the changeset information
                     # so we can't go on inbound. Anyway, these are probably too
                     # old and won't even exists on inbound.
-                    self._logger.warning("Not enough changeset information to"
-                                         " produce initial inbound regression"
-                                         " range. Builds are probably too old.")
+                    self._logger.warning("Not enough changeset information to "
+                                         "produce initial inbound regression "
+                                         "range. Builds are probably too old.")
                     return 1
                 return self.bisect_inbound(good_rev, bad_rev)
             else:

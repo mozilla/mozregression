@@ -76,6 +76,7 @@ def set_http_cache_session(cache_session, get_defaults=None):
         # monkey patch to set default values to a session.get calls
         # I don't see other ways to do this globally for timeout for example
         _get = cache_session.get
+
         def _default_get(*args, **kwargs):
             for k, v in get_defaults.iteritems():
                 kwargs.setdefault(k, v)
@@ -246,6 +247,9 @@ def releases():
         32: "2014-06-09",
         33: "2014-07-21",
         34: "2014-09-02",
+        35: "2014-10-13",
+        36: "2014-11-28",
+        37: "2015-01-12"
     }
 
 

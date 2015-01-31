@@ -12,12 +12,14 @@ import os
 from mozregression.fetch_configs import create_config
 from mozregression import test_runner, errors
 
+
 class TestManualTestRunner(unittest.TestCase):
     def setUp(self):
         fetch_config = create_config('firefox', 'linux', 64)
         fetch_config.set_nightly_repo('my-repo')
         fetch_config.set_inbound_branch('my-branch')
-        self.runner = test_runner.ManualTestRunner(fetch_config, persist='/path/to')
+        self.runner = test_runner.ManualTestRunner(fetch_config,
+                                                   persist='/path/to')
 
     @patch('mozregression.test_runner.create_launcher')
     def test_nightly_create_launcher(self, create_launcher):
@@ -28,9 +30,11 @@ class TestManualTestRunner(unittest.TestCase):
             'build_date': datetime.date(2014, 12, 25),
             'build_url': 'http://my-url'
         })
-        create_launcher.assert_called_with('firefox', 'http://my-url',
-                                           persist_prefix='2014-12-25--my-repo--',
-                                           persist='/path/to')
+        create_launcher.\
+            assert_called_with('firefox', 'http://my-url',
+                               persist_prefix='2014-12-25--my-repo--',
+                               persist='/path/to')
+
         self.assertEqual(result_launcher, launcher)
 
     @patch('mozregression.test_runner.create_launcher')
@@ -75,7 +79,7 @@ class TestManualTestRunner(unittest.TestCase):
         get_verdict.return_value = 'g'
         launcher = Mock()
         create_launcher.return_value = launcher
-        build_infos = {'a':'b'}
+        build_infos = {'a': 'b'}
         result = self.runner.evaluate(build_infos)
 
         create_launcher.assert_called_with(build_infos)
@@ -86,13 +90,15 @@ class TestManualTestRunner(unittest.TestCase):
         self.assertEqual(result[0], 'g')
 
     def test_persist_none_is_overidden(self):
-        runner = test_runner.ManualTestRunner(self.runner.fetch_config, persist=None)
+        runner = test_runner.ManualTestRunner(self.runner.fetch_config,
+                                              persist=None)
         persist = runner.persist
         self.assertIsNotNone(persist)
         self.assertTrue(os.path.isdir(persist))
         # deleting the runner also delete the temp dir
         del runner
         self.assertFalse(os.path.exists(persist))
+
 
 class TestCommandTestRunner(unittest.TestCase):
     def setUp(self):
@@ -106,7 +112,8 @@ class TestCommandTestRunner(unittest.TestCase):
 
     @patch('mozregression.test_runner.CommandTestRunner.create_launcher')
     @patch('subprocess.call')
-    def evaluate(self, call, create_launcher, build_info={}, retcode=0, subprocess_call_effect=None):
+    def evaluate(self, call, create_launcher, build_info={},
+                 retcode=0, subprocess_call_effect=None):
         call.return_value = retcode
         if subprocess_call_effect:
             call.side_effect = subprocess_call_effect
@@ -119,11 +126,11 @@ class TestCommandTestRunner(unittest.TestCase):
         self.assertEqual('b', self.evaluate(retcode=1))
 
     def test_supbrocess_call(self):
-         self.evaluate()
-         command = self.subprocess_call.mock_calls[0][1][0]
-         kwargs = self.subprocess_call.mock_calls[0][2]
-         self.assertEqual(command, ['my', 'command'])
-         self.assertIn('env', kwargs)
+        self.evaluate()
+        command = self.subprocess_call.mock_calls[0][1][0]
+        kwargs = self.subprocess_call.mock_calls[0][2]
+        self.assertEqual(command, ['my', 'command'])
+        self.assertIn('env', kwargs)
 
     def test_env_vars(self):
         self.evaluate(build_info={'my': 'var', 'int': 15})
@@ -149,14 +156,20 @@ class TestCommandTestRunner(unittest.TestCase):
 
     def test_command_placeholder_error(self):
         self.runner.command = 'run {app_nam} "1"'
-        self.assertRaisesRegexp(errors.TestCommandError, 'formatting', self.evaluate)
+        self.assertRaisesRegexp(errors.TestCommandError,
+                                'formatting',
+                                self.evaluate)
 
     def test_command_empty_error(self):
-        # in case the command line is empty, subprocess.call will raise IndexError
-        self.assertRaisesRegexp(errors.TestCommandError, 'Empty', self.evaluate,
+        # in case the command line is empty,
+        # subprocess.call will raise IndexError
+        self.assertRaisesRegexp(errors.TestCommandError,
+                                'Empty', self.evaluate,
                                 subprocess_call_effect=IndexError)
 
     def test_command_missing_error(self):
-        # in case the command is missing or not executable, subprocess.call will raise IOError
-        self.assertRaisesRegexp(errors.TestCommandError, 'not found', self.evaluate,
+        # in case the command is missing or not executable,
+        # subprocess.call will raise IOError
+        self.assertRaisesRegexp(errors.TestCommandError,
+                                'not found', self.evaluate,
                                 subprocess_call_effect=OSError)

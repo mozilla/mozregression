@@ -124,9 +124,9 @@ def parse_args(argv=None):
 
     parser.add_argument("-c", "--command",
                         help=("Test command to evaluate builds automatically."
-                              " A return code of 0 will evaluate build as good,"
-                              " any other value will evaluate the build as"
-                              " bad."))
+                              " A return code of 0 will evaluate build as"
+                              " good, any other value will evaluate the build"
+                              " as bad."))
 
     parser.add_argument("--persist",
                         help=("the directory in which downloaded files are"
@@ -159,6 +159,7 @@ def bisect_inbound(runner, logger):
                                  " and --bad-rev must be set")
     return runner.bisect_inbound(options.last_good_revision,
                                  options.first_bad_revision)
+
 
 def bisect_nightlies(runner, logger):
     default_bad_date = str(datetime.date.today())

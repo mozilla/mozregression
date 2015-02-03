@@ -76,6 +76,7 @@ def set_http_cache_session(cache_session, get_defaults=None):
         # monkey patch to set default values to a session.get calls
         # I don't see other ways to do this globally for timeout for example
         _get = cache_session.get
+
         def _default_get(*args, **kwargs):
             for k, v in get_defaults.iteritems():
                 kwargs.setdefault(k, v)

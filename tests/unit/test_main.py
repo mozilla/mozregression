@@ -11,6 +11,7 @@ import datetime
 from mozregression import main, utils, errors
 from mozregression.test_runner import CommandTestRunner
 
+
 class TestMainCli(unittest.TestCase):
     def setUp(self):
         self.runner = Mock()
@@ -48,9 +49,11 @@ class TestMainCli(unittest.TestCase):
         self.runner.bisect_nightlies.return_value = 0
         exitcode = self.do_cli([])
         # application is by default firefox
-        self.assertEqual(self.runner.fetch_config.app_name, 'firefox')
+        self.assertEqual(self.runner.fetch_config.app_name,
+                         'firefox')
         # bisect_nightlies has been called
-        self.runner.bisect_nightlies.assert_called_with(datetime.date(2009, 1, 1),
+        self.runner.bisect_nightlies.assert_called_with(datetime.date(2009,
+                                                                      1, 1),
                                                         datetime.date.today())
         # we exited with the return value of bisect_nightlies
         self.assertEquals(exitcode, 0)
@@ -111,12 +114,14 @@ class TestMainCli(unittest.TestCase):
 
     def test_handle_mozregression_errors(self):
         # Any MozRegressionError subclass is handled with a nice error message
-        self.runner.bisect_nightlies.side_effect = errors.MozRegressionError('my error')
+        self.runner.bisect_nightlies.side_effect = \
+            errors.MozRegressionError('my error')
         exitcode = self.do_cli([])
         self.assertIn('my error', exitcode)
 
     def test_handle_other_errors(self):
-        # other exceptions are just thrown as usual, so we have complete stacktrace
+        # other exceptions are just thrown as usual
+        # so we have complete stacktrace
         self.runner.bisect_nightlies.side_effect = NameError
         self.assertRaises(NameError, self.do_cli, [])
 
@@ -125,7 +130,9 @@ class TestMainCli(unittest.TestCase):
         self.assertIn('--find-fix flag', exitcode)
 
     def test_bisect_nightlies_with_find_fix_bad_usage(self):
-        exitcode = self.do_cli(['--good=2015-01-06', '--bad=2015-01-21', '--find-fix'])
+        exitcode = self.do_cli(['--good=2015-01-06',
+                                '--bad=2015-01-21',
+                                '--find-fix'])
         self.assertIn('not use the --find-fix flag', exitcode)
 
     def test_commad_make_use_of_commandtestrunner(self):
@@ -136,9 +143,12 @@ class TestMainCli(unittest.TestCase):
         releases = sorted(utils.releases().items(), key=lambda v: v[0])
         good = releases[0]
         bad = releases[-1]
-        self.do_cli(['--good-release=%s' % good[0], '--bad-release=%s' % bad[0]])
-        self.runner.bisect_nightlies.assert_called_with(utils.parse_date(good[1]),
-                                                        utils.parse_date(bad[1]))
+        self.do_cli(['--good-release=%s' % good[0],
+                     '--bad-release=%s' % bad[0]])
+
+        self.runner.bisect_nightlies.\
+            assert_called_with(utils.parse_date(good[1]),
+                               utils.parse_date(bad[1]))
 
 if __name__ == '__main__':
     unittest.main()

@@ -136,7 +136,7 @@ def parse_args(argv=None):
                         help=("the directory for caching http requests."
                               " If not set there will be an in-memory cache"
                               " used."))
-    parser.add_argument('--http-timeout', type=float, default=10.0,
+    parser.add_argument('--http-timeout', type=float, default=30.0,
                         help=("Timeout in seconds to abort requests when there"
                               " is no activity from the server. Default to"
                               " %(default)s seconds - increase this if you"

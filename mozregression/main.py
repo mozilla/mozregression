@@ -13,6 +13,7 @@ import datetime
 import sys
 from argparse import ArgumentParser
 from mozlog.structured import commandline, get_default_logger
+from requests.exceptions import RequestException
 
 from mozregression.errors import MozRegressionError, UnavailableRelease
 from mozregression import limitedfilecache
@@ -259,7 +260,7 @@ def cli(argv=None):
         sys.exit("\nInterrupted.")
     except UnavailableRelease as exc:
         sys.exit("%s\n%s" % (exc, formatted_valid_release_dates()))
-    except MozRegressionError as exc:
+    except (MozRegressionError, RequestException) as exc:
         sys.exit(str(exc))
 
 

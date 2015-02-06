@@ -88,8 +88,8 @@ class TestFirefoxConfigLinux32(TestFirefoxConfigLinux64):
 
 class TestFirefoxConfigWin64(TestFirefoxConfigLinux64):
     os = 'win'
-    build_regex = r'firefox.*win64-x86_64\.zip$'
-    build_info_regex = r'firefox.*win64-x86_64\.txt$'
+    build_regex = r'firefox.*win64(-x86_64)?\.zip$'
+    build_info_regex = r'firefox.*win64(-x86_64)?\.txt$'
     base_inbound_url_ext = 'win64'
 
 

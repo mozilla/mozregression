@@ -10,8 +10,8 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
     os = 'linux'
     bits = 64
 
-    build_regex = r'firefox.*linux-x86_64\.tar.bz2$'
-    build_info_regex = r'firefox.*linux-x86_64\.txt$'
+    build_examples = ['firefox-38.0a1.en-US.linux-x86_64.tar.bz2']
+    build_info_examples = ['firefox-38.0a1.en-US.linux-x86_64.txt']
 
     instance_type = FirefoxConfig
     is_nightly = True
@@ -30,10 +30,14 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
         self.assertEqual(self.is_inbound, self.conf.is_inbound())
 
     def test_build_regex(self):
-        self.assertEqual(self.conf.build_regex(), self.build_regex)
+        for example in self.build_examples:
+            res = re.match(self.conf.build_regex(), example)
+            self.assertIsNotNone(res)
 
     def test_build_info_regex(self):
-        self.assertEqual(self.conf.build_info_regex(), self.build_info_regex)
+        for example in self.build_info_examples:
+            res = re.match(self.conf.build_info_regex(), example)
+            self.assertIsNotNone(res)
 
     def test_get_nighly_base_url(self):
         base_url = self.conf.get_nighly_base_url(datetime.date(2008,
@@ -81,29 +85,31 @@ firefox/nightly/2008/06/')
 
 class TestFirefoxConfigLinux32(TestFirefoxConfigLinux64):
     bits = 32
-    build_regex = r'firefox.*linux-i686\.tar.bz2$'
-    build_info_regex = r'firefox.*linux-i686\.txt$'
+    build_examples = ['firefox-38.0a1.en-US.linux-i686.tar.bz2']
+    build_info_examples = ['firefox-38.0a1.en-US.linux-i686.txt']
     base_inbound_url_ext = 'linux'
 
 
 class TestFirefoxConfigWin64(TestFirefoxConfigLinux64):
     os = 'win'
-    build_regex = r'firefox.*win64-x86_64\.zip$'
-    build_info_regex = r'firefox.*win64-x86_64\.txt$'
+    build_examples = ['firefox-38.0a1.en-US.win64-x86_64.zip',
+                      'firefox-38.0a1.en-US.win64.zip']
+    build_info_examples = ['firefox-38.0a1.en-US.win64-x86_64.txt',
+                           'firefox-38.0a1.en-US.win64.txt']
     base_inbound_url_ext = 'win64'
 
 
 class TestFirefoxConfigWin32(TestFirefoxConfigWin64):
     bits = 32
-    build_regex = r'firefox.*win32\.zip$'
-    build_info_regex = r'firefox.*win32\.txt$'
+    build_examples = ['firefox-38.0a1.en-US.win32.zip']
+    build_info_examples = ['firefox-38.0a1.en-US.win32.txt']
     base_inbound_url_ext = 'win32'
 
 
 class TestFirefoxConfigMac(TestFirefoxConfigLinux64):
     os = 'mac'
-    build_regex = r'firefox.*mac.*\.dmg$'
-    build_info_regex = r'firefox.*mac.*\.txt$'
+    build_examples = ['firefox-38.0a1.en-US.mac.dmg']
+    build_info_examples = ['firefox-38.0a1.en-US.mac.txt']
     base_inbound_url_ext = 'macosx64'
 
 

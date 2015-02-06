@@ -192,7 +192,7 @@ def get_build_regex(name, os, bits, with_ext=True):
     """
     if os == "win":
         if bits == 64:
-            suffix, ext = r".*win64-x86_64", r"\.zip"
+            suffix, ext = r".*win64(-x86_64)?", r"\.zip"
         else:
             suffix, ext = r".*win32", r"\.zip"
     elif os == "linux":

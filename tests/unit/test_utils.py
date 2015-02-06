@@ -119,10 +119,10 @@ class TestGetBuildUrl(unittest.TestCase):
         self.assertEqual(utils.get_build_regex('test', 'win', 32),
                          r'test.*win32\.zip')
         self.assertEqual(utils.get_build_regex('test', 'win', 64),
-                         r'test.*win64-x86_64\.zip')
+                         r'test.*win64(-x86_64)?\.zip')
         self.assertEqual(utils.get_build_regex('test', 'win', 64,
                                                with_ext=False),
-                         r'test.*win64-x86_64')
+                         r'test.*win64(-x86_64)?')
 
     def test_for_mac(self):
         self.assertEqual(utils.get_build_regex('test', 'mac', 32),

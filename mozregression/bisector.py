@@ -334,22 +334,24 @@ class BisectRunner(object):
             self._logger.info("Got as far as we can go bisecting nightlies...")
             handler.print_range()
             if self.fetch_config.can_go_inbound():
+                days_required = 4
                 self._logger.info("... attempting to bisect inbound builds"
-                                  " (starting from previous week, to make"
-                                  " sure no inbound revision is missed)")
+                                  " (starting from %d days ago, to make"
+                                  " sure no inbound revision is missed)"
+                                  % days_required)
                 infos = {}
-                days = 6
+                days = days_required - 1
                 too_many_attempts = False
                 first_date = min(handler.good_date, handler.bad_date)
                 while 'changeset' not in infos:
                     days += 1
-                    if days >= 10:
+                    if days >= days_required + 3:
                         too_many_attempts = True
                         break
                     prev_date = first_date - datetime.timedelta(days=days)
                     build_data = handler.build_data
                     infos = build_data.get_build_infos_for_date(prev_date)
-                if days > 7 and not too_many_attempts:
+                if days > days_required and not too_many_attempts:
                     self._logger.info("At least one build folder was"
                                       " invalid, we have to start from"
                                       " %d days ago." % days)

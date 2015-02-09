@@ -38,7 +38,7 @@ class LimitedFileCache(FileCache):
             message = ("Tried adding %d bytes but %d bytes are currently saved"
                        " in the cache and the max_bytes is set to %d."
                        % (new_bytes, self.curr_bytes, self.max_bytes))
-            self.logger.warn(message)
+            self.logger.warning(message)
             return
 
         FileCache.set(self, key, value)

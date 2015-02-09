@@ -285,8 +285,8 @@ NightlyBuildData._get_valid_build_for_date')
 class TestPushLogsFinder(unittest.TestCase):
     def test_pushlog_url(self):
         finder = build_data.PushLogsFinder("azerty", "uiop")
-        good_url = 'https://hg.mozilla.org/integration/mozilla-inbound/json-pushes' \
-                   '?fromchange=azerty&tochange=uiop'
+        good_url = ('https://hg.mozilla.org/integration/mozilla-inbound/'
+                    'json-pushes?fromchange=azerty&tochange=uiop')
         self.assertEquals(finder.pushlog_url(), good_url)
 
     def test_custom_pushlog_url(self):

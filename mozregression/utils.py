@@ -172,7 +172,8 @@ def url_links(url, regex=None, auth=None):
             regex = re.compile(regex)
         match = regex.match
     else:
-        match = lambda t: True
+        def match(_):
+            return True
 
     # do not return a generator but an array, so we can store it for later use
     return [link.get('href')

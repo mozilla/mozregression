@@ -12,6 +12,8 @@ from mozregression.bisector import (BisectorHandler, NightlyHandler,
                                     InboundHandler, Bisector,
                                     BisectRunner)
 from mozregression.main import parse_args
+from mozregression import build_data
+
 
 class TestBisectorHandler(unittest.TestCase):
     def setUp(self):
@@ -36,14 +38,15 @@ class TestBisectorHandler(unittest.TestCase):
         self.handler.good_revision = '2'
         self.handler.bad_revision = '6'
         self.assertEqual(self.handler.get_pushlog_url(),
-                         "https://hg.mozilla.repo/pushloghtml?fromchange=2&tochange=6")
+                         "https://hg.mozilla.repo/pushloghtml?\
+fromchange=2&tochange=6")
 
     def test_print_range(self):
         self.handler.found_repo = 'https://hg.mozilla.repo'
         self.handler.good_revision = '2'
         self.handler.bad_revision = '6'
         log = []
-        self.handler._logger = Mock(info = log.append)
+        self.handler._logger = Mock(info=log.append)
 
         self.handler.print_range()
         self.assertEqual(log[0], "Last good revision: 2")
@@ -52,14 +55,18 @@ class TestBisectorHandler(unittest.TestCase):
 
     @patch('mozregression.bisector.BisectorHandler._print_progress')
     def test_build_good(self, _print_progress):
-        self.handler.build_good(0, [{"changeset": '123'}, {"changeset": '456'}])
-        _print_progress.assert_called_with([{"changeset": '123'}, {"changeset": '456'}])
+        self.handler.build_good(0, [{"changeset": '123'},
+                                    {"changeset": '456'}])
+        _print_progress.assert_called_with([{"changeset": '123'},
+                                            {"changeset": '456'}])
 
     @patch('mozregression.bisector.BisectorHandler._print_progress')
     def test_build_bad(self, _print_progress):
         # with at least two, _print_progress will be called
         self.handler.build_bad(0, [{"changeset": '123'}, {"changeset": '456'}])
-        _print_progress.assert_called_with([{"changeset": '123'}, {"changeset": '456'}])
+        _print_progress.assert_called_with([{"changeset": '123'},
+                                            {"changeset": '456'}])
+
 
 class TestNightlyHandler(unittest.TestCase):
     def setUp(self):
@@ -90,9 +97,10 @@ class TestNightlyHandler(unittest.TestCase):
 
     def test_print_progress(self):
         log = []
-        self.handler._logger = Mock(info = log.append)
+        self.handler._logger = Mock(info=log.append)
         self.handler.good_date = datetime.date(2014, 11, 10)
         self.handler.bad_date = datetime.date(2014, 11, 20)
+
         def get_associated_data(index):
             if index == 0:
                 return datetime.date(2014, 11, 15)
@@ -107,7 +115,7 @@ class TestNightlyHandler(unittest.TestCase):
 
     def test_user_exit(self):
         log = []
-        self.handler._logger = Mock(info = log.append)
+        self.handler._logger = Mock(info=log.append)
         self.handler.good_date = datetime.date(2014, 11, 10)
         self.handler.bad_date = datetime.date(2014, 11, 20)
         self.handler.user_exit(0)
@@ -146,7 +154,9 @@ class TestNightlyHandler(unittest.TestCase):
         self.handler.print_range()
         self.assertEqual('Newest known good nightly: 2014-11-10', log[0])
         self.assertEqual('Oldest known bad nightly: 2014-11-20', log[1])
-        self.assertIn("pushloghtml?startdate=2014-11-10&enddate=2014-11-20", log[2])
+        self.assertIn("pushloghtml?startdate=2014-11-10&enddate=2014-11-20",
+                      log[2])
+
 
 class TestInboundHandler(unittest.TestCase):
     def setUp(self):
@@ -163,12 +173,12 @@ class TestInboundHandler(unittest.TestCase):
 
     def test_print_progress(self):
         log = []
-        self.handler._logger = Mock(info = log.append)
+        self.handler._logger = Mock(info=log.append)
         self.handler.set_build_data([
-            {'revision':'12'},
-            {'revision':'123'},
-            {'revision':'1234'},
-            {'revision':'12345'},
+            {'revision': '12'},
+            {'revision': '123'},
+            {'revision': '1234'},
+            {'revision': '12345'},
         ])
         new_data = [{'revision': '1234'}, {'revision': '12345'}]
 
@@ -179,33 +189,42 @@ class TestInboundHandler(unittest.TestCase):
 
     def test_user_exit(self):
         log = []
-        self.handler._logger = Mock(info = log.append)
+        self.handler._logger = Mock(info=log.append)
         self.handler.good_revision = '3'
         self.handler.bad_revision = '1'
         self.handler.user_exit(0)
         self.assertEqual('Newest known good inbound revision: 3', log[0])
         self.assertEqual('Oldest known bad inbound revision: 1', log[1])
 
-class MyBuildData(list):
-    ensure_limits_called = False
+
+class MyBuildData(build_data.BuildData):
     def __init__(self, data=()):
         # init with a dict for value, as we assume that build_info is a dict
         # Just override setdefault to not use it here
         class MyDict(dict):
             def setdefault(self, key, value):
                 pass
-        list.__init__(self, [MyDict({v:v}) for v in data])
 
-    def mid_point(self):
-        if len(self) < 3:
-            return 0
-        return len(self) / 2
+        build_data.BuildData.__init__(self, [MyDict({v: v}) for v in data])
 
-    def ensure_limits(self):
-        self.ensure_limits_called = True
+    def _create_fetch_task(self, executor, i):
+        ad = self.get_associated_data(i)
+        return executor.submit(self._return_data, ad)
 
-    def __getslice__(self, smin, smax):
-        return MyBuildData([k.values()[0] for k in list.__getslice__(self, smin, smax)])
+    def _return_data(self, data):
+        return data
+
+    def __repr__(self):
+        # only useful when test fails
+        return '[%s]' % ', '.join([str(self.get_associated_data(i).keys()[0])
+                                   for i in range(len(self))])
+
+    def __eq__(self, other):
+        # for testing purpose, say that MyBuildData instances are equals
+        # when there associated_data are equals.
+        return [self.get_associated_data(i) for i in range(len(self))] \
+            == [other.get_associated_data(i) for i in range(len(other))]
+
 
 class TestBisector(unittest.TestCase):
     def setUp(self):
@@ -233,7 +252,8 @@ class TestBisector(unittest.TestCase):
 
     def do__bisect(self, build_data, verdicts):
         iter_verdict = iter(verdicts)
-        def evaluate(build_info):
+
+        def evaluate(build_info, allow_back=False):
             return iter_verdict.next(), {
                 'application_changeset': 'unused',
                 'application_repository': 'unused'
@@ -277,7 +297,8 @@ class TestBisector(unittest.TestCase):
         ])
         # ensure that we called the handler's methods
         self.assertEqual(self.handler.initialize.mock_calls, [call()]*3)
-        self.handler.build_good.assert_called_once_with(2, MyBuildData([1, 2, 3]))
+        self.handler.build_good. \
+            assert_called_once_with(2, MyBuildData([1, 2, 3]))
         self.handler.build_bad.assert_called_once_with(1, MyBuildData([2, 3]))
         # bisection is finished
         self.assertEqual(test_result['result'], Bisector.FINISHED)
@@ -287,13 +308,9 @@ class TestBisector(unittest.TestCase):
         # check that set_build_data was called
         self.handler.set_build_data.assert_has_calls([
             # first call
-            # this should be call(MyBuildData([1, 2, 3])),
-            # but as the code delete the index in place when we skip
-            # (with a del statement) our build_data is impacted.
-            # well, we just have to know that for the test.
-            call(MyBuildData([1, 3])),
-            # we asked for a retry (same comment as above)
-            call(MyBuildData([1, 3])),
+            call(MyBuildData([1, 2, 3])),
+            # we asked for a retry
+            call(MyBuildData([1, 2, 3])),
             # we skipped one
             call(MyBuildData([1, 3])),
         ])
@@ -305,10 +322,30 @@ class TestBisector(unittest.TestCase):
         # bisection is finished
         self.assertEqual(test_result['result'], Bisector.FINISHED)
 
+    def test__bisect_with_back(self):
+        test_result = self.do__bisect(MyBuildData([1, 2, 3, 4, 5]),
+                                      ['g', 'back', 'b', 'g'])
+        # check that set_build_data was called
+        self.handler.set_build_data.assert_has_calls([
+            # first call
+            call(MyBuildData([1, 2, 3, 4, 5])),
+            # we answered good
+            call(MyBuildData([3, 4, 5])),
+            # oups! let's go back
+            call(MyBuildData([1, 2, 3, 4, 5])),
+            # we answered bad this time
+            call(MyBuildData([1, 2, 3])),
+            # then good
+            call(MyBuildData([2, 3])),
+        ])
+        # bisection is finished
+        self.assertEqual(test_result['result'], Bisector.FINISHED)
+
     def test__bisect_user_exit(self):
         test_result = self.do__bisect(MyBuildData(range(20)), ['e'])
         # check that set_build_data was called
-        self.handler.set_build_data.assert_has_calls([call(MyBuildData(range(20)))])
+        self.handler.set_build_data.\
+            assert_has_calls([call(MyBuildData(range(20)))])
         # ensure that we called the handler's method
         self.handler.initialize.assert_called_once_with()
         self.handler.user_exit.assert_called_with(10)
@@ -339,6 +376,7 @@ class TestBisector(unittest.TestCase):
                                             'b', 'g', s=1)
         _bisect.assert_called_with(self.handler, build_data)
 
+
 class TestBisectRunner(unittest.TestCase):
     @patch('mozregression.bisector.get_default_logger')
     def setUp(self, get_default_logger):
@@ -347,7 +385,9 @@ class TestBisectRunner(unittest.TestCase):
         self.logger = Mock()
         self.logs = []
         get_default_logger.return_value = Mock(info=self.logs.append)
-        self.brunner = BisectRunner(self.fetch_config, self.test_runner, parse_args([]))
+        self.brunner = BisectRunner(self.fetch_config,
+                                    self.test_runner,
+                                    parse_args([]))
 
     def test_create(self):
         self.assertIsInstance(self.brunner.bisector, Bisector)

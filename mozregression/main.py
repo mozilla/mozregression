@@ -13,6 +13,7 @@ import datetime
 import sys
 from argparse import ArgumentParser
 from mozlog.structured import commandline, get_default_logger
+from requests.exceptions import RequestException
 
 from mozregression.errors import MozRegressionError, UnavailableRelease
 from mozregression import limitedfilecache
@@ -124,9 +125,9 @@ def parse_args(argv=None):
 
     parser.add_argument("-c", "--command",
                         help=("Test command to evaluate builds automatically."
-                              " A return code of 0 will evaluate build as good,"
-                              " any other value will evaluate the build as"
-                              " bad."))
+                              " A return code of 0 will evaluate build as"
+                              " good, any other value will evaluate the build"
+                              " as bad."))
 
     parser.add_argument("--persist",
                         help=("the directory in which downloaded files are"
@@ -136,7 +137,7 @@ def parse_args(argv=None):
                         help=("the directory for caching http requests."
                               " If not set there will be an in-memory cache"
                               " used."))
-    parser.add_argument('--http-timeout', type=float, default=10.0,
+    parser.add_argument('--http-timeout', type=float, default=30.0,
                         help=("Timeout in seconds to abort requests when there"
                               " is no activity from the server. Default to"
                               " %(default)s seconds - increase this if you"
@@ -159,6 +160,7 @@ def bisect_inbound(runner, logger):
                                  " and --bad-rev must be set")
     return runner.bisect_inbound(options.last_good_revision,
                                  options.first_bad_revision)
+
 
 def bisect_nightlies(runner, logger):
     default_bad_date = str(datetime.date.today())
@@ -258,7 +260,7 @@ def cli(argv=None):
         sys.exit("\nInterrupted.")
     except UnavailableRelease as exc:
         sys.exit("%s\n%s" % (exc, formatted_valid_release_dates()))
-    except MozRegressionError as exc:
+    except (MozRegressionError, RequestException) as exc:
         sys.exit(str(exc))
 
 

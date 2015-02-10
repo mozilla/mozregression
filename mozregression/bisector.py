@@ -17,6 +17,7 @@ def compute_steps_left(steps):
         return 0
     return math.trunc(math.log(steps, 2))
 
+
 class BisectorHandler(object):
     """
     React to events of a :class:`Bisector`. This is intended to be subclassed.
@@ -127,6 +128,7 @@ class BisectorHandler(object):
     def user_exit(self, mid):
         pass
 
+
 class NightlyHandler(BisectorHandler):
     build_data_class = NightlyBuildData
     build_type = 'nightly'
@@ -138,7 +140,7 @@ class NightlyHandler(BisectorHandler):
         # register dates
         self.good_date, self.bad_date = \
             self._reverse_if_find_fix(self.build_data.get_associated_data(0),
-                                     self.build_data.get_associated_data(-1))
+                                      self.build_data.get_associated_data(-1))
 
     def build_infos(self, index):
         infos = BisectorHandler.build_infos(self, index)
@@ -199,7 +201,7 @@ class NightlyHandler(BisectorHandler):
                                                    self.bad_date)
             return ("%s/pushloghtml?startdate=%s&enddate=%s\n"
                     % (self.found_repo, start, end))
-            
+
 
 class InboundHandler(BisectorHandler):
     build_data_class = InboundBuildData
@@ -223,6 +225,7 @@ class InboundHandler(BisectorHandler):
                           % (words[0], self.good_revision))
         self._logger.info('%s known bad inbound revision: %s'
                           % (words[1], self.bad_revision))
+
 
 class Bisector(object):
     """
@@ -250,6 +253,7 @@ class Bisector(object):
         """
         Starts a bisection for a :class:`mozregression.build_data.BuildData`.
         """
+        previous_data = []
         while True:
             handler.set_build_data(build_data)
             mid = build_data.mid_point()
@@ -265,7 +269,9 @@ class Bisector(object):
                 return self.FINISHED
 
             build_infos = handler.build_infos(mid)
-            verdict, app_info = self.test_runner.evaluate(build_infos)
+            verdict, app_info = \
+                self.test_runner.evaluate(build_infos,
+                                          allow_back=bool(previous_data))
 
             # update build_info in build_data if possible
             # this is required as some old builds do not have information
@@ -282,6 +288,7 @@ class Bisector(object):
                 # [G, ?, ?, G, ?, B]
                 # to
                 #          [G, ?, B]
+                previous_data.append(build_data)
                 if not handler.find_fix:
                     build_data = build_data[mid:]
                 else:
@@ -293,6 +300,7 @@ class Bisector(object):
                 # [G, ?, ?, B, ?, B]
                 # to
                 # [G, ?, ?, B]
+                previous_data.append(build_data)
                 if not handler.find_fix:
                     build_data = build_data[:mid+1]
                 else:
@@ -302,11 +310,15 @@ class Bisector(object):
                 handler.build_retry(mid)
             elif verdict == 's':
                 handler.build_skip(mid)
-                del build_data[mid]
+                previous_data.append(build_data)
+                build_data = build_data.deleted(mid)
+            elif verdict == 'back':
+                build_data = previous_data.pop(-1)
             else:
                 # user exit
                 handler.user_exit(mid)
                 return self.USER_EXIT
+
 
 class BisectRunner(object):
     def __init__(self, fetch_config, test_runner, options):
@@ -322,21 +334,24 @@ class BisectRunner(object):
             self._logger.info("Got as far as we can go bisecting nightlies...")
             handler.print_range()
             if self.fetch_config.can_go_inbound():
+                days_required = 4
                 self._logger.info("... attempting to bisect inbound builds"
-                                  " (starting from previous week, to make"
-                                  " sure no inbound revision is missed)")
+                                  " (starting from %d days ago, to make"
+                                  " sure no inbound revision is missed)"
+                                  % days_required)
                 infos = {}
-                days = 6
+                days = days_required - 1
                 too_many_attempts = False
                 first_date = min(handler.good_date, handler.bad_date)
-                while not 'changeset' in infos:
+                while 'changeset' not in infos:
                     days += 1
-                    if days >= 10:
+                    if days >= days_required + 3:
                         too_many_attempts = True
                         break
                     prev_date = first_date - datetime.timedelta(days=days)
-                    infos = handler.build_data.get_build_infos_for_date(prev_date)
-                if days > 7 and not too_many_attempts:
+                    build_data = handler.build_data
+                    infos = build_data.get_build_infos_for_date(prev_date)
+                if days > days_required and not too_many_attempts:
                     self._logger.info("At least one build folder was"
                                       " invalid, we have to start from"
                                       " %d days ago." % days)
@@ -351,9 +366,9 @@ class BisectRunner(object):
                     # old nightly builds do not have the changeset information
                     # so we can't go on inbound. Anyway, these are probably too
                     # old and won't even exists on inbound.
-                    self._logger.warning("Not enough changeset information to"
-                                         " produce initial inbound regression"
-                                         " range. Builds are probably too old.")
+                    self._logger.warning("Not enough changeset information to "
+                                         "produce initial inbound regression "
+                                         "range. Builds are probably too old.")
                     return 1
                 return self.bisect_inbound(good_rev, bad_rev)
             else:

@@ -11,6 +11,7 @@ from mozregression.utils import url_links, get_http_session
 
 
 class BuildData(object):
+
     """
     Represents some build data available, designed to be used in
     bisection.
@@ -27,7 +28,7 @@ class BuildData(object):
      - len(data) # size
      - data[1:]  # splice
      - data[0]   # get data
-     - del data[i] # delete index
+     - data.deleted(i) # delete index on a new returned build data
 
     Subclasses must implement :meth:`_create_fetch_task`.
     """
@@ -68,8 +69,10 @@ class BuildData(object):
     def __getitem__(self, i):
         return self._cache[i][0]
 
-    def __delitem__(self, i):
-        del self._cache[i]
+    def deleted(self, pos, count=1):
+        new_data = copy.copy(self)
+        new_data._cache = self._cache[:pos] + self._cache[pos+count:]
+        return new_data
 
     def get_associated_data(self, i):
         return self._cache[i][1]
@@ -106,16 +109,16 @@ class BuildData(object):
             # of 4.
             if self[0] is None:
                 self._logger.debug("We need to fetch the lower limit")
-                bound = min(size, self.half_window_range*2)
+                bound = min(size, self.half_window_range * 2)
                 range_min.extend(range(0, bound))
             if self[-1] is None:
                 self._logger.debug("We need to fetch the higher limit")
-                bound = max(0, size - self.half_window_range*2)
+                bound = max(0, size - self.half_window_range * 2)
                 range_max.extend(range(bound, size))
 
             # restrict the number of builds to fetch
             range_to_update = set(range_min + range_max)
-            while len(range_to_update) > self.half_window_range*2:
+            while len(range_to_update) > self.half_window_range * 2:
                 if len(range_min) > len(range_max):
                     range_min = range_min[:-1]
                 else:
@@ -172,7 +175,8 @@ class BuildData(object):
         nb_try = 0
         while builds_to_get:
             nb_try += 1
-            with futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            with futures.ThreadPoolExecutor(max_workers=max_workers) \
+                    as executor:
                 futures_results = {}
                 for i in builds_to_get:
                     future = self._create_fetch_task(executor, i)
@@ -184,7 +188,8 @@ class BuildData(object):
                         must_raise = True
                         if isinstance(exc, requests.HTTPError):
                             if nb_try < max_try:
-                                self._logger.warning("Got HTTPError - retrying")
+                                self._logger.warning(
+                                    "Got HTTPError - retrying")
                                 self._logger.warning(exc)
                                 must_raise = False
                         if must_raise:
@@ -199,12 +204,16 @@ class BuildData(object):
         self._logger.debug("Now we got %d folders - %d were bad"
                            % (len(self), size - len(self)))
 
+
 class BuildFolderInfoFetcher(object):
     """
     Allow to retrieve information from build folders.
 
-    :param build_regex: a regexp or string regexp that can match the build file.
-    :param build_info_regex: a regexp or string regexp that can match the build
+    :param build_regex: a regexp or string regexp that
+        match the build file.
+
+    :param build_info_regex: a regexp or string regexp
+        that can match the build
                              info file (.txt).
     """
     def __init__(self, build_regex, build_info_regex):
@@ -229,9 +238,10 @@ class BuildFolderInfoFetcher(object):
         if not url.endswith('/'):
             url += '/'
         for link in url_links(url):
-            if not 'build_url' in data and self.build_regex.match(link):
+            if 'build_url' not in data and self.build_regex.match(link):
                 data['build_url'] = url + link
-            elif not 'build_txt_url' in data and self.build_info_regex.match(link):
+            elif 'build_txt_url' not in data  \
+                    and self.build_info_regex.match(link):
                 data['build_txt_url'] = url + link
 
         if read_txt_content and 'build_txt_url' in data:
@@ -262,6 +272,7 @@ class BuildFolderInfoFetcher(object):
             if matched:
                 data['changeset'] = matched.group(1)
         return data
+
 
 class MozBuildData(BuildData):
     """
@@ -342,7 +353,7 @@ class InboundBuildData(MozBuildData):
     """
     Fetch build information for all builds between start_rev and end_rev.
     """
-    def __init__(self, fetch_config, start_rev, end_rev, range=60*60*4):
+    def __init__(self, fetch_config, start_rev, end_rev, range=60 * 60 * 4):
         MozBuildData.__init__(self, [], None)
         self.fetch_config = fetch_config
         self.raw_revisions = []
@@ -426,6 +437,7 @@ class InboundBuildData(MozBuildData):
                     return True
         return False
 
+
 class NightlyUrlBuilder(object):
     """
     Build a url for a nightly build folder for a given instance of
@@ -502,11 +514,13 @@ class NightlyBuildData(MozBuildData):
         max_workers = 2
         while build_urls:
             some = build_urls[:max_workers]
-            with futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            with futures.ThreadPoolExecutor(max_workers=max_workers) \
+                    as executor:
                 futures_results = {}
                 valid_builds = []
                 for i, url in enumerate(some):
-                    future = executor.submit(self.info_fetcher.find_build_info, url)
+                    future = executor.submit(
+                        self.info_fetcher.find_build_info, url)
                     futures_results[future] = i
                 for future in futures.as_completed(futures_results):
                     i = futures_results[future]
@@ -518,7 +532,8 @@ class NightlyBuildData(MozBuildData):
                     build_infos = valid_builds[0][1]
                     if 'build_txt_url' in build_infos:
                         txt_url = build_infos['build_txt_url']
-                        txt_infos = self.info_fetcher.find_build_info_txt(txt_url)
+                        txt_infos = self.info_fetcher.find_build_info_txt(
+                            txt_url)
                         build_infos.update(txt_infos)
                     return build_infos
             build_urls = build_urls[max_workers:]
@@ -531,7 +546,7 @@ class NightlyBuildData(MozBuildData):
         # nightly builds are not often broken. There are good chances
         # that trying to fetch mid point and limits at the same time
         # will gives us enough information. This will save time in most cases.
-        self._fetch(set([0, size/2, size-1]))
+        self._fetch(set([0, size / 2, size - 1]))
         return MozBuildData.mid_point(self)
 
     def get_build_infos_for_date(self, date):

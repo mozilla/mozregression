@@ -76,6 +76,7 @@ def set_http_cache_session(cache_session, get_defaults=None):
         # monkey patch to set default values to a session.get calls
         # I don't see other ways to do this globally for timeout for example
         _get = cache_session.get
+
         def _default_get(*args, **kwargs):
             for k, v in get_defaults.iteritems():
                 kwargs.setdefault(k, v)
@@ -171,7 +172,8 @@ def url_links(url, regex=None, auth=None):
             regex = re.compile(regex)
         match = regex.match
     else:
-        match = lambda t: True
+        def match(_):
+            return True
 
     # do not return a generator but an array, so we can store it for later use
     return [link.get('href')
@@ -191,7 +193,7 @@ def get_build_regex(name, os, bits, with_ext=True):
     """
     if os == "win":
         if bits == 64:
-            suffix, ext = r".*win64-x86_64", r"\.zip"
+            suffix, ext = r".*win64(-x86_64)?", r"\.zip"
         else:
             suffix, ext = r".*win32", r"\.zip"
     elif os == "linux":
@@ -246,6 +248,9 @@ def releases():
         32: "2014-06-09",
         33: "2014-07-21",
         34: "2014-09-02",
+        35: "2014-10-13",
+        36: "2014-11-28",
+        37: "2015-01-12"
     }
 
 

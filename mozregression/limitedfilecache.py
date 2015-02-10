@@ -11,6 +11,7 @@ from cachecontrol.caches import FileCache
 
 ONE_GIGABYTE = 1000000000
 
+
 def get_cache(directory, max_bytes, logger):
     forever = True if directory else False
     if forever:
@@ -21,9 +22,10 @@ def get_cache(directory, max_bytes, logger):
         # not forever so just cache within this run
         return CacheControl(requests.session())
 
+
 class LimitedFileCache(FileCache):
     def __init__(self, directory, forever=False, filemode=0o0600,
-        dirmode=0o0700, max_bytes=ONE_GIGABYTE, logger=warnings):
+                 dirmode=0o0700, max_bytes=ONE_GIGABYTE, logger=warnings):
         FileCache.__init__(self, directory, forever, filemode, dirmode)
         self.max_bytes = max_bytes
         self.curr_bytes = 0
@@ -33,10 +35,10 @@ class LimitedFileCache(FileCache):
         new_bytes = sys.getsizeof(value)
         total = (self.curr_bytes + new_bytes)
         if total > self.max_bytes:
-            message = "Tried adding %d bytes but %d bytes are currently saved" \
-                      " in the cache and the max_bytes is set to %d.\n" % \
-                      (new_bytes, self.curr_bytes, self.max_bytes)
-            self.logger.warn(message)
+            message = ("Tried adding %d bytes but %d bytes are currently saved"
+                       " in the cache and the max_bytes is set to %d."
+                       % (new_bytes, self.curr_bytes, self.max_bytes))
+            self.logger.warning(message)
             return
 
         FileCache.set(self, key, value)

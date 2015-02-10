@@ -54,13 +54,14 @@ class TestRunner(object):
                                persist=self.persist,
                                persist_prefix=persist_prefix)
 
-    def evaluate(self, build_info):
+    def evaluate(self, build_info, allow_back=False):
         """
         Evaluate a given build. Must returns a tuple of (verdict, app_info).
 
         The verdict must be a letter that indicate the state of the build:
         'g', 'b', 's', 'r' or 'e' respectively for 'good', 'bad', 'skip',
-        'retry' or 'exit'.
+        'retry' or 'exit'. If **allow_back** is True, it is also possible
+        to return 'back'.
 
         The app_info is the return value of the
         :meth:`mozregression.launchers.Launcher.get_app_info` for this
@@ -77,6 +78,7 @@ class TestRunner(object):
                            Or 'inbound':
                             - timestamp: timestamp of the build
                             - revision (short version of changeset)
+        :param allow_back: indicate if the back command should be proposed.
         """
         raise NotImplementedError
 
@@ -100,11 +102,13 @@ class ManualTestRunner(TestRunner):
         if self.delete_persist:
             mozfile.remove(self.persist)
 
-    def get_verdict(self, build_info):
+    def get_verdict(self, build_info, allow_back):
         """
         Ask and returns the verdict.
         """
         options = ['good', 'bad', 'skip', 'retry', 'exit']
+        if allow_back:
+            options.insert(-1, 'back')
         # allow user to just type one letter
         allowed_inputs = options + [o[0] for o in options]
         # format options to nice printing
@@ -117,14 +121,16 @@ class ManualTestRunner(TestRunner):
                                 % (build_info['build_type'],
                                    formatted_options))
 
+        if verdict == 'back':
+            return 'back'
         # shorten verdict to one character for processing...
         return verdict[0]
 
-    def evaluate(self, build_info):
+    def evaluate(self, build_info, allow_back=False):
         launcher = self.create_launcher(build_info)
         launcher.start(**self.launcher_kwargs)
         app_infos = launcher.get_app_info()
-        verdict = self.get_verdict(build_info)
+        verdict = self.get_verdict(build_info, allow_back)
         launcher.stop()
         return verdict, app_infos
 
@@ -154,7 +160,7 @@ class CommandTestRunner(TestRunner):
         TestRunner.__init__(self, fetch_config, **kwargs)
         self.command = command
 
-    def evaluate(self, build_info):
+    def evaluate(self, build_info, allow_back=False):
         launcher = self.create_launcher(build_info)
         app_info = launcher.get_app_info()
         variables = dict((k, str(v)) for k, v in build_info.iteritems())

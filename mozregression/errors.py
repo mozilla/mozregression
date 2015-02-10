@@ -59,6 +59,7 @@ class TestCommandError(MozRegressionError):
     Raised on a user test command error.
     """
 
+
 class UnavailableRelease(MozRegressionError):
     """
     Raised when firefox release is not available.

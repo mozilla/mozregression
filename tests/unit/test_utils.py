@@ -5,7 +5,6 @@ import tempfile
 import shutil
 import os
 import requests
-from cachecontrol import CacheControl
 from mozregression import utils, errors, limitedfilecache
 
 

@@ -5,7 +5,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import math
-import sys
 import datetime
 from mozlog.structured import get_default_logger
 

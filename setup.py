@@ -1,4 +1,3 @@
-import os
 import sys
 from setuptools import setup
 from mozregression import __version__

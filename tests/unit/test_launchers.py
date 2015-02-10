@@ -4,7 +4,7 @@ import tempfile
 import mozfile
 import os
 from mock import patch, Mock
-from mozprofile import FirefoxProfile, Profile
+from mozprofile import Profile
 from mozregression.errors import LauncherNotRunnable
 
 
@@ -170,7 +170,7 @@ class TestFennecLauncher(unittest.TestCase):
         return launchers.FennecLauncher('http://binary')
 
     def test_install(self):
-        launcher = self.create_launcher()
+        self.create_launcher()
         self.adb.uninstall_app.assert_called_with("org.mozilla.fennec")
         self.adb.install_app.assert_called_with('binary')
 

@@ -77,7 +77,7 @@ class TestBuildData(unittest.TestCase):
             self.build_data._cache[i][1] = False
 
         # let's fetch some data
-        mid = self.build_data.mid_point()
+        self.build_data.mid_point()
 
         # now, size must be reduced by 3,
         # because the index 5 was not fetched yet

@@ -136,7 +136,7 @@ class TestMainCli(unittest.TestCase):
         self.assertIn('not use the --find-fix flag', exitcode)
 
     def test_commad_make_use_of_commandtestrunner(self):
-        exitcode = self.do_cli(['--command=my command'])
+        self.do_cli(['--command=my command'])
         self.assertIsInstance(self.runner.test_runner, CommandTestRunner)
 
     def test_releases_to_dates(self):

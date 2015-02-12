@@ -170,6 +170,9 @@ class InboundConfigMixin(object):
     def inbound_base_urls(self):
         raise NotImplementedError
 
+    def interesting_inbound_branches(self):
+        return [self.inbound_branch, 'fx-team']
+
 
 class FirefoxInboundConfigMixin(InboundConfigMixin):
     build_base_os_part = {
@@ -208,6 +211,13 @@ class FennecInboundConfigMixin(InboundConfigMixin):
     def set_inbound_branch(self, inbound_branch):
         if inbound_branch:
             self.inbound_branchs = [inbound_branch]
+
+    def interesting_inbound_branches(self):
+        fx_team = []
+        for i in range(len(self.inbound_branchs)):
+            fx_team.append(self.inbound_branchs[i].replace(
+                'mozilla-inbound', 'fx-team'))
+        return self.inbound_branchs + fx_team
 
 # ------------ full config implementations ------------
 
@@ -250,7 +260,7 @@ class B2GConfig(CommonConfig,
                 B2GInboundConfigMixin):
     platforms = {
         'linux': [32, 64],
-        'win': [32, 64],
+        'win': [32],
         'mac': [64]
     }
     pass

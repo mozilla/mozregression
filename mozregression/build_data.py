@@ -7,7 +7,7 @@ import threading
 import datetime
 
 from mozregression import errors
-from mozregression.utils import url_links, get_http_session
+from mozregression.utils import url_links, retry_get
 
 
 class BuildData(object):
@@ -257,7 +257,7 @@ class BuildFolderInfoFetcher(object):
         is found.
         """
         data = {}
-        response = get_http_session().get(url)
+        response = retry_get(url)
         for line in response.text.splitlines():
             if '/rev/' in line:
                 repository, changeset = line.split('/rev/')
@@ -336,12 +336,12 @@ class PushLogsFinder(object):
         chset_url = '%s/json-pushes?changeset=%s' % (
             self.get_repo_url(),
             self.start_rev)
-        response = get_http_session().get(chset_url)
+        response = retry_get(chset_url)
         response.raise_for_status()
         chsets = response.json()
 
         # now fetch all remaining changesets
-        response = get_http_session().get(self.pushlog_url())
+        response = retry_get(self.pushlog_url())
         response.raise_for_status()
         chsets.update(response.json())
         # sort pushlogs by date

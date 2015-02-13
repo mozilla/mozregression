@@ -163,10 +163,10 @@ class TestFennecLauncher(unittest.TestCase):
     @patch('mozregression.launchers.os.unlink')
     @patch('mozregression.launchers.mozversion.get_version')
     @patch('mozregression.launchers.ADBAndroid')
-    def create_launcher(self, ADBAndroid, get_version, *a):
+    def create_launcher(self, ADBAndroid, get_version, *a, **kwargs):
         self.adb = Mock()
         ADBAndroid.return_value = self.adb
-        get_version.return_value = 'version'
+        get_version.return_value = kwargs.get('version_value', {})
         return launchers.FennecLauncher('http://binary')
 
     def test_install(self):
@@ -182,6 +182,16 @@ class TestFennecLauncher(unittest.TestCase):
         self.assertIsNotNone(launcher.get_app_info())
         launcher.stop()
         self.adb.stop_application.assert_called_once_with("org.mozilla.fennec")
+
+    def test_adb_calls_with_custom_package_name(self):
+        pkg_name = 'org.mozilla.custom'
+        launcher = \
+            self.create_launcher(version_value={'package_name': pkg_name})
+        self.adb.uninstall_app.assert_called_once_with(pkg_name)
+        launcher.start()
+        self.adb.launch_fennec.assert_called_once_with(pkg_name)
+        launcher.stop()
+        self.adb.stop_application.assert_called_once_with(pkg_name)
 
     @patch('mozregression.launchers.ADBHost')
     @patch('__builtin__.raw_input')

@@ -171,6 +171,7 @@ class B2GLauncher(MozRunnerLauncher):
 class FennecLauncher(Launcher):
     app_info = None
     adb = None
+    package_name = None
 
     @classmethod
     def check_is_runnable(cls):
@@ -189,17 +190,19 @@ class FennecLauncher(Launcher):
             raise LauncherNotRunnable('Aborted.')
 
     def _install(self, dest):
-        self.adb = ADBAndroid()
-        self.adb.uninstall_app("org.mozilla.fennec")
-        self.adb.install_app(dest)
         # get info now, as dest may be removed
         self.app_info = mozversion.get_version(binary=dest)
+        self.package_name = self.app_info.get("package_name",
+                                              "org.mozilla.fennec")
+        self.adb = ADBAndroid()
+        self.adb.uninstall_app(self.package_name)
+        self.adb.install_app(dest)
 
     def _start(self, **kwargs):
-        self.adb.launch_fennec("org.mozilla.fennec")
+        self.adb.launch_fennec(self.package_name)
 
     def _stop(self):
-        self.adb.stop_application("org.mozilla.fennec")
+        self.adb.stop_application(self.package_name)
 
     def get_app_info(self):
         return self.app_info

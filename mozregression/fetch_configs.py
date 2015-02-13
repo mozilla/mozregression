@@ -170,6 +170,9 @@ class InboundConfigMixin(object):
     def inbound_base_urls(self):
         raise NotImplementedError
 
+    def interesting_inbound_branches(self):
+        return [self.inbound_branch, 'fx-team']
+
 
 class FirefoxInboundConfigMixin(InboundConfigMixin):
     build_base_os_part = {
@@ -209,6 +212,13 @@ class FennecInboundConfigMixin(InboundConfigMixin):
         if inbound_branch:
             self.inbound_branchs = [inbound_branch]
 
+    def interesting_inbound_branches(self):
+        fx_team = []
+        for i in range(len(self.inbound_branchs)):
+            fx_team.append(self.inbound_branchs[i].replace(
+                'mozilla-inbound', 'fx-team'))
+        return self.inbound_branchs + fx_team
+
 # ------------ full config implementations ------------
 
 REGISTRY = ClassRegistry('app_name')
@@ -225,12 +235,22 @@ def create_config(name, os, bits):
 class FirefoxConfig(CommonConfig,
                     FireFoxNightlyConfigMixin,
                     FirefoxInboundConfigMixin):
+    platforms = {
+        'linux': [32, 64],
+        'win': [32, 64],
+        'mac': [64]
+    }
     pass
 
 
 @REGISTRY.register('thunderbird')
 class ThunderbirdConfig(CommonConfig,
                         ThunderbirdNightlyConfigMixin):
+    platforms = {
+        'linux': [32, 64],
+        'win': [32, 64],
+        'mac': [64]
+    }
     pass
 
 
@@ -238,6 +258,11 @@ class ThunderbirdConfig(CommonConfig,
 class B2GConfig(CommonConfig,
                 B2GNightlyConfigMixin,
                 B2GInboundConfigMixin):
+    platforms = {
+        'linux': [32, 64],
+        'win': [32],
+        'mac': [64]
+    }
     pass
 
 
@@ -248,6 +273,7 @@ class FennecConfig(CommonConfig,
     inbound_branchs = (FennecInboundConfigMixin.inbound_branchs
                        + ['mozilla-inbound-android-api-10',
                           'mozilla-inbound-android-api-11'])
+    platforms = {'': ['']}
 
     def build_regex(self):
         return r'fennec-.*\.apk'
@@ -260,6 +286,7 @@ class FennecConfig(CommonConfig,
 class Fennec23Config(FennecConfig):
     inbound_branchs = (FennecInboundConfigMixin.inbound_branchs
                        + ['mozilla-inbound-android-api-9'])
+    platforms = {'': ['']}
 
     def _get_nightly_repo(self, date):
         if date < datetime.date(2014, 12, 6):

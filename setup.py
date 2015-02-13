@@ -32,7 +32,7 @@ setup(name="mozregression",
           'mozinstall >= 1.4',
           'mozinfo >= 0.4',
           'mozlog >= 2.7',
-          'mozversion >= 1.1',
+          'mozversion >= 1.2',
           'requests >= 2.5.0',
           'cachecontrol >= 0.10.2',
           # used in conjunction with cachecontrol

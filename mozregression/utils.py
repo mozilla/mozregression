@@ -14,6 +14,7 @@ from BeautifulSoup import BeautifulSoup
 import mozinfo
 import requests
 import mozfile
+import redo
 
 from mozregression import errors
 
@@ -58,6 +59,13 @@ class ClassRegistry(object):
         return sorted(self._classes)
 
 CACHE_SESSION = None
+
+
+def retry_get(url, **kwargs):
+    return redo.retry(get_http_session().get, attempts=3, sleeptime=1,
+                      retry_exceptions=(requests.exceptions.HTTPError,
+                                        requests.exceptions.ConnectionError),
+                      args=(url,), kwargs=kwargs)
 
 
 def set_http_cache_session(cache_session, get_defaults=None):
@@ -162,7 +170,7 @@ def url_links(url, regex=None, auth=None):
     """
     Returns a list of links that can be found on a given web page.
     """
-    response = get_http_session().get(url, auth=auth)
+    response = retry_get(url, auth=auth)
     response.raise_for_status()
 
     soup = BeautifulSoup(response.text)

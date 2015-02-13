@@ -34,6 +34,7 @@ setup(name="mozregression",
           'mozlog >= 2.7',
           'mozversion >= 1.2',
           'requests >= 2.5.0',
+          'redo',
           'cachecontrol >= 0.10.2',
           # used in conjunction with cachecontrol
           'lockfile >= 0.10.2',

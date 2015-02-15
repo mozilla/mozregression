@@ -7,6 +7,8 @@
 import unittest
 from mock import patch, Mock
 import datetime
+import tempfile
+import os
 
 from mozregression import main, utils, errors
 from mozregression.test_runner import CommandTestRunner
@@ -44,6 +46,40 @@ class TestMainCli(unittest.TestCase):
         output = ''.join(output)
         self.assertEqual(exitcode, 0)
         self.assertIn('usage:', output)
+
+    def test_get_erronous_cfg_defaults(self):
+        handle, filepath = tempfile.mkstemp()
+        self.addCleanup(os.unlink, filepath)
+
+        with os.fdopen(handle, 'w') as conf_file:
+            conf_file.write('aaaaaaaaaaa [Defaults]\n')
+
+        with self.assertRaises(SystemExit):
+            main.get_defaults(filepath)
+
+    def test_get_defaults(self):
+        valid_values = {'http-timeout': '10.2',
+                        'http-cache-dir': '/home/foo/.mozregression',
+                        'bits': '64'}
+
+        handle, filepath = tempfile.mkstemp()
+        conf_default =  main.DEFAULT_CONF_FNAME
+
+        self.addCleanup(os.unlink, filepath)
+        self.addCleanup(setattr, main, "DEFAULT_CONF_FNAME", conf_default)
+
+        main.DEFAULT_CONF_FNAME = filepath
+
+        with os.fdopen(handle, 'w') as conf_file:
+            conf_file.write('[Defaults]\n')
+            for key, value in valid_values.iteritems():
+                conf_file.write("%s=%s\n" % (key, value))
+
+        options = main.parse_args(['--bits=32'])
+
+        self.assertEqual(options.http_timeout, 10.2)
+        self.assertEqual(options.http_cache_dir, '/home/foo/.mozregression')
+        self.assertEqual(options.bits, 32)
 
     def test_without_args(self):
         self.runner.bisect_nightlies.return_value = 0

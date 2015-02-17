@@ -22,6 +22,7 @@ setup(name="mozregression",
       entry_points="""
           [console_scripts]
           mozregression = mozregression.main:cli
+          inbound_prefetch = mozregression.inbound_prefetch:cli
         """,
       platforms=['Any'],
       install_requires=[

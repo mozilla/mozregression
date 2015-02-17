@@ -8,16 +8,13 @@ import copy
 from mozregression.utils import get_build_regex, ClassRegistry
 from mozregression import errors
 
-
 class CommonConfig(object):
     """
     Define the configuration for both nightly and inbound fetching.
 
     :attr name: the name of the application
     """
-
     app_name = None
-
     def __init__(self, os, bits):
         self.os = os
         self.bits = bits
@@ -47,7 +44,6 @@ class CommonConfig(object):
         Returns True if the configuration can be used for inbound fetching.
         """
         return isinstance(self, InboundConfigMixin)
-
 
 class NightlyConfigMixin(object):
     """
@@ -111,14 +107,12 @@ class NightlyConfigMixin(object):
         # we can go on inbound if no nightly repo has been specified.
         return self.is_inbound() and not self.nightly_repo
 
-
 class FireFoxNightlyConfigMixin(NightlyConfigMixin):
     def _get_nightly_repo(self, date):
         if date < datetime.date(2008, 6, 17):
             return "trunk"
         else:
             return "mozilla-central"
-
 
 class ThunderbirdNightlyConfigMixin(NightlyConfigMixin):
     nightly_base_repo_name = 'thunderbird'
@@ -138,13 +132,11 @@ class ThunderbirdNightlyConfigMixin(NightlyConfigMixin):
         else:
             return "comm-central"
 
-
 class B2GNightlyConfigMixin(NightlyConfigMixin):
     nightly_base_repo_name = 'b2g'
 
     def _get_nightly_repo(self, date):
         return "mozilla-central"
-
 
 class FennecNightlyConfigMixin(NightlyConfigMixin):
     nightly_base_repo_name = "mobile"
@@ -156,23 +148,17 @@ class FennecNightlyConfigMixin(NightlyConfigMixin):
             return "mozilla-central-android-api-10"
         return "mozilla-central-android-api-11"
 
-
 class InboundConfigMixin(object):
     """
     Define the inbound-related required configuration.
     """
     inbound_branch = 'mozilla-inbound'
-
     def set_inbound_branch(self, inbound_branch):
         if inbound_branch:
             self.inbound_branch = inbound_branch
 
     def inbound_base_urls(self):
         raise NotImplementedError
-
-    def interesting_inbound_branches(self):
-        return [self.inbound_branch, 'fx-team']
-
 
 class FirefoxInboundConfigMixin(InboundConfigMixin):
     build_base_os_part = {
@@ -188,21 +174,16 @@ class FirefoxInboundConfigMixin(InboundConfigMixin):
                 % (self.inbound_branch,
                    self.build_base_os_part[self.os][self.bits])]
 
-
 class B2GInboundConfigMixin(FirefoxInboundConfigMixin):
     inbound_branch = 'b2g-inbound'
-    build_base_os_part = copy.deepcopy(
-        FirefoxInboundConfigMixin.build_base_os_part
-        )
+    build_base_os_part = copy.deepcopy(FirefoxInboundConfigMixin.build_base_os_part)
     build_base_os_part['linux'][32] = 'linux32'
 
     root_build_base_url = ('http://ftp.mozilla.org/pub/mozilla.org/b2g'
                            '/tinderbox-builds/%s-%s_gecko/')
 
-
 class FennecInboundConfigMixin(InboundConfigMixin):
     inbound_branchs = ['mozilla-inbound-android']
-
     def inbound_base_urls(self):
         return ["http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org"
                 "/mobile/tinderbox-builds/%s/" % inbound_branch
@@ -212,17 +193,9 @@ class FennecInboundConfigMixin(InboundConfigMixin):
         if inbound_branch:
             self.inbound_branchs = [inbound_branch]
 
-    def interesting_inbound_branches(self):
-        fx_team = []
-        for i in range(len(self.inbound_branchs)):
-            fx_team.append(self.inbound_branchs[i].replace(
-                'mozilla-inbound', 'fx-team'))
-        return self.inbound_branchs + fx_team
-
 # ------------ full config implementations ------------
 
 REGISTRY = ClassRegistry('app_name')
-
 
 def create_config(name, os, bits):
     """
@@ -230,41 +203,22 @@ def create_config(name, os, bits):
     """
     return REGISTRY.get(name)(os, bits)
 
-
 @REGISTRY.register('firefox')
 class FirefoxConfig(CommonConfig,
                     FireFoxNightlyConfigMixin,
                     FirefoxInboundConfigMixin):
-    platforms = {
-        'linux': [32, 64],
-        'win': [32, 64],
-        'mac': [64]
-    }
     pass
-
 
 @REGISTRY.register('thunderbird')
 class ThunderbirdConfig(CommonConfig,
                         ThunderbirdNightlyConfigMixin):
-    platforms = {
-        'linux': [32, 64],
-        'win': [32, 64],
-        'mac': [64]
-    }
     pass
-
 
 @REGISTRY.register('b2g')
 class B2GConfig(CommonConfig,
                 B2GNightlyConfigMixin,
                 B2GInboundConfigMixin):
-    platforms = {
-        'linux': [32, 64],
-        'win': [32],
-        'mac': [64]
-    }
     pass
-
 
 @REGISTRY.register('fennec')
 class FennecConfig(CommonConfig,
@@ -273,20 +227,16 @@ class FennecConfig(CommonConfig,
     inbound_branchs = (FennecInboundConfigMixin.inbound_branchs
                        + ['mozilla-inbound-android-api-10',
                           'mozilla-inbound-android-api-11'])
-    platforms = {'': ['']}
-
     def build_regex(self):
         return r'fennec-.*\.apk'
 
     def build_info_regex(self):
         return r'fennec-.*\.txt'
 
-
 @REGISTRY.register('fennec-2.3', attr_value='fennec')
 class Fennec23Config(FennecConfig):
     inbound_branchs = (FennecInboundConfigMixin.inbound_branchs
                        + ['mozilla-inbound-android-api-9'])
-    platforms = {'': ['']}
 
     def _get_nightly_repo(self, date):
         if date < datetime.date(2014, 12, 6):

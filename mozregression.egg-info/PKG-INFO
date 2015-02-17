@@ -1,0 +1,16 @@
+Metadata-Version: 1.1
+Name: mozregression
+Version: 0.32
+Summary: Regression range finder for Mozilla nightly builds
+Home-page: http://github.com/mozilla/mozregression
+Author: Mozilla Automation and Tools Team
+Author-email: tools@lists.mozilla.org
+License: MPL 1.1/GPL 2.0/LGPL 2.1
+Description: Interactive regression range finder for Mozilla nightly builds.
+        
+        For more information see the mozregression website: http://mozilla.github.io/mozregression/
+Platform: Any
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent

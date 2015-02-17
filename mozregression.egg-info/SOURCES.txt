@@ -1,0 +1,17 @@
+setup.py
+mozregression/__init__.py
+mozregression/bisector.py
+mozregression/build_data.py
+mozregression/errors.py
+mozregression/fetch_configs.py
+mozregression/launchers.py
+mozregression/limitedfilecache.py
+mozregression/main.py
+mozregression/test_runner.py
+mozregression/utils.py
+mozregression.egg-info/PKG-INFO
+mozregression.egg-info/SOURCES.txt
+mozregression.egg-info/dependency_links.txt
+mozregression.egg-info/entry_points.txt
+mozregression.egg-info/requires.txt
+mozregression.egg-info/top_level.txt

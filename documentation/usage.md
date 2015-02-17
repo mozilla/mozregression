@@ -32,6 +32,18 @@ Some useful command line usage.
 
        mozregression --bits 32
 
+  Note: On linux systems (particularly Ubuntu) if you are facing errors in running 32-bit Firefox on
+  64-bit machine, the cause is often missing 32-bit libraries. Use --log-mach-level=debug along with the
+  above command to figure out which library is needed. For example, if the browser is not launching and
+  you get an error like:
+
+       libXt.so.6: cannot open shared object file: No such file or directory
+
+  You will need to install the library libXt6:i386 via 'sudo apt-get install libXt6:i386'. In case,
+  you don't get a library needed error and some other error (like OSError) install the library
+  libstdc++6:i386 via 'sudo apt-get install libstdc++6:i386' and try running mozregression again to see if
+  a useful error comes up!
+
 ## Bisecting options
 
 - Bisecting nightlies

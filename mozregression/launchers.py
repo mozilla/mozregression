@@ -118,6 +118,7 @@ class MozRunnerLauncher(Launcher):
         else:
             profile = self.profile_class()
 
+        self._logger.info("Launching %s" % self.binary)
         process_args = {'processOutputLine': [self._logger.debug]}
         self.runner = Runner(binary=self.binary,
                              cmdargs=cmdargs,

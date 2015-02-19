@@ -112,8 +112,8 @@ class ManualTestRunner(TestRunner):
         # allow user to just type one letter
         allowed_inputs = options + [o[0] for o in options]
         # format options to nice printing
-        formatted_options = (', '.join(["'%s'" % o for o in options[:-1]])
-                             + " or '%s'" % options[-1])
+        formatted_options = (', '.join(["'%s'" % o for o in options[:-1]]) +
+                             " or '%s'" % options[-1])
         verdict = ""
         while verdict not in allowed_inputs:
             verdict = raw_input("Was this %s build good, bad, or broken?"

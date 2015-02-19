@@ -245,9 +245,9 @@ class B2GConfig(CommonConfig,
 class FennecConfig(CommonConfig,
                    FennecNightlyConfigMixin,
                    FennecInboundConfigMixin):
-    inbound_branchs = (FennecInboundConfigMixin.inbound_branchs
-                       + ['mozilla-inbound-android-api-10',
-                          'mozilla-inbound-android-api-11'])
+    inbound_branchs = (FennecInboundConfigMixin.inbound_branchs +
+                       ['mozilla-inbound-android-api-10',
+                        'mozilla-inbound-android-api-11'])
 
     def build_regex(self):
         return r'fennec-.*\.apk'
@@ -258,8 +258,8 @@ class FennecConfig(CommonConfig,
 
 @REGISTRY.register('fennec-2.3', attr_value='fennec')
 class Fennec23Config(FennecConfig):
-    inbound_branchs = (FennecInboundConfigMixin.inbound_branchs
-                       + ['mozilla-inbound-android-api-9'])
+    inbound_branchs = (FennecInboundConfigMixin.inbound_branchs +
+                       ['mozilla-inbound-android-api-9'])
 
     def _get_nightly_repo(self, date):
         if date < datetime.date(2014, 12, 6):

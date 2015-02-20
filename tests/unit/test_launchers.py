@@ -127,17 +127,20 @@ profile_class', spec=Profile)
 
     @patch('mozregression.launchers.Runner')
     def test_start_with_addons(self, Runner):
-        self.launcher_start(addons=['my-addon'])
-        self.profile_class.assert_called_once_with(addons=['my-addon'])
+        self.launcher_start(addons=['my-addon'], preferences='my-prefs')
+        self.profile_class.assert_called_once_with(addons=['my-addon'],
+                                                   preferences='my-prefs')
         # runner is started
         self.launcher.runner.start.assert_called_once_with()
         self.launcher.stop()
 
     @patch('mozregression.launchers.Runner')
     def test_start_with_profile_and_addons(self, Runner):
-        self.launcher_start(profile='my-profile', addons=['my-addon'])
+        self.launcher_start(profile='my-profile', addons=['my-addon'],
+                            preferences='my-prefs')
         self.profile_class.assert_called_once_with(profile='my-profile',
-                                                   addons=['my-addon'])
+                                                   addons=['my-addon'],
+                                                   preferences='my-prefs')
         # runner is started
         self.launcher.runner.start.assert_called_once_with()
         self.launcher.stop()

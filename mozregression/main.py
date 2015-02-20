@@ -11,6 +11,8 @@ Entry point for the mozregression command line.
 import mozinfo
 import datetime
 import sys
+
+import mozprofile
 from argparse import ArgumentParser
 from mozlog.structured import commandline, get_default_logger
 from requests.exceptions import RequestException
@@ -143,6 +145,15 @@ def parse_args(argv=None):
                               " %(default)s seconds - increase this if you"
                               " are under a really slow network."))
 
+    parser.add_argument('--pref', nargs='*', dest='prefs',
+                        help=("A preference to set. Must be a key-value pair"
+                              "separated by a ':'"))
+
+    parser.add_argument('--preferences',
+                        help=("read preferences from a JSON or INI file. For"
+                              "INI, use 'file.ini:section' to specify a"
+                              "particular section."))
+
     commandline.add_logging_group(parser)
     options = parser.parse_args(argv)
     options.bits = parse_bits(options.bits)
@@ -239,6 +250,10 @@ def cli(argv=None):
     else:
         test_runner = CommandTestRunner(fetch_config, options.command,
                                         persist=options.persist)
+
+    prefs = mozprofile.prefs.Preferences()
+    if options.preferences:
+        prefs.add_file(options.preferences)
 
     runner = BisectRunner(fetch_config, test_runner, options)
 

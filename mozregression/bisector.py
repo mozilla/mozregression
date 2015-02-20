@@ -326,9 +326,12 @@ class BisectRunner(object):
         self.bisector = Bisector(fetch_config, test_runner)
         self._logger = get_default_logger('Bisector')
 
+    def do_bisect(self, handler, good, bad, **kwargs):
+        return self.bisector.bisect(handler, good, bad, **kwargs)
+
     def bisect_nightlies(self, good_date, bad_date):
         handler = NightlyHandler(find_fix=self.options.find_fix)
-        result = self.bisector.bisect(handler, good_date, bad_date)
+        result = self.do_bisect(handler, good_date, bad_date)
         if result == Bisector.FINISHED:
             self._logger.info("Got as far as we can go bisecting nightlies...")
             handler.print_range()
@@ -398,8 +401,7 @@ class BisectRunner(object):
         # we can change this at some point in the future, after those builds
         # expire)
         handler = InboundHandler(find_fix=self.options.find_fix)
-        result = self.bisector.bisect(handler, good_rev, bad_rev,
-                                      range=60*60*12)
+        result = self.do_bisect(handler, good_rev, bad_rev, range=60*60*12)
         if result == Bisector.FINISHED:
             self._logger.info("Oh noes, no (more) inbound revisions :(")
             handler.print_range()

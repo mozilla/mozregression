@@ -11,6 +11,7 @@ Entry point for the mozregression command line.
 import mozinfo
 import datetime
 import sys
+import atexit
 from argparse import ArgumentParser
 from mozlog.structured import commandline, get_default_logger
 from requests.exceptions import RequestException
@@ -149,6 +150,21 @@ def parse_args(argv=None):
     return options
 
 
+class ResumeInfoBisectRunner(BisectRunner):
+    def do_bisect(self, handler, good, bad, **kwargs):
+        try:
+            return BisectRunner.do_bisect(self, handler, good, bad, **kwargs)
+        except (KeyboardInterrupt, MozRegressionError, RequestException):
+            if handler.good_revision is not None and \
+                    handler.bad_revision is not None:
+                atexit.register(self.on_exit_print_resume_info, handler)
+            raise
+
+    def on_exit_print_resume_info(self, handler):
+        handler.print_range()
+        self.print_resume_info(handler)
+
+
 def bisect_inbound(runner, logger):
     fetch_config = runner.fetch_config
     options = runner.options
@@ -240,7 +256,7 @@ def cli(argv=None):
         test_runner = CommandTestRunner(fetch_config, options.command,
                                         persist=options.persist)
 
-    runner = BisectRunner(fetch_config, test_runner, options)
+    runner = ResumeInfoBisectRunner(fetch_config, test_runner, options)
 
     if fetch_config.is_inbound():
         # this can be useful for both inbound and nightly, because we

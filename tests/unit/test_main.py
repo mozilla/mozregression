@@ -99,7 +99,7 @@ class TestMainCli(unittest.TestCase):
 
     def test_basic_inbound(self):
         self.runner.bisect_inbound.return_value = 0
-        exitcode = self.do_cli(['--inbound', '--good-rev=1', '--bad-rev=5'])
+        exitcode = self.do_cli(['--good-rev=1', '--bad-rev=5'])
         # application is by default firefox
         self.assertEqual(self.runner.fetch_config.app_name, 'firefox')
         # bisect_inbound has been called
@@ -109,9 +109,7 @@ class TestMainCli(unittest.TestCase):
 
     def test_inbound_revs_must_be_given(self):
         argslist = [
-            ['--inbound'],
-            ['--inbound', '--good-rev=1'],
-            ['--inbound', '--bad-rev=5'],
+            ['--good-rev=1'], ['--bad-rev=5'],
         ]
         for args in argslist:
             exitcode = self.do_cli(args)
@@ -120,7 +118,7 @@ class TestMainCli(unittest.TestCase):
     @patch('mozregression.fetch_configs.FirefoxConfig.is_inbound')
     def test_inbound_must_be_doable(self, is_inbound):
         is_inbound.return_value = False
-        exitcode = self.do_cli(['--inbound', '--good-rev=1', '--bad-rev=5'])
+        exitcode = self.do_cli(['--good-rev=1', '--bad-rev=5'])
         self.assertIn('Unable to bissect inbound', exitcode)
 
     @patch('mozregression.main.formatted_valid_release_dates')

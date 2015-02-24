@@ -7,5 +7,10 @@ init:
 install:
   - ps: (new-object net.webclient).DownloadFile('https://raw.github.com/pypa/pip/master/contrib/get-pip.py', 'C:/get-pip.py')
   - "%PYTHON%/python.exe C:/get-pip.py"
+  # this is required, else "python.exe setup.py test" step will fail
+  # with a strange error, like:
+  # File "c:\users\appveyor\appdata\local\temp\easy_install-fz8d4j\requests-2.5.2\requests\packages\__init__.py", line 49, in load_module
+  # AttributeError: 'NoneType' object has no attribute 'modules'
+  - "%PYTHON%/Scripts/pip.exe install -e ."
 test_script:
   - "%PYTHON%/python.exe setup.py test"

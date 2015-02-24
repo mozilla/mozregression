@@ -420,7 +420,7 @@ class BisectRunner(object):
         if isinstance(handler, NightlyHandler):
             info = '--good=%s --bad=%s' % (handler.good_date, handler.bad_date)
         else:
-            info = ('--inbound --good-rev=%s --bad-rev=%s'
+            info = ('--good-rev=%s --bad-rev=%s'
                     % (handler.good_revision, handler.bad_revision))
         options = self.options
         info += ' --app=%s' % options.app

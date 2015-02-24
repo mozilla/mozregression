@@ -3,3 +3,5 @@ dist/*
 *.pyc
 *.swp
 .DS_Store
+build/*
+coveragerc

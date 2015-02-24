@@ -37,7 +37,7 @@ def parse_args(argv=None):
              " [[--good GOOD_DATE]|[--good-release GOOD_RELEASE]]"
              "\n"
              " %(prog)s [OPTIONS]"
-             " --inbound --bad-rev BAD_REV --good-rev GOOD_REV")
+             " --bad-rev BAD_REV --good-rev GOOD_REV")
 
     parser = ArgumentParser(usage=usage)
     parser.add_argument("--version", action="version", version=__version__,
@@ -69,18 +69,13 @@ def parse_args(argv=None):
                         help=("last known good nightly build. This option is"
                               " incompatible with --good."))
 
-    parser.add_argument("--inbound",
-                        action="store_true",
-                        help=("use inbound instead of nightlies (use"
-                              " --good-rev and --bad-rev options."))
-
     parser.add_argument("--bad-rev", dest="first_bad_revision",
-                        help=("first known bad revision (use with"
-                              " --inbound)."))
+                        help=("first known bad revision (for inbound"
+                              " bisection)."))
 
     parser.add_argument("--good-rev", dest="last_good_revision",
-                        help=("last known good revision (use with"
-                              " --inbound)."))
+                        help=("last known good revision (for inbound"
+                              " bisection)."))
 
     parser.add_argument("--find-fix", action="store_true",
                         help="Search for a bug fix instead of a regression.")
@@ -247,10 +242,12 @@ def cli(argv=None):
         # can go to inbound from nightly.
         fetch_config.set_inbound_branch(options.inbound_branch)
 
-    if options.inbound:
+    # bisect inbound if last good revision or first bad revision are set
+    if options.first_bad_revision or options.last_good_revision:
         bisect = bisect_inbound
     else:
         bisect = bisect_nightlies
+
     try:
         launcher_class = APP_REGISTRY.get(fetch_config.app_name)
         launcher_class.check_is_runnable()

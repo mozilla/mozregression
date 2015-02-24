@@ -412,7 +412,6 @@ class TestBisectRunner(unittest.TestCase):
         self.assertIn('--bits=64', result)
         self.assertIn('--good=2015-01-01', result)
         self.assertIn('--bad=2015-01-11', result)
-        self.assertNotIn('--inbound', result)
 
         self.assertNotIn('--find-fix', result)
         result = self.print_resume_info(NightlyHandler, find_fix=True)
@@ -448,7 +447,6 @@ class TestBisectRunner(unittest.TestCase):
         self.assertIn('--app=b2g', result)
         self.assertIn('--good-rev=123', result)
         self.assertIn('--bad-rev=456', result)
-        self.assertIn('--inbound', result)
 
 
 if __name__ == '__main__':

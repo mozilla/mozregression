@@ -12,7 +12,10 @@ import mozinfo
 import datetime
 import sys
 import atexit
+import os
+
 from argparse import ArgumentParser
+from ConfigParser import SafeConfigParser, Error
 from mozlog.structured import commandline, get_default_logger
 from requests.exceptions import RequestException
 
@@ -27,6 +30,28 @@ from mozregression.bisector import BisectRunner
 from mozregression.launchers import REGISTRY as APP_REGISTRY
 from mozregression.test_runner import ManualTestRunner, CommandTestRunner
 
+DEFAULT_CONF_FNAME = os.path.expanduser(os.path.join("~",
+                                                     ".mozregression.cfg"))
+
+
+def get_defaults(conf_name):
+    """
+    Get custom defaults from configuration file in argument
+    """
+    defaults = {}
+
+    if os.path.isfile(conf_name):
+        try:
+            config = SafeConfigParser()
+            config.read([conf_name])
+            defaults = dict(config.items("Defaults"))
+            print("%s loaded" % conf_name)
+        except Error as err:
+            sys.exit("Error while parsing %s =>  no custom default values\n%s"
+                     % (conf_name, str(err)))
+
+    return defaults
+
 
 def parse_args(argv=None):
     """
@@ -40,6 +65,7 @@ def parse_args(argv=None):
              " %(prog)s [OPTIONS]"
              " --inbound --bad-rev BAD_REV --good-rev GOOD_REV")
 
+    defaults = get_defaults(DEFAULT_CONF_FNAME)
     parser = ArgumentParser(usage=usage)
     parser.add_argument("--version", action="version", version=__version__,
                         help=("print the mozregression version number and"
@@ -94,6 +120,7 @@ def parse_args(argv=None):
                         help="addon to install; repeat for multiple addons.")
 
     parser.add_argument("-p", "--profile",
+                        default=defaults.get("profile"),
                         metavar="PATH",
                         help="profile to use with nightlies.")
 
@@ -107,20 +134,22 @@ def parse_args(argv=None):
 
     parser.add_argument("-n", "--app",
                         choices=FC_REGISTRY.names(),
-                        default="firefox",
+                        default=defaults.get("app", "firefox"),
                         help="application name. Default: %(default)s.")
 
     parser.add_argument("--repo",
                         metavar="[mozilla-aurora|mozilla-beta|...]",
+                        default=defaults.get("repo"),
                         help="repository name used for nightly hunting.")
 
     parser.add_argument("--inbound-branch",
                         metavar="[b2g-inbound|fx-team|...]",
+                        default=defaults.get("inbound-branch"),
                         help="inbound branch name on ftp.mozilla.org.")
 
     parser.add_argument("--bits",
                         choices=("32", "64"),
-                        default=mozinfo.bits,
+                        default=defaults.get("bits", mozinfo.bits),
                         help=("force 32 or 64 bit version (only applies to"
                               " x86_64 boxes). Default: %(default)s bits."))
 
@@ -131,14 +160,18 @@ def parse_args(argv=None):
                               " as bad."))
 
     parser.add_argument("--persist",
+                        default=defaults.get("persist"),
                         help=("the directory in which downloaded files are"
                               " to persist."))
 
     parser.add_argument("--http-cache-dir",
+                        default=defaults.get("http-cache-dir"),
                         help=("the directory for caching http requests."
                               " If not set there will be an in-memory cache"
                               " used."))
-    parser.add_argument('--http-timeout', type=float, default=30.0,
+
+    parser.add_argument('--http-timeout', type=float,
+                        default=float(defaults.get("http-timeout", 30.0)),
                         help=("Timeout in seconds to abort requests when there"
                               " is no activity from the server. Default to"
                               " %(default)s seconds - increase this if you"

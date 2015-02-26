@@ -7,6 +7,8 @@
 import unittest
 from mock import patch, Mock
 import datetime
+import tempfile
+import os
 
 from mozregression import main, utils, errors
 from mozregression.test_runner import CommandTestRunner
@@ -16,12 +18,15 @@ class TestMainCli(unittest.TestCase):
     def setUp(self):
         self.runner = Mock()
 
+    @patch('mozregression.main.get_defaults')
     @patch('mozlog.structured.commandline.setup_logging')
     @patch('mozregression.main.set_http_cache_session')
     @patch('mozregression.limitedfilecache.get_cache')
-    @patch('mozregression.main.BisectRunner')
+    @patch('mozregression.main.ResumeInfoBisectRunner')
     def do_cli(self, argv, BisectRunner, get_cache, set_http_cache_session,
-               setup_logging):
+               setup_logging, get_defaults):
+        get_defaults.return_value = dict()
+
         def create_runner(fetch_config, test_runner, options):
             self.runner.fetch_config = fetch_config
             self.runner.test_runner = test_runner
@@ -44,6 +49,40 @@ class TestMainCli(unittest.TestCase):
         output = ''.join(output)
         self.assertEqual(exitcode, 0)
         self.assertIn('usage:', output)
+
+    def test_get_erronous_cfg_defaults(self):
+        handle, filepath = tempfile.mkstemp()
+        self.addCleanup(os.unlink, filepath)
+
+        with os.fdopen(handle, 'w') as conf_file:
+            conf_file.write('aaaaaaaaaaa [Defaults]\n')
+
+        with self.assertRaises(SystemExit):
+            main.get_defaults(filepath)
+
+    def test_get_defaults(self):
+        valid_values = {'http-timeout': '10.2',
+                        'http-cache-dir': '/home/foo/.mozregression',
+                        'bits': '64'}
+
+        handle, filepath = tempfile.mkstemp()
+        conf_default = main.DEFAULT_CONF_FNAME
+
+        self.addCleanup(os.unlink, filepath)
+        self.addCleanup(setattr, main, "DEFAULT_CONF_FNAME", conf_default)
+
+        main.DEFAULT_CONF_FNAME = filepath
+
+        with os.fdopen(handle, 'w') as conf_file:
+            conf_file.write('[Defaults]\n')
+            for key, value in valid_values.iteritems():
+                conf_file.write("%s=%s\n" % (key, value))
+
+        options = main.parse_args(['--bits=32'])
+
+        self.assertEqual(options.http_timeout, 10.2)
+        self.assertEqual(options.http_cache_dir, '/home/foo/.mozregression')
+        self.assertEqual(options.bits, 32)
 
     def test_without_args(self):
         self.runner.bisect_nightlies.return_value = 0
@@ -149,6 +188,40 @@ class TestMainCli(unittest.TestCase):
         self.runner.bisect_nightlies.\
             assert_called_with(utils.parse_date(good[1]),
                                utils.parse_date(bad[1]))
+
+
+class TestResumeInfoBisectRunner(unittest.TestCase):
+    @patch('mozregression.main.BisectRunner')
+    def test_do_bisect(self, BisectRunner):
+        BisectRunner.do_bisect.return_value = 0
+        runner = main.ResumeInfoBisectRunner(None, None, None)
+        result = runner.do_bisect('handler', 'g', 'b', range=4)
+
+        self.assertEquals(result, 0)
+        BisectRunner.do_bisect.assert_called_with(runner, 'handler', 'g', 'b',
+                                                  range=4)
+
+    @patch('atexit.register')
+    @patch('mozregression.main.BisectRunner')
+    def test_do_bisect_error(self, BisectRunner, register):
+        BisectRunner.do_bisect.side_effect = KeyboardInterrupt
+        runner = main.ResumeInfoBisectRunner(None, None, None)
+        handler = Mock(good_revision=1, bad_revision=2)
+        with self.assertRaises(KeyboardInterrupt):
+            runner.do_bisect(handler, 'g', 'b')
+
+        register.assert_called_with(runner.on_exit_print_resume_info,
+                                    handler)
+
+    @patch('mozregression.main.BisectRunner')
+    def test_on_exit_print_resume_info(self, BisectRunner):
+        handler = Mock()
+        runner = main.ResumeInfoBisectRunner(None, None, None)
+        runner.print_resume_info = Mock()
+        runner.on_exit_print_resume_info(handler)
+
+        handler.print_range.assert_called_with()
+        runner.print_resume_info.assert_called_with(handler)
 
 if __name__ == '__main__':
     unittest.main()

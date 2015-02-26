@@ -26,6 +26,7 @@ class TestMainCli(unittest.TestCase):
     def do_cli(self, argv, BisectRunner, get_cache, set_http_cache_session,
                setup_logging, get_defaults):
         get_defaults.return_value = dict()
+
         def create_runner(fetch_config, test_runner, options):
             self.runner.fetch_config = fetch_config
             self.runner.test_runner = test_runner
@@ -65,7 +66,7 @@ class TestMainCli(unittest.TestCase):
                         'bits': '64'}
 
         handle, filepath = tempfile.mkstemp()
-        conf_default =  main.DEFAULT_CONF_FNAME
+        conf_default = main.DEFAULT_CONF_FNAME
 
         self.addCleanup(os.unlink, filepath)
         self.addCleanup(setattr, main, "DEFAULT_CONF_FNAME", conf_default)

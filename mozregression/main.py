@@ -187,6 +187,15 @@ def parse_args(argv=None):
                               " %(default)s seconds - increase this if you"
                               " are under a really slow network."))
 
+    parser.add_argument('--pref', nargs='*', dest='prefs',
+                        help=("A preference to set. Must be a key-value pair"
+                              "separated by a ':'"))
+
+    parser.add_argument('--preferences', nargs="*", dest='prefs_files',
+                        help=("read preferences from a JSON or INI file. For"
+                              "INI, use 'file.ini:section' to specify a"
+                              "particular section."))
+
     commandline.add_logging_group(parser)
     options = parser.parse_args(argv)
     options.bits = parse_bits(options.bits)

@@ -9,6 +9,7 @@ import datetime
 from mozlog.structured import get_default_logger
 
 from mozregression.build_data import NightlyBuildData, InboundBuildData
+from mozregression.download_manager import DownloadManager
 
 
 def compute_steps_left(steps):
@@ -246,9 +247,15 @@ class Bisector(object):
                                               good,
                                               bad,
                                               **kwargs)
-        return self._bisect(handler, build_data)
+        download_manager = DownloadManager(self.test_runner.destdir)
+        try:
+            return self._bisect(download_manager, handler, build_data)
+        finally:
+            # ensure we cancel any possible download done in the background
+            # else python will block until threads termination.
+            download_manager.cancel()
 
-    def _bisect(self, handler, build_data):
+    def _bisect(self, download_manager, handler, build_data):
         """
         Starts a bisection for a :class:`mozregression.build_data.BuildData`.
         """
@@ -269,7 +276,7 @@ class Bisector(object):
 
             build_infos = handler.build_infos(mid)
             verdict, app_info = \
-                self.test_runner.evaluate(build_infos,
+                self.test_runner.evaluate(download_manager, build_infos,
                                           allow_back=bool(previous_data))
 
             # update build_info in build_data if possible

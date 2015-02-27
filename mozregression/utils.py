@@ -7,13 +7,10 @@ Utility functions and classes for mozregression.
 """
 
 import datetime
-import os
 import re
-import sys
 from BeautifulSoup import BeautifulSoup
 import mozinfo
 import requests
-import mozfile
 import redo
 
 from mozregression import errors
@@ -122,48 +119,6 @@ def parse_bits(option_bits):
     else:
         # if 64 bits is passed on a 32 bit system, it won't be honored
         return mozinfo.bits
-
-
-def update_download_progress(percent):
-    """
-    Print realtime status of downloaded file.
-    """
-    sys.stdout.write("===== Downloaded %d%% =====\r" % percent)
-    sys.stdout.flush()
-    if percent >= 100:
-        sys.stdout.write("\n")
-
-
-def download_url(url, dest):
-    """
-    Download a file given an url.
-    """
-    chunk_size = 16 * 1024
-    bytes_so_far = 0.0
-    tmp_file = dest + ".part"
-    response = get_http_session().get(url, stream=True)
-    total_size = int(response.headers['Content-length'].strip())
-
-    try:
-        with open(tmp_file, 'wb') as ftmp:
-            # write the file to the tmp_file
-            for chunk in response.iter_content(chunk_size=chunk_size):
-                # Filter out Keep-Alive chunks.
-                if not chunk:
-                    continue
-                bytes_so_far += chunk_size
-                ftmp.write(chunk)
-                percent = (bytes_so_far / total_size) * 100
-                update_download_progress(percent)
-    except:
-        if os.path.isfile(tmp_file):
-            mozfile.remove(tmp_file)
-        raise
-
-    # move the temp file to the dest
-    os.rename(tmp_file, dest)
-
-    return dest
 
 
 def url_links(url, regex=None, auth=None):

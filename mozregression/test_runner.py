@@ -13,11 +13,18 @@ from mozlog.structured import get_default_logger
 import subprocess
 import shlex
 import os
+import sys
 import tempfile
 import mozfile
 
 from mozregression.launchers import create_launcher
 from mozregression.errors import TestCommandError
+
+
+def download_progress(_dl, bytes_so_far, total_size):
+    percent = (float(bytes_so_far) / total_size) * 100
+    sys.stdout.write("===== Downloaded %d%% =====\r" % percent)
+    sys.stdout.flush()
 
 
 class TestRunner(object):
@@ -28,11 +35,21 @@ class TestRunner(object):
     """
     def __init__(self, fetch_config, persist=None, launcher_kwargs=None):
         self.fetch_config = fetch_config
-        self.persist = persist
         self.launcher_kwargs = launcher_kwargs or {}
         self.logger = get_default_logger('Test Runner')
+        self.delete_destdir = False
+        if persist is None:
+            # always keep the downloaded files
+            # this allows to not re-download a file if a user retry a build.
+            persist = tempfile.mkdtemp()
+            self.delete_destdir = True
+        self.destdir = persist
 
-    def create_launcher(self, build_info):
+    def __del__(self):
+        if self.delete_destdir:
+            mozfile.remove(self.destdir)
+
+    def create_launcher(self, download_manager, build_info):
         """
         Create and returns a :class:`mozregression.launchers.Launcher`.
         """
@@ -49,12 +66,22 @@ class TestRunner(object):
                              % (build_info['timestamp'],
                                 build_info['revision']))
         build_url = build_info['build_url']
-        return create_launcher(self.fetch_config.app_name,
-                               build_url,
-                               persist=self.persist,
-                               persist_prefix=persist_prefix)
+        fname = persist_prefix + os.path.basename(build_url)
 
-    def evaluate(self, build_info, allow_back=False):
+        dl = download_manager.download(build_url, fname)
+        dest = download_manager.get_dest(fname)
+        if dl:
+            self.logger.info("Downloading build from: %s" % build_url)
+            dl.set_progress(download_progress)
+            dl.wait()
+            print ''  # a new line after download_progress calls
+
+        else:
+            self.logger.info("Using local file: %s" % dest)
+
+        return create_launcher(self.fetch_config.app_name, dest)
+
+    def evaluate(self, download_manager, build_info, allow_back=False):
         """
         Evaluate a given build. Must returns a tuple of (verdict, app_info).
 
@@ -67,6 +94,8 @@ class TestRunner(object):
         :meth:`mozregression.launchers.Launcher.get_app_info` for this
         particular build.
 
+        :param download_manager: A DownloadManager to download the file
+                                 to test
         :param build_info: is a dict containing information about the build
                            to test. It is ensured to have the following keys:
                             - build_type ('nightly' or 'inbound')
@@ -88,19 +117,6 @@ class ManualTestRunner(TestRunner):
     A TestRunner subclass that run builds and ask for evaluation by
     prompting in the terminal.
     """
-    def __init__(self, fetch_config, persist=None, launcher_kwargs=None):
-        self.delete_persist = False
-        if persist is None:
-            # always keep the downloaded files for manual runner
-            # this allows to not re-download a file if a user retry a build.
-            persist = tempfile.mkdtemp()
-            self.delete_persist = True
-        TestRunner.__init__(self, fetch_config, persist=persist,
-                            launcher_kwargs=launcher_kwargs)
-
-    def __del__(self):
-        if self.delete_persist:
-            mozfile.remove(self.persist)
 
     def get_verdict(self, build_info, allow_back):
         """
@@ -126,8 +142,8 @@ class ManualTestRunner(TestRunner):
         # shorten verdict to one character for processing...
         return verdict[0]
 
-    def evaluate(self, build_info, allow_back=False):
-        launcher = self.create_launcher(build_info)
+    def evaluate(self, download_manager, build_info, allow_back=False):
+        launcher = self.create_launcher(download_manager, build_info)
         launcher.start(**self.launcher_kwargs)
         app_infos = launcher.get_app_info()
         verdict = self.get_verdict(build_info, allow_back)
@@ -160,8 +176,8 @@ class CommandTestRunner(TestRunner):
         TestRunner.__init__(self, fetch_config, **kwargs)
         self.command = command
 
-    def evaluate(self, build_info, allow_back=False):
-        launcher = self.create_launcher(build_info)
+    def evaluate(self, download_manager, build_info, allow_back=False):
+        launcher = self.create_launcher(download_manager, build_info)
         app_info = launcher.get_app_info()
         variables = dict((k, str(v)) for k, v in build_info.iteritems())
         variables['app_name'] = launcher.app_name

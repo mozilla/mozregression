@@ -16,9 +16,8 @@ from mozdevice import ADBAndroid, ADBHost
 import mozversion
 import mozinstall
 import tempfile
-import os
 
-from mozregression.utils import ClassRegistry, download_url
+from mozregression.utils import ClassRegistry
 from mozregression.errors import LauncherNotRunnable
 
 
@@ -37,26 +36,11 @@ class Launcher(object):
         """
         pass
 
-    def __init__(self, url, persist=None, persist_prefix=''):
+    def __init__(self, dest):
         self._running = False
         self._logger = get_default_logger('Test Runner')
 
-        basename = os.path.basename(url)
-        if persist:
-            dest = os.path.join(persist, '%s%s' % (persist_prefix, basename))
-            if not os.path.exists(dest):
-                self._download(url, dest)
-            else:
-                self._logger.info("Using local file: %s" % dest)
-        else:
-            dest = basename
-            self._download(url, dest)
-
-        try:
-            self._install(dest)
-        finally:
-            if not persist:
-                os.unlink(dest)
+        self._install(dest)
 
     def start(self, **kwargs):
         """
@@ -82,10 +66,6 @@ class Launcher(object):
 
     def __del__(self):
         self.stop()
-
-    def _download(self, url, dest):
-        self._logger.info("Downloading build from: %s" % url)
-        download_url(url, dest)
 
     def _install(self, dest):
         raise NotImplementedError
@@ -146,13 +126,11 @@ class MozRunnerLauncher(Launcher):
 REGISTRY = ClassRegistry('app_name')
 
 
-def create_launcher(name, url, persist=None, persist_prefix=''):
+def create_launcher(name, dest):
     """
     Create and returns an instance launcher for the given name.
     """
-    return REGISTRY.get(name)(url,
-                              persist=persist,
-                              persist_prefix=persist_prefix)
+    return REGISTRY.get(name)(dest)
 
 
 @REGISTRY.register('firefox')

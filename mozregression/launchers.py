@@ -110,13 +110,15 @@ class MozRunnerLauncher(Launcher):
             mozinstall.install(src=dest, dest=self.tempdir),
             self.app_name)
 
-    def _start(self, profile=None, addons=(), cmdargs=()):
+    def _start(self, profile=None, addons=(), cmdargs=(), preferences=None):
         if profile:
-            profile = self.profile_class(profile=profile, addons=addons)
+            profile = self.profile_class(profile=profile, addons=addons,
+                                         preferences=preferences)
         elif len(addons):
-            profile = self.profile_class(addons=addons)
+            profile = self.profile_class(addons=addons,
+                                         preferences=preferences)
         else:
-            profile = self.profile_class()
+            profile = self.profile_class(preferences=preferences)
 
         self._logger.info("Launching %s" % self.binary)
         process_args = {'processOutputLine': [self._logger.debug]}

@@ -14,6 +14,7 @@ import sys
 import atexit
 import os
 
+import mozprofile
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser, Error
 from mozlog.structured import commandline, get_default_logger
@@ -177,6 +178,15 @@ def parse_args(argv=None):
                               " %(default)s seconds - increase this if you"
                               " are under a really slow network."))
 
+    parser.add_argument('--pref', nargs='*', dest='prefs',
+                        help=("A preference to set. Must be a key-value pair"
+                              "separated by a ':'"))
+
+    parser.add_argument('--preferences', nargs="*", dest='prefs_files',
+                        help=("read preferences from a JSON or INI file. For"
+                              "INI, use 'file.ini:section' to specify a"
+                              "particular section."))
+
     commandline.add_logging_group(parser)
     options = parser.parse_args(argv)
     options.bits = parse_bits(options.bits)
@@ -255,6 +265,32 @@ def bisect_nightlies(runner, logger):
     return runner.bisect_nightlies(good_date, bad_date)
 
 
+def preference(prefs_files, prefs_args):
+    """
+    profile preferences
+    """
+    # object that will hold the preferences
+    prefs = mozprofile.prefs.Preferences()
+
+    # add preferences files
+    if prefs_files:
+        for prefs_file in prefs_files:
+            prefs.add_file(prefs_file)
+
+    separator = ':'
+    cli_prefs = []
+    if prefs_args:
+        for pref in prefs_args:
+            if separator not in pref:
+                continue
+            cli_prefs.append(pref.split(separator, 1))
+
+    # string preferences
+    prefs.add(cli_prefs, cast=True)
+
+    return prefs()
+
+
 def cli(argv=None):
     """
     main entry point of mozregression command line.
@@ -281,6 +317,7 @@ def cli(argv=None):
             addons=options.addons,
             profile=options.profile,
             cmdargs=options.cmdargs,
+            preferences=preference(options.prefs_files, options.prefs),
         )
         test_runner = ManualTestRunner(fetch_config,
                                        persist=options.persist,

@@ -6,6 +6,8 @@
 
 import math
 import datetime
+import tempfile
+import mozfile
 from mozlog.structured import get_default_logger
 
 from mozregression.build_data import NightlyBuildData, InboundBuildData
@@ -44,11 +46,14 @@ class BisectorHandler(object):
         """
         self.build_data = build_data
 
-    def build_infos(self, index):
+    def build_infos(self, index, fetch_config):
         """
         Compute build infos (a dict) when a build is about to be tested.
         """
-        infos = {'build_type': self.build_type}
+        infos = {
+            'build_type': self.build_type,
+            'app_name': fetch_config.app_name
+        }
         infos.update(self.build_data[index])
         return infos
 
@@ -142,9 +147,10 @@ class NightlyHandler(BisectorHandler):
             self._reverse_if_find_fix(self.build_data.get_associated_data(0),
                                       self.build_data.get_associated_data(-1))
 
-    def build_infos(self, index):
-        infos = BisectorHandler.build_infos(self, index)
+    def build_infos(self, index, fetch_config):
+        infos = BisectorHandler.build_infos(self, index, fetch_config)
         infos['build_date'] = self.build_data.get_associated_data(index)
+        infos['repo'] = fetch_config.get_nightly_repo(infos['build_date'])
         return infos
 
     def _print_progress(self, new_data):
@@ -207,6 +213,11 @@ class InboundHandler(BisectorHandler):
     build_data_class = InboundBuildData
     build_type = 'inbound'
 
+    def build_infos(self, index, fetch_config):
+        infos = BisectorHandler.build_infos(self, index, fetch_config)
+        infos['repo'] = fetch_config.inbound_branch
+        return infos
+
     def _print_progress(self, new_data):
         self._logger.info("Narrowed inbound regression window from [%s, %s]"
                           " (%d revisions) to [%s, %s] (%d revisions)"
@@ -236,9 +247,20 @@ class Bisector(object):
     FINISHED = 2
     USER_EXIT = 3
 
-    def __init__(self, fetch_config, test_runner):
+    def __init__(self, fetch_config, test_runner, persist=None):
         self.fetch_config = fetch_config
         self.test_runner = test_runner
+        self.delete_dldir = False
+        if persist is None:
+            # always keep the downloaded files
+            # this allows to not re-download a file if a user retry a build.
+            persist = tempfile.mkdtemp()
+            self.delete_dldir = True
+        self.download_dir = persist
+
+    def __del__(self):
+        if self.delete_dldir:
+            mozfile.remove(self.download_dir)
 
     def bisect(self, handler, good, bad, **kwargs):
         if handler.find_fix:
@@ -247,7 +269,7 @@ class Bisector(object):
                                               good,
                                               bad,
                                               **kwargs)
-        download_manager = DownloadManager(self.test_runner.destdir)
+        download_manager = DownloadManager(self.download_dir)
         try:
             return self._bisect(download_manager, handler, build_data)
         finally:
@@ -274,7 +296,7 @@ class Bisector(object):
                 handler.finished()
                 return self.FINISHED
 
-            build_infos = handler.build_infos(mid)
+            build_infos = handler.build_infos(mid, self.fetch_config)
             verdict, app_info = \
                 self.test_runner.evaluate(download_manager, build_infos,
                                           allow_back=bool(previous_data))
@@ -330,7 +352,8 @@ class BisectRunner(object):
     def __init__(self, fetch_config, test_runner, options):
         self.fetch_config = fetch_config
         self.options = options
-        self.bisector = Bisector(fetch_config, test_runner)
+        self.bisector = Bisector(fetch_config, test_runner,
+                                 persist=options.persist)
         self._logger = get_default_logger('Bisector')
 
     def do_bisect(self, handler, good, bad, **kwargs):

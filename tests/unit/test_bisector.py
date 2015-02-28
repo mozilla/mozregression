@@ -12,6 +12,7 @@ from mozregression.bisector import (BisectorHandler, NightlyHandler,
                                     InboundHandler, Bisector,
                                     BisectRunner)
 from mozregression.main import parse_args
+from mozregression.fetch_configs import create_config
 from mozregression import build_data
 
 
@@ -73,14 +74,19 @@ class TestNightlyHandler(unittest.TestCase):
         self.handler = NightlyHandler()
 
     def test_build_infos(self):
+        fetch_config = create_config('fennec-2.3', 'linux', 64)
+        fetch_config.set_nightly_repo('my-repo')
+
         def get_associated_data(index):
             return index
         new_data = MagicMock(get_associated_data=get_associated_data)
         self.handler.set_build_data(new_data)
-        result = self.handler.build_infos(1)
+        result = self.handler.build_infos(1, fetch_config)
         self.assertEqual(result, {
             'build_type': 'nightly',
             'build_date': 1,
+            'app_name': 'fennec',
+            'repo': 'my-repo'
         })
 
     @patch('mozregression.bisector.BisectorHandler.initialize')
@@ -163,12 +169,17 @@ class TestInboundHandler(unittest.TestCase):
         self.handler = InboundHandler()
 
     def test_build_infos(self):
+        fetch_config = create_config('firefox', 'linux', 64)
+        fetch_config.set_inbound_branch('my-branch')
+
         self.handler.set_build_data([{'changeset': '1', 'repository': 'my'}])
-        result = self.handler.build_infos(0)
+        result = self.handler.build_infos(0, fetch_config)
         self.assertEqual(result, {
             'changeset': '1',
             'repository': 'my',
-            'build_type': 'inbound'
+            'build_type': 'inbound',
+            'app_name': 'firefox',
+            'repo': 'my-branch',
         })
 
     def test_print_progress(self):

@@ -334,12 +334,9 @@ def cli(argv=None):
             cmdargs=options.cmdargs,
             preferences=preference(options.prefs_files, options.prefs),
         )
-        test_runner = ManualTestRunner(fetch_config,
-                                       persist=options.persist,
-                                       launcher_kwargs=launcher_kwargs)
+        test_runner = ManualTestRunner(launcher_kwargs=launcher_kwargs)
     else:
-        test_runner = CommandTestRunner(fetch_config, options.command,
-                                        persist=options.persist)
+        test_runner = CommandTestRunner(options.command)
 
     runner = ResumeInfoBisectRunner(fetch_config, test_runner, options)
 

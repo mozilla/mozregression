@@ -11,7 +11,7 @@ import mozfile
 from mozlog.structured import get_default_logger
 
 from mozregression.build_data import NightlyBuildData, InboundBuildData
-from mozregression.download_manager import DownloadManager
+from mozregression.download_manager import BuildDownloadManager
 
 
 def compute_steps_left(steps):
@@ -257,6 +257,7 @@ class Bisector(object):
             persist = tempfile.mkdtemp()
             self.delete_dldir = True
         self.download_dir = persist
+        self.download_background = True
 
     def __del__(self):
         if self.delete_dldir:
@@ -269,7 +270,9 @@ class Bisector(object):
                                               good,
                                               bad,
                                               **kwargs)
-        download_manager = DownloadManager(self.download_dir)
+        download_manager = \
+            BuildDownloadManager(handler._logger,
+                                 self.download_dir)
         try:
             return self._bisect(download_manager, handler, build_data)
         finally:
@@ -297,8 +300,37 @@ class Bisector(object):
                 return self.FINISHED
 
             build_infos = handler.build_infos(mid, self.fetch_config)
+            dest = download_manager.focus_download(build_infos)
+
+            # start downloading the next builds.
+            # note that we don't have to worry if builds are already
+            # downloaded, or if our build infos are the same because
+            # this will be handled by the downloadmanager.
+            if self.download_background:
+                def start_dl(r):
+                    # first get the next mid point
+                    # this will trigger some blocking downloads
+                    # (we need to find the build info)
+                    m = r.mid_point()
+                    if len(r) != 0:
+                        # this is a trick to call build_infos
+                        # with the the appropriate build_data
+                        handler.set_build_data(r)
+                        try:
+                            # non-blocking download of the build
+                            download_manager.download_in_background(
+                                handler.build_infos(m, self.fetch_config))
+                        finally:
+                            # put the real build_data back
+                            handler.set_build_data(build_data)
+                # download next left mid point
+                start_dl(build_data[mid:])
+                # download right next mid point
+                start_dl(build_data[:mid+1])
+
+            build_infos['build_path'] = dest
             verdict, app_info = \
-                self.test_runner.evaluate(download_manager, build_infos,
+                self.test_runner.evaluate(build_infos,
                                           allow_back=bool(previous_data))
 
             # update build_info in build_data if possible

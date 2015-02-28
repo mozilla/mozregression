@@ -7,32 +7,29 @@
 import unittest
 from mock import patch, Mock
 import datetime
-import os
 
 from mozregression import test_runner, errors
-from mozregression.download_manager import DownloadManager
 
 
 class TestManualTestRunner(unittest.TestCase):
     def setUp(self):
         self.runner = test_runner.ManualTestRunner()
-        self.dl_manager = DownloadManager('/path/to')
-        self.dl_manager.download = Mock()
 
     @patch('mozregression.test_runner.create_launcher')
     def test_nightly_create_launcher(self, create_launcher):
         launcher = Mock()
         create_launcher.return_value = launcher
-        result_launcher = self.runner.create_launcher(self.dl_manager, {
+        result_launcher = self.runner.create_launcher({
             'build_type': 'nightly',
             'build_date': datetime.date(2014, 12, 25),
             'build_url': 'http://my-url',
             'repo': 'my-repo',
-            'app_name': 'firefox'
+            'app_name': 'firefox',
+            'build_path': '/path/to',
         })
         create_launcher.\
             assert_called_with('firefox',
-                               '/path/to/2014-12-25--my-repo--my-url')
+                               '/path/to')
 
         self.assertEqual(result_launcher, launcher)
 
@@ -41,16 +38,17 @@ class TestManualTestRunner(unittest.TestCase):
     def test_inbound_create_launcher(self, create_launcher, download):
         launcher = Mock()
         create_launcher.return_value = launcher
-        result_launcher = self.runner.create_launcher(self.dl_manager, {
+        result_launcher = self.runner.create_launcher({
             'build_type': 'inbound',
             'timestamp': '123',
             'revision': '12345678',
             'build_url': 'http://my-url',
             'repo': 'my-branch',
-            'app_name': 'firefox'
+            'app_name': 'firefox',
+            'build_path': '/path/to',
         })
         create_launcher.assert_called_with('firefox',
-                                           '/path/to/123--my-branch--my-url')
+                                           '/path/to')
         self.assertEqual(result_launcher, launcher)
 
     @patch('__builtin__.raw_input')
@@ -81,9 +79,9 @@ class TestManualTestRunner(unittest.TestCase):
         launcher = Mock()
         create_launcher.return_value = launcher
         build_infos = {'a': 'b'}
-        result = self.runner.evaluate(self.dl_manager, build_infos)
+        result = self.runner.evaluate(build_infos)
 
-        create_launcher.assert_called_with(self.dl_manager, build_infos)
+        create_launcher.assert_called_with(build_infos)
         launcher.get_app_info.assert_called_with()
         launcher.start.assert_called_with()
         get_verdict.assert_called_with(build_infos, False)
@@ -96,7 +94,6 @@ class TestCommandTestRunner(unittest.TestCase):
         self.runner = test_runner.CommandTestRunner('my command')
         self.launcher = Mock()
         del self.launcher.binary  # block the auto attr binary on the mock
-        self.dl_manager = DownloadManager('/path/to')
 
     def test_create(self):
         self.assertEqual(self.runner.command, 'my command')
@@ -111,7 +108,7 @@ class TestCommandTestRunner(unittest.TestCase):
             call.side_effect = subprocess_call_effect
         self.subprocess_call = call
         create_launcher.return_value = self.launcher
-        return self.runner.evaluate(self.dl_manager, build_info)[0]
+        return self.runner.evaluate(build_info)[0]
 
     def test_evaluate_retcode(self):
         self.assertEqual('g', self.evaluate(retcode=0))

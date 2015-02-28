@@ -239,9 +239,10 @@ class MyBuildData(build_data.BuildData):
 
 class TestBisector(unittest.TestCase):
     def setUp(self):
-        self.handler = Mock(find_fix=False)
+        self.handler = MagicMock(find_fix=False)
         self.test_runner = Mock()
         self.bisector = Bisector(Mock(), self.test_runner)
+        self.bisector.download_background = False
         self.dl_manager = Mock()
 
     def test__bisect_no_data(self):
@@ -267,7 +268,7 @@ class TestBisector(unittest.TestCase):
     def do__bisect(self, build_data, verdicts):
         iter_verdict = iter(verdicts)
 
-        def evaluate(dl_manager, build_info, allow_back=False):
+        def evaluate(build_info, allow_back=False):
             return iter_verdict.next(), {
                 'application_changeset': 'unused',
                 'application_repository': 'unused'

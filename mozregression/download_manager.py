@@ -243,3 +243,74 @@ class DownloadManager(object):
             self._downloads[dest] = download
             download.start()
             return download
+
+
+def download_progress(_dl, bytes_so_far, total_size):
+    percent = (float(bytes_so_far) / total_size) * 100
+    sys.stdout.write("===== Downloaded %d%% =====\r" % percent)
+    sys.stdout.flush()
+
+
+class BuildDownloadManager(DownloadManager):
+    """
+    A DownloadManager specialized to download builds.
+    """
+    def __init__(self, logger, destdir, session=requests):
+        DownloadManager.__init__(self, destdir, session=session)
+        self.logger = logger
+
+    def _extract_download_info(self, build_info):
+        if build_info['build_type'] == 'nightly':
+            persist_prefix = '%(build_date)s--%(repo)s--' % build_info
+
+        else:
+            persist_prefix = '%(timestamp)s--%(repo)s--' % build_info
+
+        build_url = build_info['build_url']
+        fname = persist_prefix + os.path.basename(build_url)
+        return build_url, fname
+
+    def download_in_background(self, build_info):
+        """
+        Start a build download in background.
+
+        Don nothing is a build is already downloading/downloaded.
+        """
+        build_url, fname = self._extract_download_info(build_info)
+        return self.download(build_url, fname)
+
+    def focus_download(self, build_info):
+        """
+        Start a download for a build and focus on it.
+
+        *focus* here means that if there are running downloads for other
+        builds they will be canceled. Also, the progress is attached so
+        the user can see the download progress.
+
+        If the download of the build is already running, it will just
+        attach the progress function. If the build has already been
+        downloaded, it will do nothing.
+
+        this methods block until the build is available, or any error
+        occurs.
+
+        Returns the complete path of the downloaded build.
+        """
+        build_url, fname = self._extract_download_info(build_info)
+        dest = self.get_dest(fname)
+        # first, stop all downloads in background (except the one for this
+        # build if any)
+        self.cancel(cancel_if=lambda dl: dest != dl.get_dest())
+
+        dl = self.download(build_url, fname)
+        if dl:
+            self.logger.info("Downloading build from: %s" % build_url)
+            dl.set_progress(download_progress)
+            try:
+                dl.wait()
+            finally:
+                print ''  # a new line after download_progress calls
+
+        else:
+            self.logger.info("Using local file: %s" % dest)
+        return dest

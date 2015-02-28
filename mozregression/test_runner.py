@@ -13,16 +13,9 @@ from mozlog.structured import get_default_logger
 import subprocess
 import shlex
 import os
-import sys
 
 from mozregression.launchers import create_launcher
 from mozregression.errors import TestCommandError
-
-
-def download_progress(_dl, bytes_so_far, total_size):
-    percent = (float(bytes_so_far) / total_size) * 100
-    sys.stdout.write("===== Downloaded %d%% =====\r" % percent)
-    sys.stdout.flush()
 
 
 class TestRunner(object):
@@ -34,38 +27,23 @@ class TestRunner(object):
     def __init__(self):
         self.logger = get_default_logger('Test Runner')
 
-    def create_launcher(self, download_manager, build_info):
+    def create_launcher(self, build_info):
         """
         Create and returns a :class:`mozregression.launchers.Launcher`.
         """
         if build_info['build_type'] == 'nightly':
-            fmt = '%(build_date)s--%(repo)s--'
             self.logger.info("Running nightly for %s"
                              % build_info["build_date"])
         else:
-            fmt = '%(timestamp)s--%(repo)s--'
             self.logger.info("Testing inbound build with timestamp %s,"
                              " revision %s"
                              % (build_info['timestamp'],
                                 build_info['revision']))
-        build_url = build_info['build_url']
-        persist_prefix = fmt % build_info
-        fname = persist_prefix + os.path.basename(build_url)
 
-        dl = download_manager.download(build_url, fname)
-        dest = download_manager.get_dest(fname)
-        if dl:
-            self.logger.info("Downloading build from: %s" % build_url)
-            dl.set_progress(download_progress)
-            dl.wait()
-            print ''  # a new line after download_progress calls
+        return create_launcher(build_info['app_name'],
+                               build_info['build_path'])
 
-        else:
-            self.logger.info("Using local file: %s" % dest)
-
-        return create_launcher(build_info['app_name'], dest)
-
-    def evaluate(self, download_manager, build_info, allow_back=False):
+    def evaluate(self, build_info, allow_back=False):
         """
         Evaluate a given build. Must returns a tuple of (verdict, app_info).
 
@@ -78,8 +56,7 @@ class TestRunner(object):
         :meth:`mozregression.launchers.Launcher.get_app_info` for this
         particular build.
 
-        :param download_manager: A DownloadManager to download the file
-                                 to test
+        :param build_path: the path to the build file to test
         :param build_info: is a dict containing information about the build
                            to test. It is ensured to have the following keys:
                             - build_type ('nightly' or 'inbound')
@@ -129,8 +106,8 @@ class ManualTestRunner(TestRunner):
         # shorten verdict to one character for processing...
         return verdict[0]
 
-    def evaluate(self, download_manager, build_info, allow_back=False):
-        launcher = self.create_launcher(download_manager, build_info)
+    def evaluate(self, build_info, allow_back=False):
+        launcher = self.create_launcher(build_info)
         launcher.start(**self.launcher_kwargs)
         app_infos = launcher.get_app_info()
         verdict = self.get_verdict(build_info, allow_back)
@@ -163,8 +140,8 @@ class CommandTestRunner(TestRunner):
         TestRunner.__init__(self)
         self.command = command
 
-    def evaluate(self, download_manager, build_info, allow_back=False):
-        launcher = self.create_launcher(download_manager, build_info)
+    def evaluate(self, build_info, allow_back=False):
+        launcher = self.create_launcher(build_info)
         app_info = launcher.get_app_info()
         variables = dict((k, str(v)) for k, v in build_info.iteritems())
         if hasattr(launcher, 'binary'):

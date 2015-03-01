@@ -60,7 +60,7 @@ Some useful command line usage.
 
 - Bisecting inbound directly
 
-       mozregression --inbound --good-rev 8850aa0f --bad-rev 2a193b7f
+       mozregression --good-rev 8850aa0f --bad-rev 2a193b7f
 
 - Look for a bug fix instead of a regression (bisect the other way around)
 

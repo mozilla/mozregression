@@ -13,6 +13,7 @@ import datetime
 import sys
 import atexit
 import os
+import requests
 
 import mozprofile
 from argparse import ArgumentParser
@@ -286,6 +287,24 @@ def preference(prefs_files, prefs_args):
     return prefs()
 
 
+def check_mozregression_version(logger):
+    url = "https://pypi.python.org/pypi/mozregression/json"
+    try:
+        mozregression_version = \
+            requests.get(url, timeout=10).json()['info']['version']
+    except (RequestException, KeyError, ValueError):
+        logger.critical("Unable to get latest version from pypi.")
+        return
+
+    if __version__ != mozregression_version:
+        logger.warning("You are using mozregression version %s, "
+                       "however version %s is available."
+                       % (__version__, mozregression_version))
+
+        logger.warning("You should consider upgrading via the 'pip install"
+                       " --upgrade mozregression' command.")
+
+
 def cli(argv=None):
     """
     main entry point of mozregression command line.
@@ -294,6 +313,7 @@ def cli(argv=None):
     logger = commandline.setup_logging("mozregression",
                                        options,
                                        {"mach": sys.stdout})
+    check_mozregression_version(logger)
 
     if options.list_releases:
         print(formatted_valid_release_dates())

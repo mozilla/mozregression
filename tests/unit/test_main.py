@@ -222,5 +222,29 @@ class TestResumeInfoBisectRunner(unittest.TestCase):
         handler.print_range.assert_called_with()
         runner.print_resume_info.assert_called_with(handler)
 
+
+class TestPreference(unittest.TestCase):
+    def test_preference_file(self):
+        handle, filepath = tempfile.mkstemp()
+        self.addCleanup(os.unlink, filepath)
+
+        with os.fdopen(handle, 'w') as conf_file:
+            conf_file.write('{ "browser.tabs.remote.autostart": false }')
+
+        prefs_files = [filepath]
+        prefs = main.preference(prefs_files, None)
+        self.assertEqual(prefs, [('browser.tabs.remote.autostart', False)])
+
+    def test_preference_args(self):
+        prefs_args = ["browser.tabs.remote.autostart:false"]
+
+        prefs = main.preference(None, prefs_args)
+        self.assertEqual(prefs, [('browser.tabs.remote.autostart', False)])
+
+        prefs_args = ["browser.tabs.remote.autostart"]
+
+        prefs = main.preference(None, prefs_args)
+        self.assertEquals(len(prefs), 0)
+
 if __name__ == '__main__':
     unittest.main()

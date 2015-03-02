@@ -18,13 +18,14 @@ class TestMainCli(unittest.TestCase):
     def setUp(self):
         self.runner = Mock()
 
+    @patch('mozregression.main.check_mozregression_version')
     @patch('mozregression.main.get_defaults')
     @patch('mozlog.structured.commandline.setup_logging')
     @patch('mozregression.main.set_http_cache_session')
     @patch('mozregression.limitedfilecache.get_cache')
     @patch('mozregression.main.ResumeInfoBisectRunner')
     def do_cli(self, argv, BisectRunner, get_cache, set_http_cache_session,
-               setup_logging, get_defaults):
+               setup_logging, get_defaults, check_mozregression_version):
         get_defaults.return_value = dict()
 
         def create_runner(fetch_config, test_runner, options):

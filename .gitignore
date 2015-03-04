@@ -5,3 +5,11 @@ dist/*
 .DS_Store
 build/*
 coveragerc
+
+gui/build/
+gui/dist/
+gui/venv/
+gui/mozregression-gui.spec
+gui/ui/intro.py
+gui/ui/inbound.py
+gui/ui/nightlies.py

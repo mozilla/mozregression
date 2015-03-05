@@ -9,7 +9,8 @@ import tempfile
 import shutil
 import os
 import time
-from mock import Mock
+from mock import Mock, patch, ANY
+from datetime import date
 
 from mozregression import download_manager
 
@@ -249,3 +250,104 @@ class TestDownloadManager(unittest.TestCase):
 
         # download instances are removed from the manager (internal test)
         self.assertEquals(self.dl_manager._downloads, {})
+
+
+class TestDownloadProgress(unittest.TestCase):
+    @patch("sys.stdout")
+    def test_basic(self, stdout):
+        download_manager.download_progress(None, 50, 100)
+        stdout.write.assert_called_with("===== Downloaded 50% =====\r")
+        stdout.flush.assert_called_with()
+
+
+class TestBuildDownloadManager(unittest.TestCase):
+    def setUp(self):
+        self.session, self.session_response = mock_session()
+        self.dl_manager = \
+            download_manager.BuildDownloadManager(Mock(), 'dest',
+                                                  session=self.session)
+
+    def test__extract_download_info(self):
+        url, fname = self.dl_manager._extract_download_info({
+            'build_url': 'http://some/thing',
+            'build_type': 'nightly',
+            'build_date': date(2015, 01, 03),
+            'repo': 'my-repo',
+        })
+        self.assertEquals(url, 'http://some/thing')
+        self.assertEquals(fname, '2015-01-03--my-repo--thing')
+
+        url, fname = self.dl_manager._extract_download_info({
+            'build_url': 'http://some/thing',
+            'build_type': 'inbound',
+            'timestamp': '123456',
+            'repo': 'my-repo',
+        })
+        self.assertEquals(url, 'http://some/thing')
+        self.assertEquals(fname, '123456--my-repo--thing')
+
+    @patch("mozregression.download_manager.BuildDownloadManager."
+           "_extract_download_info")
+    @patch("mozregression.download_manager.BuildDownloadManager.download")
+    def test_download_in_background(self, download, extract):
+        extract.return_value = ('http://foo/bar', 'myfile')
+        download.return_value = ANY
+
+        result = self.dl_manager.download_in_background({'build': 'info'})
+
+        extract.assert_called_with({'build': 'info'})
+        download.assert_called_with('http://foo/bar', 'myfile')
+        self.assertIn('myfile', self.dl_manager._downloads_bg)
+        self.assertEquals(result, ANY)
+
+    @patch("mozregression.download_manager.BuildDownloadManager."
+           "_extract_download_info")
+    def test_focus_download(self, extract):
+        extract.return_value = ('http://foo/bar', 'myfile')
+        current_dest = os.path.join('dest', 'myfile')
+        other_dest = os.path.join('dest', 'otherfile')
+        curent_download = download_manager.Download('http://url',
+                                                    current_dest)
+        curent_download.wait = Mock()
+        curent_download.set_progress = Mock()
+        other_download = download_manager.Download('http://url',
+                                                   other_dest)
+        # fake some download activity
+        self.dl_manager._downloads = {
+            current_dest: curent_download,
+            other_dest: other_download,
+        }
+        curent_download.is_running = Mock(return_value=True)
+        other_download.is_running = Mock(return_value=True)
+
+        result = self.dl_manager.focus_download({'build': 'info'})
+
+        curent_download.set_progress.assert_called_with(
+            download_manager.download_progress)
+        self.assertFalse(curent_download.is_canceled())
+        curent_download.wait.assert_called_with()
+
+        self.assertTrue(other_download.is_canceled())
+
+        self.dl_manager.logger.info.assert_called_with(
+            "Downloading build from: http://foo/bar")
+
+        self.assertEquals(result, current_dest)
+
+    @patch("mozregression.download_manager.BuildDownloadManager."
+           "_extract_download_info")
+    @patch("mozregression.download_manager.BuildDownloadManager.download")
+    def test_focus_download_file_already_exists(self, download, extract):
+        extract.return_value = ('http://foo/bar', 'myfile')
+        download.return_value = None
+
+        # fake that we downloaded that in background
+        self.dl_manager._downloads_bg.add('myfile')
+
+        result = self.dl_manager.focus_download({'build': 'info'})
+
+        dest_file = os.path.join('dest', 'myfile')
+        self.dl_manager.logger.info.assert_called_with(
+            "Using local file: %s (downloaded in background)" % dest_file)
+
+        self.assertEquals(result, dest_file)

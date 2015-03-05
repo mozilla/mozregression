@@ -369,6 +369,31 @@ class TestBisector(unittest.TestCase):
         # user exit
         self.assertEqual(test_result['result'], Bisector.USER_EXIT)
 
+    def test__bisect_with_background_download(self):
+        self.bisector.dl_in_background = True
+        test_result = self.do__bisect(MyBuildData([1, 2, 3, 4, 5]), ['g', 'b'])
+        # check that set_build_data was called
+        self.handler.set_build_data.assert_has_calls([
+            call(MyBuildData([1, 2, 3, 4, 5])),  # first call
+            call(MyBuildData([3, 4, 5])),  # download backgound
+            call(MyBuildData([1, 2, 3, 4, 5])),   # put back the right data
+            call(MyBuildData([1, 2, 3])),  # download backgound
+            call(MyBuildData([1, 2, 3, 4, 5])),   # put back the right data
+            call(MyBuildData([3, 4, 5])),  # we answered good
+            call(MyBuildData([4, 5])),  # download backgound
+            call(MyBuildData([3, 4, 5])),  # put back the right data
+            call(MyBuildData([3, 4])),  # download backgound
+            call(MyBuildData([3, 4, 5])),  # put back the right data
+            call(MyBuildData([3, 4]))  # we answered bad
+        ])
+        # ensure that we called the handler's methods
+        self.handler.initialize.assert_called_with()
+        self.handler.build_good.assert_called_with(2, MyBuildData([3, 4, 5]))
+        self.handler.build_bad.assert_called_with(1, MyBuildData([3, 4]))
+        self.assertTrue(self.handler.build_data.ensure_limits_called)
+        # bisection is finished
+        self.assertEqual(test_result['result'], Bisector.FINISHED)
+
     @patch('mozregression.bisector.Bisector._bisect')
     def test_bisect(self, _bisect):
         _bisect.return_value = 1

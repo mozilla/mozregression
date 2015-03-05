@@ -241,7 +241,8 @@ class TestBisector(unittest.TestCase):
     def setUp(self):
         self.handler = MagicMock(find_fix=False)
         self.test_runner = Mock()
-        self.bisector = Bisector(Mock(), self.test_runner)
+        self.bisector = Bisector(Mock(), self.test_runner,
+                                 dl_in_background=False)
         self.bisector.download_background = False
         self.dl_manager = Mock()
 

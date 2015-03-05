@@ -190,6 +190,14 @@ class TestMainCli(unittest.TestCase):
             assert_called_with(utils.parse_date(good[1]),
                                utils.parse_date(bad[1]))
 
+    def test_download_in_background_is_on_by_default(self):
+        self.do_cli([])
+        self.assertTrue(self.runner.options.background_dl)
+
+    def test_deactive_download_in_background(self):
+        self.do_cli(['--no-background-dl'])
+        self.assertFalse(self.runner.options.background_dl)
+
 
 class TestResumeInfoBisectRunner(unittest.TestCase):
     def setUp(self):

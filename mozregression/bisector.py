@@ -247,7 +247,8 @@ class Bisector(object):
     FINISHED = 2
     USER_EXIT = 3
 
-    def __init__(self, fetch_config, test_runner, persist=None):
+    def __init__(self, fetch_config, test_runner, persist=None,
+                 dl_in_background=True):
         self.fetch_config = fetch_config
         self.test_runner = test_runner
         self.delete_dldir = False
@@ -257,7 +258,7 @@ class Bisector(object):
             persist = tempfile.mkdtemp()
             self.delete_dldir = True
         self.download_dir = persist
-        self.download_background = True
+        self.dl_in_background = dl_in_background
 
     def __del__(self):
         if self.delete_dldir:
@@ -306,7 +307,7 @@ class Bisector(object):
             # note that we don't have to worry if builds are already
             # downloaded, or if our build infos are the same because
             # this will be handled by the downloadmanager.
-            if self.download_background:
+            if self.dl_in_background:
                 def start_dl(r):
                     # first get the next mid point
                     # this will trigger some blocking downloads
@@ -385,7 +386,8 @@ class BisectRunner(object):
         self.fetch_config = fetch_config
         self.options = options
         self.bisector = Bisector(fetch_config, test_runner,
-                                 persist=options.persist)
+                                 persist=options.persist,
+                                 dl_in_background=options.background_dl)
         self._logger = get_default_logger('Bisector')
 
     def do_bisect(self, handler, good, bad, **kwargs):

@@ -258,6 +258,7 @@ class BuildDownloadManager(DownloadManager):
     def __init__(self, logger, destdir, session=requests):
         DownloadManager.__init__(self, destdir, session=session)
         self.logger = logger
+        self._downloads_bg = set()
 
     def _extract_download_info(self, build_info):
         if build_info['build_type'] == 'nightly':
@@ -277,7 +278,10 @@ class BuildDownloadManager(DownloadManager):
         Don nothing is a build is already downloading/downloaded.
         """
         build_url, fname = self._extract_download_info(build_info)
-        return self.download(build_url, fname)
+        result = self.download(build_url, fname)
+        if result is not None:
+            self._downloads_bg.add(fname)
+        return result
 
     def focus_download(self, build_info):
         """
@@ -312,5 +316,8 @@ class BuildDownloadManager(DownloadManager):
                 print ''  # a new line after download_progress calls
 
         else:
-            self.logger.info("Using local file: %s" % dest)
+            msg = "Using local file: %s" % dest
+            if fname in self._downloads_bg:
+                msg += " (downloaded in background)"
+            self.logger.info(msg)
         return dest

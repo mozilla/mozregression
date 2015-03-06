@@ -82,6 +82,8 @@ class BisectionWizard(QWizard):
         # associate current text to comboboxes fields instead of current index
         self.setDefaultProperty("QComboBox", "currentText",
                                 "currentIndexChanged")
+        # store QDate instead of QDateTime
+        self.setDefaultProperty("QDateEdit", "date", "dateChanged")
 
         self.addPage(IntroPage())
         self.addPage(NightliesPage())
@@ -91,5 +93,8 @@ class BisectionWizard(QWizard):
         options = {}
         for wizard_class in get_all_subclasses(Wizard):
             for fieldname in wizard_class.FIELDS:
-                options[fieldname] = self.field(fieldname)
+                value = self.field(fieldname)
+                if hasattr(value, 'toPython'):
+                    value = value.toPython()
+                options[fieldname] = value
         return options

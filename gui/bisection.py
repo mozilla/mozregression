@@ -139,7 +139,8 @@ class BisectRunner(QObject):
             end = options['end_date']
         else:
             handler = InboundHandler()
-            raise NotImplementedError()
+            start = options['start_changeset']
+            end = options['end_changeset']
         self.bisector.bisect(handler, start, end)
 
     @Slot()

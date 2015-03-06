@@ -232,17 +232,21 @@ class DownloadManager(object):
 
         # else create the download (will be automatically removed of
         # the list on completion) start it, and returns that.
-        def remove_download(_):
-            with self._lock:
-                del self._downloads[dest]
-
         with self._lock:
             download = Download(url, dest,
                                 session=self.session,
-                                finished_callback=remove_download)
+                                finished_callback=self._download_finished)
             self._downloads[dest] = download
             download.start()
+            self._download_started(download)
             return download
+
+    def _download_started(self, _):
+        pass
+
+    def _download_finished(self, dl):
+        with self._lock:
+            del self._downloads[dl.get_dest()]
 
 
 def download_progress(_dl, bytes_so_far, total_size):

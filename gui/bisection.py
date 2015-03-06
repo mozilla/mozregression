@@ -133,6 +133,7 @@ class BisectRunner(QObject):
             self.show_dl_progress)
         self.bisector.test_runner.evaluate_started.connect(
             self.evaluate)
+        self.bisector.finished.connect(self.bisection_finished)
         if options['bisect_type'] == 'nightlies':
             handler = NightlyHandler()
             start = options['start_date']
@@ -164,3 +165,13 @@ class BisectRunner(QObject):
         if res == QMessageBox.No:
             verdict = "b"
         self.bisector.test_runner.finish(verdict)
+
+    @Slot(int)
+    def bisection_finished(self, resultcode):
+        if resultcode == Bisection.NO_DATA:
+            msg = "Unable to find enough data to bisect."
+            dialog = QMessageBox.warning
+        else:
+            msg = "The bisection is done."
+            dialog = QMessageBox.information
+        dialog(self.mainwindow, "End of the bisection", msg)

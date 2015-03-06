@@ -125,6 +125,7 @@ class BisectRunner(QObject):
         self.bisector = None
 
     def bisect(self, options):
+        self.stop()
         fetch_config = create_config(options['application'],
                                      mozinfo.os, mozinfo.bits)
         self.bisector = GuiBisector(fetch_config)
@@ -140,6 +141,12 @@ class BisectRunner(QObject):
             handler = InboundHandler()
             raise NotImplementedError()
         self.bisector.bisect(handler, start, end)
+
+    @Slot()
+    def stop(self):
+        if self.bisector:
+            self.bisector.download_manager.cancel()
+        self.bisector = None
 
     @Slot(object, int, int)
     def show_dl_progress(self, dl, current, total):

@@ -31,6 +31,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     # Create the main window and show it
     win = MainWindow()
+    app.aboutToQuit.connect(win.bisect_runner.stop)
     win.show()
     win.start_bisection_wizard()
     # Enter Qt application main loop

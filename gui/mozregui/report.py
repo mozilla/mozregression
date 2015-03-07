@@ -1,13 +1,14 @@
 from PySide.QtGui import QPlainTextEdit, QTableView
 from PySide.QtCore import QAbstractTableModel, QModelIndex, Qt, Slot, Signal
 
+
 class StepReport(object):
     def __init__(self):
         self.build_infos = None
         self.verdict = None
 
     def status_text(self):
-        if self.build_infos is None: 
+        if self.build_infos is None:
             return "Looking for build data..."
         if self.build_infos['build_type'] == 'nightly':
             msg = "Found nightly build: %s" % self.build_infos['build_date']
@@ -16,6 +17,7 @@ class StepReport(object):
         if self.verdict is not None:
             msg += ' (verdict: %s)' % self.verdict
         return msg
+
 
 class ReportModel(QAbstractTableModel):
     def __init__(self):
@@ -66,10 +68,11 @@ class ReportModel(QAbstractTableModel):
     @Slot(object, int)
     def finished(self, bisection, result):
         # remove the last insterted step
-        index = len(self.step_reports) -1
+        index = len(self.step_reports) - 1
         self.beginRemoveRows(QModelIndex(), index, index)
         self.step_reports.pop(index)
         self.endRemoveRows()
+
 
 class ReportView(QTableView):
     step_report_selected = Signal(object)
@@ -83,6 +86,7 @@ class ReportView(QTableView):
         step_report = self._model.step_reports[current.row()]
         self.step_report_selected.emit(step_report)
 
+
 class BuildInfoTextEdit(QPlainTextEdit):
     def __init__(self, parent=None):
         QPlainTextEdit.__init__(self, parent)
@@ -93,5 +97,5 @@ class BuildInfoTextEdit(QPlainTextEdit):
         if step_report.build_infos is not None:
             text = ""
             for k, v in step_report.build_infos.iteritems():
-                text += "%s: %s\n" % (k,v)
+                text += "%s: %s\n" % (k, v)
             self.setPlainText(text)

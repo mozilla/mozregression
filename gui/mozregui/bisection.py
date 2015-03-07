@@ -81,12 +81,13 @@ class GuiBisector(QObject, Bisector):
         self.build_infos = None
         self._step_num = 0
 
-        self.download_manager.download_finished.connect(self._build_dl_finished)
+        self.download_manager.download_finished.connect(
+            self._build_dl_finished)
         self.test_runner.evaluate_finished.connect(self._evaluate_finished)
 
     def _bisect(self, handler, build_data):
         self.bisection = Bisection(handler, build_data,
-                                   self.download_manager, 
+                                   self.download_manager,
                                    self.test_runner,
                                    self.fetch_config,
                                    dl_in_background=False)
@@ -100,7 +101,7 @@ class GuiBisector(QObject, Bisector):
         self.step_started.emit(self.bisection, self._step_num)
         # todo: make this non blocking
         self.mid = mid = self.bisection.search_mid_point()
-        result = self.bisection.init_handler(mid) 
+        result = self.bisection.init_handler(mid)
         if result != Bisection.RUNNING:
             self.finished.emit(self.bisection, result)
         else:
@@ -124,7 +125,8 @@ class GuiBisector(QObject, Bisector):
         self.bisection.update_build_info(self.mid, self.test_runner.app_info)
         self.step_finished.emit(self.bisection, self._step_num,
                                 self.test_runner.verdict)
-        result = self.bisection.handle_verdict(self.mid, self.test_runner.verdict)
+        result = self.bisection.handle_verdict(self.mid,
+                                               self.test_runner.verdict)
         if result != Bisection.RUNNING:
             self.finished.emit(self.bisection, result)
         else:

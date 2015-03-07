@@ -60,6 +60,8 @@ def do_run():
 
 def do_test():
     do_uic()
+    call(py_script('flake8'), 'mozregui', 'build.py', 'tests')
+    print('Running tests...')
     import nose
     nose.main(argv=['-s', 'tests'])
 
@@ -100,12 +102,16 @@ def parse_args():
 
     return parser.parse_args()
 
+
 def main():
     # chdir in this folder
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
     options = parse_args()
-    options.func()
+    try:
+        options.func()
+    except Exception, e:
+        sys.exit('ERROR: %s' % e)
 
 
 if __name__ == '__main__':

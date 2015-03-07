@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QTableView" name="report_view">
+     <widget class="ReportView" name="report_view">
       <attribute name="horizontalHeaderVisible">
        <bool>false</bool>
       </attribute>
@@ -50,6 +50,31 @@
    <addaction name="menuFile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="dockWidget">
+   <property name="features">
+    <set>QDockWidget::NoDockWidgetFeatures</set>
+   </property>
+   <property name="windowTitle">
+    <string>Build information</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="BuildInfoTextEdit" name="build_info_edit">
+       <property name="undoRedoEnabled">
+        <bool>false</bool>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="actionStart_a_new_bisection">
    <property name="text">
     <string>Start a new bisection</string>
@@ -61,6 +86,18 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>BuildInfoTextEdit</class>
+   <extends>QPlainTextEdit</extends>
+   <header location="global">mozregui.report</header>
+  </customwidget>
+  <customwidget>
+   <class>ReportView</class>
+   <extends>QTableView</extends>
+   <header>mozregui.report</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

@@ -1,5 +1,5 @@
-from PySide.QtCore import QAbstractTableModel, QModelIndex, Qt, \
-    Slot
+from PySide.QtGui import QPlainTextEdit, QTableView
+from PySide.QtCore import QAbstractTableModel, QModelIndex, Qt, Slot, Signal
 
 class StepReport(object):
     def __init__(self):
@@ -70,3 +70,28 @@ class ReportModel(QAbstractTableModel):
         self.beginRemoveRows(QModelIndex(), index, index)
         self.step_reports.pop(index)
         self.endRemoveRows()
+
+class ReportView(QTableView):
+    step_report_selected = Signal(object)
+
+    def __init__(self, parent=None):
+        QTableView.__init__(self, parent)
+        self._model = ReportModel()
+        self.setModel(self._model)
+
+    def currentChanged(self, current, previous):
+        step_report = self._model.step_reports[current.row()]
+        self.step_report_selected.emit(step_report)
+
+class BuildInfoTextEdit(QPlainTextEdit):
+    def __init__(self, parent=None):
+        QPlainTextEdit.__init__(self, parent)
+
+    @Slot(object)
+    def update_content(self, step_report):
+        self.clear()
+        if step_report.build_infos is not None:
+            text = ""
+            for k, v in step_report.build_infos.iteritems():
+                text += "%s: %s\n" % (k,v)
+            self.setPlainText(text)

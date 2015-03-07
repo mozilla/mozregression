@@ -48,7 +48,20 @@ def do_venv(python=sys.executable):
         call('virtualenv', '-p', python, VENV_PATH)
     # install things
     pip = py_script('pip')
-    call(pip, 'install', '-r', 'requirements.txt')
+    call(pip, 'install', '-r', 'test-requirements.txt')
+
+
+def do_run():
+    do_uic()
+    env = dict(os.environ)
+    env['PYTHONPATH'] = '.'
+    call(sys.executable, 'mozregui/main.py', env=env)
+
+
+def do_test():
+    do_uic()
+    import nose
+    nose.main(argv=['-s', 'tests'])
 
 
 def do_bundle():
@@ -61,7 +74,8 @@ def do_bundle():
 
     # run pyinstaller
     pyinstaller = py_script('pyinstaller')
-    call(pyinstaller, '-F', 'mozregression-gui.py')
+    call(pyinstaller, '-F', '--paths=.', '--name=mozregression-gui',
+         'mozregui/main.py')
 
 
 def parse_args():
@@ -73,6 +87,12 @@ def parse_args():
 
     venv = subparsers.add_parser('venv', help='create a virtualenv')
     venv.set_defaults(func=do_venv)
+
+    run = subparsers.add_parser('run', help='run the application')
+    run.set_defaults(func=do_run)
+
+    test = subparsers.add_parser('test', help='run the unit tests')
+    test.set_defaults(func=do_test)
 
     bundle = subparsers.add_parser('bundle',
                                    help='bundle the application (freeze)')

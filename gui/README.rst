@@ -28,19 +28,24 @@ Activate your environment. On linux: ::
 
   . venv/bin/activate
 
-
-Then you need to compile the **Qt .ui files** (they describe some widgets)
-into python files: ::
-
-  python build.py uic
-
-Note you will need to do that everytime a .ui file has changed. These .ui
-files can be edited with the Qt **designer**. More information here:
-http://wiki.qt.io/QtCreator_and_PySide.
-
 Then simply run: ::
 
-  python mozregression-gui.py
+  python build.py run
+
+
+Running unit tests
+------------------
+
+Be sure to be in you virtual env, then: ::
+
+  python build.py test
+
+You can run them with coverage: ::
+
+  pip install coverage
+  coverage run build.py test
+  coverage html
+  firefox htmlcov/index.html
 
 
 Freeze the application

@@ -10,5 +10,5 @@ gui/build/
 gui/dist/
 gui/venv/
 gui/mozregression-gui.spec
-gui/ui/*.py
-!gui/ui/__init__.py
+gui/mozregui/ui/*.py
+!gui/mozregui/ui/__init__.py

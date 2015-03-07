@@ -6,9 +6,9 @@ from PySide.QtCore import Slot
 from mozlog.structured import set_default_logger
 from mozlog.structured.structuredlog import StructuredLogger
 
-from ui.mainwindow import Ui_MainWindow
-from wizard import BisectionWizard
-from bisection import BisectRunner
+from mozregui.ui.mainwindow import Ui_MainWindow
+from mozregui.wizard import BisectionWizard
+from mozregui.bisection import BisectRunner
 
 
 class MainWindow(QMainWindow):

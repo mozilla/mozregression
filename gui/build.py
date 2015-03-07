@@ -34,7 +34,7 @@ def do_uic(force=False):
         from pysideuic import compileUi
     except ImportError:
         sys.exit("please execute this from the virtualenv.")
-    for uifile in glob.glob('ui/*.ui'):
+    for uifile in glob.glob('mozregui/ui/*.ui'):
         pyfile = os.path.splitext(uifile)[0] + '.py'
         if force or not os.path.isfile(pyfile) or \
                 (os.path.getmtime(uifile) > os.path.getmtime(pyfile)):

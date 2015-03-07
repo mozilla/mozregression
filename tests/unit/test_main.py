@@ -9,9 +9,11 @@ from mock import patch, Mock
 import datetime
 import tempfile
 import os
+import requests
 
 from mozregression import main, utils, errors
 from mozregression.test_runner import CommandTestRunner
+from mozregression import __version__
 
 
 class TestMainCli(unittest.TestCase):
@@ -245,6 +247,32 @@ class TestPreference(unittest.TestCase):
 
         prefs = main.preference(None, prefs_args)
         self.assertEquals(len(prefs), 0)
+
+
+class TestCheckMozregresionVersion(unittest.TestCase):
+    @patch('requests.get')
+    def test_version_is_upto_date(self, get):
+        logger = Mock()
+        response = Mock(json=lambda: {'info': {'version':  __version__}})
+        get.return_value = response
+        main.check_mozregression_version(logger)
+        self.assertFalse(logger.critical.called)
+
+    @patch('requests.get')
+    def test_Exception_error(self, get):
+        logger = Mock()
+        get.side_effect = requests.RequestException
+        # exception is handled inside main.check_mozregression_version
+        main.check_mozregression_version(logger)
+        self.assertRaises(requests.RequestException, get)
+
+    @patch('requests.get')
+    def test_warn_if_version_is_not_up_to_date(self, get):
+        logger = Mock()
+        response = Mock(json=lambda: {'info': {'version': 0}})
+        get.return_value = response
+        main.check_mozregression_version(logger)
+        self.assertEqual(logger.warning.call_count, 2)
 
 if __name__ == '__main__':
     unittest.main()

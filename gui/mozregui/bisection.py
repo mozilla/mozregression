@@ -66,7 +66,11 @@ class GuiTestRunner(QObject, TestRunner):
 
 
 class GuiBisector(QObject, Bisector):
-    finished = Signal(int)
+    started = Signal(object)
+    finished = Signal(object, int)
+    step_started = Signal(object, int)
+    step_build_found = Signal(object, int, object)
+    step_finished = Signal(object, int, str)
 
     def __init__(self, fetch_config, persist=None):
         QObject.__init__(self)
@@ -75,6 +79,7 @@ class GuiBisector(QObject, Bisector):
         self.bisection = None
         self.mid = None
         self.build_infos = None
+        self._step_num = 0
 
         self.download_manager.download_finished.connect(self._build_dl_finished)
         self.test_runner.evaluate_finished.connect(self._evaluate_finished)
@@ -85,19 +90,25 @@ class GuiBisector(QObject, Bisector):
                                    self.test_runner,
                                    self.fetch_config,
                                    dl_in_background=False)
+        self._step_num = 0
+        self.started.emit(self.bisection)
         self._bisect_next()
 
     @Slot()
     def _bisect_next(self):
+        self._step_num += 1
+        self.step_started.emit(self.bisection, self._step_num)
         # todo: make this non blocking
         self.mid = mid = self.bisection.search_mid_point()
         result = self.bisection.init_handler(mid) 
         if result != Bisection.RUNNING:
-            self.finished.emit(result)
+            self.finished.emit(self.bisection, result)
         else:
             self.build_infos = \
                 self.bisection.handler.build_infos(mid, self.fetch_config)
             self.download_manager.focus_download(self.build_infos)
+            self.step_build_found.emit(self.bisection, self._step_num,
+                                       self.build_infos)
 
     @Slot(object)
     def _build_dl_finished(self, dl):
@@ -111,14 +122,18 @@ class GuiBisector(QObject, Bisector):
     @Slot()
     def _evaluate_finished(self):
         self.bisection.update_build_info(self.mid, self.test_runner.app_info)
+        self.step_finished.emit(self.bisection, self._step_num,
+                                self.test_runner.verdict)
         result = self.bisection.handle_verdict(self.mid, self.test_runner.verdict)
         if result != Bisection.RUNNING:
-            self.finished.emit(result)
+            self.finished.emit(self.bisection, result)
         else:
             self._bisect_next()
 
 
 class BisectRunner(QObject):
+    bisector_created = Signal(object)
+
     def __init__(self, mainwindow):
         QObject.__init__(self)
         self.mainwindow = mainwindow
@@ -129,6 +144,7 @@ class BisectRunner(QObject):
         fetch_config = create_config(options['application'],
                                      mozinfo.os, mozinfo.bits)
         self.bisector = GuiBisector(fetch_config)
+        self.bisector.started.connect(self.on_bisection_started)
         self.bisector.download_manager.download_progress.connect(
             self.show_dl_progress)
         self.bisector.test_runner.evaluate_started.connect(
@@ -166,8 +182,8 @@ class BisectRunner(QObject):
             verdict = "b"
         self.bisector.test_runner.finish(verdict)
 
-    @Slot(int)
-    def bisection_finished(self, resultcode):
+    @Slot(object, int)
+    def bisection_finished(self, bisection, resultcode):
         if resultcode == Bisection.NO_DATA:
             msg = "Unable to find enough data to bisect."
             dialog = QMessageBox.warning
@@ -175,3 +191,7 @@ class BisectRunner(QObject):
             msg = "The bisection is done."
             dialog = QMessageBox.information
         dialog(self.mainwindow, "End of the bisection", msg)
+
+    @Slot()
+    def on_bisection_started(self):
+        self.bisector_created.emit(self.bisector)

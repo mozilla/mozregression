@@ -9,6 +9,7 @@ from mozlog.structured.structuredlog import StructuredLogger
 from mozregui.ui.mainwindow import Ui_MainWindow
 from mozregui.wizard import BisectionWizard
 from mozregui.bisection import BisectRunner
+from mozregui.report import ReportModel
 
 
 class MainWindow(QMainWindow):
@@ -17,6 +18,12 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.bisect_runner = BisectRunner(self)
+
+        self.report_model = ReportModel()
+        self.ui.report_view.setModel(self.report_model)
+
+        self.bisect_runner.bisector_created.connect(
+            self.report_model.attach_bisector)
 
     @Slot()
     def start_bisection_wizard(self):

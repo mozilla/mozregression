@@ -23,7 +23,13 @@ follow the OS-specific instructions to install pip if you don't know how to do i
       sudo apt-get install python-pip
 
 Once you have pip installed along with python 2.7, just open a terminal
-(or a windows shell) and type the following command to install or upgrade
-mozregression:
+(or a windows shell) and execute the following depending on what platform
+you are on:
 
-    pip install -U mozregression
+- **Windows**
+
+      pip install -U mozregression
+
+- **Ubuntu** / **Mac**
+
+      sudo pip install -U mozregression

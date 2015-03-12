@@ -1,9 +1,6 @@
 import unittest
 from mock import patch, Mock
 import datetime
-import tempfile
-import shutil
-import os
 import requests
 from mozregression import utils, errors, limitedfilecache
 
@@ -60,46 +57,6 @@ class TestParseBits(unittest.TestCase):
         mozinfo.bits = 64
         self.assertEqual(utils.parse_bits('32'), 32)
         self.assertEqual(utils.parse_bits('64'), 64)
-
-
-class TestDownloadUrl(unittest.TestCase):
-    def setUp(self):
-        self.tempdir = tempfile.mkdtemp()
-        self.addCleanup(shutil.rmtree, self.tempdir)
-
-    @patch('requests.get')
-    def test_download(self, get):
-        self.data = """
-        hello,
-        this is a response.
-        """ * (1024 * 16)
-
-        def iter_content(chunk_size=1):
-            rest = self.data
-            while rest:
-                chunk = rest[:chunk_size]
-                rest = rest[chunk_size:]
-                yield chunk
-
-        response = Mock(headers={'Content-length': str(len(self.data))},
-                        iter_content=iter_content)
-        get.return_value = response
-
-        fname = os.path.join(self.tempdir, 'some.content')
-        utils.download_url('http://toto', fname)
-
-        self.assertEquals(self.data, open(fname).read())
-
-    @patch('requests.get')
-    @patch('mozfile.remove')
-    def test_download_with_exception_remove_tempfile(self, remove, get):
-        response = Mock(headers={'Content-length': '10'},
-                        iter_content=Mock(side_effect=Exception))
-        get.return_value = response
-
-        fname = os.path.join(self.tempdir, 'some.content')
-        self.assertRaises(Exception, utils.download_url, 'http://toto', fname)
-        remove.assert_called_once_with(fname + '.part')
 
 
 class TestGetBuildUrl(unittest.TestCase):

@@ -13,8 +13,6 @@ from mozlog.structured import get_default_logger
 import subprocess
 import shlex
 import os
-import tempfile
-import mozfile
 
 from mozregression.launchers import create_launcher
 from mozregression.errors import TestCommandError
@@ -26,10 +24,7 @@ class TestRunner(object):
 
     :meth:`evaluate` must be implemented by subclasses.
     """
-    def __init__(self, fetch_config, persist=None, launcher_kwargs=None):
-        self.fetch_config = fetch_config
-        self.persist = persist
-        self.launcher_kwargs = launcher_kwargs or {}
+    def __init__(self):
         self.logger = get_default_logger('Test Runner')
 
     def create_launcher(self, build_info):
@@ -37,22 +32,16 @@ class TestRunner(object):
         Create and returns a :class:`mozregression.launchers.Launcher`.
         """
         if build_info['build_type'] == 'nightly':
-            date = build_info['build_date']
-            nightly_repo = self.fetch_config.get_nightly_repo(date)
-            persist_prefix = '%s--%s--' % (date, nightly_repo)
-            self.logger.info("Running nightly for %s" % date)
+            self.logger.info("Running nightly for %s"
+                             % build_info["build_date"])
         else:
-            persist_prefix = '%s--%s--' % (build_info['timestamp'],
-                                           self.fetch_config.inbound_branch)
             self.logger.info("Testing inbound build with timestamp %s,"
                              " revision %s"
                              % (build_info['timestamp'],
                                 build_info['revision']))
-        build_url = build_info['build_url']
-        return create_launcher(self.fetch_config.app_name,
-                               build_url,
-                               persist=self.persist,
-                               persist_prefix=persist_prefix)
+
+        return create_launcher(build_info['app_name'],
+                               build_info['build_path'])
 
     def evaluate(self, build_info, allow_back=False):
         """
@@ -67,6 +56,7 @@ class TestRunner(object):
         :meth:`mozregression.launchers.Launcher.get_app_info` for this
         particular build.
 
+        :param build_path: the path to the build file to test
         :param build_info: is a dict containing information about the build
                            to test. It is ensured to have the following keys:
                             - build_type ('nightly' or 'inbound')
@@ -88,19 +78,9 @@ class ManualTestRunner(TestRunner):
     A TestRunner subclass that run builds and ask for evaluation by
     prompting in the terminal.
     """
-    def __init__(self, fetch_config, persist=None, launcher_kwargs=None):
-        self.delete_persist = False
-        if persist is None:
-            # always keep the downloaded files for manual runner
-            # this allows to not re-download a file if a user retry a build.
-            persist = tempfile.mkdtemp()
-            self.delete_persist = True
-        TestRunner.__init__(self, fetch_config, persist=persist,
-                            launcher_kwargs=launcher_kwargs)
-
-    def __del__(self):
-        if self.delete_persist:
-            mozfile.remove(self.persist)
+    def __init__(self, launcher_kwargs=None):
+        TestRunner.__init__(self)
+        self.launcher_kwargs = launcher_kwargs or {}
 
     def get_verdict(self, build_info, allow_back):
         """
@@ -156,15 +136,14 @@ class CommandTestRunner(TestRunner):
        with curly brackets. Example:
        `mozmill -app firefox -b {binary} -t path/to/test.js`
     """
-    def __init__(self, fetch_config, command, **kwargs):
-        TestRunner.__init__(self, fetch_config, **kwargs)
+    def __init__(self, command):
+        TestRunner.__init__(self)
         self.command = command
 
     def evaluate(self, build_info, allow_back=False):
         launcher = self.create_launcher(build_info)
         app_info = launcher.get_app_info()
         variables = dict((k, str(v)) for k, v in build_info.iteritems())
-        variables['app_name'] = launcher.app_name
         if hasattr(launcher, 'binary'):
             variables['binary'] = launcher.binary
 

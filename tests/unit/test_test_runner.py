@@ -7,19 +7,13 @@
 import unittest
 from mock import patch, Mock
 import datetime
-import os
 
-from mozregression.fetch_configs import create_config
 from mozregression import test_runner, errors
 
 
 class TestManualTestRunner(unittest.TestCase):
     def setUp(self):
-        fetch_config = create_config('firefox', 'linux', 64)
-        fetch_config.set_nightly_repo('my-repo')
-        fetch_config.set_inbound_branch('my-branch')
-        self.runner = test_runner.ManualTestRunner(fetch_config,
-                                                   persist='/path/to')
+        self.runner = test_runner.ManualTestRunner()
 
     @patch('mozregression.test_runner.create_launcher')
     def test_nightly_create_launcher(self, create_launcher):
@@ -28,28 +22,33 @@ class TestManualTestRunner(unittest.TestCase):
         result_launcher = self.runner.create_launcher({
             'build_type': 'nightly',
             'build_date': datetime.date(2014, 12, 25),
-            'build_url': 'http://my-url'
+            'build_url': 'http://my-url',
+            'repo': 'my-repo',
+            'app_name': 'firefox',
+            'build_path': '/path/to',
         })
         create_launcher.\
-            assert_called_with('firefox', 'http://my-url',
-                               persist_prefix='2014-12-25--my-repo--',
-                               persist='/path/to')
+            assert_called_with('firefox',
+                               '/path/to')
 
         self.assertEqual(result_launcher, launcher)
 
+    @patch('mozregression.download_manager.DownloadManager.download')
     @patch('mozregression.test_runner.create_launcher')
-    def test_inbound_create_launcher(self, create_launcher):
+    def test_inbound_create_launcher(self, create_launcher, download):
         launcher = Mock()
         create_launcher.return_value = launcher
         result_launcher = self.runner.create_launcher({
             'build_type': 'inbound',
             'timestamp': '123',
             'revision': '12345678',
-            'build_url': 'http://my-url'
+            'build_url': 'http://my-url',
+            'repo': 'my-branch',
+            'app_name': 'firefox',
+            'build_path': '/path/to',
         })
-        create_launcher.assert_called_with('firefox', 'http://my-url',
-                                           persist_prefix='123--my-branch--',
-                                           persist='/path/to')
+        create_launcher.assert_called_with('firefox',
+                                           '/path/to')
         self.assertEqual(result_launcher, launcher)
 
     @patch('__builtin__.raw_input')
@@ -89,22 +88,11 @@ class TestManualTestRunner(unittest.TestCase):
         launcher.stop.assert_called_with()
         self.assertEqual(result[0], 'g')
 
-    def test_persist_none_is_overidden(self):
-        runner = test_runner.ManualTestRunner(self.runner.fetch_config,
-                                              persist=None)
-        persist = runner.persist
-        self.assertIsNotNone(persist)
-        self.assertTrue(os.path.isdir(persist))
-        # deleting the runner also delete the temp dir
-        del runner
-        self.assertFalse(os.path.exists(persist))
-
 
 class TestCommandTestRunner(unittest.TestCase):
     def setUp(self):
-        fetch_config = create_config('firefox', 'linux', 64)
-        self.runner = test_runner.CommandTestRunner(fetch_config, 'my command')
-        self.launcher = Mock(app_name='myapp')
+        self.runner = test_runner.CommandTestRunner('my command')
+        self.launcher = Mock()
         del self.launcher.binary  # block the auto attr binary on the mock
 
     def test_create(self):
@@ -114,6 +102,7 @@ class TestCommandTestRunner(unittest.TestCase):
     @patch('subprocess.call')
     def evaluate(self, call, create_launcher, build_info={},
                  retcode=0, subprocess_call_effect=None):
+        build_info['app_name'] = 'myapp'
         call.return_value = retcode
         if subprocess_call_effect:
             call.side_effect = subprocess_call_effect

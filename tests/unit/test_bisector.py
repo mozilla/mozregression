@@ -5,13 +5,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import unittest
-from mock import patch, Mock, call, MagicMock
+from mock import patch, Mock, call, MagicMock, ANY
 import datetime
 
 from mozregression.bisector import (BisectorHandler, NightlyHandler,
                                     InboundHandler, Bisector,
                                     BisectRunner)
 from mozregression.main import parse_args
+from mozregression.fetch_configs import create_config
 from mozregression import build_data
 
 
@@ -73,14 +74,19 @@ class TestNightlyHandler(unittest.TestCase):
         self.handler = NightlyHandler()
 
     def test_build_infos(self):
+        fetch_config = create_config('fennec-2.3', 'linux', 64)
+        fetch_config.set_nightly_repo('my-repo')
+
         def get_associated_data(index):
             return index
         new_data = MagicMock(get_associated_data=get_associated_data)
         self.handler.set_build_data(new_data)
-        result = self.handler.build_infos(1)
+        result = self.handler.build_infos(1, fetch_config)
         self.assertEqual(result, {
             'build_type': 'nightly',
             'build_date': 1,
+            'app_name': 'fennec',
+            'repo': 'my-repo'
         })
 
     @patch('mozregression.bisector.BisectorHandler.initialize')
@@ -163,12 +169,17 @@ class TestInboundHandler(unittest.TestCase):
         self.handler = InboundHandler()
 
     def test_build_infos(self):
+        fetch_config = create_config('firefox', 'linux', 64)
+        fetch_config.set_inbound_branch('my-branch')
+
         self.handler.set_build_data([{'changeset': '1', 'repository': 'my'}])
-        result = self.handler.build_infos(0)
+        result = self.handler.build_infos(0, fetch_config)
         self.assertEqual(result, {
             'changeset': '1',
             'repository': 'my',
-            'build_type': 'inbound'
+            'build_type': 'inbound',
+            'app_name': 'firefox',
+            'repo': 'my-branch',
         })
 
     def test_print_progress(self):
@@ -228,13 +239,17 @@ class MyBuildData(build_data.BuildData):
 
 class TestBisector(unittest.TestCase):
     def setUp(self):
-        self.handler = Mock(find_fix=False)
+        self.handler = MagicMock(find_fix=False)
         self.test_runner = Mock()
-        self.bisector = Bisector(Mock(), self.test_runner)
+        self.bisector = Bisector(Mock(), self.test_runner,
+                                 dl_in_background=False)
+        self.bisector.download_background = False
+        self.dl_manager = Mock()
 
     def test__bisect_no_data(self):
         build_data = MyBuildData()
-        result = self.bisector._bisect(self.handler, build_data)
+        result = self.bisector._bisect(self.dl_manager, self.handler,
+                                       build_data)
         # test that handler methods where called
         self.handler.set_build_data.assert_called_with(build_data)
         self.handler.no_data.assert_called_once_with()
@@ -243,7 +258,8 @@ class TestBisector(unittest.TestCase):
 
     def test__bisect_finished(self):
         build_data = MyBuildData([1])
-        result = self.bisector._bisect(self.handler, build_data)
+        result = self.bisector._bisect(self.dl_manager, self.handler,
+                                       build_data)
         # test that handler methods where called
         self.handler.set_build_data.assert_called_with(build_data)
         self.handler.finished.assert_called_once_with()
@@ -259,7 +275,8 @@ class TestBisector(unittest.TestCase):
                 'application_repository': 'unused'
             }
         self.test_runner.evaluate = Mock(side_effect=evaluate)
-        result = self.bisector._bisect(self.handler, build_data)
+        result = self.bisector._bisect(self.dl_manager, self.handler,
+                                       build_data)
         return {
             'result': result,
         }
@@ -352,6 +369,31 @@ class TestBisector(unittest.TestCase):
         # user exit
         self.assertEqual(test_result['result'], Bisector.USER_EXIT)
 
+    def test__bisect_with_background_download(self):
+        self.bisector.dl_in_background = True
+        test_result = self.do__bisect(MyBuildData([1, 2, 3, 4, 5]), ['g', 'b'])
+        # check that set_build_data was called
+        self.handler.set_build_data.assert_has_calls([
+            call(MyBuildData([1, 2, 3, 4, 5])),  # first call
+            call(MyBuildData([3, 4, 5])),  # download backgound
+            call(MyBuildData([1, 2, 3, 4, 5])),   # put back the right data
+            call(MyBuildData([1, 2, 3])),  # download backgound
+            call(MyBuildData([1, 2, 3, 4, 5])),   # put back the right data
+            call(MyBuildData([3, 4, 5])),  # we answered good
+            call(MyBuildData([4, 5])),  # download backgound
+            call(MyBuildData([3, 4, 5])),  # put back the right data
+            call(MyBuildData([3, 4])),  # download backgound
+            call(MyBuildData([3, 4, 5])),  # put back the right data
+            call(MyBuildData([3, 4]))  # we answered bad
+        ])
+        # ensure that we called the handler's methods
+        self.handler.initialize.assert_called_with()
+        self.handler.build_good.assert_called_with(2, MyBuildData([3, 4, 5]))
+        self.handler.build_bad.assert_called_with(1, MyBuildData([3, 4]))
+        self.assertTrue(self.handler.build_data.ensure_limits_called)
+        # bisection is finished
+        self.assertEqual(test_result['result'], Bisector.FINISHED)
+
     @patch('mozregression.bisector.Bisector._bisect')
     def test_bisect(self, _bisect):
         _bisect.return_value = 1
@@ -362,7 +404,7 @@ class TestBisector(unittest.TestCase):
         build_data_class.assert_called_with(self.bisector.fetch_config,
                                             'g', 'b', s=1)
         self.assertFalse(build_data.reverse.called)
-        _bisect.assert_called_with(self.handler, build_data)
+        _bisect.assert_called_with(ANY, self.handler, build_data)
         self.assertEqual(result, 1)
 
     @patch('mozregression.bisector.Bisector._bisect')
@@ -374,7 +416,7 @@ class TestBisector(unittest.TestCase):
         self.bisector.bisect(self.handler, 'g', 'b', s=1)
         build_data_class.assert_called_with(self.bisector.fetch_config,
                                             'b', 'g', s=1)
-        _bisect.assert_called_with(self.handler, build_data)
+        _bisect.assert_called_with(ANY, self.handler, build_data)
 
 
 class TestBisectRunner(unittest.TestCase):

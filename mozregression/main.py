@@ -183,6 +183,13 @@ def parse_args(argv=None):
                               " %(default)s seconds - increase this if you"
                               " are under a really slow network."))
 
+    parser.add_argument('--no-background-dl', action='store_false',
+                        dest="background_dl",
+                        default=(defaults.get('no-background-dl', '').lower()
+                                 not in ('1', 'yes', 'true')),
+                        help=("Do not download next builds in the background"
+                              " while evaluating the current build."))
+
     commandline.add_logging_group(parser)
     options = parser.parse_args(argv)
     options.bits = parse_bits(options.bits)
@@ -334,12 +341,9 @@ def cli(argv=None):
             cmdargs=options.cmdargs,
             preferences=preference(options.prefs_files, options.prefs),
         )
-        test_runner = ManualTestRunner(fetch_config,
-                                       persist=options.persist,
-                                       launcher_kwargs=launcher_kwargs)
+        test_runner = ManualTestRunner(launcher_kwargs=launcher_kwargs)
     else:
-        test_runner = CommandTestRunner(fetch_config, options.command,
-                                        persist=options.persist)
+        test_runner = CommandTestRunner(options.command)
 
     runner = ResumeInfoBisectRunner(fetch_config, test_runner, options)
 

@@ -190,12 +190,23 @@ class TestMainCli(unittest.TestCase):
             assert_called_with(utils.parse_date(good[1]),
                                utils.parse_date(bad[1]))
 
+    def test_download_in_background_is_on_by_default(self):
+        self.do_cli([])
+        self.assertTrue(self.runner.options.background_dl)
+
+    def test_deactive_download_in_background(self):
+        self.do_cli(['--no-background-dl'])
+        self.assertFalse(self.runner.options.background_dl)
+
 
 class TestResumeInfoBisectRunner(unittest.TestCase):
+    def setUp(self):
+        self.opts = Mock(persist=None)
+
     @patch('mozregression.main.BisectRunner')
     def test_do_bisect(self, BisectRunner):
         BisectRunner.do_bisect.return_value = 0
-        runner = main.ResumeInfoBisectRunner(None, None, None)
+        runner = main.ResumeInfoBisectRunner(None, None, self.opts)
         result = runner.do_bisect('handler', 'g', 'b', range=4)
 
         self.assertEquals(result, 0)
@@ -206,7 +217,7 @@ class TestResumeInfoBisectRunner(unittest.TestCase):
     @patch('mozregression.main.BisectRunner')
     def test_do_bisect_error(self, BisectRunner, register):
         BisectRunner.do_bisect.side_effect = KeyboardInterrupt
-        runner = main.ResumeInfoBisectRunner(None, None, None)
+        runner = main.ResumeInfoBisectRunner(None, None, self.opts)
         handler = Mock(good_revision=1, bad_revision=2)
         with self.assertRaises(KeyboardInterrupt):
             runner.do_bisect(handler, 'g', 'b')
@@ -217,7 +228,7 @@ class TestResumeInfoBisectRunner(unittest.TestCase):
     @patch('mozregression.main.BisectRunner')
     def test_on_exit_print_resume_info(self, BisectRunner):
         handler = Mock()
-        runner = main.ResumeInfoBisectRunner(None, None, None)
+        runner = main.ResumeInfoBisectRunner(None, None, self.opts)
         runner.print_resume_info = Mock()
         runner.on_exit_print_resume_info(handler)
 

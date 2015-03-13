@@ -4,4 +4,14 @@ dist/*
 *.swp
 .DS_Store
 build/*
-coveragerc
+.coverage
+htmlcov/
+
+gui/build/
+gui/dist/
+gui/venv/
+gui/mozregression-gui.spec
+gui/mozregui/ui/*.py
+!gui/mozregui/ui/__init__.py
+gui/.coverage
+gui/htmlcov/

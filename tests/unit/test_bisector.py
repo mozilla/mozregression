@@ -5,11 +5,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import unittest
-from mock import patch, Mock, call, MagicMock, ANY
+from mock import patch, Mock, call, MagicMock
 import datetime
 
 from mozregression.bisector import (BisectorHandler, NightlyHandler,
-                                    InboundHandler, Bisector,
+                                    InboundHandler, Bisector, Bisection,
                                     BisectRunner)
 from mozregression.main import parse_args
 from mozregression.fetch_configs import create_config
@@ -244,29 +244,29 @@ class TestBisector(unittest.TestCase):
         self.bisector = Bisector(Mock(), self.test_runner,
                                  dl_in_background=False)
         self.bisector.download_background = False
-        self.dl_manager = Mock()
 
-    def test__bisect_no_data(self):
+    @patch("mozregression.bisector.BuildDownloadManager")
+    def test__bisect_no_data(self, dl):
         build_data = MyBuildData()
-        result = self.bisector._bisect(self.dl_manager, self.handler,
-                                       build_data)
+        result = self.bisector._bisect(self.handler, build_data)
         # test that handler methods where called
         self.handler.set_build_data.assert_called_with(build_data)
         self.handler.no_data.assert_called_once_with()
         # check return code
-        self.assertEqual(result, Bisector.NO_DATA)
+        self.assertEqual(result, Bisection.NO_DATA)
 
-    def test__bisect_finished(self):
+    @patch("mozregression.bisector.BuildDownloadManager")
+    def test__bisect_finished(self, dl):
         build_data = MyBuildData([1])
-        result = self.bisector._bisect(self.dl_manager, self.handler,
-                                       build_data)
+        result = self.bisector._bisect(self.handler, build_data)
         # test that handler methods where called
         self.handler.set_build_data.assert_called_with(build_data)
         self.handler.finished.assert_called_once_with()
         # check return code
-        self.assertEqual(result, Bisector.FINISHED)
+        self.assertEqual(result, Bisection.FINISHED)
 
-    def do__bisect(self, build_data, verdicts):
+    @patch("mozregression.bisector.BuildDownloadManager")
+    def do__bisect(self, build_data, verdicts, dl):
         iter_verdict = iter(verdicts)
 
         def evaluate(build_info, allow_back=False):
@@ -275,8 +275,7 @@ class TestBisector(unittest.TestCase):
                 'application_repository': 'unused'
             }
         self.test_runner.evaluate = Mock(side_effect=evaluate)
-        result = self.bisector._bisect(self.dl_manager, self.handler,
-                                       build_data)
+        result = self.bisector._bisect(self.handler, build_data)
         return {
             'result': result,
         }
@@ -298,7 +297,7 @@ class TestBisector(unittest.TestCase):
         self.handler.build_bad.assert_called_with(1, MyBuildData([3, 4]))
         self.assertTrue(self.handler.build_data.ensure_limits_called)
         # bisection is finished
-        self.assertEqual(test_result['result'], Bisector.FINISHED)
+        self.assertEqual(test_result['result'], Bisection.FINISHED)
 
     def test__bisect_case1_hunt_fix(self):
         self.handler.find_fix = True
@@ -318,7 +317,7 @@ class TestBisector(unittest.TestCase):
             assert_called_once_with(2, MyBuildData([1, 2, 3]))
         self.handler.build_bad.assert_called_once_with(1, MyBuildData([2, 3]))
         # bisection is finished
-        self.assertEqual(test_result['result'], Bisector.FINISHED)
+        self.assertEqual(test_result['result'], Bisection.FINISHED)
 
     def test__bisect_case2(self):
         test_result = self.do__bisect(MyBuildData([1, 2, 3]), ['r', 's'])
@@ -337,7 +336,7 @@ class TestBisector(unittest.TestCase):
         self.handler.build_skip.assert_called_with(1)
         self.assertTrue(self.handler.build_data.ensure_limits_called)
         # bisection is finished
-        self.assertEqual(test_result['result'], Bisector.FINISHED)
+        self.assertEqual(test_result['result'], Bisection.FINISHED)
 
     def test__bisect_with_back(self):
         test_result = self.do__bisect(MyBuildData([1, 2, 3, 4, 5]),
@@ -356,7 +355,7 @@ class TestBisector(unittest.TestCase):
             call(MyBuildData([2, 3])),
         ])
         # bisection is finished
-        self.assertEqual(test_result['result'], Bisector.FINISHED)
+        self.assertEqual(test_result['result'], Bisection.FINISHED)
 
     def test__bisect_user_exit(self):
         test_result = self.do__bisect(MyBuildData(range(20)), ['e'])
@@ -367,7 +366,7 @@ class TestBisector(unittest.TestCase):
         self.handler.initialize.assert_called_once_with()
         self.handler.user_exit.assert_called_with(10)
         # user exit
-        self.assertEqual(test_result['result'], Bisector.USER_EXIT)
+        self.assertEqual(test_result['result'], Bisection.USER_EXIT)
 
     def test__bisect_with_background_download(self):
         self.bisector.dl_in_background = True
@@ -392,7 +391,7 @@ class TestBisector(unittest.TestCase):
         self.handler.build_bad.assert_called_with(1, MyBuildData([3, 4]))
         self.assertTrue(self.handler.build_data.ensure_limits_called)
         # bisection is finished
-        self.assertEqual(test_result['result'], Bisector.FINISHED)
+        self.assertEqual(test_result['result'], Bisection.FINISHED)
 
     @patch('mozregression.bisector.Bisector._bisect')
     def test_bisect(self, _bisect):
@@ -404,7 +403,7 @@ class TestBisector(unittest.TestCase):
         build_data_class.assert_called_with(self.bisector.fetch_config,
                                             'g', 'b', s=1)
         self.assertFalse(build_data.reverse.called)
-        _bisect.assert_called_with(ANY, self.handler, build_data)
+        _bisect.assert_called_with(self.handler, build_data)
         self.assertEqual(result, 1)
 
     @patch('mozregression.bisector.Bisector._bisect')
@@ -416,7 +415,7 @@ class TestBisector(unittest.TestCase):
         self.bisector.bisect(self.handler, 'g', 'b', s=1)
         build_data_class.assert_called_with(self.bisector.fetch_config,
                                             'b', 'g', s=1)
-        _bisect.assert_called_with(ANY, self.handler, build_data)
+        _bisect.assert_called_with(self.handler, build_data)
 
 
 class TestBisectRunner(unittest.TestCase):

@@ -1,0 +1,6 @@
+pyinstaller
+pyside
+# requests 2.5.1 or 2.5.3 have an issue when the system is frozen
+requests==2.5.1
+# install mozregression
+-e ..

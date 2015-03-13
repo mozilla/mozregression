@@ -1,0 +1,13 @@
+# configuration for coverage.py
+[run]
+source = mozregui
+omit = mozregui/ui/*.py
+
+[report]
+exclude_lines =
+    # Don't complain if tests don't hit defensive assertion code
+    raise NotImplementedError
+    # pass instructions does need to be tested
+    pass
+    # Don't complain if non-runnable code isn't run
+    if __name__ == .__main__.:

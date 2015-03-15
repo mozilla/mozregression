@@ -1,8 +1,6 @@
-import mozinfo
 from PySide.QtCore import QObject, Signal, Slot
 from PySide.QtGui import QMessageBox
 
-from mozregression.fetch_configs import create_config
 from mozregression.bisector import Bisector, Bisection, NightlyHandler, \
     InboundHandler
 from mozregression.download_manager import BuildDownloadManager
@@ -141,10 +139,8 @@ class BisectRunner(QObject):
         self.mainwindow = mainwindow
         self.bisector = None
 
-    def bisect(self, options):
+    def bisect(self, fetch_config, options):
         self.stop()
-        fetch_config = create_config(options['application'],
-                                     mozinfo.os, mozinfo.bits)
         self.bisector = GuiBisector(fetch_config)
         self.bisector.started.connect(self.on_bisection_started)
         self.bisector.download_manager.download_progress.connect(

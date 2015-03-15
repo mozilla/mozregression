@@ -43,8 +43,6 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionStart_a_new_bisection"/>
-    <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
    <addaction name="menuFile"/>
@@ -75,6 +73,12 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="dockWidget_2">
+   <attribute name="dockWidgetArea">
+    <number>4</number>
+   </attribute>
+   <widget class="BisectOptions" name="bisect_options"/>
+  </widget>
   <action name="actionStart_a_new_bisection">
    <property name="text">
     <string>Start a new bisection</string>
@@ -97,6 +101,12 @@
    <extends>QTableView</extends>
    <header>mozregui.report</header>
   </customwidget>
+  <customwidget>
+   <class>BisectOptions</class>
+   <extends>QWidget</extends>
+   <header>mozregui.bisect_options</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources/>
  <connections>
@@ -116,24 +126,5 @@
     </hint>
    </hints>
   </connection>
-  <connection>
-   <sender>actionStart_a_new_bisection</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>start_bisection_wizard()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>399</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
- <slots>
-  <slot>start_bisection_wizard()</slot>
- </slots>
 </ui>

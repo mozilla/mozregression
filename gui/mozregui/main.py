@@ -23,6 +23,8 @@ class MainWindow(QMainWindow):
             self.ui.build_info_edit.update_content)
         self.ui.bisect_options.ui.start_bisection.clicked.connect(
             self.start_bisection)
+        self.bisect_runner.running_changed.connect(
+            self.ui.bisect_options.setDisabled)
 
     @Slot()
     def start_bisection(self):

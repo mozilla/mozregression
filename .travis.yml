@@ -23,7 +23,11 @@ before_script:
 
 script:
     - coverage run setup.py test
-    - cd gui && python build.py test && cd ..
+    - cd gui && coverage run build.py test && cd ..
+    # now combine the coverage data
+    - mv .coverage .coverage.core
+    - mv gui/.coverage .coverage.gui
+    - coverage combine
 
 after_success:
     coveralls

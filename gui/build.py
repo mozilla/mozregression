@@ -60,7 +60,7 @@ def do_run():
 
 def do_test():
     do_uic()
-    call(py_script('flake8'), 'mozregui', 'build.py', 'tests')
+    call('flake8', 'mozregui', 'build.py', 'tests')
     print('Running tests...')
     import nose
     nose.main(argv=['-s', 'tests'])

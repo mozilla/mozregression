@@ -22,11 +22,12 @@ def call(*args, **kwargs):
 
 
 def py_script(script_name):
+    python_dir = os.path.dirname(sys.executable)
     if IS_WIN:
-        return os.path.join(VENV_PATH, 'Scripts',
+        return os.path.join(python_dir, 'Scripts',
                             script_name + '.exe')
     else:
-        return os.path.join(VENV_PATH, 'bin', script_name)
+        return os.path.join(python_dir, script_name)
 
 
 def do_uic(force=False):
@@ -60,7 +61,7 @@ def do_run():
 
 def do_test():
     do_uic()
-    call('flake8', 'mozregui', 'build.py', 'tests')
+    call(py_script('flake8'), 'mozregui', 'build.py', 'tests')
     print('Running tests...')
     import nose
     nose.main(argv=['-s', 'tests'])

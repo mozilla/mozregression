@@ -22,11 +22,12 @@ def call(*args, **kwargs):
 
 
 def py_script(script_name):
+    python_dir = os.path.dirname(sys.executable)
     if IS_WIN:
-        return os.path.join(VENV_PATH, 'Scripts',
+        return os.path.join(python_dir, 'Scripts',
                             script_name + '.exe')
     else:
-        return os.path.join(VENV_PATH, 'bin', script_name)
+        return os.path.join(python_dir, script_name)
 
 
 def do_uic(force=False):

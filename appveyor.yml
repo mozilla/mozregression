@@ -12,5 +12,8 @@ install:
   # File "c:\users\appveyor\appdata\local\temp\easy_install-fz8d4j\requests-2.5.2\requests\packages\__init__.py", line 49, in load_module
   # AttributeError: 'NoneType' object has no attribute 'modules'
   - "%PYTHON%/Scripts/pip.exe install -e ."
+  - "cd gui & %PYTHON%/Scripts/pip.exe install -r test-requirements.txt"
+  - "cd .."
 test_script:
   - "%PYTHON%/python.exe setup.py test"
+  - "cd gui & %PYTHON%/python.exe build.py test"

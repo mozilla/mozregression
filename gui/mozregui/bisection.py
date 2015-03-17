@@ -1,8 +1,6 @@
-import mozinfo
 from PySide.QtCore import QObject, Signal, Slot
 from PySide.QtGui import QMessageBox
 
-from mozregression.fetch_configs import create_config
 from mozregression.bisector import Bisector, Bisection, NightlyHandler, \
     InboundHandler
 from mozregression.download_manager import BuildDownloadManager
@@ -135,16 +133,15 @@ class GuiBisector(QObject, Bisector):
 
 class BisectRunner(QObject):
     bisector_created = Signal(object)
+    running_changed = Signal(bool)
 
     def __init__(self, mainwindow):
         QObject.__init__(self)
         self.mainwindow = mainwindow
         self.bisector = None
 
-    def bisect(self, options):
+    def bisect(self, fetch_config, options):
         self.stop()
-        fetch_config = create_config(options['application'],
-                                     mozinfo.os, mozinfo.bits)
         self.bisector = GuiBisector(fetch_config)
         self.bisector.started.connect(self.on_bisection_started)
         self.bisector.download_manager.download_progress.connect(
@@ -152,6 +149,7 @@ class BisectRunner(QObject):
         self.bisector.test_runner.evaluate_started.connect(
             self.evaluate)
         self.bisector.finished.connect(self.bisection_finished)
+        self.running_changed.emit(True)
         if options['bisect_type'] == 'nightlies':
             handler = NightlyHandler()
             start = options['start_date']
@@ -193,6 +191,7 @@ class BisectRunner(QObject):
             msg = "The bisection is done."
             dialog = QMessageBox.information
         dialog(self.mainwindow, "End of the bisection", msg)
+        self.running_changed.emit(False)
 
     @Slot()
     def on_bisection_started(self):

@@ -1,5 +1,5 @@
 import mozinfo
-from PySide.QtCore import QObject, Signal, Slot
+from PySide.QtCore import QObject, Signal, Slot, QThread, QTimer
 from PySide.QtGui import QMessageBox
 
 from mozregression.fetch_configs import create_config
@@ -80,10 +80,16 @@ class GuiBisector(QObject, Bisector):
         self.mid = None
         self.build_infos = None
         self._step_num = 0
+        self._bisect_args = None
 
         self.download_manager.download_finished.connect(
             self._build_dl_finished)
         self.test_runner.evaluate_finished.connect(self._evaluate_finished)
+
+    @Slot()
+    def bisect(self):
+        # this is a slot so it will be called in the thread
+        Bisector.bisect(self, *self._bisect_args)
 
     def _bisect(self, handler, build_data):
         self.bisection = Bisection(handler, build_data,
@@ -92,14 +98,18 @@ class GuiBisector(QObject, Bisector):
                                    self.fetch_config,
                                    dl_in_background=False)
         self._step_num = 0
+        # the started signal will be catched by the report model
+        # which lives in the main thread. Since here we are on the worker
+        # thread, we give some time for qt to deliver the signal before
+        # we call _bisect_next.
         self.started.emit(self.bisection)
-        self._bisect_next()
+        QTimer.singleShot(200, self._bisect_next)
 
     @Slot()
     def _bisect_next(self):
+        # this is executed in the working thread
         self._step_num += 1
         self.step_started.emit(self.bisection, self._step_num)
-        # todo: make this non blocking
         self.mid = mid = self.bisection.search_mid_point()
         result = self.bisection.init_handler(mid)
         if result != Bisection.RUNNING:
@@ -111,17 +121,28 @@ class GuiBisector(QObject, Bisector):
             self.step_build_found.emit(self.bisection, self._step_num,
                                        self.build_infos)
 
+    @Slot()
+    def _evaluate(self):
+        # this is called in the working thread, so installation does not
+        # block the ui.
+        self.bisection.evaluate(self.build_infos)
+
     @Slot(object)
     def _build_dl_finished(self, dl):
+        # here we are not in the working thread, since the connection was
+        # done in the constructor
         if not dl.get_dest() == self.build_infos['build_path']:
             return
         if dl.is_canceled() or dl.error():
             # todo handle this
             return
-        self.bisection.evaluate(self.build_infos)
+        # call this in the thread
+        QTimer.singleShot(0, self._evaluate)
 
     @Slot()
     def _evaluate_finished(self):
+        # here we are not in the working thread, since the connection was
+        # done in the constructor
         self.bisection.update_build_info(self.mid, self.test_runner.app_info)
         self.step_finished.emit(self.bisection, self._step_num,
                                 self.test_runner.verdict)
@@ -130,7 +151,8 @@ class GuiBisector(QObject, Bisector):
         if result != Bisection.RUNNING:
             self.finished.emit(self.bisection, result)
         else:
-            self._bisect_next()
+            # call this in the thread
+            QTimer.singleShot(0, self._bisect_next)
 
 
 class BisectRunner(QObject):
@@ -140,12 +162,18 @@ class BisectRunner(QObject):
         QObject.__init__(self)
         self.mainwindow = mainwindow
         self.bisector = None
+        self.thread = None
 
     def bisect(self, options):
         self.stop()
         fetch_config = create_config(options['application'],
                                      mozinfo.os, mozinfo.bits)
         self.bisector = GuiBisector(fetch_config)
+        # create a QThread, and move self.bisector in it. This will
+        # allow to the self.bisector slots (connected after the move)
+        # to be automatically called in the thread.
+        self.thread = QThread()
+        self.bisector.moveToThread(self.thread)
         self.bisector.started.connect(self.on_bisection_started)
         self.bisector.download_manager.download_progress.connect(
             self.show_dl_progress)
@@ -160,13 +188,20 @@ class BisectRunner(QObject):
             handler = InboundHandler()
             start = options['start_changeset']
             end = options['end_changeset']
-        self.bisector.bisect(handler, start, end)
+        self.thread.start()
+        self.bisector._bisect_args = (handler, start, end)
+        # this will be called in the worker thread.
+        QTimer.singleShot(0, self.bisector.bisect)
 
     @Slot()
     def stop(self):
         if self.bisector:
             self.bisector.download_manager.cancel()
-        self.bisector = None
+            self.bisector = None
+        if self.thread:
+            self.thread.quit()
+            self.thread.wait()
+            self.thread = None
 
     @Slot(object, int, int)
     def show_dl_progress(self, dl, current, total):

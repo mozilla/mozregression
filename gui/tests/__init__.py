@@ -13,9 +13,12 @@ def wait_signal(signal, timeout=1):
 
     yield
 
+    timed_out = []
     if timeout is not None:
         def quit_with_error():
+            timed_out.append(1)
             loop.quit()
-            assert False, "Timeout while waiting for %s" % signal
         QTimer.singleShot(timeout * 1000, quit_with_error)
     loop.exec_()
+    if timed_out:
+        assert False, "Timeout while waiting for %s" % signal

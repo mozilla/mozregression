@@ -29,6 +29,7 @@ class ReportModel(QAbstractTableModel):
         bisector.step_started.connect(self.step_started)
         bisector.step_build_found.connect(self.step_build_found)
         bisector.step_finished.connect(self.step_finished)
+        bisector.started.connect(self.started)
         bisector.finished.connect(self.finished)
 
     def rowCount(self, parent=QModelIndex()):
@@ -47,8 +48,16 @@ class ReportModel(QAbstractTableModel):
         index = self.createIndex(self.step_reports.index(step_report), 0)
         self.dataChanged.emit(index, index)
 
+    @Slot()
+    def started(self):
+        self.beginInsertRows(QModelIndex(), 0, 0)
+        self.step_reports.append(StepReport())
+        self.endInsertRows()
+
     @Slot(object, int)
     def step_started(self, bisection, step_num):
+        if step_num == 1:
+            return  # do nothing as we already created the row with started()
         self.beginInsertRows(QModelIndex(), step_num-1, step_num-1)
         self.step_reports.append(StepReport())
         self.endInsertRows()

@@ -17,6 +17,7 @@ class TestReport(unittest.TestCase):
         self.view.show()
         QTest.qWaitForWindowShown(self.view)
         # insert a row
+        self.view.model().started()
         self.view.model().step_started(None, 1)
         # a row is inserted
         index = self.view.model().index(0, 0)

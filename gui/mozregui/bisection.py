@@ -1,3 +1,4 @@
+import sys
 import mozinfo
 from PySide.QtCore import QObject, Signal, Slot, QThread, QTimer
 from PySide.QtGui import QMessageBox
@@ -7,6 +8,9 @@ from mozregression.bisector import Bisector, Bisection, NightlyHandler, \
     InboundHandler
 from mozregression.download_manager import BuildDownloadManager
 from mozregression.test_runner import TestRunner
+from mozregression.errors import MozRegressionError
+
+Bisection.EXCEPTION = -1  # new possible value of bisection end
 
 
 class GuiBuildDownloadManager(QObject, BuildDownloadManager):
@@ -81,15 +85,23 @@ class GuiBisector(QObject, Bisector):
         self.build_infos = None
         self._step_num = 0
         self._bisect_args = None
+        self.error = None
 
         self.download_manager.download_finished.connect(
             self._build_dl_finished)
         self.test_runner.evaluate_finished.connect(self._evaluate_finished)
 
+    def _finish_on_exception(self, bisection):
+        self.error = sys.exc_info()
+        self.finished.emit(bisection, Bisection.EXCEPTION)
+
     @Slot()
     def bisect(self):
         # this is a slot so it will be called in the thread
-        Bisector.bisect(self, *self._bisect_args)
+        try:
+            Bisector.bisect(self, *self._bisect_args)
+        except MozRegressionError:
+            self._finish_on_exception(None)
 
     def _bisect(self, handler, build_data):
         self.bisection = Bisection(handler, build_data,
@@ -110,7 +122,11 @@ class GuiBisector(QObject, Bisector):
         # this is executed in the working thread
         self._step_num += 1
         self.step_started.emit(self.bisection, self._step_num)
-        self.mid = mid = self.bisection.search_mid_point()
+        try:
+            self.mid = mid = self.bisection.search_mid_point()
+        except MozRegressionError:
+            self._finish_on_exception(self.bisection)
+            return
         result = self.bisection.init_handler(mid)
         if result != Bisection.RUNNING:
             self.finished.emit(self.bisection, result)
@@ -224,10 +240,14 @@ class BisectRunner(QObject):
         if resultcode == Bisection.NO_DATA:
             msg = "Unable to find enough data to bisect."
             dialog = QMessageBox.warning
+        elif resultcode == Bisection.EXCEPTION:
+            msg = "Error: %s" % self.bisector.error[1]
+            dialog = QMessageBox.critical
         else:
             msg = "The bisection is done."
             dialog = QMessageBox.information
         dialog(self.mainwindow, "End of the bisection", msg)
+        self.stop()
 
     @Slot()
     def on_bisection_started(self):

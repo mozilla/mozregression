@@ -1,10 +1,11 @@
+import mozinfo
 from PySide.QtGui import QWizard, QWizardPage, QStringListModel
 
 from ui.intro import Ui_Intro
 from ui.nightlies import Ui_Nightlies
 from ui.inbound import Ui_Inbound
 
-from mozregression.launchers import REGISTRY
+from mozregression.fetch_configs import create_config, REGISTRY
 
 
 def get_all_subclasses(cls):
@@ -89,7 +90,7 @@ class BisectionWizard(QWizard):
         self.addPage(NightliesPage())
         self.addPage(InboundPage())
 
-    def field_options(self):
+    def options(self):
         options = {}
         for wizard_class in get_all_subclasses(Wizard):
             for fieldname in wizard_class.FIELDS:
@@ -97,4 +98,6 @@ class BisectionWizard(QWizard):
                 if hasattr(value, 'toPython'):
                     value = value.toPython()
                 options[fieldname] = value
-        return options
+        fetch_config = create_config(options['application'],
+                                     mozinfo.os, mozinfo.bits)
+        return fetch_config, options

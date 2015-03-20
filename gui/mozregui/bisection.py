@@ -1,9 +1,7 @@
 import sys
-import mozinfo
 from PySide.QtCore import QObject, Signal, Slot, QThread, QTimer
 from PySide.QtGui import QMessageBox
 
-from mozregression.fetch_configs import create_config
 from mozregression.bisector import Bisector, Bisection, NightlyHandler, \
     InboundHandler
 from mozregression.download_manager import BuildDownloadManager
@@ -180,10 +178,8 @@ class BisectRunner(QObject):
         self.bisector = None
         self.thread = None
 
-    def bisect(self, options):
+    def bisect(self, fetch_config, options):
         self.stop()
-        fetch_config = create_config(options['application'],
-                                     mozinfo.os, mozinfo.bits)
         self.bisector = GuiBisector(fetch_config)
         # create a QThread, and move self.bisector in it. This will
         # allow to the self.bisector slots (connected after the move)

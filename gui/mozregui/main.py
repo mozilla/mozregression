@@ -27,7 +27,7 @@ class MainWindow(QMainWindow):
     def start_bisection_wizard(self):
         wizard = BisectionWizard(self)
         if wizard.exec_() == wizard.Accepted:
-            self.bisect_runner.bisect(wizard.field_options())
+            self.bisect_runner.bisect(*wizard.options())
 
 
 if __name__ == '__main__':

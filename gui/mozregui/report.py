@@ -23,6 +23,7 @@ class ReportModel(QAbstractTableModel):
     def __init__(self):
         QAbstractTableModel.__init__(self)
         self.step_reports = []
+        self.__started_called = False
 
     @Slot(object)
     def attach_bisector(self, bisector):
@@ -53,10 +54,12 @@ class ReportModel(QAbstractTableModel):
         self.beginInsertRows(QModelIndex(), 0, 0)
         self.step_reports.append(StepReport())
         self.endInsertRows()
+        self.__started_called = True
 
     @Slot(object, int)
     def step_started(self, bisection, step_num):
-        if step_num == 1:
+        if self.__started_called:
+            self.__started_called = False
             return  # do nothing as we already created the row with started()
         self.beginInsertRows(QModelIndex(), step_num-1, step_num-1)
         self.step_reports.append(StepReport())

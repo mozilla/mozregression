@@ -97,8 +97,26 @@ class GuiBisector(QObject, Bisector):
     def bisect(self):
         # this is a slot so it will be called in the thread
         self.started.emit()
+        self._step_num = 0
         try:
             Bisector.bisect(self, *self._bisect_args)
+        except MozRegressionError:
+            self._finish_on_exception(None)
+
+    @Slot()
+    def nightlies_to_inbound(self):
+        """
+        Call this when going from nightlies to inbound.
+        """
+        assert self.bisection
+        self.started.emit()
+        self._step_num -= 1
+        try:
+            # first we need to find the changesets
+            first, last = self.bisection.handler.find_inbound_changesets()
+            # create the inbound handler, and go with that
+            handler = InboundHandler(find_fix=self.bisection.handler.find_fix)
+            Bisector.bisect(self, handler, first, last)
         except MozRegressionError:
             self._finish_on_exception(None)
 
@@ -108,7 +126,6 @@ class GuiBisector(QObject, Bisector):
                                    self.test_runner,
                                    self.fetch_config,
                                    dl_in_background=False)
-        self._step_num = 0
         self._bisect_next()
 
     @Slot()
@@ -236,6 +253,10 @@ class BisectRunner(QObject):
             msg = "Error: %s" % self.bisector.error[1]
             dialog = QMessageBox.critical
         else:
+            if bisection.fetch_config.can_go_inbound() and \
+                    isinstance(bisection.handler, NightlyHandler):
+                QTimer.singleShot(0, self.bisector.nightlies_to_inbound)
+                return
             msg = "The bisection is done."
             dialog = QMessageBox.information
         dialog(self.mainwindow, "End of the bisection", msg)

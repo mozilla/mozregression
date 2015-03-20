@@ -68,7 +68,7 @@ class GuiTestRunner(QObject, TestRunner):
 
 
 class GuiBisector(QObject, Bisector):
-    started = Signal(object)
+    started = Signal()
     finished = Signal(object, int)
     step_started = Signal(object, int)
     step_build_found = Signal(object, int, object)
@@ -96,6 +96,7 @@ class GuiBisector(QObject, Bisector):
     @Slot()
     def bisect(self):
         # this is a slot so it will be called in the thread
+        self.started.emit()
         try:
             Bisector.bisect(self, *self._bisect_args)
         except MozRegressionError:
@@ -108,12 +109,7 @@ class GuiBisector(QObject, Bisector):
                                    self.fetch_config,
                                    dl_in_background=False)
         self._step_num = 0
-        # the started signal will be catched by the report model
-        # which lives in the main thread. Since here we are on the worker
-        # thread, we give some time for qt to deliver the signal before
-        # we call _bisect_next.
-        self.started.emit(self.bisection)
-        QTimer.singleShot(200, self._bisect_next)
+        self._bisect_next()
 
     @Slot()
     def _bisect_next(self):
@@ -186,12 +182,12 @@ class BisectRunner(QObject):
         # to be automatically called in the thread.
         self.thread = QThread()
         self.bisector.moveToThread(self.thread)
-        self.bisector.started.connect(self.on_bisection_started)
         self.bisector.download_manager.download_progress.connect(
             self.show_dl_progress)
         self.bisector.test_runner.evaluate_started.connect(
             self.evaluate)
         self.bisector.finished.connect(self.bisection_finished)
+        self.bisector_created.emit(self.bisector)
         if options['bisect_type'] == 'nightlies':
             handler = NightlyHandler()
             start = options['start_date']
@@ -244,7 +240,3 @@ class BisectRunner(QObject):
             dialog = QMessageBox.information
         dialog(self.mainwindow, "End of the bisection", msg)
         self.stop()
-
-    @Slot()
-    def on_bisection_started(self):
-        self.bisector_created.emit(self.bisector)

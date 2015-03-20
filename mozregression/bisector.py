@@ -12,6 +12,7 @@ from mozlog.structured import get_default_logger
 
 from mozregression.build_data import NightlyBuildData, InboundBuildData
 from mozregression.download_manager import BuildDownloadManager
+from mozregression.errors import MozRegressionError
 
 
 def compute_steps_left(steps):
@@ -207,6 +208,42 @@ class NightlyHandler(BisectorHandler):
                                                    self.bad_date)
             return ("%s/pushloghtml?startdate=%s&enddate=%s\n"
                     % (self.found_repo, start, end))
+
+    def find_inbound_changesets(self, days_required=4):
+        self._logger.info("... attempting to bisect inbound builds (starting"
+                          " from %d days ago, to make sure no inbound revision"
+                          " is missed)" % days_required)
+        infos = {}
+        days = days_required - 1
+        too_many_attempts = False
+        first_date = min(self.good_date, self.bad_date)
+        while 'changeset' not in infos:
+            days += 1
+            if days >= days_required + 3:
+                too_many_attempts = True
+                break
+            prev_date = first_date - datetime.timedelta(days=days)
+            build_data = self.build_data
+            infos = build_data.get_build_infos_for_date(prev_date)
+        if days > days_required and not too_many_attempts:
+            self._logger.info("At least one build folder was invalid, we have"
+                              " to start from %d days ago." % days)
+
+        if not self.find_fix:
+            good_rev = infos.get('changeset')
+            bad_rev = self.bad_revision
+        else:
+            good_rev = self.good_revision
+            bad_rev = infos.get('changeset')
+        if bad_rev is None or good_rev is None:
+            # old nightly builds do not have the changeset information
+            # so we can't go on inbound. Anyway, these are probably too
+            # old and won't even exists on inbound.
+            raise MozRegressionError(
+                "Not enough changeset information to produce initial inbound"
+                " regression range. Builds are probably too old.")
+
+        return good_rev, bad_rev
 
 
 class InboundHandler(BisectorHandler):
@@ -445,41 +482,10 @@ class BisectRunner(object):
             self._logger.info("Got as far as we can go bisecting nightlies...")
             handler.print_range()
             if self.fetch_config.can_go_inbound():
-                days_required = 4
-                self._logger.info("... attempting to bisect inbound builds"
-                                  " (starting from %d days ago, to make"
-                                  " sure no inbound revision is missed)"
-                                  % days_required)
-                infos = {}
-                days = days_required - 1
-                too_many_attempts = False
-                first_date = min(handler.good_date, handler.bad_date)
-                while 'changeset' not in infos:
-                    days += 1
-                    if days >= days_required + 3:
-                        too_many_attempts = True
-                        break
-                    prev_date = first_date - datetime.timedelta(days=days)
-                    build_data = handler.build_data
-                    infos = build_data.get_build_infos_for_date(prev_date)
-                if days > days_required and not too_many_attempts:
-                    self._logger.info("At least one build folder was"
-                                      " invalid, we have to start from"
-                                      " %d days ago." % days)
-
-                if not handler.find_fix:
-                    good_rev = infos.get('changeset')
-                    bad_rev = handler.bad_revision
-                else:
-                    good_rev = handler.good_revision
-                    bad_rev = infos.get('changeset')
-                if bad_rev is None or good_rev is None:
-                    # old nightly builds do not have the changeset information
-                    # so we can't go on inbound. Anyway, these are probably too
-                    # old and won't even exists on inbound.
-                    self._logger.warning("Not enough changeset information to "
-                                         "produce initial inbound regression "
-                                         "range. Builds are probably too old.")
+                try:
+                    good_rev, bad_rev = handler.find_inbound_changesets()
+                except MozRegressionError, exc:
+                    self._logger.warning(str(exc))
                     return 1
                 return self.bisect_inbound(good_rev, bad_rev)
             else:

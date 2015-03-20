@@ -57,7 +57,7 @@ class TestDownload(unittest.TestCase):
         mock_response(self.session_response, data, wait)
 
     def test_download(self):
-        self.create_response('1234' * 4)
+        self.create_response('1234' * 4, 0.01)
 
         # no file present yet
         self.assertFalse(os.path.exists(self.tempfile))

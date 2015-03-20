@@ -70,9 +70,9 @@ class GuiTestRunner(QObject, TestRunner):
 class GuiBisector(QObject, Bisector):
     started = Signal()
     finished = Signal(object, int)
-    step_started = Signal(object, int)
-    step_build_found = Signal(object, int, object)
-    step_finished = Signal(object, int, str)
+    step_started = Signal(object)
+    step_build_found = Signal(object, object)
+    step_finished = Signal(object, str)
 
     def __init__(self, fetch_config, persist=None):
         QObject.__init__(self)
@@ -81,7 +81,6 @@ class GuiBisector(QObject, Bisector):
         self.bisection = None
         self.mid = None
         self.build_infos = None
-        self._step_num = 0
         self._bisect_args = None
         self.error = None
 
@@ -97,7 +96,6 @@ class GuiBisector(QObject, Bisector):
     def bisect(self):
         # this is a slot so it will be called in the thread
         self.started.emit()
-        self._step_num = 0
         try:
             Bisector.bisect(self, *self._bisect_args)
         except MozRegressionError:
@@ -110,7 +108,6 @@ class GuiBisector(QObject, Bisector):
         """
         assert self.bisection
         self.started.emit()
-        self._step_num -= 1
         try:
             # first we need to find the changesets
             first, last = self.bisection.handler.find_inbound_changesets()
@@ -131,8 +128,7 @@ class GuiBisector(QObject, Bisector):
     @Slot()
     def _bisect_next(self):
         # this is executed in the working thread
-        self._step_num += 1
-        self.step_started.emit(self.bisection, self._step_num)
+        self.step_started.emit(self.bisection)
         try:
             self.mid = mid = self.bisection.search_mid_point()
         except MozRegressionError:
@@ -145,8 +141,7 @@ class GuiBisector(QObject, Bisector):
             self.build_infos = \
                 self.bisection.handler.build_infos(mid, self.fetch_config)
             self.download_manager.focus_download(self.build_infos)
-            self.step_build_found.emit(self.bisection, self._step_num,
-                                       self.build_infos)
+            self.step_build_found.emit(self.bisection, self.build_infos)
 
     @Slot()
     def _evaluate(self):
@@ -171,8 +166,7 @@ class GuiBisector(QObject, Bisector):
         # here we are not in the working thread, since the connection was
         # done in the constructor
         self.bisection.update_build_info(self.mid, self.test_runner.app_info)
-        self.step_finished.emit(self.bisection, self._step_num,
-                                self.test_runner.verdict)
+        self.step_finished.emit(self.bisection, self.test_runner.verdict)
         result = self.bisection.handle_verdict(self.mid,
                                                self.test_runner.verdict)
         if result != Bisection.RUNNING:

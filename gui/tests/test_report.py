@@ -18,21 +18,21 @@ class TestReport(unittest.TestCase):
         QTest.qWaitForWindowShown(self.view)
         # insert a row
         self.view.model().started()
-        self.view.model().step_started(None, 1)
+        self.view.model().step_started(None)
         # a row is inserted
         index = self.view.model().index(0, 0)
         self.assertTrue(index.isValid())
 
         # simulate a build found
         build_infos = {"build_type": 'nightly', 'build_date': 'date'}
-        self.view.model().step_build_found(None, 1, build_infos)
+        self.view.model().step_build_found(None, build_infos)
         # still one row
         self.assertEquals(self.view.model().rowCount(), 1)
         # data is updated
         self.assertIn('nightly', self.view.model().data(index))
 
         # simulate a build evaluation
-        self.view.model().step_finished(None, 1, 'g')
+        self.view.model().step_finished(None, 'g')
         # still one row
         self.assertEquals(self.view.model().rowCount(), 1)
         # data is updated
@@ -47,7 +47,7 @@ class TestReport(unittest.TestCase):
         self.assertEquals(slot.call_count, 1)
 
         # let's simulate another bisection step
-        self.view.model().step_started(None, 2)
+        self.view.model().step_started(None)
         self.assertEquals(self.view.model().rowCount(), 2)
         # then say that it's the end
         self.view.model().finished(None, None)

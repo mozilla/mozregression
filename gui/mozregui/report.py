@@ -57,23 +57,24 @@ class ReportModel(QAbstractTableModel):
         self.__started_called = True
 
     @Slot(object, int)
-    def step_started(self, bisection, step_num):
+    def step_started(self, bisection):
+        step_num = self.rowCount()
         if self.__started_called:
             self.__started_called = False
             return  # do nothing as we already created the row with started()
-        self.beginInsertRows(QModelIndex(), step_num-1, step_num-1)
+        self.beginInsertRows(QModelIndex(), step_num, step_num)
         self.step_reports.append(StepReport())
         self.endInsertRows()
 
     @Slot(object, int, object)
-    def step_build_found(self, bisection, step_num, build_infos):
-        step_report = self.step_reports[step_num-1]
+    def step_build_found(self, bisection, build_infos):
+        step_report = self.step_reports[-1]
         step_report.build_infos = build_infos
         self.update_step_report(step_report)
 
     @Slot(object, int, str)
-    def step_finished(self, bisection, step_num, verdict):
-        step_report = self.step_reports[step_num-1]
+    def step_finished(self, bisection, verdict):
+        step_report = self.step_reports[-1]
         step_report.verdict = verdict
         self.update_step_report(step_report)
 

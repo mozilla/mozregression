@@ -25,7 +25,13 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
         BuildDownloadManager._download_started(self, task)
 
     def _download_finished(self, task):
-        self.download_finished.emit(task)
+        try:
+            self.download_finished.emit(task)
+        except RuntimeError:
+            # in some cases, closing the application may destroy the
+            # underlying c++ QObject, causing this signal to fail.
+            # Skip this silently.
+            pass
         BuildDownloadManager._download_finished(self, task)
 
     def focus_download(self, build_info):

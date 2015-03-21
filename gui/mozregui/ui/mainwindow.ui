@@ -63,12 +63,15 @@
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
-      <widget class="BuildInfoTextEdit" name="build_info_edit">
-       <property name="undoRedoEnabled">
+      <widget class="BuildInfoTextBrowser" name="build_info_browser">
+       <property name="lineWrapMode">
+        <enum>QTextEdit::NoWrap</enum>
+       </property>
+       <property name="openExternalLinks">
         <bool>false</bool>
        </property>
-       <property name="readOnly">
-        <bool>true</bool>
+       <property name="openLinks">
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -88,13 +91,13 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>BuildInfoTextEdit</class>
-   <extends>QPlainTextEdit</extends>
-   <header location="global">mozregui.report</header>
-  </customwidget>
-  <customwidget>
    <class>ReportView</class>
    <extends>QTableView</extends>
+   <header>mozregui.report</header>
+  </customwidget>
+  <customwidget>
+   <class>BuildInfoTextBrowser</class>
+   <extends>QTextBrowser</extends>
    <header>mozregui.report</header>
   </customwidget>
  </customwidgets>

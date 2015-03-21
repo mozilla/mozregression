@@ -1,5 +1,6 @@
-from PySide.QtGui import QPlainTextEdit, QTableView
-from PySide.QtCore import QAbstractTableModel, QModelIndex, Qt, Slot, Signal
+from PySide.QtGui import QTextBrowser, QTableView, QDesktopServices
+from PySide.QtCore import QAbstractTableModel, QModelIndex, Qt, Slot, Signal, \
+    QUrl
 
 
 class StepReport(object):
@@ -106,15 +107,28 @@ class ReportView(QTableView):
         self.step_report_selected.emit(step_report)
 
 
-class BuildInfoTextEdit(QPlainTextEdit):
+class BuildInfoTextBrowser(QTextBrowser):
     def __init__(self, parent=None):
-        QPlainTextEdit.__init__(self, parent)
+        QTextBrowser.__init__(self, parent)
+        self.anchorClicked.connect(self.on_anchor_clicked)
 
     @Slot(object)
     def update_content(self, step_report):
-        self.clear()
-        if step_report.build_infos is not None:
-            text = ""
-            for k, v in step_report.build_infos.iteritems():
-                text += "%s: %s\n" % (k, v)
-            self.setPlainText(text)
+        if step_report.build_infos is None:
+            self.clear()
+            return
+
+        html = ""
+        for k in sorted(step_report.build_infos):
+            v = step_report.build_infos[k]
+            html += '<strong>%s</strong>: ' % k
+            if isinstance(v, basestring):
+                url = QUrl(v)
+                if url.isValid() and url.scheme():
+                    v = '<a href="%s">%s</a>' % (v, v)
+            html += '%s<br>' % v
+        self.setHtml(html)
+
+    @Slot(QUrl)
+    def on_anchor_clicked(self, url):
+        QDesktopServices.openUrl(url)

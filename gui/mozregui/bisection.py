@@ -1,12 +1,14 @@
 import sys
 from PySide.QtCore import QObject, Signal, Slot, QThread, QTimer
-from PySide.QtGui import QMessageBox
+from PySide.QtGui import QMessageBox, QDialog, QRadioButton
 
 from mozregression.bisector import Bisector, Bisection, NightlyHandler, \
     InboundHandler
 from mozregression.download_manager import BuildDownloadManager
 from mozregression.test_runner import TestRunner
 from mozregression.errors import MozRegressionError
+
+from mozregui.ui.verdict import Ui_Verdict
 
 Bisection.EXCEPTION = -1  # new possible value of bisection end
 
@@ -182,6 +184,17 @@ class GuiBisector(QObject, Bisector):
             QTimer.singleShot(0, self._bisect_next)
 
 
+def get_verdict(parent=None):
+    dlg = QDialog(parent)
+    ui = Ui_Verdict()
+    ui.setupUi(dlg)
+    if dlg.exec_() != QDialog.Accepted:
+        return 'e'  # exit bisection
+    for radiobox in dlg.findChildren(QRadioButton):
+        if radiobox.isChecked():
+            return radiobox.objectName()
+
+
 class BisectRunner(QObject):
     bisector_created = Signal(object)
 
@@ -235,13 +248,7 @@ class BisectRunner(QObject):
 
     @Slot()
     def evaluate(self):
-        res = QMessageBox.question(self.mainwindow,
-                                   "Build Evaluation",
-                                   "Is that good ?",
-                                   buttons=QMessageBox.Yes | QMessageBox.No)
-        verdict = "g"
-        if res == QMessageBox.No:
-            verdict = "b"
+        verdict = get_verdict(self.mainwindow)
         self.bisector.test_runner.finish(verdict)
 
     @Slot(object, int)

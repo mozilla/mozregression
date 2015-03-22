@@ -16,7 +16,7 @@ Bisection.EXCEPTION = -1  # new possible value of bisection end
 class GuiBuildDownloadManager(QObject, BuildDownloadManager):
     download_progress = Signal(object, int, int)
     download_started = Signal(object)
-    download_finished = Signal(object)
+    download_finished = Signal(object, str)
 
     def __init__(self, destdir, **kwargs):
         QObject.__init__(self)
@@ -28,7 +28,7 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
 
     def _download_finished(self, task):
         try:
-            self.download_finished.emit(task)
+            self.download_finished.emit(task, task.get_dest())
         except RuntimeError:
             # in some cases, closing the application may destroy the
             # underlying c++ QObject, causing this signal to fail.
@@ -39,6 +39,7 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
     def focus_download(self, build_info):
         build_url, fname = self._extract_download_info(build_info)
         dest = self.get_dest(fname)
+        build_info['build_path'] = dest
         # first, stop all downloads in background (except the one for this
         # build if any)
         self.cancel(cancel_if=lambda dl: dest != dl.get_dest())
@@ -46,7 +47,10 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
         dl = self.download(build_url, fname)
         if dl:
             dl.set_progress(self.download_progress.emit)
-        build_info['build_path'] = dest
+        else:
+            # file already downloaded.
+            # emit the finished signal so bisection goes on
+            self.download_finished.emit(None, dest)
 
 
 class GuiTestRunner(QObject, TestRunner):
@@ -157,13 +161,13 @@ class GuiBisector(QObject, Bisector):
         # block the ui.
         self.bisection.evaluate(self.build_infos)
 
-    @Slot(object)
-    def _build_dl_finished(self, dl):
+    @Slot(object, str)
+    def _build_dl_finished(self, dl, dest):
         # here we are not in the working thread, since the connection was
         # done in the constructor
-        if not dl.get_dest() == self.build_infos['build_path']:
+        if not dest == self.build_infos['build_path']:
             return
-        if dl.is_canceled() or dl.error():
+        if dl is not None and (dl.is_canceled() or dl.error()):
             # todo handle this
             return
         # call this in the thread

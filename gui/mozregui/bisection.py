@@ -257,7 +257,10 @@ class BisectRunner(QObject):
 
     @Slot(object, int)
     def bisection_finished(self, bisection, resultcode):
-        if resultcode == Bisection.NO_DATA:
+        if resultcode == Bisection.USER_EXIT:
+            msg = "Bisection stopped."
+            dialog = QMessageBox.information
+        elif resultcode == Bisection.NO_DATA:
             msg = "Unable to find enough data to bisect."
             dialog = QMessageBox.warning
         elif resultcode == Bisection.EXCEPTION:

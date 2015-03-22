@@ -86,10 +86,12 @@ class BisectorHandler(object):
                                       self.build_data[-1].get('changeset'))
 
     def get_pushlog_url(self):
-        first_rev, last_rev = self._reverse_if_find_fix(self.good_revision,
-                                                        self.bad_revision)
+        first_rev, last_rev = self.get_range()
         return "%s/pushloghtml?fromchange=%s&tochange=%s" % (
             self.found_repo, first_rev, last_rev)
+
+    def get_range(self):
+        return self._reverse_if_find_fix(self.good_revision, self.bad_revision)
 
     def print_range(self):
         """
@@ -182,6 +184,9 @@ class NightlyHandler(BisectorHandler):
     def are_revisions_available(self):
         return self.good_revision is not None and self.bad_revision is not None
 
+    def get_date_range(self):
+        return self._reverse_if_find_fix(self.good_date, self.bad_date)
+
     def print_range(self):
         if self.found_repo is None:
             # this may happen if we are bisecting old builds without
@@ -204,8 +209,7 @@ class NightlyHandler(BisectorHandler):
             # this must never happen, as we must have changesets
             # if we have the repo. But let's be paranoid, and this is a good
             # fallback
-            start, end = self._reverse_if_find_fix(self.good_date,
-                                                   self.bad_date)
+            start, end = self.get_date_range()
             return ("%s/pushloghtml?startdate=%s&enddate=%s\n"
                     % (self.found_repo, start, end))
 

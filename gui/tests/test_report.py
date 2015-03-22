@@ -11,32 +11,38 @@ class TestReport(unittest.TestCase):
         self.view = ReportView()
 
     def test_basic(self):
+        # TODO: rewrite all this.
+
         slot = Mock()
         self.view.step_report_selected.connect(slot)
         # show the widget
         self.view.show()
         QTest.qWaitForWindowShown(self.view)
-        # insert a row
+        # start the bisection
         self.view.model().started()
-        self.view.model().step_started(None)
+        self.view.model().step_started(Mock())
         # a row is inserted
         index = self.view.model().index(0, 0)
         self.assertTrue(index.isValid())
 
         # simulate a build found
         build_infos = {"build_type": 'nightly', 'build_date': 'date'}
-        self.view.model().step_build_found(None, build_infos)
-        # still one row
-        self.assertEquals(self.view.model().rowCount(), 1)
+        bisection = Mock()
+        bisection.handler.get_range.return_value = (1, 2)
+        self.view.model().step_build_found(bisection, build_infos)
+        # now we have two rows
+        self.assertEquals(self.view.model().rowCount(), 2)
         # data is updated
-        self.assertIn('nightly', self.view.model().data(index))
+        index2 = self.view.model().index(1, 0)
+        self.assertIn('[1 - 2]', self.view.model().data(index))
+        self.assertIn('nightly', self.view.model().data(index2))
 
         # simulate a build evaluation
         self.view.model().step_finished(None, 'g')
-        # still one row
-        self.assertEquals(self.view.model().rowCount(), 1)
+        # still two rows
+        self.assertEquals(self.view.model().rowCount(), 2)
         # data is updated
-        self.assertIn('g', self.view.model().data(index))
+        self.assertIn('g', self.view.model().data(index2))
 
         # let's click on the index
         self.view.scrollTo(index)
@@ -47,9 +53,11 @@ class TestReport(unittest.TestCase):
         self.assertEquals(slot.call_count, 1)
 
         # let's simulate another bisection step
-        self.view.model().step_started(None)
-        self.assertEquals(self.view.model().rowCount(), 2)
+        bisection = Mock()
+        bisection.handler.get_pushlog_url.return_value = "http://pl"
+        self.view.model().step_started(bisection)
+        self.assertEquals(self.view.model().rowCount(), 3)
         # then say that it's the end
-        self.view.model().finished(None, None)
+        self.view.model().finished(bisection, None)
         # this last row is removed now
-        self.assertEquals(self.view.model().rowCount(), 1)
+        self.assertEquals(self.view.model().rowCount(), 2)

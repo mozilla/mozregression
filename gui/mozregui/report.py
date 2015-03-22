@@ -147,16 +147,23 @@ class ReportModel(QAbstractTableModel):
 
 
 class ReportView(QTableView):
-    step_report_selected = Signal(object)
+    step_report_changed = Signal(object)
 
     def __init__(self, parent=None):
         QTableView.__init__(self, parent)
         self._model = ReportModel()
         self.setModel(self._model)
+        self._model.dataChanged.connect(self.on_item_changed)
 
     def currentChanged(self, current, previous):
         item = self._model.items[current.row()]
-        self.step_report_selected.emit(item)
+        self.step_report_changed.emit(item)
+
+    @Slot(QModelIndex, QModelIndex)
+    def on_item_changed(self, top_left, bottom_right):
+        if self.currentIndex().row() == top_left.row():
+            item = self._model.items[top_left.row()]
+            self.step_report_changed.emit(item)
 
 
 class BuildInfoTextBrowser(QTextBrowser):

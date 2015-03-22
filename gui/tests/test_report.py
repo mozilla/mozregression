@@ -14,7 +14,7 @@ class TestReport(unittest.TestCase):
         # TODO: rewrite all this.
 
         slot = Mock()
-        self.view.step_report_selected.connect(slot)
+        self.view.step_report_changed.connect(slot)
         # show the widget
         self.view.show()
         QTest.qWaitForWindowShown(self.view)

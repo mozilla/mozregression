@@ -66,7 +66,7 @@ def do_bundle():
     # run pyinstaller
     pyinstaller = py_script('pyinstaller')
     call(pyinstaller, '-F', '--paths=.', '--name=mozregression-gui',
-         'mozregui/main.py')
+         '--windowed', 'mozregui/main.py')
 
 
 def parse_args():

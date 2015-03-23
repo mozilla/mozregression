@@ -30,3 +30,15 @@ script:
 
 after_success:
     coveralls
+
+before_deploy:
+    python gui/build.py bundle
+
+deploy:
+    provider: releases
+    api_key:
+        secure: cBPLQbwYrV3+V1W+wE+iMftda1sTTEJaxjd2l6mt4yIVO95fTcLRv4ekq0UkpXAi4bk1CKguIz8w9v/9jAg9y4zyDamLM81iTJQYu4N9EdODWVcCBA4lNud+51XQcNvO/R2/6///TlZ1RUG5YzvwxyUlomsVdl+yvpX4OSrEik8=
+    file: gui/dist/mozregression-gui
+    skip_cleanup: true
+    on:
+        tags: true

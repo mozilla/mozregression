@@ -15,4 +15,21 @@ install:
   - "cd .."
 test_script:
   - "%PYTHON%/python.exe setup.py test"
-  - "cd gui & %PYTHON%/python.exe build.py test"
+  - "cd gui"
+  - "%PYTHON%/python.exe build.py test"
+  - "cd .."
+  # bundle the application
+  - cinst -x86 PyWin32
+  - "%PYTHON%/python.exe gui/build.py bundle"
+
+# section required for deploy
+artifacts:
+  - path: gui\dist\mozregression-gui.exe
+
+deploy:
+  - provider: GitHub
+    auth_token:
+      secure: 9JS0n1MfG2KVQ86suWQ7Zq51932EBanPp05GXoLfN+94AhMOQSerjUwGIxoBXKmp
+    artifact: gui\dist\mozregression-gui.exe
+    on:
+      appveyor_repo_tag: true

@@ -2,7 +2,8 @@ mozregression-gui
 =================
 
 This directory contains the code for mozregression-gui. It is a graphical
-Qt application with the PySide bindings (http://pyside.github.io/docs/pyside/).
+Qt application with the PyQt4 bindings
+(http://www.riverbankcomputing.com/software/pyqt/intro).
 
 It is intended to be delivered as an executable (or a set of libs/binaries)
 with pyinstaller (https://github.com/pyinstaller/pyinstaller).
@@ -14,17 +15,35 @@ How to develop on mozregression-gui
 There is an helper script **build.py** that is provided for distribution
 tasks (as some replacement for the standard setup.py).
 
-So, first you may want to create a virtual env with everything in there: ::
+First thing is to install pyqt4 for your python2. I highly recommend to
+install this system-wide as PyQt4 is not installable via pip:
 
-  python build.py venv
+- On ubuntu: ::
 
-This will create a **venv** dir, and install the dependencies inside.
+    sudo apt-get install python-qt4
+
+- On OSX: ::
+
+    sudo port install py27-pyqt4
+
+  Note that will require that MacPorts is installed (http://www.macports.org/).
+
+- On windows, you can download a pre build intaller from
+  http://www.riverbankcomputing.co.uk/software/pyqt/download. Be careful to choose
+  the qt4 / python 2.7 version for your architecture.
+
+
+Next thing to do is to install the others dependencies. It is highly suggested to use
+a virtualenv here, just be sure to pass the *-\-system-site-packages* flag
+when you create it to be able to use the system-wide pyqt4. See this link
+(http://docs.python-guide.org/en/latest/dev/virtualenvs/) to learn more
+about python virtualenvs.
 
 
 Launching the application
 -------------------------
 
-Activate your environment. On linux: ::
+Activate your virtualenv. On linux: ::
 
   . venv/bin/activate
 
@@ -36,7 +55,7 @@ Then simply run: ::
 Running unit tests
 ------------------
 
-Be sure to be in you virtual env, then: ::
+Be sure to be in you virtualenv, then: ::
 
   python build.py test
 

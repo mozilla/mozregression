@@ -1,5 +1,5 @@
-from PySide.QtGui import QApplication
-from PySide.QtCore import QEventLoop, QTimer
+from PyQt4.QtGui import QApplication
+from PyQt4.QtCore import QEventLoop, QTimer
 from contextlib import contextmanager
 
 APP = QApplication([])  # we need an application to create widgets

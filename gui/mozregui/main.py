@@ -1,7 +1,7 @@
-# Import PySide classes
+# Import PyQt4 classes
 import sys
-from PySide.QtGui import QApplication, QMainWindow
-from PySide.QtCore import Slot
+from PyQt4.QtGui import QApplication, QMainWindow
+from PyQt4.QtCore import pyqtSlot as Slot
 
 from mozlog.structured import set_default_logger
 from mozlog.structured.structuredlog import StructuredLogger

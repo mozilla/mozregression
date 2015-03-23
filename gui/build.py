@@ -12,7 +12,6 @@ import shutil
 import glob
 import pipes
 
-VENV_PATH = 'venv'
 IS_WIN = os.name == 'nt'
 
 
@@ -31,10 +30,7 @@ def py_script(script_name):
 
 
 def do_uic(force=False):
-    try:
-        from pysideuic import compileUi
-    except ImportError:
-        sys.exit("please execute this from the virtualenv.")
+    from PyQt4.uic import compileUi
     for uifile in glob.glob('mozregui/ui/*.ui'):
         pyfile = os.path.splitext(uifile)[0] + '.py'
         if force or not os.path.isfile(pyfile) or \
@@ -42,14 +38,6 @@ def do_uic(force=False):
             print "uic'ing %s -> %s" % (uifile, pyfile)
             with open(pyfile, 'w') as f:
                 compileUi(uifile, f, False, 4, False)
-
-
-def do_venv(python=sys.executable):
-    if not os.path.exists(VENV_PATH):
-        call('virtualenv', '-p', python, VENV_PATH)
-    # install things
-    pip = py_script('pip')
-    call(pip, 'install', '-r', 'test-requirements.txt')
 
 
 def do_run():
@@ -87,9 +75,6 @@ def parse_args():
 
     uic = subparsers.add_parser('uic', help='build uic files')
     uic.set_defaults(func=do_uic)
-
-    venv = subparsers.add_parser('venv', help='create a virtualenv')
-    venv.set_defaults(func=do_venv)
 
     run = subparsers.add_parser('run', help='run the application')
     run.set_defaults(func=do_run)

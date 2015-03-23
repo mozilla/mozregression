@@ -1,6 +1,7 @@
 import sys
-from PySide.QtCore import QObject, Signal, Slot, QThread, QTimer
-from PySide.QtGui import QMessageBox, QDialog, QRadioButton
+from PyQt4.QtCore import QObject, pyqtSignal as Signal, pyqtSlot as Slot, \
+    QThread, QTimer
+from PyQt4.QtGui import QMessageBox, QDialog, QRadioButton
 
 from mozregression.bisector import Bisector, Bisection, NightlyHandler, \
     InboundHandler

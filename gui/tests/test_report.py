@@ -1,6 +1,6 @@
 import unittest
-from PySide.QtTest import QTest
-from PySide.QtCore import Qt
+from PyQt4.QtTest import QTest
+from PyQt4.QtCore import Qt
 from mock import Mock
 
 from mozregui.report import ReportView

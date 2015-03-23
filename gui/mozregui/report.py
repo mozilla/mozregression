@@ -1,5 +1,5 @@
-from PySide.QtGui import QTextBrowser, QTableView, QDesktopServices
-from PySide.QtCore import QAbstractTableModel, QModelIndex, Qt, Slot, Signal, \
+from PyQt4.QtGui import QTextBrowser, QTableView, QDesktopServices
+from PyQt4.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSlot as Slot, pyqtSignal as Signal, \
     QUrl
 
 

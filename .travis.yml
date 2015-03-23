@@ -2,20 +2,19 @@ language: python
 
 python:
     - "2.7"
+virtualenv:
+    # required because we install the python-qt4 ubuntu package
+    system_site_packages: true
 
 install:
-    - pip install -e .
-    - pip install mock coverage coveralls flake8
     # gui tests requirements
     # start xvfb to emulate a graphical session
     - export DISPLAY=:99.0
     - sh -e /etc/init.d/xvfb start
-    # install Pyside from a wheel, this will speedup the tests as PySide
-    # won't need to be compiled
-    - sudo apt-get install libqt4-dev
-    - pip install PySide --no-index --find-links https://parkin.github.io/python-wheelhouse/
-    - pyside_postinstall.py -install
-
+    # install PyQt4
+    - sudo apt-get install python-qt4
+    # install mozregression code and test dependencies
+    - pip install coverage coveralls
     - cd gui && pip install -r test-requirements.txt && cd ..
 
 before_script:

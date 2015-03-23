@@ -1,5 +1,6 @@
 import mozinfo
-from PySide.QtGui import QWizard, QWizardPage, QStringListModel
+from PyQt4.QtGui import QWizard, QWizardPage, QStringListModel
+from PyQt4.QtCore import QString, QDate
 
 from ui.intro import Ui_Intro
 from ui.nightlies import Ui_Nightlies
@@ -94,9 +95,11 @@ class BisectionWizard(QWizard):
         options = {}
         for wizard_class in get_all_subclasses(Wizard):
             for fieldname in wizard_class.FIELDS:
-                value = self.field(fieldname)
-                if hasattr(value, 'toPython'):
-                    value = value.toPython()
+                value = self.field(fieldname).toPyObject()
+                if isinstance(value, QString):
+                    value = str(value)
+                elif isinstance(value, QDate):
+                    value = value.toPyDate()
                 options[fieldname] = value
         fetch_config = create_config(options['application'],
                                      mozinfo.os, mozinfo.bits)

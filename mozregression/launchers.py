@@ -8,6 +8,7 @@
 Define the launcher classes, responsible of running the tested applications.
 """
 
+import os
 from mozlog.structured import get_default_logger
 from mozprofile import FirefoxProfile, ThunderbirdProfile, Profile
 from mozrunner import Runner
@@ -26,6 +27,7 @@ class Launcher(object):
     Handle the logic of downloading a build file, installing and
     running an application.
     """
+    profile_class = Profile
 
     @classmethod
     def check_is_runnable(cls):
@@ -76,12 +78,22 @@ class Launcher(object):
     def _stop(self):
         raise NotImplementedError
 
+    def _create_profile(self, profile=None, addons=(), preferences=None):
+        if profile:
+            profile = self.profile_class(profile=profile, addons=addons,
+                                         preferences=preferences)
+        elif len(addons):
+            profile = self.profile_class(addons=addons,
+                                         preferences=preferences)
+        else:
+            profile = self.profile_class(preferences=preferences)
+        return profile
+
 
 class MozRunnerLauncher(Launcher):
     tempdir = None
     runner = None
     app_name = 'undefined'
-    profile_class = Profile
     binary = None
 
     def _install(self, dest):
@@ -91,14 +103,8 @@ class MozRunnerLauncher(Launcher):
             self.app_name)
 
     def _start(self, profile=None, addons=(), cmdargs=(), preferences=None):
-        if profile:
-            profile = self.profile_class(profile=profile, addons=addons,
-                                         preferences=preferences)
-        elif len(addons):
-            profile = self.profile_class(addons=addons,
-                                         preferences=preferences)
-        else:
-            profile = self.profile_class(preferences=preferences)
+        profile = self._create_profile(profile=profile, addons=addons,
+                                       preferences=preferences)
 
         self._logger.info("Launching %s" % self.binary)
         process_args = {'processOutputLine': [self._logger.debug]}
@@ -153,6 +159,7 @@ class FennecLauncher(Launcher):
     app_info = None
     adb = None
     package_name = None
+    remote_profile = None
 
     @classmethod
     def check_is_runnable(cls):
@@ -166,9 +173,6 @@ class FennecLauncher(Launcher):
         if not devices:
             raise LauncherNotRunnable("No android device connected."
                                       " Connect a device and try again.")
-        if not raw_input("WARNING: bisecting fennec builds will clobber your"
-                         " existing profile. Type 'y' to continue:") == 'y':
-            raise LauncherNotRunnable('Aborted.')
 
     def _install(self, dest):
         # get info now, as dest may be removed
@@ -179,11 +183,24 @@ class FennecLauncher(Launcher):
         self.adb.uninstall_app(self.package_name)
         self.adb.install_app(dest)
 
-    def _start(self, **kwargs):
-        self.adb.launch_fennec(self.package_name)
+    def _start(self, profile=None, addons=(), cmdargs=(), preferences=None):
+        # for now we don't handle addons on the profile for fennec
+        profile = self._create_profile(profile=profile,
+                                       preferences=preferences)
+        # send the profile on the device
+        self.remote_profile = "/".join([self.adb.test_root,
+                                       os.path.basename(profile.profile)])
+        if self.adb.exists(self.remote_profile):
+            self.adb.rm(self.remote_profile, recursive=True)
+        self.adb.push(profile.profile, self.remote_profile)
+
+        self.adb.launch_fennec(self.package_name,
+                               extra_args=["-profile", self.remote_profile])
 
     def _stop(self):
         self.adb.stop_application(self.package_name)
+        if self.adb.exists(self.remote_profile):
+            self.adb.rm(self.remote_profile, recursive=True)
 
     def get_app_info(self):
         return self.app_info

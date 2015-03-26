@@ -19,7 +19,7 @@ def get_all_subclasses(cls):
     return all_subclasses
 
 
-class Wizard(QWizardPage):
+class WizardPage(QWizardPage):
     UI_CLASS = None
     TITLE = ''
     SUBTITLE = ''
@@ -35,7 +35,7 @@ class Wizard(QWizardPage):
             self.registerField(name, getattr(self.ui, widget_name))
 
 
-class IntroPage(Wizard):
+class IntroPage(WizardPage):
     UI_CLASS = Ui_Intro
     TITLE = "Starting a bisection"
     SUBTITLE = "Please choose an application and a type of bisection."
@@ -55,7 +55,7 @@ class IntroPage(Wizard):
             return InboundPage.ID
 
 
-class NightliesPage(Wizard):
+class NightliesPage(WizardPage):
     UI_CLASS = Ui_Nightlies
     TITLE = "Select the nightlies date range"
     FIELDS = {"start_date": "start_date", "end_date": "end_date"}
@@ -65,7 +65,7 @@ class NightliesPage(Wizard):
         return -1
 
 
-class InboundPage(Wizard):
+class InboundPage(WizardPage):
     UI_CLASS = Ui_Inbound
     TITLE = "Select the inbound changesets range"
     FIELDS = {"start_changeset": "start_changeset",
@@ -93,7 +93,7 @@ class BisectionWizard(QWizard):
 
     def options(self):
         options = {}
-        for wizard_class in get_all_subclasses(Wizard):
+        for wizard_class in get_all_subclasses(WizardPage):
             for fieldname in wizard_class.FIELDS:
                 value = self.field(fieldname).toPyObject()
                 if isinstance(value, QString):

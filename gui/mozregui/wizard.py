@@ -5,6 +5,7 @@ from PyQt4.QtCore import QString, QDate
 from ui.intro import Ui_Intro
 from ui.nightlies import Ui_Nightlies
 from ui.inbound import Ui_Inbound
+from ui.profile import Ui_Profile
 
 from mozregression.fetch_configs import create_config, REGISTRY
 
@@ -17,6 +18,13 @@ def get_all_subclasses(cls):
         all_subclasses.extend(get_all_subclasses(subclass))
 
     return all_subclasses
+
+
+def resolve_obj_name(obj, name):
+    names = name.split('.')
+    while names:
+        obj = getattr(obj, names.pop(0))
+    return obj
 
 
 class WizardPage(QWizardPage):
@@ -32,7 +40,7 @@ class WizardPage(QWizardPage):
         self.ui = self.UI_CLASS()
         self.ui.setupUi(self)
         for name, widget_name in self.FIELDS.iteritems():
-            self.registerField(name, getattr(self.ui, widget_name))
+            self.registerField(name, resolve_obj_name(self.ui, widget_name))
 
 
 class IntroPage(WizardPage):
@@ -62,7 +70,7 @@ class NightliesPage(WizardPage):
     ID = 1
 
     def nextId(self):
-        return -1
+        return ProfilePage.ID
 
 
 class InboundPage(WizardPage):
@@ -71,6 +79,18 @@ class InboundPage(WizardPage):
     FIELDS = {"start_changeset": "start_changeset",
               "end_changeset": "end_changeset"}
     ID = 2
+
+    def nextId(self):
+        return ProfilePage.ID
+
+
+class ProfilePage(WizardPage):
+    UI_CLASS = Ui_Profile
+    TITLE = "Choose a specific profile"
+    SUBTITLE = ("You can choose an existing profile, or let this blank to"
+                " use a new one.")
+    FIELDS = {"profile": "profile_widget.line_edit"}
+    ID = 3
 
     def nextId(self):
         return -1
@@ -90,6 +110,7 @@ class BisectionWizard(QWizard):
         self.addPage(IntroPage())
         self.addPage(NightliesPage())
         self.addPage(InboundPage())
+        self.addPage(ProfilePage())
 
     def options(self):
         options = {}

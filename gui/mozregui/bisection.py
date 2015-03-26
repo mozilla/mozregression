@@ -231,6 +231,11 @@ class BisectRunner(QObject):
             handler = InboundHandler()
             start = options['start_changeset']
             end = options['end_changeset']
+
+        # options for the app launcher
+        self.bisector.test_runner.launcher_kwargs['profile'] = \
+            options['profile']
+
         self.thread.start()
         self.bisector._bisect_args = (handler, start, end)
         # this will be called in the worker thread.

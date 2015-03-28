@@ -1,5 +1,5 @@
 import mozinfo
-from PyQt4.QtGui import QWizard, QWizardPage, QStringListModel
+from PyQt4.QtGui import QWizard, QWizardPage, QStringListModel, QMessageBox
 from PyQt4.QtCore import QString, QDate
 
 from ui.intro import Ui_Intro
@@ -8,6 +8,8 @@ from ui.inbound import Ui_Inbound
 from ui.profile import Ui_Profile
 
 from mozregression.fetch_configs import create_config, REGISTRY
+from mozregression.launchers import REGISTRY as LAUNCHER_REGISTRY
+from mozregression.errors import LauncherNotRunnable
 
 
 def get_all_subclasses(cls):
@@ -74,6 +76,20 @@ class IntroPage(WizardPage):
         if old_bisect_index == 1 and len(bisect_types) == 2:
             bisect_index = 1
         self.ui.bisect_combo.setCurrentIndex(bisect_index)
+
+    def validatePage(self):
+        app_name = self.fetch_config.app_name
+        launcher_class = LAUNCHER_REGISTRY.get(app_name)
+        try:
+            launcher_class.check_is_runnable()
+            return True
+        except LauncherNotRunnable, exc:
+            QMessageBox.critical(
+                self,
+                "%s is not runnable" % app_name,
+                str(exc)
+            )
+            return False
 
     def nextId(self):
         if self.ui.bisect_combo.currentText() == 'nightlies':

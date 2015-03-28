@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PrefEditor</class>
+ <widget class="QWidget" name="PrefEditor">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>670</width>
+    <height>348</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>435</width>
+        <height>328</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QTableView" name="pref_view">
+         <property name="alternatingRowColors">
+          <bool>true</bool>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectRows</enum>
+         </property>
+         <attribute name="horizontalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="add_pref">
+       <property name="text">
+        <string>Add preference</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="add_prefs_from_file">
+       <property name="text">
+        <string>Add preferences from file</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="remove_selected_prefs">
+       <property name="text">
+        <string>remove selected preferences</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>add_pref</sender>
+   <signal>clicked()</signal>
+   <receiver>PrefEditor</receiver>
+   <slot>add_pref()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>556</x>
+     <y>248</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>334</x>
+     <y>173</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>add_prefs_from_file</sender>
+   <signal>clicked()</signal>
+   <receiver>PrefEditor</receiver>
+   <slot>add_prefs_from_file()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>556</x>
+     <y>285</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>334</x>
+     <y>173</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>remove_selected_prefs</sender>
+   <signal>clicked()</signal>
+   <receiver>PrefEditor</receiver>
+   <slot>remove_selected_prefs()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>556</x>
+     <y>322</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>334</x>
+     <y>173</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>add_pref()</slot>
+  <slot>add_prefs_from_file()</slot>
+  <slot>remove_selected_prefs()</slot>
+ </slots>
+</ui>

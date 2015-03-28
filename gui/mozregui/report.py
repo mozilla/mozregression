@@ -43,18 +43,19 @@ class StepItem(ReportItem):
     """
     def __init__(self):
         ReportItem.__init__(self)
+        self.state_text = 'Found'
         self.verdict = None
 
     def status_text(self):
         if not self.data:
             return ReportItem.status_text(self)
         if self.data['build_type'] == 'nightly':
-            msg = "Found nightly build: %s" % self.data['build_date']
+            msg = "%%s nightly build: %s" % self.data['build_date']
         else:
-            msg = "Found inbound build: %s" % self.data['changeset']
+            msg = "%%s inbound build: %s" % self.data['changeset']
         if self.verdict is not None:
             msg += ' (verdict: %s)' % self.verdict
-        return msg
+        return msg % self.state_text
 
 
 class ReportModel(QAbstractTableModel):
@@ -71,6 +72,7 @@ class ReportModel(QAbstractTableModel):
     def attach_bisector(self, bisector):
         bisector.step_started.connect(self.step_started)
         bisector.step_build_found.connect(self.step_build_found)
+        bisector.step_testing.connect(self.step_testing)
         bisector.step_finished.connect(self.step_finished)
         bisector.started.connect(self.started)
         bisector.finished.connect(self.finished)
@@ -123,17 +125,26 @@ class ReportModel(QAbstractTableModel):
 
             # and add the new step with build_infos
             item = StepItem()
+            item.state_text = 'Downloading'
             item.data.update(build_infos)
             self.append_item(item)
         else:
             # previous item is a step, just update it
             last_item.data.update(build_infos)
+            last_item.state_text = 'Downloading'
             self.update_item(last_item)
+
+    @Slot(object, int, object)
+    def step_testing(self, bisection, build_infos):
+        last_item = self.items[-1]
+        last_item.state_text = 'Testing'
+        self.update_item(last_item)
 
     @Slot(object, int, str)
     def step_finished(self, bisection, verdict):
         # step finished, just store the verdict
         item = self.items[-1]
+        item.state_text = 'Tested'
         item.verdict = verdict
         self.update_item(item)
 

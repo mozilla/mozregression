@@ -85,6 +85,7 @@ class GuiBisector(QObject, Bisector):
     finished = Signal(object, int)
     step_started = Signal(object)
     step_build_found = Signal(object, object)
+    step_testing = Signal(object, object)
     step_finished = Signal(object, str)
 
     def __init__(self, fetch_config, persist=None):
@@ -171,6 +172,7 @@ class GuiBisector(QObject, Bisector):
         if dl is not None and (dl.is_canceled() or dl.error()):
             # todo handle this
             return
+        self.step_testing.emit(self.bisection, self.build_infos)
         # call this in the thread
         QTimer.singleShot(0, self._evaluate)
 

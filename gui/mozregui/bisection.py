@@ -281,8 +281,21 @@ class BisectRunner(QObject):
             dialog = QMessageBox.critical
         else:
             if bisection.fetch_config.can_go_inbound() and \
-                    isinstance(bisection.handler, NightlyHandler):
-                QTimer.singleShot(0, self.bisector.nightlies_to_inbound)
+                isinstance(bisection.handler, NightlyHandler):
+                # we can go on inbound, let's ask the user
+                if QMessageBox.question(
+                    self.mainwindow,
+                    "End of the bisection",
+                    "Nightly bisection is done, but you can continue the"
+                    " bisection on inbound builds. Contibue with inbounds ?",
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.Yes
+                ) == QMessageBox.Yes:
+                    # let's go on inbound
+                    QTimer.singleShot(0, self.bisector.nightlies_to_inbound)
+                else:
+                    # no inbound, bisection is done.
+                    self.stop()
                 return
             msg = "The bisection is done."
             dialog = QMessageBox.information

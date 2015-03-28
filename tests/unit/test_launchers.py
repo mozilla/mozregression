@@ -108,7 +108,7 @@ class TestFennecLauncher(unittest.TestCase):
     @patch('mozregression.launchers.mozversion.get_version')
     @patch('mozregression.launchers.ADBAndroid')
     def create_launcher(self, ADBAndroid, get_version, **kwargs):
-        self.adb = Mock()
+        self.adb = Mock(test_root='/sdcard/tmp')
         ADBAndroid.return_value = self.adb
         get_version.return_value = kwargs.get('version_value', {})
         return launchers.FennecLauncher('/binary')
@@ -120,8 +120,16 @@ class TestFennecLauncher(unittest.TestCase):
 
     def test_start_stop(self):
         launcher = self.create_launcher()
-        launcher.start()
-        self.adb.launch_fennec.assert_called_once_with("org.mozilla.fennec")
+        launcher.start(profile='my_profile')
+        self.adb.exists.assert_called_once_with('/sdcard/tmp/my_profile')
+        self.adb.rm.assert_called_once_with('/sdcard/tmp/my_profile',
+                                            recursive=True)
+        self.adb.push.assert_called_once_with(os.path.realpath('my_profile'),
+                                              '/sdcard/tmp/my_profile')
+        self.adb.launch_fennec.assert_called_once_with(
+            "org.mozilla.fennec",
+            extra_args=['-profile', '/sdcard/tmp/my_profile']
+        )
         # ensure get_app_info returns something
         self.assertIsNotNone(launcher.get_app_info())
         launcher.stop()
@@ -132,8 +140,11 @@ class TestFennecLauncher(unittest.TestCase):
         launcher = \
             self.create_launcher(version_value={'package_name': pkg_name})
         self.adb.uninstall_app.assert_called_once_with(pkg_name)
-        launcher.start()
-        self.adb.launch_fennec.assert_called_once_with(pkg_name)
+        launcher.start(profile='my_profile')
+        self.adb.launch_fennec.assert_called_once_with(
+            pkg_name,
+            extra_args=['-profile', '/sdcard/tmp/my_profile']
+        )
         launcher.stop()
         self.adb.stop_application.assert_called_once_with(pkg_name)
 
@@ -145,11 +156,6 @@ class TestFennecLauncher(unittest.TestCase):
         ADBHost.return_value = Mock(devices=devices)
         # this won't raise errors
         launchers.FennecLauncher.check_is_runnable()
-
-        # exception raised if answer is not 'y'
-        raw_input.return_value = 'n'
-        self.assertRaises(LauncherNotRunnable,
-                          launchers.FennecLauncher.check_is_runnable)
 
         # exception raised if there is no device
         raw_input.return_value = 'y'

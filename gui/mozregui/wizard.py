@@ -50,11 +50,30 @@ class IntroPage(WizardPage):
     FIELDS = {'application': 'app_combo', 'bisect_type': 'bisect_combo'}
     ID = 0
 
-    def initializePage(self):
-        app_model = QStringListModel(REGISTRY.names())
-        self.ui.app_combo.setModel(app_model)
-        bisect_model = QStringListModel(['nightlies', 'inbound'])
-        self.ui.bisect_combo.setModel(bisect_model)
+    def __init__(self):
+        WizardPage.__init__(self)
+        self.fetch_config = None
+        self.app_model = QStringListModel(REGISTRY.names())
+        self.ui.app_combo.setModel(self.app_model)
+        self.bisect_model = QStringListModel()
+        self.ui.bisect_combo.setModel(self.bisect_model)
+
+        self.ui.app_combo.currentIndexChanged.connect(self._set_fetch_config)
+        self._set_fetch_config(0)
+
+    def _set_fetch_config(self, index):
+        # limit bisection type given the application
+        old_bisect_index = self.ui.bisect_combo.currentIndex()
+        self.fetch_config = create_config(
+            str(self.ui.app_combo.itemText(index)), mozinfo.os, mozinfo.bits)
+        bisect_types = ['nightlies']
+        if self.fetch_config.is_inbound():
+            bisect_types.append('inbound')
+        self.bisect_model.setStringList(bisect_types)
+        bisect_index = 0
+        if old_bisect_index == 1 and len(bisect_types) == 2:
+            bisect_index = 1
+        self.ui.bisect_combo.setCurrentIndex(bisect_index)
 
     def nextId(self):
         if self.ui.bisect_combo.currentText() == 'nightlies':
@@ -130,6 +149,5 @@ class BisectionWizard(QWizard):
         # get the prefs
         options['preferences'] = self.page(ProfilePage.ID).get_prefs()
 
-        fetch_config = create_config(options['application'],
-                                     mozinfo.os, mozinfo.bits)
+        fetch_config = self.page(IntroPage.ID).fetch_config
         return fetch_config, options

@@ -13,20 +13,26 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <layout class="QFormLayout" name="formLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Profile :</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="DirectorySelectWidget" name="profile_widget" native="true"/>
-     </item>
-    </layout>
+  <layout class="QFormLayout" name="formLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Profile :</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="DirectorySelectWidget" name="profile_widget" native="true"/>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Custom preferences:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="PreferencesWidgetEditor" name="pref_widget" native="true"/>
    </item>
   </layout>
  </widget>
@@ -35,6 +41,12 @@
    <class>DirectorySelectWidget</class>
    <extends>QWidget</extends>
    <header>mozregui.utils</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PreferencesWidgetEditor</class>
+   <extends>QWidget</extends>
+   <header>mozregui.pref_editor</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

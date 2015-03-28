@@ -233,8 +233,13 @@ class BisectRunner(QObject):
             end = options['end_changeset']
 
         # options for the app launcher
-        self.bisector.test_runner.launcher_kwargs['profile'] = \
-            options['profile']
+        launcher_kwargs = {}
+        for name in ('profile', 'preferences'):
+            if name in options:
+                value = options[name]
+                if value:
+                    launcher_kwargs[name] = value
+        self.bisector.test_runner.launcher_kwargs = launcher_kwargs
 
         self.thread.start()
         self.bisector._bisect_args = (handler, start, end)

@@ -107,6 +107,9 @@ class PreferencesWidgetEditor(QWidget):
         for row in selected_rows:
             self.pref_model.remove_pref(row)
 
+    def get_prefs(self):
+        return self.pref_model.prefs[:]
+
 
 if __name__ == '__main__':
     from PyQt4.QtGui import QApplication

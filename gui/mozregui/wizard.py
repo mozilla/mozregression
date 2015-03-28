@@ -95,11 +95,15 @@ class ProfilePage(WizardPage):
     def nextId(self):
         return -1
 
+    def get_prefs(self):
+        return self.ui.pref_widget.get_prefs()
+
 
 class BisectionWizard(QWizard):
     def __init__(self, parent=None):
         QWizard.__init__(self, parent)
         self.setWindowTitle("Bisection wizard")
+        self.resize(800, 600)
 
         # associate current text to comboboxes fields instead of current index
         self.setDefaultProperty("QComboBox", "currentText",
@@ -122,6 +126,10 @@ class BisectionWizard(QWizard):
                 elif isinstance(value, QDate):
                     value = value.toPyDate()
                 options[fieldname] = value
+
+        # get the prefs
+        options['preferences'] = self.page(ProfilePage.ID).get_prefs()
+
         fetch_config = create_config(options['application'],
                                      mozinfo.os, mozinfo.bits)
         return fetch_config, options

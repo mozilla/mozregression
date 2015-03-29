@@ -1,6 +1,8 @@
 # Import PyQt4 classes
 import sys
-from PyQt4.QtGui import QApplication, QMainWindow
+import mozregression
+import mozregui
+from PyQt4.QtGui import QApplication, QMainWindow, QMessageBox
 from PyQt4.QtCore import pyqtSlot as Slot
 
 from mozlog.structured import set_default_logger
@@ -9,6 +11,21 @@ from mozlog.structured.structuredlog import StructuredLogger
 from mozregui.ui.mainwindow import Ui_MainWindow
 from mozregui.wizard import BisectionWizard
 from mozregui.bisection import BisectRunner
+
+
+ABOUT_TEXT = """\
+<p><strong>mozregression-gui</strong> is a desktop interface for
+<strong>mozregression</strong>, a regression range finder for Mozilla
+nightly and inbound builds.</p>
+<br>
+<a href="http://mozilla.github.io/mozregression/">\
+http://mozilla.github.io/mozregression/</a>
+<br>
+<ul>
+<li>Version: %s</li>
+<li>Using mozregression version: %s</li>
+</ul> 
+""" % (mozregui.__version__, mozregression.__version__)
 
 
 class MainWindow(QMainWindow):
@@ -29,6 +46,10 @@ class MainWindow(QMainWindow):
         if wizard.exec_() == wizard.Accepted:
             self.ui.report_view.model().clear()
             self.bisect_runner.bisect(*wizard.options())
+
+    @Slot()
+    def show_about(self):
+        QMessageBox.about(self, "About", ABOUT_TEXT)
 
 
 if __name__ == '__main__':

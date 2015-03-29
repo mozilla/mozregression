@@ -47,7 +47,14 @@
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dockWidget">
@@ -86,6 +93,11 @@
   <action name="actionQuit">
    <property name="text">
     <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
    </property>
   </action>
  </widget>
@@ -135,8 +147,25 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionAbout</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>show_about()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>127</x>
+     <y>66</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>511</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>start_bisection_wizard()</slot>
+  <slot>show_about()</slot>
  </slots>
 </ui>

@@ -43,10 +43,15 @@ def do_uic(force=False):
 def do_rcc(force=False):
     rccfile = 'resources.qrc'
     pyfile = 'resources_rc.py'
+    pyrcc4 = 'pyrcc4'
+    if IS_WIN:
+        import PyQt4
+        lib_path = os.path.dirname(os.path.realpath(PyQt4.__file__))
+        pyrcc4 = os.path.join(lib_path, pyrcc4)
     if force or not os.path.isfile(pyfile) or \
             (os.path.getmtime(rccfile) > os.path.getmtime(pyfile)):
         print "rcc'ing %s -> %s" % (rccfile, pyfile)
-        call('pyrcc4', '-o', pyfile, rccfile)
+        call(pyrcc4, '-o', pyfile, rccfile)
 
 
 def do_run():

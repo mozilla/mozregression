@@ -1,6 +1,6 @@
 <RCC>
   <qresource>
-    <file alias="app_icon.svg">icons/app_icon.svg</file>
-    <file alias="stop.svg">icons/cross106.svg</file>
+    <file alias="app_icon.png">icons/app_icon.png</file>
+    <file alias="stop.png">icons/cross106.png</file>
   </qresource>
 </RCC>

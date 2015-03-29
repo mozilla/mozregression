@@ -281,7 +281,7 @@ class BisectRunner(QObject):
             dialog = QMessageBox.critical
         else:
             if bisection.fetch_config.can_go_inbound() and \
-                isinstance(bisection.handler, NightlyHandler):
+                    isinstance(bisection.handler, NightlyHandler):
                 # we can go on inbound, let's ask the user
                 if QMessageBox.question(
                     self.mainwindow,

@@ -12,7 +12,7 @@ install:
     - export DISPLAY=:99.0
     - sh -e /etc/init.d/xvfb start
     # install PyQt4
-    - sudo apt-get install python-qt4
+    - sudo apt-get install python-qt4 pyqt4-dev-tools
     # install mozregression code and test dependencies
     - pip install coverage coveralls
     - cd gui && pip install -r test-requirements.txt && cd ..

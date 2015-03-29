@@ -204,6 +204,7 @@ def get_verdict(parent=None):
 
 class BisectRunner(QObject):
     bisector_created = Signal(object)
+    running_state_changed = Signal(bool)
 
     def __init__(self, mainwindow):
         QObject.__init__(self)
@@ -248,6 +249,8 @@ class BisectRunner(QObject):
         # this will be called in the worker thread.
         QTimer.singleShot(0, self.bisector.bisect)
 
+        self.running_state_changed.emit(True)
+
     @Slot()
     def stop(self):
         if self.bisector:
@@ -257,6 +260,7 @@ class BisectRunner(QObject):
             self.thread.quit()
             self.thread.wait()
             self.thread = None
+        self.running_state_changed.emit(False)
 
     @Slot(object, int, int)
     def show_dl_progress(self, dl, current, total):

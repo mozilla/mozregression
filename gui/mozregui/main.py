@@ -44,6 +44,8 @@ class MainWindow(QMainWindow):
             self.ui.report_view.model().attach_bisector)
         self.ui.report_view.step_report_changed.connect(
             self.ui.build_info_browser.update_content)
+        self.bisect_runner.running_state_changed.connect(
+            self.ui.actionStart_a_new_bisection.setDisabled)
 
     @Slot()
     def start_bisection_wizard(self):

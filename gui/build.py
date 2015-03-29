@@ -40,8 +40,18 @@ def do_uic(force=False):
                 compileUi(uifile, f, False, 4, False)
 
 
+def do_rcc(force=False):
+    rccfile = 'resources.qrc'
+    pyfile = 'resources_rc.py'
+    if force or not os.path.isfile(pyfile) or \
+            (os.path.getmtime(rccfile) > os.path.getmtime(pyfile)):
+        print "rcc'ing %s -> %s" % (rccfile, pyfile)
+        call('pyrcc4', '-o', pyfile, rccfile)
+
+
 def do_run():
     do_uic()
+    do_rcc()
     env = dict(os.environ)
     env['PYTHONPATH'] = '.'
     call(sys.executable, 'mozregui/main.py', env=env)
@@ -49,6 +59,7 @@ def do_run():
 
 def do_test():
     do_uic()
+    do_rcc()
     call(py_script('flake8'), 'mozregui', 'build.py', 'tests')
     print('Running tests...')
     import nose
@@ -57,6 +68,7 @@ def do_test():
 
 def do_bundle():
     do_uic(True)
+    do_rcc(True)
 
     # clean previous runs
     for dirname in ('build', 'dist'):
@@ -75,6 +87,9 @@ def parse_args():
 
     uic = subparsers.add_parser('uic', help='build uic files')
     uic.set_defaults(func=do_uic)
+
+    rcc = subparsers.add_parser('rcc', help='build rcc files')
+    rcc.set_defaults(func=do_rcc)
 
     run = subparsers.add_parser('run', help='run the application')
     run.set_defaults(func=do_run)

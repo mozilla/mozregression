@@ -15,3 +15,4 @@ gui/mozregui/ui/*.py
 !gui/mozregui/ui/__init__.py
 gui/.coverage
 gui/htmlcov/
+gui/resources_rc.py

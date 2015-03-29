@@ -13,6 +13,16 @@
   <property name="windowTitle">
    <string>Mozregression-gui</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>:/app_icon.svg</normaloff>:/app_icon.svg</iconset>
+  </property>
+  <property name="iconSize">
+   <size>
+    <width>32</width>
+    <height>32</height>
+   </size>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
@@ -113,7 +123,9 @@
    <header>mozregui.report</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>actionQuit</sender>

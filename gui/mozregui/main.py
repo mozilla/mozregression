@@ -24,7 +24,12 @@ http://mozilla.github.io/mozregression/</a>
 <ul>
 <li>Version: %s</li>
 <li>Using mozregression version: %s</li>
-</ul> 
+</ul>
+<div>All icons are made by <a href="http://www.freepik.com"
+                              title="Freepik">Freepik</a>
+from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a>
+and licensed under <a href="http://creativecommons.org/licenses/by/3.0/"
+                      title="Creative Commons BY 3.0">CC BY 3.0</a></div>
 """ % (mozregui.__version__, mozregression.__version__)
 
 

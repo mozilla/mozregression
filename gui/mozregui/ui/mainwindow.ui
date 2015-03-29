@@ -48,6 +48,7 @@
      <string>File</string>
     </property>
     <addaction name="actionStart_a_new_bisection"/>
+    <addaction name="actionStop_the_bisection"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -100,6 +101,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionStart_a_new_bisection"/>
+   <addaction name="actionStop_the_bisection"/>
   </widget>
   <action name="actionStart_a_new_bisection">
    <property name="checkable">
@@ -127,6 +129,21 @@
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionStop_the_bisection">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resources.qrc">
+     <normaloff>:/stop.svg</normaloff>:/stop.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Stop the bisection</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
    </property>
   </action>
  </widget>
@@ -194,9 +211,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionStop_the_bisection</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>stop_bisection()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>511</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>start_bisection_wizard()</slot>
   <slot>show_about()</slot>
+  <slot>stop_bisection()</slot>
  </slots>
 </ui>

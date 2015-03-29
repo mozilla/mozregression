@@ -211,6 +211,7 @@ class BisectRunner(QObject):
         self.mainwindow = mainwindow
         self.bisector = None
         self.thread = None
+        self.pending_threads = []
 
     def bisect(self, fetch_config, options):
         self.stop()
@@ -252,15 +253,32 @@ class BisectRunner(QObject):
         self.running_state_changed.emit(True)
 
     @Slot()
-    def stop(self):
+    def stop(self, wait=True):
         if self.bisector:
+            self.bisector.finished.disconnect(self.bisection_finished)
             self.bisector.download_manager.cancel()
             self.bisector = None
         if self.thread:
             self.thread.quit()
-            self.thread.wait()
+            if wait:
+                # wait for thread(s) completion - this is the case when
+                # user close the application
+                self.thread.wait()
+                for thread in self.pending_threads:
+                    thread.wait()
+            else:
+                # do not block, just keep track of the thread - we got here
+                # when user cancel the bisection with the button.
+                self.pending_threads.append(self.thread)
+                self.thread.finished.connect(self._remove_pending_thread)
             self.thread = None
         self.running_state_changed.emit(False)
+
+    @Slot()
+    def _remove_pending_thread(self):
+        for thread in self.pending_threads[:]:
+            if thread.isFinished():
+                self.pending_threads.remove(thread)
 
     @Slot(object, int, int)
     def show_dl_progress(self, dl, current, total):

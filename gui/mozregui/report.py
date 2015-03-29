@@ -62,6 +62,7 @@ class ReportModel(QAbstractTableModel):
     def __init__(self):
         QAbstractTableModel.__init__(self)
         self.items = []
+        self.bisector = None
 
     def clear(self):
         self.beginResetModel()
@@ -70,12 +71,21 @@ class ReportModel(QAbstractTableModel):
 
     @Slot(object)
     def attach_bisector(self, bisector):
-        bisector.step_started.connect(self.step_started)
-        bisector.step_build_found.connect(self.step_build_found)
-        bisector.step_testing.connect(self.step_testing)
-        bisector.step_finished.connect(self.step_finished)
-        bisector.started.connect(self.started)
-        bisector.finished.connect(self.finished)
+        slots = ('step_started', 'step_build_found', 'step_testing',
+                 'step_finished', 'started', 'finished')
+        if self.bisector:
+            # disconnect previous bisector
+            for name in slots:
+                signal = getattr(self.bisector, name)
+                slot = getattr(self, name)
+                signal.disconnect(slot)
+        if bisector:
+            # connect the new bisector
+            for name in slots:
+                signal = getattr(bisector, name)
+                slot = getattr(self, name)
+                signal.connect(slot)
+        self.bisector = bisector
 
     def rowCount(self, parent=QModelIndex()):
         return len(self.items)

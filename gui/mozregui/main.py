@@ -46,6 +46,8 @@ class MainWindow(QMainWindow):
             self.ui.build_info_browser.update_content)
         self.bisect_runner.running_state_changed.connect(
             self.ui.actionStart_a_new_bisection.setDisabled)
+        self.bisect_runner.running_state_changed.connect(
+            self.ui.actionStop_the_bisection.setEnabled)
 
     @Slot()
     def start_bisection_wizard(self):
@@ -53,6 +55,17 @@ class MainWindow(QMainWindow):
         if wizard.exec_() == wizard.Accepted:
             self.ui.report_view.model().clear()
             self.bisect_runner.bisect(*wizard.options())
+
+    @Slot()
+    def stop_bisection(self):
+        # stop the bisection without blocking
+        self.bisect_runner.stop(False)
+        # clear the report model
+        model = self.ui.report_view.model()
+        model.attach_bisector(None)
+        model.clear()
+        # clear the build info main panel
+        self.ui.build_info_browser.clear()
 
     @Slot()
     def show_about(self):

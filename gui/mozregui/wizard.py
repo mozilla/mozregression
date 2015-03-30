@@ -49,7 +49,8 @@ class IntroPage(WizardPage):
     UI_CLASS = Ui_Intro
     TITLE = "Starting a bisection"
     SUBTITLE = "Please choose an application and a type of bisection."
-    FIELDS = {'application': 'app_combo', 'bisect_type': 'bisect_combo'}
+    FIELDS = {'application': 'app_combo', 'bisect_type': 'bisect_combo',
+              'find_fix': 'find_fix'}
     ID = 0
 
     def __init__(self):

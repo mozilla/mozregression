@@ -28,6 +28,7 @@ class TestReport(unittest.TestCase):
         # simulate a build found
         build_infos = {"build_type": 'nightly', 'build_date': 'date'}
         bisection = Mock()
+        bisection.handler.find_fix = False
         bisection.handler.get_range.return_value = (1, 2)
         self.view.model().step_build_found(bisection, build_infos)
         # now we have two rows

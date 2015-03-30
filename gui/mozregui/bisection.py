@@ -228,11 +228,11 @@ class BisectRunner(QObject):
         self.bisector.finished.connect(self.bisection_finished)
         self.bisector_created.emit(self.bisector)
         if options['bisect_type'] == 'nightlies':
-            handler = NightlyHandler()
+            handler = NightlyHandler(find_fix=options['find_fix'])
             start = options['start_date']
             end = options['end_date']
         else:
-            handler = InboundHandler()
+            handler = InboundHandler(find_fix=options['find_fix'])
             start = options['start_changeset']
             end = options['end_changeset']
 

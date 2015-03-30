@@ -29,6 +29,8 @@ class StartItem(ReportItem):
             self.first, self.last = handler.get_date_range()
         else:
             self.first, self.last = handler.get_range()
+        if handler.find_fix:
+            self.first, self.last = self.last, self.first
 
     def status_text(self):
         if 'pushlog_url' not in self.data:

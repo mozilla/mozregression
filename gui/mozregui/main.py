@@ -3,7 +3,7 @@ import sys
 import mozregression
 import mozregui
 from PyQt4.QtGui import QApplication, QMainWindow, QMessageBox
-from PyQt4.QtCore import pyqtSlot as Slot
+from PyQt4.QtCore import pyqtSlot as Slot, QSettings
 
 from mozlog.structured import set_default_logger
 from mozlog.structured.structuredlog import StructuredLogger
@@ -49,6 +49,19 @@ class MainWindow(QMainWindow):
         self.bisect_runner.running_state_changed.connect(
             self.ui.actionStop_the_bisection.setEnabled)
 
+        self.read_settings()
+
+    def read_settings(self):
+        settings = QSettings()
+        self.restoreGeometry(settings.value("mainWin/geometry").toByteArray())
+        self.restoreState(settings.value("mainWin/windowState").toByteArray())
+
+    def closeEvent(self, evt):
+        settings = QSettings()
+        settings.setValue("mainWin/geometry", self.saveGeometry())
+        settings.setValue("mainWin/windowState", self.saveState())
+        QMainWindow.closeEvent(self, evt)
+
     @Slot()
     def start_bisection_wizard(self):
         wizard = BisectionWizard(self)
@@ -76,6 +89,9 @@ if __name__ == '__main__':
     set_default_logger(StructuredLogger('mozregression-gui'))
     # Create a Qt application
     app = QApplication(sys.argv)
+    app.setOrganizationName('mozilla')
+    app.setOrganizationDomain('mozilla.org')
+    app.setApplicationName('mozregression-gui')
     # Create the main window and show it
     win = MainWindow()
     app.aboutToQuit.connect(win.bisect_runner.stop)

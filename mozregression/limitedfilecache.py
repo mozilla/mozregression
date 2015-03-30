@@ -12,7 +12,7 @@ from cachecontrol.caches import FileCache
 ONE_GIGABYTE = 1000000000
 
 
-def get_cache(directory, max_bytes, logger):
+def get_cache(directory, max_bytes, logger=warnings):
     forever = True if directory else False
     if forever:
         fc = LimitedFileCache(directory, forever=forever,

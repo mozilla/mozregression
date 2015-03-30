@@ -11,6 +11,7 @@ from mozlog.structured.structuredlog import StructuredLogger
 from mozregui.ui.mainwindow import Ui_MainWindow
 from mozregui.wizard import BisectionWizard
 from mozregui.bisection import BisectRunner
+from mozregui.global_prefs import change_prefs_dialog
 
 
 ABOUT_TEXT = """\
@@ -83,6 +84,10 @@ class MainWindow(QMainWindow):
     @Slot()
     def show_about(self):
         QMessageBox.about(self, "About", ABOUT_TEXT)
+
+    @Slot()
+    def edit_global_prefs(self):
+        change_prefs_dialog(self)
 
 
 if __name__ == '__main__':

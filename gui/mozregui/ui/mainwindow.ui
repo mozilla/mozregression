@@ -40,7 +40,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>27</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -58,7 +58,14 @@
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionGlobal_preferences"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -146,6 +153,11 @@
     <bool>true</bool>
    </property>
   </action>
+  <action name="actionGlobal_preferences">
+   <property name="text">
+    <string>Global preferences</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -227,10 +239,27 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionGlobal_preferences</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>edit_global_prefs()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>511</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>start_bisection_wizard()</slot>
   <slot>show_about()</slot>
   <slot>stop_bisection()</slot>
+  <slot>edit_global_prefs()</slot>
  </slots>
 </ui>

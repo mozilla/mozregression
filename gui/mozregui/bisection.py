@@ -10,6 +10,7 @@ from mozregression.test_runner import TestRunner
 from mozregression.errors import MozRegressionError
 
 from mozregui.ui.verdict import Ui_Verdict
+from mozregui.global_prefs import get_prefs, apply_prefs
 
 Bisection.EXCEPTION = -1  # new possible value of bisection end
 
@@ -215,7 +216,14 @@ class BisectRunner(QObject):
 
     def bisect(self, fetch_config, options):
         self.stop()
-        self.bisector = GuiBisector(fetch_config)
+
+        # global preferences
+        global_prefs = get_prefs()
+        # apply the global prefs now
+        apply_prefs(global_prefs)
+
+        self.bisector = GuiBisector(fetch_config,
+                                    persist=global_prefs['persist'])
         # create a QThread, and move self.bisector in it. This will
         # allow to the self.bisector slots (connected after the move)
         # to be automatically called in the thread.

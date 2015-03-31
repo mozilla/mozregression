@@ -19,7 +19,8 @@ test_script:
   - "%PYTHON%/python.exe build.py test"
   - "cd .."
   # bundle the application
-  - cinst -x86 PyWin32
+  - ps: (new-object net.webclient).DownloadFile('http://sourceforge.net/projects/pywin32/files/pywin32/Build%20219/pywin32-219.win32-py2.7.exe/download', 'C:/pywin32-219.win32-py2.7.exe')
+  - "%PYTHON%/Scripts/easy_install.exe C:/pywin32-219.win32-py2.7.exe"
   - "%PYTHON%/python.exe gui/build.py bundle"
 
 # section required for deploy

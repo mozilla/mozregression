@@ -2,11 +2,13 @@ mozregression-gui
 =================
 
 This directory contains the code for mozregression-gui. It is a graphical
-Qt application with the PyQt4 bindings
-(http://www.riverbankcomputing.com/software/pyqt/intro).
+Qt application with the `PyQt4 bindings`_.
 
 It is intended to be delivered as an executable (or a set of libs/binaries)
-with pyinstaller (https://github.com/pyinstaller/pyinstaller).
+with pyinstaller_.
+
+.. _PyQt4 bindings: http://www.riverbankcomputing.com/software/pyqt/intro
+.. _pyinstaller: https://github.com/pyinstaller/pyinstaller
 
 
 How to develop on mozregression-gui
@@ -15,18 +17,23 @@ How to develop on mozregression-gui
 There is an helper script **build.py** that is provided for distribution
 tasks (as some replacement for the standard setup.py).
 
-First thing is to install pyqt4 for your python2. I highly recommend to
-install this system-wide as PyQt4 is not installable via pip:
+First thing is to install pyqt4. This must be done system wide (PyQT4
+is not installable via pip).
 
 - On ubuntu: ::
 
     sudo apt-get install python-qt4
 
-- On OSX: ::
+- On OSX (using MacPorts_): ::
 
     sudo port install py27-pyqt4
 
-  Note that will require that MacPorts is installed (http://www.macports.org/).
+- On OSX (using Homebrew_): ::
+
+    brew install pyqt
+
+.. _MacPorts: http://www.macports.org
+.. _Homebrew: http://brew.sh
 
 - On windows, you can download a pre build intaller from
   http://www.riverbankcomputing.co.uk/software/pyqt/download. Be careful to choose
@@ -43,7 +50,7 @@ about python virtualenvs.
 Launching the application
 -------------------------
 
-Activate your virtualenv. On linux: ::
+Activate your virtualenv. On Linux or OSX: ::
 
   . venv/bin/activate
 

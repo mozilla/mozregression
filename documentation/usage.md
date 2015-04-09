@@ -24,9 +24,9 @@ Some useful command line usage.
 
        mozregression --addon /path/to/addon --addon /other/addon
 
--  Forward arguments to tested binary
+-  Forward arguments to tested binary (note that you must use '=' for arguments beginning with '-' so that the     parser doesn't get confused)
 
-       mozregression --arg -foreground --arg -P
+       mozregression --arg='-foreground' --arg='-P'
 
 - Test a 32 bit binary on 64 bit system
 

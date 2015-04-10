@@ -190,7 +190,10 @@ def parse_args(argv=None):
                         help=("Do not download next builds in the background"
                               " while evaluating the current build."))
 
-    commandline.add_logging_group(parser)
+    commandline.add_logging_group(
+        parser,
+        include_formatters=commandline.TEXT_FORMATTERS
+    )
     options = parser.parse_args(argv)
     options.bits = parse_bits(options.bits)
     return options

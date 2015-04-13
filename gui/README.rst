@@ -22,7 +22,7 @@ is not installable via pip).
 
 - On ubuntu: ::
 
-    sudo apt-get install python-qt4
+    sudo apt-get install python-qt4 pyqt4-dev-tools
 
 - On OSX (using MacPorts_): ::
 

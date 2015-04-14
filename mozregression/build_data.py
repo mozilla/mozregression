@@ -82,8 +82,25 @@ class BuildData(object):
         # Do not touch the cache size here.
         self._cache[i][0] = data
 
-    def _filter_invalid_builds(self):
+    def filter_invalid_builds(self):
+        """
+        Remove builds in the cache that are marked as invalid.
+        """
         self._cache = [c for c in self._cache if c[0] is not False]
+
+    def index_of(self, key):
+        """
+        Return the index of a cache entry that match a criteria given by key.
+
+        Note that a cache entry is composed of [build_data, associated_data].
+
+        :param key: a function that takes a cache entry and must returns
+                    True when interesting cache entry is found.
+        """
+        for i, c in enumerate(self._cache):
+            if key(c):
+                return i
+        return -1
 
     def ensure_limits(self):
         """
@@ -200,7 +217,7 @@ class BuildData(object):
                     else:
                         builds_to_get.remove(i)
                         self._set_data(i, future.result())
-        self._filter_invalid_builds()
+        self.filter_invalid_builds()
         self._logger.debug("Now we got %d folders - %d were bad"
                            % (len(self), size - len(self)))
 

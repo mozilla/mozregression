@@ -130,6 +130,10 @@ class TestBuildData(unittest.TestCase):
         new_data.raises_for_indexes[5] = 3
         self.assertRaises(errors.DownloadError, new_data.mid_point)
 
+    def test_index_of(self):
+        self.assertEqual(self.build_data.index_of(lambda k: k[1] == 21), -1)
+        self.assertEqual(self.build_data.index_of(lambda k: k[1] == 15), 15)
+
 
 class TestBuildFolderInfoFetcher(unittest.TestCase):
     def setUp(self):

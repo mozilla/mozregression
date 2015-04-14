@@ -315,6 +315,16 @@ class Bisection(object):
         return self.RUNNING
 
     def download_build(self, mid_point):
+        """
+        Download the build for the given mid_point.
+
+        This call may start the download of next builds in background (if
+        dl_in_background evaluates to True). Note that the mid point may
+        change in this case.
+
+        Returns a couple (new_mid_point, build_infos) where build_infos
+        is the dict of build infos for the build.
+        """
         build_infos = self.handler.build_infos(mid_point, self.fetch_config)
         return self._download_build(mid_point, build_infos)
 
@@ -322,8 +332,8 @@ class Bisection(object):
         dest = self.download_manager.focus_download(build_infos)
         build_infos['build_path'] = dest
         if self.dl_in_background:
-            self._download_next_builds(mid_point)
-        return build_infos
+            mid_point = self._download_next_builds(mid_point)
+        return mid_point, build_infos
 
     def _download_next_builds(self, mid_point):
         # start downloading the next builds.
@@ -346,10 +356,16 @@ class Bisection(object):
                 finally:
                     # put the real build_data back
                     self.handler.set_build_data(self.build_data)
+        bdata = self.build_data[mid_point]
         # download next left mid point
         start_dl(self.build_data[mid_point:])
         # download right next mid point
         start_dl(self.build_data[:mid_point+1])
+        # since we called mid_point() on copy of self.build_data instance,
+        # the underlying cache may have changed and we need to find the new
+        # mid point.
+        self.build_data.filter_invalid_builds()
+        return self.build_data.index_of(lambda k: k[0] == bdata)
 
     def evaluate(self, build_infos):
         return self.test_runner.evaluate(build_infos,
@@ -455,7 +471,7 @@ class Bisector(object):
                 if result != bisection.RUNNING:
                     return result
 
-                build_infos = bisection.download_build(mid)
+                mid, build_infos = bisection.download_build(mid)
                 verdict, app_info = bisection.evaluate(build_infos)
                 bisection.update_build_info(mid, app_info)
                 result = bisection.handle_verdict(mid, verdict)

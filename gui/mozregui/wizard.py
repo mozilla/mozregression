@@ -1,6 +1,6 @@
 import mozinfo
 from PyQt4.QtGui import QWizard, QWizardPage, QStringListModel, QMessageBox
-from PyQt4.QtCore import QString, QDate
+from PyQt4.QtCore import QString, QDate, QDateTime
 
 from ui.intro import Ui_Intro
 from ui.nightlies import Ui_Nightlies
@@ -104,6 +104,12 @@ class NightliesPage(WizardPage):
     TITLE = "Select the nightlies date range"
     FIELDS = {"start_date": "start_date", "end_date": "end_date"}
     ID = 1
+
+    def __init__(self):
+        WizardPage.__init__(self)
+        now = QDateTime.currentDateTime()
+        self.ui.start_date.setDateTime(now.addYears(-1))
+        self.ui.end_date.setDateTime(now)
 
     def nextId(self):
         return ProfilePage.ID

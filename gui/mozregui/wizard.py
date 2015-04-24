@@ -104,7 +104,7 @@ class NightliesPage(WizardPage):
     TITLE = "Select the nightlies date range"
     FIELDS = {"start_date": "start_date", "end_date": "end_date"}
     ID = 1
-    
+
     def __init__(self):
         WizardPage.__init__(self)
         self.fetch_config = None

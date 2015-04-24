@@ -19,7 +19,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>First known good date</string>
+        <string>Last known good date</string>
        </property>
       </widget>
      </item>
@@ -33,7 +33,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Last known bad date</string>
+        <string>First known bad date</string>
        </property>
       </widget>
      </item>

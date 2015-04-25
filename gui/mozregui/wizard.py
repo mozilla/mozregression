@@ -111,6 +111,26 @@ class NightliesPage(WizardPage):
         self.ui.start_date.setDateTime(now.addYears(-1))
         self.ui.end_date.setDateTime(now)
 
+    def validatePage(self):
+        start_date = self.ui.start_date.date()
+        end_date = self.ui.end_date.date()
+        current = QDateTime.currentDateTime().date()
+        if start_date < end_date:
+            if end_date <= current:
+                return True
+            else:
+                QMessageBox.critical(
+                    self,
+                    "Error",
+                    "You can't define a date in the future.")
+        else:
+            QMessageBox.critical(
+                self,
+                "Error",
+                "The first date must be earlier than the second one.")
+
+        return False
+
     def nextId(self):
         return ProfilePage.ID
 

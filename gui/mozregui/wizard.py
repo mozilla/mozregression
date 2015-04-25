@@ -111,6 +111,27 @@ class NightliesPage(WizardPage):
         self.ui.start_date.setDateTime(now.addYears(-1))
         self.ui.end_date.setDateTime(now)
 
+    def validatePage(self):
+        good_date = self.ui.start_date.date()
+        bad_date = self.ui.end_date.date()
+        current = QDateTime.currentDateTime().date()
+        if good_date < bad_date:
+            if bad_date <= current:
+                return True
+            else:
+                QMessageBox.critical(
+                    self,
+                    "Error",
+                    "Date you entered is larger than now,please try it again.")
+                return False
+        else:
+            QMessageBox.critical(
+                self,
+                "Error",
+                "Dates in good date field can't larger than bad date,\
+                please try it again.")
+            return False
+
     def nextId(self):
         return ProfilePage.ID
 
@@ -146,7 +167,6 @@ class BisectionWizard(QWizard):
         QWizard.__init__(self, parent)
         self.setWindowTitle("Bisection wizard")
         self.resize(800, 600)
-
         # associate current text to comboboxes fields instead of current index
         self.setDefaultProperty("QComboBox", "currentText",
                                 "currentIndexChanged")

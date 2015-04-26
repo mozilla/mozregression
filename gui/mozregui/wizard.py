@@ -99,22 +99,42 @@ class IntroPage(WizardPage):
             return InboundPage.ID
 
 
-class NightliesPage(WizardPage):
+class WizardSelectionRangePage(WizardPage):
+    def changelabel(self, checkstatus):
+        if checkstatus is True:
+            self.ui.label.setText("Last known bad date")
+            self.ui.label_2.setText("First known good date")
+        else:
+            self.ui.label.setText("Last known good date")
+            self.ui.label_2.setText("First known bad date")
+
+    def initializePage(self):
+        checkstatus = self.wizard().field("find_fix").toBool()
+        self.changelabel(checkstatus)
+
+
+class NightliesPage(WizardSelectionRangePage):
     UI_CLASS = Ui_Nightlies
     TITLE = "Select the nightlies date range"
     FIELDS = {"start_date": "start_date", "end_date": "end_date"}
     ID = 1
 
+    def initializePage(self):
+        WizardSelectionRangePage.initializePage(self)
+
     def nextId(self):
         return ProfilePage.ID
 
 
-class InboundPage(WizardPage):
+class InboundPage(WizardSelectionRangePage):
     UI_CLASS = Ui_Inbound
     TITLE = "Select the inbound changesets range"
     FIELDS = {"start_changeset": "start_changeset",
               "end_changeset": "end_changeset"}
     ID = 2
+
+    def initializePage(self):
+        WizardSelectionRangePage.initializePage(self)
 
     def nextId(self):
         return ProfilePage.ID
@@ -162,6 +182,22 @@ class BisectionWizard(QWizard):
                 elif isinstance(value, QDate):
                     value = value.toPyDate()
                 options[fieldname] = value
+
+        if options['bisect_type'] == 'nightlies':
+            if options['find_fix'] is False:
+                options['good_date'] = options.pop('start_date')
+                options['bad_date'] = options.pop('end_date')
+            else:
+                options['good_date'] = options.pop('end_date')
+                options['bad_date'] = options.pop('start_date')
+
+        if options['bisect_type'] == 'inbound':
+            if options['find_fix'] is False:
+                options['good_changeset'] = options.pop('start_changeset')
+                options['bad_changeset'] = options.pop('end_changeset')
+            else:
+                options['good_changeset'] = options.pop('end_changeset')
+                options['bad_changeset'] = options.pop('start_changeset')
 
         # get the prefs
         options['preferences'] = self.page(ProfilePage.ID).get_prefs()

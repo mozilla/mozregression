@@ -237,12 +237,12 @@ class BisectRunner(QObject):
         self.bisector_created.emit(self.bisector)
         if options['bisect_type'] == 'nightlies':
             handler = NightlyHandler(find_fix=options['find_fix'])
-            start = options['start_date']
-            end = options['end_date']
+            start = options['good_date']
+            end = options['bad_date']
         else:
             handler = InboundHandler(find_fix=options['find_fix'])
-            start = options['start_changeset']
-            end = options['end_changeset']
+            start = options['good_changeset']
+            end = options['bad_changeset']
 
         # options for the app launcher
         launcher_kwargs = {}

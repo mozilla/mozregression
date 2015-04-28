@@ -71,7 +71,8 @@ class IntroPage(WizardPage):
 
         self.ui.app_combo.currentIndexChanged.connect(self._set_fetch_config)
         self.ui.bits_combo.currentIndexChanged.connect(self._set_fetch_config)
-        self._set_fetch_config(0)
+        self.ui.app_combo.setCurrentIndex(
+            self.ui.app_combo.findText("firefox"))
 
     def _set_fetch_config(self, index):
         # limit bisection type given the application

@@ -48,9 +48,10 @@ class WizardPage(QWizardPage):
 class IntroPage(WizardPage):
     UI_CLASS = Ui_Intro
     TITLE = "Starting a bisection"
-    SUBTITLE = "Please choose an application and a type of bisection."
+    SUBTITLE = ("Please choose an application, a type of bisection"
+                "and the number of bits for the application.")
     FIELDS = {'application': 'app_combo', 'bisect_type': 'bisect_combo',
-              'find_fix': 'find_fix'}
+              'find_fix': 'find_fix', 'bits': 'bits_combo'}
     ID = 0
 
     def __init__(self):
@@ -60,15 +61,24 @@ class IntroPage(WizardPage):
         self.ui.app_combo.setModel(self.app_model)
         self.bisect_model = QStringListModel()
         self.ui.bisect_combo.setModel(self.bisect_model)
+        self.bits_model = QStringListModel(['32', '64'])
+        self.ui.bits_combo.setModel(self.bits_model)
+        if mozinfo.bits == 64:
+            bits_index = 1
+        elif mozinfo.bits == 32:
+            bits_index = 0
+        self.ui.bits_combo.setCurrentIndex(bits_index)
 
         self.ui.app_combo.currentIndexChanged.connect(self._set_fetch_config)
+        self.ui.bits_combo.currentIndexChanged.connect(self._set_fetch_config)
         self._set_fetch_config(0)
 
     def _set_fetch_config(self, index):
         # limit bisection type given the application
+        bits = int(self.ui.bits_combo.currentText())
         old_bisect_index = self.ui.bisect_combo.currentIndex()
         self.fetch_config = create_config(
-            str(self.ui.app_combo.itemText(index)), mozinfo.os, mozinfo.bits)
+            str(self.ui.app_combo.itemText(index)), mozinfo.os, bits)
         bisect_types = ['nightlies']
         if self.fetch_config.is_inbound():
             bisect_types.append('inbound')

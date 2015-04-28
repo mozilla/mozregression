@@ -1,6 +1,6 @@
 from PyQt4.QtGui import QTextBrowser, QTableView, QDesktopServices
-from PyQt4.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSlot as Slot, pyqtSignal as Signal, \
-    QUrl
+from PyQt4.QtCore import QAbstractTableModel, QModelIndex, Qt,\
+    pyqtSlot as Slot, pyqtSignal as Signal, QUrl
 
 
 class ReportItem(object):

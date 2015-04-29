@@ -237,12 +237,12 @@ class BisectRunner(QObject):
         self.bisector_created.emit(self.bisector)
         if options['bisect_type'] == 'nightlies':
             handler = NightlyHandler(find_fix=options['find_fix'])
-            start = options['start_date']
-            end = options['end_date']
+            good = options['good_date']
+            bad = options['bad_date']
         else:
             handler = InboundHandler(find_fix=options['find_fix'])
-            start = options['start_changeset']
-            end = options['end_changeset']
+            good = options['good_changeset']
+            bad = options['bad_changeset']
 
         # options for the app launcher
         launcher_kwargs = {}
@@ -254,7 +254,7 @@ class BisectRunner(QObject):
         self.bisector.test_runner.launcher_kwargs = launcher_kwargs
 
         self.thread.start()
-        self.bisector._bisect_args = (handler, start, end)
+        self.bisector._bisect_args = (handler, good, bad)
         # this will be called in the worker thread.
         QTimer.singleShot(0, self.bisector.bisect)
 

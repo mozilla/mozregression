@@ -110,7 +110,21 @@ class IntroPage(WizardPage):
             return InboundPage.ID
 
 
-class NightliesPage(WizardPage):
+class WizardSelectionRangePage(WizardPage):
+    def changelabel(self, checkstatus):
+        if checkstatus is True:
+            self.ui.label.setText("Last known bad date")
+            self.ui.label_2.setText("First known good date")
+        else:
+            self.ui.label.setText("Last known good date")
+            self.ui.label_2.setText("First known bad date")
+
+    def initializePage(self):
+        checkstatus = self.wizard().field("find_fix").toBool()
+        self.changelabel(checkstatus)
+
+
+class NightliesPage(WizardSelectionRangePage):
     UI_CLASS = Ui_Nightlies
     TITLE = "Select the nightlies date range"
     FIELDS = {"start_date": "start_date", "end_date": "end_date"}
@@ -146,7 +160,7 @@ class NightliesPage(WizardPage):
         return ProfilePage.ID
 
 
-class InboundPage(WizardPage):
+class InboundPage(WizardSelectionRangePage):
     UI_CLASS = Ui_Inbound
     TITLE = "Select the inbound changesets range"
     FIELDS = {"start_changeset": "start_changeset",
@@ -199,6 +213,16 @@ class BisectionWizard(QWizard):
                 elif isinstance(value, QDate):
                     value = value.toPyDate()
                 options[fieldname] = value
+        if options['bisect_type'] == 'nightlies':
+            kind = "date"
+        else:
+            kind = "changeset"
+        if options['find_fix'] is False:
+            options['good_' + kind] = options.pop('start_' + kind)
+            options['bad_' + kind] = options.pop('end_' + kind)
+        else:
+            options['good_' + kind] = options.pop('end_' + kind)
+            options['bad_' + kind] = options.pop('start_' + kind)
 
         # get the prefs
         options['preferences'] = self.page(ProfilePage.ID).get_prefs()

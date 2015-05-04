@@ -32,13 +32,19 @@ after_success:
     coveralls
 
 before_deploy:
-    python gui/build.py bundle
+    - pip install cx_Freeze
+    - cd gui
+    - python build.py rcc
+    - python build.py uic
+    - cxfreeze --include-path=".:..:/usr/lib/python2.7:/usr/lib/python2.7/dist-packages" --target-name=mozregression-gui --target-dir=dist mozregui/main.py
+    - tar -czf mozregression-gui.tar.gz dist/
+    - cd ..
 
 deploy:
     provider: releases
     api_key:
         secure: cBPLQbwYrV3+V1W+wE+iMftda1sTTEJaxjd2l6mt4yIVO95fTcLRv4ekq0UkpXAi4bk1CKguIz8w9v/9jAg9y4zyDamLM81iTJQYu4N9EdODWVcCBA4lNud+51XQcNvO/R2/6///TlZ1RUG5YzvwxyUlomsVdl+yvpX4OSrEik8=
-    file: gui/dist/mozregression-gui
+    file: gui/mozregression-gui.tar.gz
     skip_cleanup: true
     on:
         tags: true

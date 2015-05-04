@@ -19,18 +19,20 @@ test_script:
   - "%PYTHON%/python.exe build.py test"
   - "cd .."
   # bundle the application
-  - ps: (new-object net.webclient).DownloadFile('http://sourceforge.net/projects/pywin32/files/pywin32/Build%20219/pywin32-219.win32-py2.7.exe/download', 'C:/pywin32-219.win32-py2.7.exe')
-  - "%PYTHON%/Scripts/easy_install.exe C:/pywin32-219.win32-py2.7.exe"
-  - "%PYTHON%/python.exe gui/build.py bundle"
+  - "%PYTHON%/Scripts/pip.exe install cx_Freeze"
+  - "cd gui"
+  - "%PYTHON%/python.exe %PYTHON%/Scripts/cxfreeze --base-name=Win32GUI --include-path=.;..;%PYTHON%/Lib/site-packages;%PYTHON%/Lib --target-name=mozregression-gui.exe --target-dir=dist mozregui/main.py"
+  - 7z a mozregression-gui.zip dist\*
+  - "cd .."
 
 # section required for deploy
 artifacts:
-  - path: gui\dist\mozregression-gui.exe
+  - path: gui\mozregression-gui.zip
 
 deploy:
   - provider: GitHub
     auth_token:
       secure: 9JS0n1MfG2KVQ86suWQ7Zq51932EBanPp05GXoLfN+94AhMOQSerjUwGIxoBXKmp
-    artifact: gui\dist\mozregression-gui.exe
+    artifact: gui\mozregression-gui.zip
     on:
       appveyor_repo_tag: true

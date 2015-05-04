@@ -48,6 +48,13 @@ class CommonConfig(object):
         """
         return isinstance(self, InboundConfigMixin)
 
+    def available_bits(self):
+        """
+        Returns the no. of bits of the OS for which the application should
+        run.
+        """
+        return (32, 64)
+
 
 class NightlyConfigMixin(object):
     """
@@ -254,6 +261,9 @@ class FennecConfig(CommonConfig,
 
     def build_info_regex(self):
         return r'fennec-.*\.txt'
+
+    def available_bits(self):
+        return ()
 
 
 @REGISTRY.register('fennec-2.3', attr_value='fennec')

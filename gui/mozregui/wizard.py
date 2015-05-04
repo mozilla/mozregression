@@ -61,12 +61,13 @@ class IntroPage(WizardPage):
         self.ui.app_combo.setModel(self.app_model)
         self.bisect_model = QStringListModel()
         self.ui.bisect_combo.setModel(self.bisect_model)
-        self.bits_model = QStringListModel(['32', '64'])
-        self.ui.bits_combo.setModel(self.bits_model)
         if mozinfo.bits == 64:
+            self.bits_model = QStringListModel(['32', '64'])
             bits_index = 1
         elif mozinfo.bits == 32:
+            self.bits_model = QStringListModel(['32'])
             bits_index = 0
+        self.ui.bits_combo.setModel(self.bits_model)
         self.ui.bits_combo.setCurrentIndex(bits_index)
 
         self.ui.app_combo.currentIndexChanged.connect(self._set_fetch_config)
@@ -88,6 +89,13 @@ class IntroPage(WizardPage):
         if old_bisect_index == 1 and len(bisect_types) == 2:
             bisect_index = 1
         self.ui.bisect_combo.setCurrentIndex(bisect_index)
+        available_bits = self.fetch_config.available_bits()
+        if not available_bits:
+            self.ui.bits_combo.hide()
+            self.ui.label_4.hide()
+        else:
+            self.ui.bits_combo.show()
+            self.ui.label_4.show()
 
     def validatePage(self):
         app_name = self.fetch_config.app_name

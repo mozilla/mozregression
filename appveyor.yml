@@ -26,8 +26,9 @@ test_script:
   - "cd gui"
   - "%PYTHON%/python.exe %PYTHON%/Scripts/cxfreeze --icon=wininst/app_icon.ico --base-name=Win32GUI --include-path=.;..;%PYTHON%/Lib/site-packages;%PYTHON%/Lib --target-name=mozregression-gui.exe --target-dir=dist mozregui/main.py"
   - "cd wininst"
-  - "%NSIS_ROOT%\makensis wininst.nsi"
-  - "cd ..\.."
+  - "%NSIS_ROOT%/makensis wininst.nsi"
+  - "cd .."
+  - "cd .."
 
 # section required for deploy
 artifacts:

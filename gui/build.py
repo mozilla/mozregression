@@ -80,10 +80,7 @@ def do_bundle():
         if os.path.isdir(dirname):
             shutil.rmtree(dirname)
 
-    # run pyinstaller
-    pyinstaller = py_script('pyinstaller')
-    call(pyinstaller, '-F', '--paths=.', '--name=mozregression-gui',
-         '--windowed', 'mozregui/main.py')
+    raise NotImplementedError
 
 
 def parse_args():

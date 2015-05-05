@@ -1,5 +1,6 @@
 build: false
 environment:
+  NSIS_ROOT: C:\nsis
   matrix:
     - PYTHON: "C:/Python27"
 init:
@@ -19,20 +20,23 @@ test_script:
   - "%PYTHON%/python.exe build.py test"
   - "cd .."
   # bundle the application
+  - appveyor DownloadFile "http://sunet.dl.sourceforge.net/project/nsis/NSIS 2/2.46/nsis-2.46-setup.exe" -FileName nsissetup.exe
+  - nsissetup /S /D=%NSIS_ROOT%
   - "%PYTHON%/Scripts/pip.exe install cx_Freeze"
   - "cd gui"
-  - "%PYTHON%/python.exe %PYTHON%/Scripts/cxfreeze --base-name=Win32GUI --include-path=.;..;%PYTHON%/Lib/site-packages;%PYTHON%/Lib --target-name=mozregression-gui.exe --target-dir=dist mozregui/main.py"
-  - 7z a mozregression-gui.zip dist\*
-  - "cd .."
+  - "%PYTHON%/python.exe %PYTHON%/Scripts/cxfreeze --icon=wininst/app_icon.ico --base-name=Win32GUI --include-path=.;..;%PYTHON%/Lib/site-packages;%PYTHON%/Lib --target-name=mozregression-gui.exe --target-dir=dist mozregui/main.py"
+  - "cd wininst"
+  - "%NSIS_ROOT%\makensis wininst.nsi"
+  - "cd ..\.."
 
 # section required for deploy
 artifacts:
-  - path: gui\mozregression-gui.zip
+  - path: gui\wininst\mozregression-gui.exe
 
 deploy:
   - provider: GitHub
     auth_token:
       secure: 9JS0n1MfG2KVQ86suWQ7Zq51932EBanPp05GXoLfN+94AhMOQSerjUwGIxoBXKmp
-    artifact: gui\mozregression-gui.zip
+    artifact: gui\wininst\mozregression-gui.exe
     on:
       appveyor_repo_tag: true

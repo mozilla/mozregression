@@ -23,12 +23,7 @@ test_script:
   - appveyor DownloadFile "http://sunet.dl.sourceforge.net/project/nsis/NSIS 2/2.46/nsis-2.46-setup.exe" -FileName nsissetup.exe
   - nsissetup /S /D=%NSIS_ROOT%
   - "%PYTHON%/Scripts/pip.exe install cx_Freeze"
-  - "cd gui"
-  - "%PYTHON%/python.exe %PYTHON%/Scripts/cxfreeze --icon=wininst/app_icon.ico --base-name=Win32GUI --include-path=.;..;%PYTHON%/Lib/site-packages;%PYTHON%/Lib --target-name=mozregression-gui.exe --target-dir=dist mozregui/main.py"
-  - "cd wininst"
-  - "%NSIS_ROOT%/makensis wininst.nsi"
-  - "cd .."
-  - "cd .."
+  - "%PYTHON%/python.exe gui/build.py bundle"
 
 # section required for deploy
 artifacts:

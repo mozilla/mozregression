@@ -79,8 +79,31 @@ def do_bundle():
     for dirname in ('build', 'dist'):
         if os.path.isdir(dirname):
             shutil.rmtree(dirname)
-
-    raise NotImplementedError
+    # create a intaller
+    python_lib_path = os.path.join(
+        os.getenv('MOZREGUI_PYTHONPATH', "C:\\Python27"),
+        "Lib"
+    )
+    makensis_path = os.path.join(
+        os.getenv('MOZREGUI_NSISPATH', "C:\\NSIS"),
+        "makensis.exe"
+    )
+    gui_path = os.path.realpath('.')
+    moz_path = os.path.realpath('..')
+    python_dir = os.path.join(
+        os.path.dirname(sys.executable),
+        "Scripts"
+    )
+    args = []
+    args.append('--icon=wininst/app_icon.ico')
+    args.append('--base-name=Win32GUI')
+    args.append('--include-path=%s;%s;%s\site-packages;%s'
+                % (gui_path, moz_path, python_lib_path, python_lib_path))
+    args.append('--target-name=mozregression-gui.exe')
+    args.append('--target-dir=dist')
+    args.append('mozregui/main.py')
+    call(sys.executable, os.path.join(python_dir, 'cxfreeze'), *args)
+    call(makensis_path, 'wininst.nsi', cwd='wininst')
 
 
 def parse_args():

@@ -1,0 +1,21 @@
+---
+layout: default
+---
+<div class="home">
+  {{ content }}
+
+  <br>
+  <h3>Recent news:</h3>
+  <ul class="post-list">
+    {% for post in site.posts limit:3 %}
+      <li>
+        <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
+        &nbsp;
+        <span>
+          {% assign url =  post.id | split:'/' | last | prepend: '/news.html#' %}
+          <a class="post-link" href="{{ url | prepend: site.baseurl }}">{{ post.title }}</a>
+        </span>
+      </li>
+    {% endfor %}
+  </ul>
+</div>

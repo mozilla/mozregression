@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: home
 title: Home
 order: 0
 main_link: True

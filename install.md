@@ -7,6 +7,33 @@ main_link: True
 
 # Install or upgrade
 
+## mozregression-gui
+
+For the graphical interface, we provide a simple installation process:
+
+- **Windows**:
+  Download the latest **mozregression-gui.exe** file from the
+  [github releases]. Once the file is downloaded double-click on it and
+  follow the installation process.
+
+- **Linux 64**:
+  We provide a frozen application (that includes python itself) in the
+  [github releases]. You can try it out by downloading the
+  **mozregression-gui.tar.gz**, decompress it somewhere and run the
+  mozregression-gui executable file.
+
+Please note that the mozregression GUI (including the installation process)
+is at a very early stage of development -- please report any bug you find.
+
+A graphical installation process for MacOS X is planned. You can still install
+the GUI directly [from github] if your OS is not supported or if you have issues
+with the prebuilt packages.
+
+
+## mozregression
+
+The original command line tool.
+
 mozregression is a Python (currently 2.7) package installable via pip. You can
 follow the OS-specific instructions to install pip if you don't know how to do it:
 
@@ -33,3 +60,6 @@ you are on:
 - **Ubuntu** / **Mac**
 
       sudo pip install -U mozregression
+
+[github releases]: https://github.com/mozilla/mozregression/releases
+[from github]: https://github.com/mozilla/mozregression/blob/master/gui/README.rst

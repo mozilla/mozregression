@@ -43,7 +43,7 @@ before_deploy:
 deploy:
     provider: releases
     api_key:
-        secure: cBPLQbwYrV3+V1W+wE+iMftda1sTTEJaxjd2l6mt4yIVO95fTcLRv4ekq0UkpXAi4bk1CKguIz8w9v/9jAg9y4zyDamLM81iTJQYu4N9EdODWVcCBA4lNud+51XQcNvO/R2/6///TlZ1RUG5YzvwxyUlomsVdl+yvpX4OSrEik8=
+        secure: GKlGCKzsjPyUVmtYZhOU0ggQH5RN5UgC+aEckfdguPLSnSeKxe3FLOV25zoe0+CLiYOHbsxvbTxB1fNh2KVxcrV7zroKzijhzFMAgfBP/yuCBeNWYR0tf/5qLk/xd26JQ+2Om6eyPnT+jc3JjmU7g8nYfEBrNDmtQ5Kmm0N4Crk=
     file: gui/mozregression-gui.tar.gz
     skip_cleanup: true
     on:

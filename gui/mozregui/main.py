@@ -2,6 +2,8 @@
 import sys
 import mozregression
 import mozregui
+import mozfile
+from tempfile import mkdtemp
 from PyQt4.QtGui import QApplication, QMainWindow, QMessageBox
 from PyQt4.QtCore import pyqtSlot as Slot, QSettings
 
@@ -50,7 +52,13 @@ class MainWindow(QMainWindow):
         self.bisect_runner.running_state_changed.connect(
             self.ui.actionStop_the_bisection.setEnabled)
 
+        self.persist = mkdtemp()
+
         self.read_settings()
+
+    @Slot()
+    def clear(self):
+        mozfile.remove(self.persist)
 
     def read_settings(self):
         settings = QSettings()
@@ -100,6 +108,7 @@ if __name__ == '__main__':
     # Create the main window and show it
     win = MainWindow()
     app.aboutToQuit.connect(win.bisect_runner.stop)
+    app.aboutToQuit.connect(win.clear)
     win.show()
     win.start_bisection_wizard()
     # Enter Qt application main loop

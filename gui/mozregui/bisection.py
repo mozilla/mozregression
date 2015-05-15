@@ -222,8 +222,12 @@ class BisectRunner(QObject):
         # apply the global prefs now
         apply_prefs(global_prefs)
 
+        persist = global_prefs['persist']
+        if not persist:
+            persist = self.mainwindow.persist
+
         self.bisector = GuiBisector(fetch_config,
-                                    persist=global_prefs['persist'])
+                                    persist=persist)
         # create a QThread, and move self.bisector in it. This will
         # allow to the self.bisector slots (connected after the move)
         # to be automatically called in the thread.

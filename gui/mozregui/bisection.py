@@ -294,8 +294,7 @@ class BisectRunner(QObject):
 
     @Slot(object, int, int)
     def show_dl_progress(self, dl, current, total):
-        message = "downloading %s: %d/%d" % (dl.get_dest(), current, total)
-        self.mainwindow.ui.statusbar.showMessage(message, 2000)
+        a = 0
 
     @Slot()
     def evaluate(self):

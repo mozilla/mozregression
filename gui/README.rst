@@ -20,9 +20,13 @@ tasks (as some replacement for the standard setup.py).
 First thing is to install pyqt4. This must be done system wide (PyQT4
 is not installable via pip).
 
-- On ubuntu: ::
+- On Ubuntu: ::
 
     sudo apt-get install python-qt4 pyqt4-dev-tools
+
+- On Archlinux: ::
+
+  sudo pacman -S python2-pyqt4
 
 - On OSX (using MacPorts_): ::
 

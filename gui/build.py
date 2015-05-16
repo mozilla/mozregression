@@ -29,7 +29,7 @@ def py_script(script_name):
         return os.path.join(python_dir, script_name)
 
 
-def do_uic(force=False):
+def do_uic(options, force=False):
     from PyQt4.uic import compileUi
     for uifile in glob.glob('mozregui/ui/*.ui'):
         pyfile = os.path.splitext(uifile)[0] + '.py'
@@ -40,7 +40,7 @@ def do_uic(force=False):
                 compileUi(uifile, f, False, 4, False)
 
 
-def do_rcc(force=False):
+def do_rcc(options, force=False):
     rccfile = 'resources.qrc'
     pyfile = 'resources_rc.py'
     pyrcc4 = 'pyrcc4'
@@ -54,26 +54,26 @@ def do_rcc(force=False):
         call(pyrcc4, '-o', pyfile, rccfile)
 
 
-def do_run():
-    do_uic()
-    do_rcc()
+def do_run(options):
+    do_uic(options)
+    do_rcc(options)
     env = dict(os.environ)
     env['PYTHONPATH'] = '.'
     call(sys.executable, 'mozregui/main.py', env=env)
 
 
-def do_test():
-    do_uic()
-    do_rcc()
+def do_test(options):
+    do_uic(options)
+    do_rcc(options)
     call(py_script('flake8'), 'mozregui', 'build.py', 'tests')
     print('Running tests...')
     import nose
     nose.main(argv=['-s', 'tests'])
 
 
-def do_bundle():
-    do_uic(True)
-    do_rcc(True)
+def do_bundle(options):
+    do_uic(options, True)
+    do_rcc(options, True)
 
     # clean previous runs
     for dirname in ('build', 'dist'):
@@ -135,7 +135,7 @@ def main():
 
     options = parse_args()
     try:
-        options.func()
+        options.func(options)
     except Exception, e:
         sys.exit('ERROR: %s' % e)
 

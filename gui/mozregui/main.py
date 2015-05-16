@@ -101,7 +101,9 @@ class MainWindow(QMainWindow):
 if __name__ == '__main__':
     set_default_logger(StructuredLogger('mozregression-gui'))
     # Create a Qt application
-    app = QApplication(sys.argv)
+
+    argv = [sys.argv[0].replace("main.py", "mozregression")] + sys.argv[1:]
+    app = QApplication(argv)
     app.setOrganizationName('mozilla')
     app.setOrganizationDomain('mozilla.org')
     app.setApplicationName('mozregression-gui')

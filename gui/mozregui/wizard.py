@@ -47,9 +47,9 @@ class WizardPage(QWizardPage):
 
 class IntroPage(WizardPage):
     UI_CLASS = Ui_Intro
-    TITLE = "Starting a bisection"
+    TITLE = "Bisection start"
     SUBTITLE = ("Please choose an application, a type of bisection"
-                "and the number of bits for the application.")
+                " and the number of bits for the application.")
     FIELDS = {'application': 'app_combo', 'bisect_type': 'bisect_combo',
               'find_fix': 'find_fix', 'bits': 'bits_combo'}
     ID = 0
@@ -134,7 +134,8 @@ class WizardSelectionRangePage(WizardPage):
 
 class NightliesPage(WizardSelectionRangePage):
     UI_CLASS = Ui_Nightlies
-    TITLE = "Select the nightlies date range"
+    TITLE = "Date range selection"
+    SUBTITLE = ("Select the nightlies date range.")
     FIELDS = {"start_date": "start_date", "end_date": "end_date"}
     ID = 1
 
@@ -170,7 +171,8 @@ class NightliesPage(WizardSelectionRangePage):
 
 class InboundPage(WizardSelectionRangePage):
     UI_CLASS = Ui_Inbound
-    TITLE = "Select the inbound changesets range"
+    TITLE = "Changesets range selection"
+    SUBTITLE = "Select the inbound changesets range."
     FIELDS = {"start_changeset": "start_changeset",
               "end_changeset": "end_changeset"}
     ID = 2
@@ -181,9 +183,9 @@ class InboundPage(WizardSelectionRangePage):
 
 class ProfilePage(WizardPage):
     UI_CLASS = Ui_Profile
-    TITLE = "Choose a specific profile"
-    SUBTITLE = ("You can choose an existing profile, or let this blank to"
-                " use a new one.")
+    TITLE = "Profile selection"
+    SUBTITLE = ("Choose a specific profile. You can choose an existing profile"
+                ", or let this blank to use a new one.")
     FIELDS = {"profile": "profile_widget.line_edit"}
     ID = 3
 

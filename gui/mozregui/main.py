@@ -98,7 +98,7 @@ class MainWindow(QMainWindow):
         change_prefs_dialog(self)
 
 
-if __name__ == '__main__':
+def main():
     set_default_logger(StructuredLogger('mozregression-gui'))
     # Create a Qt application
 
@@ -115,3 +115,7 @@ if __name__ == '__main__':
     win.start_bisection_wizard()
     # Enter Qt application main loop
     sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()

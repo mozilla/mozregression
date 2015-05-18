@@ -80,14 +80,8 @@ def do_bundle(options):
         if os.path.isdir(dirname):
             shutil.rmtree(dirname)
     # create a intaller
-    python_lib_path = os.path.join(
-        os.getenv('MOZREGUI_PYTHONPATH', "C:\\Python27"),
-        "Lib"
-    )
-    makensis_path = os.path.join(
-        os.getenv('MOZREGUI_NSISPATH', "C:\\NSIS"),
-        "makensis.exe"
-    )
+    python_lib_path = os.path.join(options.python_path, "Lib")
+    makensis_path = os.path.join(options.nsis_path, "makensis.exe")
     gui_path = os.path.realpath('.')
     moz_path = os.path.realpath('..')
     python_dir = os.path.join(
@@ -124,6 +118,14 @@ def parse_args():
 
     bundle = subparsers.add_parser('bundle',
                                    help='bundle the application (freeze)')
+    bundle.add_argument('--python-path', dest='python_path',
+                        default='C:\\Python27',
+                        help='your python path on the'
+                        ' system(default: %(default)r)')
+    bundle.add_argument('--nsis-path', dest='nsis_path',
+                        default='C:\\NSIS',
+                        help='your NSIS path on the'
+                        ' system(default: %(default)r)')
     bundle.set_defaults(func=do_bundle)
 
     return parser.parse_args()

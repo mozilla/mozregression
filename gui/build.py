@@ -11,6 +11,8 @@ import os
 import shutil
 import glob
 import pipes
+import tarfile
+
 
 IS_WIN = os.name == 'nt'
 
@@ -71,6 +73,39 @@ def do_test(options):
     nose.main(argv=['nosetests', '-s', 'tests'])
 
 
+def call_cx_freeze():
+    args = []
+    venv_path = os.path.dirname(sys.executable)
+    if IS_WIN:
+        # cxfreeze on windows is just a 'cxfreeze' python file in the
+        # Scripts dir
+        args.append(sys.executable)
+        args.append(os.path.join(venv_path, "Scripts", 'cxfreeze'))
+
+        args.append('--icon=wininst/app_icon.ico')
+        args.append('--base-name=Win32GUI')
+        args.append('--target-name=mozregression-gui.exe')
+    else:
+        args.append('cxfreeze')
+        args.append('--target-name=mozregression-gui')
+
+    # determine python paths needed for cxfreeze
+    paths = []
+    for p in sys.path:
+        # put the system python path in first, because somwhere there
+        # is a dependency to distutils - and distutils get patched
+        # in the virtualenv
+        if p.startswith(venv_path):
+            paths.append(p)
+        else:
+            paths.insert(0, p)
+    args.append('--include-path=%s' % os.pathsep.join(['.', '..'] + paths))
+
+    args.append('--target-dir=dist')
+    args.append('mozregui/main.py')
+    call(*args)
+
+
 def do_bundle(options):
     do_uic(options, True)
     do_rcc(options, True)
@@ -79,25 +114,15 @@ def do_bundle(options):
     for dirname in ('build', 'dist'):
         if os.path.isdir(dirname):
             shutil.rmtree(dirname)
-    # create a intaller
-    python_lib_path = os.path.join(options.python_path, "Lib")
-    makensis_path = os.path.join(options.nsis_path, "makensis.exe")
-    gui_path = os.path.realpath('.')
-    moz_path = os.path.realpath('..')
-    python_dir = os.path.join(
-        os.path.dirname(sys.executable),
-        "Scripts"
-    )
-    args = []
-    args.append('--icon=wininst/app_icon.ico')
-    args.append('--base-name=Win32GUI')
-    args.append('--include-path=%s;%s;%s\site-packages;%s'
-                % (gui_path, moz_path, python_lib_path, python_lib_path))
-    args.append('--target-name=mozregression-gui.exe')
-    args.append('--target-dir=dist')
-    args.append('mozregui/main.py')
-    call(sys.executable, os.path.join(python_dir, 'cxfreeze'), *args)
-    call(makensis_path, 'wininst.nsi', cwd='wininst')
+    # freeze the application
+    call_cx_freeze()
+    # create an installer
+    if IS_WIN:
+        makensis_path = os.path.join(options.nsis_path, "makensis.exe")
+        call(makensis_path, 'wininst.nsi', cwd='wininst')
+    else:
+        with tarfile.open('mozregression-gui.tar.gz', 'w:gz') as tar:
+            tar.add(r'dist/')
 
 
 def parse_args():
@@ -118,14 +143,11 @@ def parse_args():
 
     bundle = subparsers.add_parser('bundle',
                                    help='bundle the application (freeze)')
-    bundle.add_argument('--python-path', dest='python_path',
-                        default='C:\\Python27',
-                        help='your python path on the'
-                        ' system(default: %(default)r)')
-    bundle.add_argument('--nsis-path', dest='nsis_path',
-                        default='C:\\NSIS',
-                        help='your NSIS path on the'
-                        ' system(default: %(default)r)')
+    if IS_WIN:
+        bundle.add_argument('--nsis-path', default='C:\\NSIS',
+                            help='your NSIS path on the'
+                            ' system(default: %(default)r)')
+
     bundle.set_defaults(func=do_bundle)
 
     return parser.parse_args()

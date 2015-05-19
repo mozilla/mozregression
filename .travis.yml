@@ -33,12 +33,7 @@ after_success:
 
 before_deploy:
     - pip install cx_Freeze
-    - cd gui
-    - python build.py rcc
-    - python build.py uic
-    - cxfreeze --include-path=".:..:/usr/lib/python2.7:/usr/lib/python2.7/dist-packages" --target-name=mozregression-gui --target-dir=dist mozregui/main.py
-    - tar -czf mozregression-gui.tar.gz dist/
-    - cd ..
+    - python gui/build.py bundle
 
 deploy:
     provider: releases

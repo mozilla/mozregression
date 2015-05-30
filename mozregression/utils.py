@@ -180,6 +180,9 @@ def releases():
 
     The date is a string formated as "yyyy-mm-dd", and the release an integer.
     """
+    # The dates comes from from https://wiki.mozilla.org/RapidRelease/Calendar,
+    # using the ones in the "aurora" column. This is because the merge date for
+    # aurora corresponds to the last nightly for that release. See bug 996812.
     return {
         5: "2011-04-12",
         6: "2011-05-24",
@@ -213,7 +216,10 @@ def releases():
         34: "2014-09-02",
         35: "2014-10-13",
         36: "2014-11-28",
-        37: "2015-01-12"
+        37: "2015-01-12",
+        38: "2015-02-23",
+        39: "2015-03-30",
+        40: "2015-05-11",
     }
 
 

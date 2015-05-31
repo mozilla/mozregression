@@ -14,6 +14,7 @@ from mozregui.ui.mainwindow import Ui_MainWindow
 from mozregui.wizard import BisectionWizard
 from mozregui.bisection import BisectRunner
 from mozregui.global_prefs import change_prefs_dialog
+from mozregui.report_delegate import ReportItemDelegate
 
 
 ABOUT_TEXT = """\
@@ -45,8 +46,12 @@ class MainWindow(QMainWindow):
 
         self.bisect_runner.bisector_created.connect(
             self.ui.report_view.model().attach_bisector)
+
         self.ui.report_view.step_report_changed.connect(
             self.ui.build_info_browser.update_content)
+        self.report_delegate = ReportItemDelegate()
+        self.ui.report_view.setItemDelegateForColumn(0, self.report_delegate)
+
         self.bisect_runner.running_state_changed.connect(
             self.ui.actionStart_a_new_bisection.setDisabled)
         self.bisect_runner.running_state_changed.connect(

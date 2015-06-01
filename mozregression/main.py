@@ -155,7 +155,7 @@ def parse_args(argv=None):
 
     parser.add_argument("--bits",
                         choices=("32", "64"),
-                        default=defaults.get("bits", mozinfo.bits),
+                        default=defaults.get("bits"),
                         help=("force 32 or 64 bit version (only applies to"
                               " x86_64 boxes). Default: %(default)s bits."))
 
@@ -195,7 +195,6 @@ def parse_args(argv=None):
         include_formatters=commandline.TEXT_FORMATTERS
     )
     options = parser.parse_args(argv)
-    options.bits = parse_bits(options.bits)
     return options
 
 
@@ -335,7 +334,16 @@ def cli(argv=None):
     set_http_cache_session(cache_session,
                            get_defaults={"timeout": options.http_timeout})
 
+    user_defined_bits = options.bits is not None
+    options.bits = parse_bits(options.bits or mozinfo.bits)
     fetch_config = create_config(options.app, mozinfo.os, options.bits)
+
+    if not user_defined_bits and \
+            options.bits == 64 and \
+            mozinfo.os == 'win' and \
+            32 in fetch_config.available_bits():
+        # inform users on windows that we are using 64 bit builds.
+        logger.info("bits option not specified, using 64-bit builds.")
 
     if options.command is None:
         launcher_kwargs = dict(

@@ -19,6 +19,7 @@ from mozregression import __version__
 class TestMainCli(unittest.TestCase):
     def setUp(self):
         self.runner = Mock()
+        self.logger = Mock()
 
     @patch('mozregression.main.check_mozregression_version')
     @patch('mozregression.main.get_defaults')
@@ -29,6 +30,7 @@ class TestMainCli(unittest.TestCase):
     def do_cli(self, argv, BisectRunner, get_cache, set_http_cache_session,
                setup_logging, get_defaults, check_mozregression_version):
         get_defaults.return_value = dict()
+        setup_logging.return_value = self.logger
 
         def create_runner(fetch_config, test_runner, options):
             self.runner.fetch_config = fetch_config
@@ -42,6 +44,13 @@ class TestMainCli(unittest.TestCase):
             return exc.code
         else:
             self.fail('mozregression.main.cli did not call sys.exit')
+
+    def pop_logs(self):
+        logs = []
+        for i in range(len(self.logger.mock_calls)):
+            call = self.logger.mock_calls.pop(0)
+            logs.append((call[0], call[1][0]))
+        return logs
 
     @patch('sys.stdout')
     def test_get_usage(self, stdout):
@@ -85,7 +94,7 @@ class TestMainCli(unittest.TestCase):
 
         self.assertEqual(options.http_timeout, 10.2)
         self.assertEqual(options.http_cache_dir, '/home/foo/.mozregression')
-        self.assertEqual(options.bits, 32)
+        self.assertEqual(options.bits, '32')
 
     def test_without_args(self):
         self.runner.bisect_nightlies.return_value = 0
@@ -197,6 +206,25 @@ class TestMainCli(unittest.TestCase):
     def test_deactive_download_in_background(self):
         self.do_cli(['--no-background-dl'])
         self.assertFalse(self.runner.options.background_dl)
+
+    @patch('mozregression.main.mozinfo')
+    def test_on_windows_64_we_should_log(self, mozinfo):
+        mozinfo.bits = 64
+        mozinfo.os = 'win'
+
+        log_entry = ('info', 'bits option not specified, using 64-bit builds.')
+
+        self.do_cli(['--app=firefox'])
+        self.assertIn(log_entry, self.pop_logs())
+
+        # don't log if we explicitly set the bits
+        self.do_cli(['--app=firefox', '--bits=64'])
+        self.assertNotIn(log_entry, self.pop_logs())
+
+        # or if we are not on windows
+        mozinfo.os = 'linux'
+        self.do_cli(['--app=firefox'])
+        self.assertNotIn(log_entry, self.pop_logs())
 
 
 class TestResumeInfoBisectRunner(unittest.TestCase):

@@ -321,7 +321,7 @@ class BisectRunner(QObject):
                     self.mainwindow,
                     "End of the bisection",
                     "Nightly bisection is done, but you can continue the"
-                    " bisection on inbound builds. Contibue with inbounds ?",
+                    " bisection on inbound builds. Continue with inbounds ?",
                     QMessageBox.Yes | QMessageBox.No,
                     QMessageBox.Yes
                 ) == QMessageBox.Yes:

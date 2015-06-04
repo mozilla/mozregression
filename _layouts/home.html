@@ -5,6 +5,37 @@ layout: default
   {{ content }}
 
   <br>
+  <h3>Downloads:</h3>
+  <div id="downloads">
+  </div>
+  <script>
+  function createElement(tags) {
+    var tag = document.createElement('dl');
+    var template = '<dl>'
+    +  '<dt> <strong>'+ tags.tag + '</strong> </dt>'
+    +  '<dd>linux: ' + tags.data.linux + '</dd>'
+    +  '<dd>windows: ' + tags.data.windows + '</dd>';
+    tag.innerHTML = template;
+    document.getElementById('downloads').appendChild(tag);
+  }
+  var tags = {};
+  $.ajax({
+    url: "https://api.github.com/repos/mozilla/mozregression/releases"
+  }).done(function(data1) {
+    $.each(data1, function( index, tagData ){
+      tags[tagData.tag_name] = {};
+      $.each(tagData.assets, function( index, platformData ){
+        if(platformData.name == 'mozregression-gui.exe') {
+          tags[tagData.tag_name]['windows'] = platformData.download_count;
+        } else {
+          tags[tagData.tag_name]['linux'] = platformData.download_count;
+        }
+      });
+        createElement({tag: tagData.tag_name, data: tags[tagData.tag_name]});
+    });
+  });
+  </script>
+  <br>
   <h3>Recent news:</h3>
   <ul class="post-list">
     {% for post in site.posts limit:3 %}

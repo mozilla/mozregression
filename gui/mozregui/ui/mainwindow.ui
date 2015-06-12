@@ -40,7 +40,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>20</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -120,7 +120,7 @@
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
-      <widget class="QPlainTextEdit" name="log_information_view">
+      <widget class="LogView" name="log_view">
        <property name="readOnly">
         <bool>true</bool>
        </property>
@@ -188,6 +188,11 @@
    <class>BuildInfoTextBrowser</class>
    <extends>QTextBrowser</extends>
    <header>mozregui.report</header>
+  </customwidget>
+  <customwidget>
+   <class>LogView</class>
+   <extends>QPlainTextEdit</extends>
+   <header>mozregui.log_report</header>
   </customwidget>
  </customwidgets>
  <resources>

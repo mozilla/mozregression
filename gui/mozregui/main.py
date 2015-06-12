@@ -4,10 +4,8 @@ import mozregression
 import mozregui
 import mozfile
 from tempfile import mkdtemp
-from datetime import datetime
-from PyQt4.QtGui import QApplication, QMainWindow, QMessageBox, QTextCursor
-from PyQt4.QtCore import pyqtSlot as Slot, QSettings, QObject, \
-    pyqtSignal as Signal
+from PyQt4.QtGui import QApplication, QMainWindow, QMessageBox
+from PyQt4.QtCore import pyqtSlot as Slot, QSettings
 
 from mozlog.structured import set_default_logger
 from mozlog.structured.structuredlog import StructuredLogger
@@ -16,6 +14,7 @@ from mozregui.ui.mainwindow import Ui_MainWindow
 from mozregui.wizard import BisectionWizard
 from mozregui.bisection import BisectRunner
 from mozregui.global_prefs import change_prefs_dialog
+from mozregui.log_report import LogModel
 
 
 ABOUT_TEXT = """\
@@ -99,29 +98,6 @@ class MainWindow(QMainWindow):
     def edit_global_prefs(self):
         change_prefs_dialog(self)
 
-    @Slot(dict)
-    def on_log_received(self, data):
-        time_info = datetime.fromtimestamp((data['time']/1000)).isoformat()
-        log_message = '%s: %s : %s' % (
-            time_info, data['level'], data['message'])
-        self.ui.log_information_view.appendPlainText(log_message)
-        counter = self.ui.log_information_view.blockCount()
-
-        # do not display more than 1000 log lines
-        if counter > 1000:
-            document = self.ui.log_information_view.document()
-            cursor = QTextCursor(document.findBlockByLineNumber(0))
-            cursor.select(QTextCursor.BlockUnderCursor)
-            cursor.deleteChar()
-            cursor.deleteChar()
-
-
-class LogModel(QObject):
-    log = Signal(dict)
-
-    def __call__(self, data):
-        self.log.emit(data)
-
 
 def main():
     set_default_logger(StructuredLogger('mozregression-gui'))
@@ -137,7 +113,7 @@ def main():
     win = MainWindow()
     app.aboutToQuit.connect(win.bisect_runner.stop)
     app.aboutToQuit.connect(win.clear)
-    log_model.log.connect(win.on_log_received)
+    log_model.log.connect(win.ui.log_view.on_log_received)
     win.show()
     win.start_bisection_wizard()
     # Enter Qt application main loop

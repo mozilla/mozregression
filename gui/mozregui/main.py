@@ -4,8 +4,10 @@ import mozregression
 import mozregui
 import mozfile
 from tempfile import mkdtemp
-from PyQt4.QtGui import QApplication, QMainWindow, QMessageBox
-from PyQt4.QtCore import pyqtSlot as Slot, QSettings
+from datetime import datetime
+from PyQt4.QtGui import QApplication, QMainWindow, QMessageBox, QTextCursor
+from PyQt4.QtCore import pyqtSlot as Slot, QSettings, QObject, \
+    pyqtSignal as Signal
 
 from mozlog.structured import set_default_logger
 from mozlog.structured.structuredlog import StructuredLogger
@@ -97,11 +99,34 @@ class MainWindow(QMainWindow):
     def edit_global_prefs(self):
         change_prefs_dialog(self)
 
+    @Slot(dict)
+    def on_log_received(self, data):
+        time_info = datetime.fromtimestamp((data['time']/1000)).isoformat()
+        log_message = '%s: %s : %s' % (
+            time_info, data['level'], data['message'])
+        self.ui.log_information_view.appendPlainText(log_message)
+        counter = self.ui.log_information_view.blockCount()
+
+        if(counter > 1000):
+            document = self.ui.log_information_view.document()
+            cursor = QTextCursor(document.findBlockByLineNumber(0))
+            cursor.select(QTextCursor.BlockUnderCursor)
+            cursor.deleteChar()
+            cursor.deleteChar()
+
+
+class LogModel(QObject):
+    log = Signal(dict)
+
+    def __call__(self, data):
+        self.log.emit(data)
+
 
 def main():
     set_default_logger(StructuredLogger('mozregression-gui'))
     # Create a Qt application
-
+    log_model = LogModel()
+    StructuredLogger('mozregression-gui').add_handler(log_model)
     argv = [sys.argv[0].replace("main.py", "mozregression")] + sys.argv[1:]
     app = QApplication(argv)
     app.setOrganizationName('mozilla')
@@ -111,6 +136,7 @@ def main():
     win = MainWindow()
     app.aboutToQuit.connect(win.bisect_runner.stop)
     app.aboutToQuit.connect(win.clear)
+    log_model.log.connect(win.on_log_received)
     win.show()
     win.start_bisection_wizard()
     # Enter Qt application main loop

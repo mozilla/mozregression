@@ -18,12 +18,17 @@ class ReportItem(object):
     """
     def __init__(self):
         self.data = {}
+        self.downloading = False
+        self.progress = 0
 
     def update_pushlogurl(self, bisection):
         self.data['pushlog_url'] = bisection.handler.get_pushlog_url()
 
     def status_text(self):
         return "Looking for build data..."
+
+    def set_progress(self, current, total):
+        self.progress = (current * 100) / total
 
 
 class StartItem(ReportItem):
@@ -69,6 +74,13 @@ class StepItem(ReportItem):
         return msg % self.state_text
 
 
+def _bulk_action_slots(action, slots, signal_object, slot_object):
+    for name in slots:
+        signal = getattr(signal_object, name)
+        slot = getattr(slot_object, name)
+        getattr(signal, action)(slot)
+
+
 class ReportModel(QAbstractTableModel):
     def __init__(self):
         QAbstractTableModel.__init__(self)
@@ -82,21 +94,44 @@ class ReportModel(QAbstractTableModel):
 
     @Slot(object)
     def attach_bisector(self, bisector):
-        slots = ('step_started', 'step_build_found', 'step_testing',
-                 'step_finished', 'started', 'finished')
+        bisector_slots = ('step_started',
+                          'step_build_found',
+                          'step_testing',
+                          'step_finished',
+                          'started',
+                          'finished')
+        downloader_slots = ('download_progress', )
+
         if self.bisector:
-            # disconnect previous bisector
-            for name in slots:
-                signal = getattr(self.bisector, name)
-                slot = getattr(self, name)
-                signal.disconnect(slot)
+            _bulk_action_slots('disconnect',
+                               bisector_slots,
+                               self.bisector,
+                               self)
+            _bulk_action_slots('disconnect',
+                               downloader_slots,
+                               self.bisector.download_manager,
+                               self)
+
         if bisector:
-            # connect the new bisector
-            for name in slots:
-                signal = getattr(bisector, name)
-                slot = getattr(self, name)
-                signal.connect(slot)
+            _bulk_action_slots('connect',
+                               bisector_slots,
+                               bisector,
+                               self)
+            _bulk_action_slots('connect',
+                               downloader_slots,
+                               bisector.download_manager,
+                               self)
+
         self.bisector = bisector
+
+    @Slot(object, int, int)
+    def download_progress(self, dl, current, total):
+        item = self.items[-1]
+        item.set_progress(current, total)
+        self.update_item(item)
+
+    def get_item(self, index):
+        return self.items[index.row()]
 
     def rowCount(self, parent=QModelIndex()):
         return len(self.items)
@@ -155,17 +190,20 @@ class ReportModel(QAbstractTableModel):
             # and add the new step with build_infos
             item = StepItem()
             item.state_text = 'Downloading'
+            item.downloading = True
             item.data.update(build_infos)
             self.append_item(item)
         else:
             # previous item is a step, just update it
             last_item.data.update(build_infos)
             last_item.state_text = 'Downloading'
+            last_item.downloading = True
             self.update_item(last_item)
 
     @Slot(object, int, object)
     def step_testing(self, bisection, build_infos):
         last_item = self.items[-1]
+        last_item.downloading = False
         last_item.state_text = 'Testing'
         self.update_item(last_item)
 

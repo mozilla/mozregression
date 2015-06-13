@@ -233,8 +233,6 @@ class BisectRunner(QObject):
         # to be automatically called in the thread.
         self.thread = QThread()
         self.bisector.moveToThread(self.thread)
-        self.bisector.download_manager.download_progress.connect(
-            self.show_dl_progress)
         self.bisector.test_runner.evaluate_started.connect(
             self.evaluate)
         self.bisector.finished.connect(self.bisection_finished)
@@ -291,11 +289,6 @@ class BisectRunner(QObject):
         for thread in self.pending_threads[:]:
             if thread.isFinished():
                 self.pending_threads.remove(thread)
-
-    @Slot(object, int, int)
-    def show_dl_progress(self, dl, current, total):
-        message = "downloading %s: %d/%d" % (dl.get_dest(), current, total)
-        self.mainwindow.ui.statusbar.showMessage(message, 2000)
 
     @Slot()
     def evaluate(self):

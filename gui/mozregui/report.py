@@ -1,6 +1,15 @@
-from PyQt4.QtGui import QTextBrowser, QTableView, QDesktopServices
+from PyQt4.QtGui import QTextBrowser, QTableView, QDesktopServices, QColor
 from PyQt4.QtCore import QAbstractTableModel, QModelIndex, Qt,\
     pyqtSlot as Slot, pyqtSignal as Signal, QUrl
+
+# Custom colors
+GRAY_WHITE = QColor(243, 243, 243)
+VERDICT_TO_ROW_COLORS = {
+    "g": QColor(152, 251, 152),   # light green
+    "b": QColor(255, 0, 0, 127),  # light red
+    "s": QColor(253, 248, 107),   # light yellow
+    "r": QColor(225, 225, 225),   # light gray
+}
 
 
 class ReportItem(object):
@@ -96,9 +105,17 @@ class ReportModel(QAbstractTableModel):
         return 1
 
     def data(self, index, role=Qt.DisplayRole):
+        item = self.items[index.row()]
         if role == Qt.DisplayRole:
-            item = self.items[index.row()]
             return item.status_text()
+        elif role == Qt.BackgroundRole:
+            if isinstance(item, StepItem) and item.verdict:
+                return VERDICT_TO_ROW_COLORS.get(
+                    str(item.verdict),
+                    GRAY_WHITE)
+            else:
+                return GRAY_WHITE
+
         return None
 
     def update_item(self, item):
@@ -194,6 +211,10 @@ class BuildInfoTextBrowser(QTextBrowser):
         QTextBrowser.__init__(self, parent)
         self.anchorClicked.connect(self.on_anchor_clicked)
 
+    def clear(self):
+        QTextBrowser.clear(self)
+        self.setStyleSheet("background-color: white;")
+
     @Slot(object)
     def update_content(self, item):
         if not item.data:
@@ -201,6 +222,7 @@ class BuildInfoTextBrowser(QTextBrowser):
             return
 
         html = ""
+        self.setStyleSheet("background-color:%s;" % GRAY_WHITE.name())
         for k in sorted(item.data):
             v = item.data[k]
             html += '<strong>%s</strong>: ' % k

@@ -8,7 +8,12 @@ class ReportItemDelegate(QStyledItemDelegate):
         QStyledItemDelegate.__init__(self, parent, *args)
 
     def paint(self, painter, option, index):
-        # Write status
+        # if item selected, override default theme
+        # Keeps verdict color for cells and use a bold font
+        if option.state & QStyle.State_Selected:
+            option.state &= ~ QStyle.State_Selected
+            option.font.setBold(True)
+
         QStyledItemDelegate.paint(self, painter, option, index)
 
         item = index.model().get_item(index)

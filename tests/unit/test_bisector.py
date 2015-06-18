@@ -491,6 +491,22 @@ class TestBisectRunner(unittest.TestCase):
         self.assertIn('--good-rev=123', result)
         self.assertIn('--bad-rev=456', result)
 
+    def test_print_resume_info_shell_escape(self):
+        result = self.print_resume_info(
+            InboundHandler,
+            addons=['/path/ to'],
+            profile='/path/$to',
+            persist='/path/"to',
+            cmdargs=["https://treeherder.mozilla.org/#/jobs"
+                     "?repo=mozilla-inbound&revision=ceba6484abda"]
+        )
+        # cmdargs, profile, addons and persist are shell escaped
+        self.assertIn("--arg='https://treeherder.mozilla.org/#/jobs"
+                      "?repo=mozilla-inbound&revision=ceba6484abda'", result)
+        self.assertIn("--addon='/path/ to'", result)
+        self.assertIn("--profile='/path/$to'", result)
+        self.assertIn("--persist='/path/\"to'", result)
+
 
 if __name__ == '__main__':
     unittest.main()

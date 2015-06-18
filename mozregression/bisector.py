@@ -8,6 +8,7 @@ import math
 import datetime
 import tempfile
 import mozfile
+import pipes
 from mozlog.structured import get_default_logger
 
 from mozregression.build_data import NightlyBuildData, InboundBuildData
@@ -564,20 +565,20 @@ class BisectRunner(object):
         if options.find_fix:
             info += ' --find-fix'
         if len(options.addons) > 0:
-            info += ' ' + ' '.join('--addon=%s' % addon
+            info += ' ' + ' '.join('--addon=%s' % pipes.quote(addon)
                                    for addon in options.addons)
         if options.cmdargs is not None:
-            info += ' ' + ' '.join('--arg=%s' % arg
+            info += ' ' + ' '.join('--arg=%s' % pipes.quote(arg)
                                    for arg in options.cmdargs)
         if options.profile is not None:
-            info += ' --profile=%s' % options.profile
+            info += ' --profile=%s' % pipes.quote(options.profile)
         if options.inbound_branch is not None:
             info += ' --inbound-branch=%s' % options.inbound_branch
         if options.repo is not None:
             info += ' --repo=%s' % options.repo
         info += ' --bits=%s' % options.bits
         if options.persist is not None:
-            info += ' --persist=%s' % options.persist
+            info += ' --persist=%s' % pipes.quote(options.persist)
 
         self._logger.info('To resume, run:')
         self._logger.info('mozregression %s' % info)

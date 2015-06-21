@@ -43,6 +43,11 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+
+        # Init MenuViews
+        self.ui.actionLogView.setChecked(self.ui.logDockWidget.isVisible())
+        self.ui.actionToolBar.setChecked(self.ui.toolBar.isVisible())
+
         self.bisect_runner = BisectRunner(self)
 
         self.bisect_runner.bisector_created.connect(

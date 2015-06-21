@@ -141,14 +141,14 @@
    <addaction name="actionStart_a_new_bisection"/>
    <addaction name="actionStop_the_bisection"/>
   </widget>
-  <widget class="QDockWidget" name="dockWidget_2">
+  <widget class="QDockWidget" name="logDockWidget">
    <property name="windowTitle">
     <string>Log view</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents_2">
+   <widget class="QWidget" name="LogWidget">
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
       <widget class="LogView" name="log_view">
@@ -351,7 +351,7 @@
   <connection>
    <sender>actionLogView</sender>
    <signal>toggled(bool)</signal>
-   <receiver>dockWidget_2</receiver>
+   <receiver>logDockWidget</receiver>
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -361,6 +361,38 @@
     <hint type="destinationlabel">
      <x>511</x>
      <y>650</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolBar</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>actionToolBar</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>511</x>
+     <y>46</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>logDockWidget</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>actionLogView</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>511</x>
+     <y>650</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
     </hint>
    </hints>
   </connection>

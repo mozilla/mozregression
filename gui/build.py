@@ -69,8 +69,8 @@ def do_test(options):
     do_rcc(options)
     call(py_script('flake8'), 'mozregui', 'build.py', 'tests')
     print('Running tests...')
-    import nose
-    nose.main(argv=['nosetests', '-s', 'tests'])
+    import pytest
+    pytest.main(['tests', '-v'])
 
 
 def call_cx_freeze():

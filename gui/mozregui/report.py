@@ -6,7 +6,7 @@ from PyQt4.QtCore import QAbstractTableModel, QModelIndex, Qt,\
 GRAY_WHITE = QColor(243, 243, 243)
 VERDICT_TO_ROW_COLORS = {
     "g": QColor(152, 251, 152),   # light green
-    "b": QColor(255, 0, 0, 127),  # light red
+    "b": QColor(250, 113, 113),  # light red
     "s": QColor(253, 248, 107),   # light yellow
     "r": QColor(225, 225, 225),   # light gray
 }

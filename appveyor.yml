@@ -20,8 +20,7 @@ test_script:
   - "%PYTHON%/python.exe build.py test"
   - "cd .."
   # bundle the application
-  - appveyor DownloadFile "http://sunet.dl.sourceforge.net/project/nsis/NSIS 2/2.46/nsis-2.46-setup.exe" -FileName nsissetup.exe
-  - nsissetup /S /D=%NSIS_ROOT%
+  - cinst nsis -y -installArgs /D=%NSIS_ROOT%
   - "%PYTHON%/Scripts/pip.exe install cx_Freeze"
   - "%PYTHON%/python.exe gui/build.py bundle"
 

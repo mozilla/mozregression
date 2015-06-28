@@ -341,21 +341,17 @@ class TestInboundBuildData(unittest.TestCase):
         def inbound_links(url, regex=None):
             return ['%i/' % i for i in xrange(100)]
         url_links.side_effect = inbound_links
-        return build_data.InboundBuildData(fetch_config, good, bad, range=5)
+        return build_data.InboundBuildData(fetch_config, good, bad)
 
     @patch('mozregression.build_data.BuildFolderInfoFetcher')
     def test_create(self, BuildFolderInfoFetcher):
         data = self.create_inbound_build_data('c40', 'c60')
-        # there is 20 + 4*2 build folders (because the range is 5)
-        self.assertEqual(len(data), 28)
+        # there are 20 changesets
+        self.assertEqual(len(data), 20)
         # BuildFolderInfoFetcher has been called and is defined
         BuildFolderInfoFetcher.\
-            assert_called_with(data.fetch_config.build_regex(),
-                               data.fetch_config.build_info_regex())
+            assert_called_with(None, None)
         self.assertIsNotNone(data.info_fetcher)
-        # raw_revisions is defined
-        self.assertEquals(data.raw_revisions,
-                          ['c' + str(d) for d in range(40, 60)])
 
     def test_create_empty(self):
         data = self.create_inbound_build_data('c0', 'c0')

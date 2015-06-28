@@ -5,6 +5,8 @@ import copy
 import re
 import threading
 import datetime
+import os
+import taskcluster
 
 from mozregression import errors
 from mozregression.utils import url_links, retry_get
@@ -370,10 +372,12 @@ class InboundBuildData(MozBuildData):
     """
     Fetch build information for all builds between start_rev and end_rev.
     """
-    def __init__(self, fetch_config, start_rev, end_rev, range=60 * 60 * 4):
+    def __init__(self, fetch_config, start_rev, end_rev):
         MozBuildData.__init__(self, [], None)
         self.fetch_config = fetch_config
-        self.raw_revisions = []
+        self.index = taskcluster.client.Index()
+        self.queue = taskcluster.Queue()
+
         pushlogs_finder = \
             PushLogsFinder(start_rev, end_rev,
                            inbound_branch=fetch_config.inbound_branch)
@@ -386,56 +390,40 @@ class InboundBuildData(MozBuildData):
             # if we have 0 or 1 pushlog entry, we can not bisect.
             return
 
-        start_time = pushlogs[0]['date'] - range
-        end_time = pushlogs[-1]['date'] + range
-        inbound_base_urls = self.fetch_config.inbound_base_urls()
-        self._logger.debug(('We will look in `%s` to find build folders'
-                            ' between %s and %s')
-                           % (', '.join(inbound_base_urls),
-                              start_time, end_time))
+        cache = []
+        for pushlog in pushlogs:
+            changeset = pushlog['changesets'][-1]
+            cache.append((changeset, pushlog['date']))
+        self.set_cache(cache)
 
-        build_urls = sorted(self._extract_paths(), key=lambda b: b[1])
-
-        build_urls_in_range = [b for b in build_urls
-                               if b[1] > start_time and b[1] < end_time]
-
-        self._logger.debug(('Found %d build folders (from %s to %s), %d in'
-                            ' the range')
-                           % (len(build_urls),
-                              build_urls[0][1],
-                              build_urls[-1][1],
-                              len(build_urls_in_range)))
-
-        self.set_cache(build_urls_in_range)
-
-        self.info_fetcher = \
-            BuildFolderInfoFetcher(fetch_config.build_regex(),
-                                   fetch_config.build_info_regex())
-
-        self.raw_revisions = [push['changesets'][-1] for push in pushlogs]
-
-    def _extract_paths(self):
-        base_urls = self.fetch_config.inbound_base_urls()
-        all_paths = []
-        with futures.ThreadPoolExecutor(max_workers=4) as executor:
-            futures_results = {}
-            for base_url in base_urls:
-                future = executor.submit(url_links, base_url, regex=r'^\d+/$')
-                futures_results[future] = base_url
-            for future in futures.as_completed(futures_results):
-                paths = future.result()
-                base_url = futures_results[future]
-                for path in paths:
-                    timestamp = path.rstrip('/')
-                    all_paths.append(("%s%s/" % (base_url, timestamp),
-                                      int(timestamp)))
-        return all_paths
+        self.info_fetcher = BuildFolderInfoFetcher(None, None)
 
     def _get_valid_build(self, i):
-        build_url = self.get_associated_data(i)[0]
-        build_info = self.info_fetcher.find_build_info(build_url, True)
-        if self._is_valid_build(build_info):
-            return build_info
+        changeset = self.get_associated_data(i)[0]
+        tk_route = self.fetch_config.tk_inbound_route(changeset)
+        self._logger.debug('using taskcluster route %r' % tk_route)
+        task = self.index.findTask(tk_route)
+        artifacts = self.queue.listLatestArtifacts(task['taskId'])['artifacts']
+        data = {}
+        for a in artifacts:
+            match = None
+            name = os.path.basename(a['name'])
+            if re.match(self.fetch_config.build_regex(), name):
+                match = 'build_url'
+            elif re.match(self.fetch_config.build_info_regex(), name):
+                match = 'build_txt_url'
+            if match:
+                data[match] = self.queue.buildUrl(
+                    'getLatestArtifact',
+                    task['taskId'],
+                    a['name']
+                )
+        if 'build_txt_url' in data:
+            data.update(
+                self.info_fetcher.find_build_info_txt(data['build_txt_url'])
+            )
+        if self._is_valid_build(data):
+            return data
         return False
 
     def _set_data(self, i, data):
@@ -443,16 +431,6 @@ class InboundBuildData(MozBuildData):
             data['timestamp'] = self.get_associated_data(i)[1]
             data['revision'] = data['changeset'][:8]
         MozBuildData._set_data(self, i, data)
-
-    def _is_valid_build(self, build_info):
-        valid = MozBuildData._is_valid_build(self, build_info)
-        if valid:
-            # check that revision is in range
-            remote_revision = build_info['changeset']
-            for revision in self.raw_revisions:
-                if remote_revision in revision:
-                    return True
-        return False
 
 
 class NightlyUrlBuilder(object):

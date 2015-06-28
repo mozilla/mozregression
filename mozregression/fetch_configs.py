@@ -177,6 +177,26 @@ class InboundConfigMixin(object):
     def inbound_base_urls(self):
         raise NotImplementedError
 
+    def tk_inbound_route(self, changeset):
+        """
+        Returns a taskcluster route for a specific changeset.
+        """
+        raise NotImplementedError
+
+
+def _common_tk_part(inbound_conf):
+    # private method to avoid copy/paste for building taskcluster route part.
+    if inbound_conf.os == 'linux':
+        part = 'linux'
+        if inbound_conf.bits == 64:
+            part += str(inbound_conf.bits)
+    elif inbound_conf.os == 'mac':
+        part = 'macosx64'
+    else:
+        # windows
+        part = '{}{}'.format(inbound_conf.os, inbound_conf.bits)
+    return part
+
 
 class FirefoxInboundConfigMixin(InboundConfigMixin):
     build_base_os_part = {
@@ -192,6 +212,11 @@ class FirefoxInboundConfigMixin(InboundConfigMixin):
                 % (self.inbound_branch,
                    self.build_base_os_part[self.os][self.bits])]
 
+    def tk_inbound_route(self, changeset):
+        return 'buildbot.revisions.{}.{}.{}'.format(
+            changeset[:12], self.inbound_branch, _common_tk_part(self)
+        )
+
 
 class B2GInboundConfigMixin(FirefoxInboundConfigMixin):
     inbound_branch = 'b2g-inbound'
@@ -203,8 +228,19 @@ class B2GInboundConfigMixin(FirefoxInboundConfigMixin):
     root_build_base_url = ('http://ftp.mozilla.org/pub/mozilla.org/b2g'
                            '/tinderbox-builds/%s-%s_gecko/')
 
+    def tk_inbound_route(self, changeset):
+        if self.os != 'linux':
+            # this is quite strange, but sometimes we have to limit the
+            # changeset size, and sometimes not. see
+            # https://bugzilla.mozilla.org/show_bug.cgi?id=1159700#c13
+            changeset = changeset[:12]
+        return 'buildbot.revisions.{}.{}.{}'.format(
+            changeset, self.inbound_branch, _common_tk_part(self) + '_gecko'
+        )
+
 
 class FennecInboundConfigMixin(InboundConfigMixin):
+    tk_name = 'android-api-11'
     inbound_branchs = ['mozilla-inbound-android']
 
     def inbound_base_urls(self):
@@ -215,6 +251,11 @@ class FennecInboundConfigMixin(InboundConfigMixin):
     def set_inbound_branch(self, inbound_branch):
         if inbound_branch:
             self.inbound_branchs = [inbound_branch]
+
+    def tk_inbound_route(self, changeset):
+        return 'buildbot.revisions.{}.{}.{}'.format(
+            changeset[:12], self.inbound_branch, self.tk_name
+        )
 
 # ------------ full config implementations ------------
 
@@ -268,6 +309,7 @@ class FennecConfig(CommonConfig,
 
 @REGISTRY.register('fennec-2.3', attr_value='fennec')
 class Fennec23Config(FennecConfig):
+    tk_name = 'android-api-9'
     inbound_branchs = (FennecInboundConfigMixin.inbound_branchs +
                        ['mozilla-inbound-android-api-9'])
 

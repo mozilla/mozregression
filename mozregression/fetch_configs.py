@@ -3,7 +3,6 @@ This module defines the configuration needed for nightly and inbound
 fetching for each application.
 """
 import datetime
-import copy
 
 from mozregression.utils import get_build_regex, ClassRegistry
 from mozregression import errors
@@ -174,9 +173,6 @@ class InboundConfigMixin(object):
         if inbound_branch:
             self.inbound_branch = inbound_branch
 
-    def inbound_base_urls(self):
-        raise NotImplementedError
-
     def tk_inbound_route(self, changeset):
         """
         Returns a taskcluster route for a specific changeset.
@@ -199,34 +195,14 @@ def _common_tk_part(inbound_conf):
 
 
 class FirefoxInboundConfigMixin(InboundConfigMixin):
-    build_base_os_part = {
-        'linux': {32: 'linux', 64: 'linux64'},
-        'win': {32: 'win32', 64: 'win64'},
-        'mac': {64: 'macosx64'}
-    }
-    root_build_base_url = ('http://inbound-archive.pub.build.mozilla.org/pub'
-                           '/mozilla.org/firefox/tinderbox-builds/%s-%s/')
-
-    def inbound_base_urls(self):
-        return [self.root_build_base_url
-                % (self.inbound_branch,
-                   self.build_base_os_part[self.os][self.bits])]
-
     def tk_inbound_route(self, changeset):
         return 'buildbot.revisions.{}.{}.{}'.format(
             changeset[:12], self.inbound_branch, _common_tk_part(self)
         )
 
 
-class B2GInboundConfigMixin(FirefoxInboundConfigMixin):
+class B2GInboundConfigMixin(InboundConfigMixin):
     inbound_branch = 'b2g-inbound'
-    build_base_os_part = copy.deepcopy(
-        FirefoxInboundConfigMixin.build_base_os_part
-        )
-    build_base_os_part['linux'][32] = 'linux32'
-
-    root_build_base_url = ('http://ftp.mozilla.org/pub/mozilla.org/b2g'
-                           '/tinderbox-builds/%s-%s_gecko/')
 
     def tk_inbound_route(self, changeset):
         if self.os != 'linux':
@@ -241,16 +217,6 @@ class B2GInboundConfigMixin(FirefoxInboundConfigMixin):
 
 class FennecInboundConfigMixin(InboundConfigMixin):
     tk_name = 'android-api-11'
-    inbound_branchs = ['mozilla-inbound-android']
-
-    def inbound_base_urls(self):
-        return ["http://inbound-archive.pub.build.mozilla.org/pub/mozilla.org"
-                "/mobile/tinderbox-builds/%s/" % inbound_branch
-                for inbound_branch in self.inbound_branchs]
-
-    def set_inbound_branch(self, inbound_branch):
-        if inbound_branch:
-            self.inbound_branchs = [inbound_branch]
 
     def tk_inbound_route(self, changeset):
         return 'buildbot.revisions.{}.{}.{}'.format(
@@ -293,9 +259,6 @@ class B2GConfig(CommonConfig,
 class FennecConfig(CommonConfig,
                    FennecNightlyConfigMixin,
                    FennecInboundConfigMixin):
-    inbound_branchs = (FennecInboundConfigMixin.inbound_branchs +
-                       ['mozilla-inbound-android-api-10',
-                        'mozilla-inbound-android-api-11'])
 
     def build_regex(self):
         return r'fennec-.*\.apk'
@@ -310,8 +273,6 @@ class FennecConfig(CommonConfig,
 @REGISTRY.register('fennec-2.3', attr_value='fennec')
 class Fennec23Config(FennecConfig):
     tk_name = 'android-api-9'
-    inbound_branchs = (FennecInboundConfigMixin.inbound_branchs +
-                       ['mozilla-inbound-android-api-9'])
 
     def _get_nightly_repo(self, date):
         if date < datetime.date(2014, 12, 6):

@@ -372,6 +372,9 @@ class InboundBuildData(MozBuildData):
     """
     Fetch build information for all builds between start_rev and end_rev.
     """
+    half_window_range = 2
+    max_workers = 4
+
     def __init__(self, fetch_config, start_rev, end_rev):
         MozBuildData.__init__(self, [], None)
         self.fetch_config = fetch_config

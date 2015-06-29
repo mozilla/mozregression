@@ -318,7 +318,7 @@ class TestBuildDownloadManager(unittest.TestCase):
 
     @patch("mozregression.download_manager.BuildDownloadManager."
            "_extract_download_info")
-    def test_focus_download(self, extract):
+    def _test_focus_download(self, other_canceled, extract):
         extract.return_value = ('http://foo/bar', 'myfile')
         current_dest = os.path.join('dest', 'myfile')
         other_dest = os.path.join('dest', 'otherfile')
@@ -343,12 +343,19 @@ class TestBuildDownloadManager(unittest.TestCase):
         self.assertFalse(curent_download.is_canceled())
         curent_download.wait.assert_called_with()
 
-        self.assertTrue(other_download.is_canceled())
+        self.assertEquals(other_download.is_canceled(), other_canceled)
 
         self.dl_manager.logger.info.assert_called_with(
             "Downloading build from: http://foo/bar")
 
         self.assertEquals(result, current_dest)
+
+    def test_focus_download(self):
+        self._test_focus_download(True)
+
+    def test_focus_download_with_keep_policy(self):
+        self.dl_manager.background_dl_policy = "keep"
+        self._test_focus_download(False)
 
     @patch("mozregression.download_manager.BuildDownloadManager."
            "_extract_download_info")

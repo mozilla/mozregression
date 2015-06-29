@@ -269,10 +269,13 @@ class BuildDownloadManager(DownloadManager):
     """
     A DownloadManager specialized to download builds.
     """
-    def __init__(self, logger, destdir, session=requests):
+    def __init__(self, logger, destdir, session=requests,
+                 background_dl_policy='cancel'):
         DownloadManager.__init__(self, destdir, session=session)
         self.logger = logger
         self._downloads_bg = set()
+        assert background_dl_policy in ('cancel', 'keep')
+        self.background_dl_policy = background_dl_policy
 
     def _extract_download_info(self, build_info):
         if build_info['build_type'] == 'nightly':
@@ -318,7 +321,8 @@ class BuildDownloadManager(DownloadManager):
         dest = self.get_dest(fname)
         # first, stop all downloads in background (except the one for this
         # build if any)
-        self.cancel(cancel_if=lambda dl: dest != dl.get_dest())
+        if self.background_dl_policy == 'cancel':
+            self.cancel(cancel_if=lambda dl: dest != dl.get_dest())
 
         dl = self.download(build_url, fname)
         if dl:

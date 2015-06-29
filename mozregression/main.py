@@ -190,6 +190,14 @@ def parse_args(argv=None):
                         help=("Do not download next builds in the background"
                               " while evaluating the current build."))
 
+    parser.add_argument('--background-dl-policy', choices=('cancel', 'keep'),
+                        default=defaults.get('background-dl-policy', 'cancel'),
+                        help=('Policy to use for background downloads.'
+                              ' Possible values are "cancel" to cancel all'
+                              ' pending background downloads or "keep" to keep'
+                              ' downloading them when persist mode is enabled.'
+                              ' The default is %(default)s.'))
+
     commandline.add_logging_group(
         parser,
         include_formatters=commandline.TEXT_FORMATTERS

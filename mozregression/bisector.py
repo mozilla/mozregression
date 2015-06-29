@@ -428,7 +428,7 @@ class Bisector(object):
     :class:`BisectorHandler`.
     """
     def __init__(self, fetch_config, test_runner, persist=None,
-                 dl_in_background=True):
+                 dl_in_background=True, background_dl_policy="cancel"):
         self.fetch_config = fetch_config
         self.test_runner = test_runner
         self.delete_dldir = False
@@ -437,8 +437,11 @@ class Bisector(object):
             # this allows to not re-download a file if a user retry a build.
             persist = tempfile.mkdtemp()
             self.delete_dldir = True
+            # cancel background downloads forced
+            background_dl_policy = "cancel"
         self.download_dir = persist
         self.dl_in_background = dl_in_background
+        self.background_dl_policy = background_dl_policy
 
     def __del__(self):
         if self.delete_dldir:
@@ -458,8 +461,10 @@ class Bisector(object):
         """
         Starts a bisection for a :class:`mozregression.build_data.BuildData`.
         """
-        download_manager = BuildDownloadManager(handler._logger,
-                                                self.download_dir)
+        download_manager = BuildDownloadManager(
+            handler._logger, self.download_dir,
+            background_dl_policy=self.background_dl_policy
+        )
 
         bisection = Bisection(handler, build_data, download_manager,
                               self.test_runner, self.fetch_config,
@@ -488,9 +493,12 @@ class BisectRunner(object):
     def __init__(self, fetch_config, test_runner, options):
         self.fetch_config = fetch_config
         self.options = options
-        self.bisector = Bisector(fetch_config, test_runner,
-                                 persist=options.persist,
-                                 dl_in_background=options.background_dl)
+        self.bisector = Bisector(
+            fetch_config, test_runner,
+            persist=options.persist,
+            dl_in_background=options.background_dl,
+            background_dl_policy=options.background_dl_policy
+        )
         self._logger = get_default_logger('Bisector')
 
     def do_bisect(self, handler, good, bad, **kwargs):

@@ -296,11 +296,11 @@ class TestBuildDownloadManager(unittest.TestCase):
         url, fname = self.dl_manager._extract_download_info({
             'build_url': 'http://some/thing',
             'build_type': 'inbound',
-            'timestamp': '123456',
+            'changeset': '47856a21491834da3ab9b308145caa8ec1b98ee1',
             'repo': 'my-repo',
         })
         self.assertEquals(url, 'http://some/thing')
-        self.assertEquals(fname, '123456--my-repo--thing')
+        self.assertEquals(fname, '47856a214918--my-repo--thing')
 
     @patch("mozregression.download_manager.BuildDownloadManager."
            "_extract_download_info")

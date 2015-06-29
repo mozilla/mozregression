@@ -1,6 +1,7 @@
 import unittest
 import datetime
 import re
+import pytest
 
 from mozregression.fetch_configs import (FirefoxConfig, create_config, errors)
 
@@ -180,6 +181,45 @@ class TestB2GConfig(unittest.TestCase):
     def test_get_nightly_repo(self):
         repo = self.conf.get_nightly_repo(datetime.date(2014, 12, 5))
         self.assertEqual(repo, "mozilla-central")
+
+
+CHSET = "47856a21491834da3ab9b308145caa8ec1b98ee1"
+CHSET12 = "47856a214918"
+
+
+@pytest.mark.parametrize("app,os,bits,expected", [
+    # firefox
+    ("firefox", 'linux', 32,
+     'buildbot.revisions.%s.mozilla-inbound.linux' % CHSET12),
+    ("firefox", 'linux', 64,
+     'buildbot.revisions.%s.mozilla-inbound.linux64' % CHSET12),
+    ("firefox", 'win', 32,
+     'buildbot.revisions.%s.mozilla-inbound.win32' % CHSET12),
+    ("firefox", 'win', 64,
+     'buildbot.revisions.%s.mozilla-inbound.win64' % CHSET12),
+    ("firefox", 'mac', 64,
+     'buildbot.revisions.%s.mozilla-inbound.macosx64' % CHSET12),
+    # fennec
+    ("fennec", None, None,
+     'buildbot.revisions.%s.mozilla-inbound.android-api-11' % CHSET12),
+    ("fennec-2.3", None, None,
+     'buildbot.revisions.%s.mozilla-inbound.android-api-9' % CHSET12),
+    # b2g
+    ("b2g", 'linux', 32,
+     'buildbot.revisions.%s.b2g-inbound.linux_gecko' % CHSET),
+    ("b2g", 'linux', 64,
+     'buildbot.revisions.%s.b2g-inbound.linux64_gecko' % CHSET),
+    ("b2g", 'win', 32,
+     'buildbot.revisions.%s.b2g-inbound.win32_gecko' % CHSET12),
+    ("b2g", 'win', 64,
+     'buildbot.revisions.%s.b2g-inbound.win64_gecko' % CHSET12),
+    ("b2g", 'mac', 64,
+     'buildbot.revisions.%s.b2g-inbound.macosx64_gecko' % CHSET12),
+])
+def test_tk_inbound_route(app, os, bits, expected):
+    conf = create_config(app, os, bits)
+    result = conf.tk_inbound_route(CHSET)
+    assert result == expected
 
 if __name__ == '__main__':
     unittest.main()

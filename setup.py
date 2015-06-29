@@ -1,6 +1,28 @@
 import sys
 from setuptools import setup
 from mozregression import __version__
+from setuptools.command.test import test as TestCommand
+
+
+class PyTest(TestCommand):
+    """
+    Run py.test with the "python setup.py test command"
+    """
+    user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = ''
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.pytest_args += (' ' + self.distribution.test_suite)
+
+    def run_tests(self):
+        import pytest
+        errno = pytest.main(self.pytest_args)
+        sys.exit(errno)
+
 
 if sys.version_info < (2, 7) or sys.version_info > (3, 0):
     sys.exit("mozregression currently require python >=2.7 and <3.")
@@ -39,8 +61,9 @@ setup(name="mozregression",
           'futures >= 2.1.6',
           'mozdevice >= 0.43'
       ],
-      tests_require=['mock'],
+      tests_require=['mock', 'pytest'],
       test_suite='tests',
+      cmdclass={'test': PyTest},
       classifiers=['Development Status :: 4 - Beta',
                    'Environment :: Console',
                    'Intended Audience :: Developers',

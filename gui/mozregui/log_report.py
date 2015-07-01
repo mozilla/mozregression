@@ -13,6 +13,10 @@ COLORS = {
 
 
 class LogView(QPlainTextEdit):
+    def __init__(self, parent=None):
+        QPlainTextEdit.__init__(self, parent)
+        self.setMaximumBlockCount(1000)
+
     @Slot(dict)
     def on_log_received(self, data):
         time_info = datetime.fromtimestamp((data['time']/1000)).isoformat()
@@ -30,15 +34,6 @@ class LogView(QPlainTextEdit):
                                                       cursor_to_add.position())
             cursor_to_add_fmt.mergeCharFormat(fmt)
         self.ensureCursorVisible()
-        counter = self.blockCount()
-
-        # do not display more than 1000 log lines
-        if counter > 1000:
-            document = self.document()
-            cursor = QTextCursor(document.findBlockByLineNumber(0))
-            cursor.select(QTextCursor.BlockUnderCursor)
-            cursor.deleteChar()
-            cursor.deleteChar()
 
 
 class LogModel(QObject):

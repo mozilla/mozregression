@@ -241,7 +241,13 @@ class ReportView(QTableView):
     def on_item_changed(self, top_left, bottom_right):
         if self.currentIndex().row() == top_left.row():
             item = self._model.items[top_left.row()]
-            self.step_report_changed.emit(item)
+            # while an item is downloaded, the underlying data model
+            # change a lot only to update the download progress state.
+            # It becomes impossible then to scroll the
+            # BuildInfoTextBrowser, so we do not want to update
+            # that when we are downloading.
+            if not item.downloading:
+                self.step_report_changed.emit(item)
 
 
 class BuildInfoTextBrowser(QTextBrowser):

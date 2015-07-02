@@ -136,7 +136,8 @@ class NightliesPage(WizardSelectionRangePage):
     UI_CLASS = Ui_Nightlies
     TITLE = "Date range selection"
     SUBTITLE = ("Select the nightlies date range.")
-    FIELDS = {"start_date": "start_date", "end_date": "end_date"}
+    FIELDS = {"start_date": "start_date", "end_date": "end_date",
+              "repository": "repository"}
     ID = 1
 
     def __init__(self):
@@ -223,8 +224,10 @@ class BisectionWizard(QWizard):
                 elif isinstance(value, QDate):
                     value = value.toPyDate()
                 options[fieldname] = value
+        fetch_config = self.page(IntroPage.ID).fetch_config
         if options['bisect_type'] == 'nightlies':
             kind = "date"
+            fetch_config.set_nightly_repo(options['repository'])
         else:
             kind = "changeset"
         if options['find_fix'] is False:
@@ -237,5 +240,4 @@ class BisectionWizard(QWizard):
         # get the prefs
         options['preferences'] = self.page(ProfilePage.ID).get_prefs()
 
-        fetch_config = self.page(IntroPage.ID).fetch_config
         return fetch_config, options

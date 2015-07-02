@@ -175,7 +175,8 @@ class InboundPage(WizardSelectionRangePage):
     TITLE = "Changesets range selection"
     SUBTITLE = "Select the inbound changesets range."
     FIELDS = {"start_changeset": "start_changeset",
-              "end_changeset": "end_changeset"}
+              "end_changeset": "end_changeset",
+              "inbound_branch": "inbound_branch"}
     ID = 2
 
     def nextId(self):
@@ -230,6 +231,7 @@ class BisectionWizard(QWizard):
             fetch_config.set_nightly_repo(options['repository'])
         else:
             kind = "changeset"
+            fetch_config.set_inbound_branch(options['inbound_branch'])
         if options['find_fix'] is False:
             options['good_' + kind] = options.pop('start_' + kind)
             options['bad_' + kind] = options.pop('end_' + kind)

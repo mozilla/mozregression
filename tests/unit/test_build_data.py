@@ -326,9 +326,8 @@ class TestPushLogsFinder(unittest.TestCase):
 
 
 class TestInboundBuildData(unittest.TestCase):
-    @patch('mozregression.build_data.url_links')
     @patch('mozregression.build_data.PushLogsFinder.get_pushlogs')
-    def create_inbound_build_data(self, good, bad, get_pushlogs, url_links):
+    def create_inbound_build_data(self, good, bad, get_pushlogs):
         fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
         # create fake pushlog returns
         pushlogs = [
@@ -338,9 +337,6 @@ class TestInboundBuildData(unittest.TestCase):
         get_pushlogs.return_value = pushlogs
         # returns 100 possible build folders
 
-        def inbound_links(url, regex=None):
-            return ['%i/' % i for i in xrange(100)]
-        url_links.side_effect = inbound_links
         return build_data.InboundBuildData(fetch_config, good, bad)
 
     @patch('mozregression.build_data.BuildFolderInfoFetcher')
@@ -360,6 +356,67 @@ class TestInboundBuildData(unittest.TestCase):
     def test_create_only_one_rev(self):
         data = self.create_inbound_build_data('c0', 'c1')
         self.assertEqual(len(data), 0)
+
+    def test_get_valid_build_got_exception(self):
+        data = self.create_inbound_build_data('c0', 'c3')
+        # patch things in _get_valid_builds
+        data.index.findTask = Mock(side_effect=build_data.TaskclusterFailure)
+
+        data.mid_point()
+        self.assertEqual(len(data), 0)
+
+    def test_get_valid_build_no_artifacts(self):
+        data = self.create_inbound_build_data('c0', 'c3')
+        # patch things in _get_valid_builds
+
+        def find_task(route):
+            return {'taskId': 'task1'}
+
+        def list_artifacts(taskid):
+            return {"artifacts": []}
+
+        data.index.findTask = Mock(side_effect=find_task)
+        data.queue.listLatestArtifacts = Mock(side_effect=list_artifacts)
+
+        data.mid_point()
+        self.assertEqual(len(data), 0)
+
+    def test_get_valid_build(self):
+        data = self.create_inbound_build_data('c0', 'c3')
+        # patch things in _get_valid_builds
+
+        def find_task(route):
+            return {'taskId': 'task1'}
+
+        def list_artifacts(taskid):
+            return {"artifacts": [
+                # return two valid artifact names
+                {'name': 'firefox-42.0a1.en-US.linux-x86_64.tar.bz2'},
+                {'name': 'firefox-42.0a1.en-US.linux-x86_64.txt'},
+            ]}
+
+        def build_url(bname, taskid, name):
+            return 'http://' + name
+
+        data.index.findTask = Mock(side_effect=find_task)
+        data.queue.listLatestArtifacts = Mock(side_effect=list_artifacts)
+        data.queue.buildUrl = Mock(side_effect=build_url)
+        data.info_fetcher.find_build_info_txt = Mock(
+            return_value={'changeset': '123456789'})
+
+        mid = data.mid_point()
+        # we have 3 data points (min, mid and max)
+        self.assertEqual(len(data), 3)
+        # mid is 1
+        self.assertEqual(mid, 1)
+        self.assertEqual(data[mid], {
+            'build_txt_url': 'http://firefox-42.0a1.en-US.linux-x86_64.txt',
+            'build_url': 'http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2',
+            'changeset': '123456789',  # full chset
+            'revision': '12345678',  # chset[:8]
+            'timestamp': 1
+        })
+
 
 if __name__ == '__main__':
     unittest.main()

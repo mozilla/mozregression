@@ -7,6 +7,7 @@ import threading
 import datetime
 import os
 import taskcluster
+from taskcluster.exceptions import TaskclusterFailure
 
 from mozregression import errors
 from mozregression.utils import url_links, retry_get
@@ -405,7 +406,11 @@ class InboundBuildData(MozBuildData):
         changeset = self.get_associated_data(i)[0]
         tk_route = self.fetch_config.tk_inbound_route(changeset)
         self._logger.debug('using taskcluster route %r' % tk_route)
-        task = self.index.findTask(tk_route)
+        try:
+            task = self.index.findTask(tk_route)
+        except TaskclusterFailure:
+            # task not found
+            return False
         artifacts = self.queue.listLatestArtifacts(task['taskId'])['artifacts']
         data = {}
         for a in artifacts:

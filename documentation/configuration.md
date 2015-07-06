@@ -31,6 +31,8 @@ Each option correspond to its command-line counter part. They are described [her
 
 - http-timeout
 
+- background-dl-policy
+
 ## Example
 
     [Defaults]
@@ -42,3 +44,4 @@ Each option correspond to its command-line counter part. They are described [her
     http-cache-dir=~/.mozregression
     http-timeout=10.2
     repo="mozilla-aurora"
+    background-dl-policy = keep

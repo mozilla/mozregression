@@ -87,6 +87,14 @@ Some useful command line usage.
 
        mozregression --http-cache-dir cache
 
+- keep downloading files in background
+
+  When download in background is enabled (the default), the background download that
+  is not used for testing is canceled. If you use the persist option and want to force
+  the full download of these files (to be able to use them later), then you can keep
+  these files by specifying a background download policy of keep:
+
+       mozregression --persist tmp/ --background-dl-policy keep
 
 ## Increase verbosity
 

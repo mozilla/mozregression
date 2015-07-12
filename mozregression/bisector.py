@@ -470,15 +470,24 @@ class Bisector(object):
                               self.test_runner, self.fetch_config,
                               dl_in_background=self.dl_in_background)
 
+        previous_verdict, previous_build_infos = None, None
         try:
             while True:
                 mid = bisection.search_mid_point()
                 result = bisection.init_handler(mid)
                 if result != bisection.RUNNING:
                     return result
-
-                mid, build_infos = bisection.download_build(mid)
+                if previous_verdict == 'r':
+                    # if the last verdict was retry, do not download
+                    # the build. Futhermore trying to download if we are
+                    # in background download mode would stop the next builds
+                    # downloads.
+                    build_infos = previous_build_infos
+                else:
+                    mid, build_infos = bisection.download_build(mid)
                 verdict, app_info = bisection.evaluate(build_infos)
+                previous_verdict = verdict
+                previous_build_infos = build_infos
                 bisection.update_build_info(mid, app_info)
                 result = bisection.handle_verdict(mid, verdict)
                 if result != bisection.RUNNING:

@@ -1,6 +1,7 @@
 import unittest
 import datetime
 import re
+import pytest
 
 from mozregression.fetch_configs import (FirefoxConfig, create_config, errors)
 
@@ -16,10 +17,6 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
     instance_type = FirefoxConfig
     is_nightly = True
     is_inbound = True
-
-    base_inbound_url = ('http://inbound-archive.pub.build.mozilla.org/pub/'
-                        'mozilla.org/firefox/tinderbox-builds')
-    base_inbound_url_ext = 'linux64'
 
     def setUp(self):
         self.conf = create_config(self.app_name, self.os, self.bits)
@@ -70,24 +67,11 @@ firefox/nightly/2008/06/')
         self.conf.set_nightly_repo('foo-bar')
         self.assertFalse(self.conf.can_go_inbound())
 
-    def test_inbound_base_urls(self):
-        inbound_base_url = '%s/mozilla-inbound-%s/' % \
-            (self.base_inbound_url, self.base_inbound_url_ext)
-
-        self.assertEqual(self.conf.inbound_base_urls(), [inbound_base_url])
-
-    def test_custom_inbound_base_urls(self):
-        self.conf.set_inbound_branch('custom')
-        inbound_base_url = '%s/custom-%s/' % (self.base_inbound_url,
-                                              self.base_inbound_url_ext)
-        self.assertEqual(self.conf.inbound_base_urls(), [inbound_base_url])
-
 
 class TestFirefoxConfigLinux32(TestFirefoxConfigLinux64):
     bits = 32
     build_examples = ['firefox-38.0a1.en-US.linux-i686.tar.bz2']
     build_info_examples = ['firefox-38.0a1.en-US.linux-i686.txt']
-    base_inbound_url_ext = 'linux'
 
 
 class TestFirefoxConfigWin64(TestFirefoxConfigLinux64):
@@ -96,21 +80,18 @@ class TestFirefoxConfigWin64(TestFirefoxConfigLinux64):
                       'firefox-38.0a1.en-US.win64.zip']
     build_info_examples = ['firefox-38.0a1.en-US.win64-x86_64.txt',
                            'firefox-38.0a1.en-US.win64.txt']
-    base_inbound_url_ext = 'win64'
 
 
 class TestFirefoxConfigWin32(TestFirefoxConfigWin64):
     bits = 32
     build_examples = ['firefox-38.0a1.en-US.win32.zip']
     build_info_examples = ['firefox-38.0a1.en-US.win32.txt']
-    base_inbound_url_ext = 'win32'
 
 
 class TestFirefoxConfigMac(TestFirefoxConfigLinux64):
     os = 'mac'
     build_examples = ['firefox-38.0a1.en-US.mac.dmg']
     build_info_examples = ['firefox-38.0a1.en-US.mac.txt']
-    base_inbound_url_ext = 'macosx64'
 
 
 class TestThunderbirdConfig(unittest.TestCase):
@@ -178,27 +159,6 @@ class TestFennecConfig(unittest.TestCase):
         regex = re.compile(self.conf.build_info_regex())
         self.assertTrue(regex.match('fennec-36.0a1.multi.android-arm.txt'))
 
-    def test_inbound_base_url(self):
-        expected = ["http://inbound-archive.pub.build.mozilla.org\
-/pub/mozilla.org"
-                    "/mobile/tinderbox-builds/%s/" % inbound_branch
-                    for inbound_branch in ('mozilla-inbound-android',
-                                           'mozilla-inbound-android-api-10',
-                                           'mozilla-inbound-android-api-11')]
-        self.assertEqual(self.conf.inbound_base_urls(), expected)
-
-    def test_set_inbound_branch(self):
-        # inbound_branch evaluated to False won't change the behaviour
-        self.conf.set_inbound_branch(None)
-        self.test_inbound_base_url()
-
-        # valid inbound_branch will
-        self.conf.set_inbound_branch('my')
-        expected = ["http://inbound-archive.pub.build.mozilla.org/\
-pub/mozilla.org"
-                    "/mobile/tinderbox-builds/my/"]
-        self.assertEqual(self.conf.inbound_base_urls(), expected)
-
 
 class TestFennec23Config(unittest.TestCase):
     def setUp(self):
@@ -221,6 +181,45 @@ class TestB2GConfig(unittest.TestCase):
     def test_get_nightly_repo(self):
         repo = self.conf.get_nightly_repo(datetime.date(2014, 12, 5))
         self.assertEqual(repo, "mozilla-central")
+
+
+CHSET = "47856a21491834da3ab9b308145caa8ec1b98ee1"
+CHSET12 = "47856a214918"
+
+
+@pytest.mark.parametrize("app,os,bits,expected", [
+    # firefox
+    ("firefox", 'linux', 32,
+     'buildbot.revisions.%s.mozilla-inbound.linux' % CHSET12),
+    ("firefox", 'linux', 64,
+     'buildbot.revisions.%s.mozilla-inbound.linux64' % CHSET12),
+    ("firefox", 'win', 32,
+     'buildbot.revisions.%s.mozilla-inbound.win32' % CHSET12),
+    ("firefox", 'win', 64,
+     'buildbot.revisions.%s.mozilla-inbound.win64' % CHSET12),
+    ("firefox", 'mac', 64,
+     'buildbot.revisions.%s.mozilla-inbound.macosx64' % CHSET12),
+    # fennec
+    ("fennec", None, None,
+     'buildbot.revisions.%s.mozilla-inbound.android-api-11' % CHSET12),
+    ("fennec-2.3", None, None,
+     'buildbot.revisions.%s.mozilla-inbound.android-api-9' % CHSET12),
+    # b2g
+    ("b2g", 'linux', 32,
+     'buildbot.revisions.%s.b2g-inbound.linux_gecko' % CHSET),
+    ("b2g", 'linux', 64,
+     'buildbot.revisions.%s.b2g-inbound.linux64_gecko' % CHSET),
+    ("b2g", 'win', 32,
+     'buildbot.revisions.%s.b2g-inbound.win32_gecko' % CHSET12),
+    ("b2g", 'win', 64,
+     'buildbot.revisions.%s.b2g-inbound.win64_gecko' % CHSET12),
+    ("b2g", 'mac', 64,
+     'buildbot.revisions.%s.b2g-inbound.macosx64_gecko' % CHSET12),
+])
+def test_tk_inbound_route(app, os, bits, expected):
+    conf = create_config(app, os, bits)
+    result = conf.tk_inbound_route(CHSET)
+    assert result == expected
 
 if __name__ == '__main__':
     unittest.main()

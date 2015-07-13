@@ -548,13 +548,8 @@ class BisectRunner(object):
     def bisect_inbound(self, good_rev, bad_rev):
         self._logger.info("Getting inbound builds between %s and %s"
                           % (good_rev, bad_rev))
-        # anything within twelve hours is potentially within the range
-        # (should be a tighter but some older builds have wrong timestamps,
-        # see https://bugzilla.mozilla.org/show_bug.cgi?id=1018907 ...
-        # we can change this at some point in the future, after those builds
-        # expire)
         handler = InboundHandler(find_fix=self.options.find_fix)
-        result = self.do_bisect(handler, good_rev, bad_rev, range=60*60*12)
+        result = self.do_bisect(handler, good_rev, bad_rev)
         if result == Bisection.FINISHED:
             self._logger.info("Oh noes, no (more) inbound revisions :(")
             handler.print_range()

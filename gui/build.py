@@ -101,6 +101,12 @@ def call_cx_freeze():
             paths.insert(0, p)
     args.append('--include-path=%s' % os.pathsep.join(['.', '..'] + paths))
 
+    # find taskcluster apis.json file
+    import taskcluster.client
+    apis_json = os.path.join(os.path.dirname(taskcluster.client.__file__),
+                             'apis.json')
+    args.append("--zip-include=%s=taskcluster/apis.json" % apis_json)
+
     args.append('--target-dir=dist')
     args.append('mozregui/main.py')
     call(*args)

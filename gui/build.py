@@ -111,6 +111,10 @@ def call_cx_freeze():
     args.append('mozregui/main.py')
     call(*args)
 
+    # copy the required cacert.pem file for requests library
+    import requests.certs
+    shutil.copy(requests.certs.where(), "dist/cacert.pem")
+
 
 def do_bundle(options):
     do_uic(options, True)

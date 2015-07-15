@@ -2,6 +2,7 @@ from PyQt4.QtCore import QSettings, QVariant
 from PyQt4.QtGui import QDialog
 
 from mozregui.ui.global_prefs import Ui_GlobalPrefs
+from mozregui import patch_requests
 
 from mozregression import limitedfilecache
 from mozregression.utils import set_http_cache_session
@@ -39,7 +40,9 @@ def apply_prefs(options):
     cache_session = limitedfilecache.get_cache(options['http_cache_dir'],
                                                limitedfilecache.ONE_GIGABYTE)
     set_http_cache_session(cache_session,
-                           get_defaults={"timeout": options['http_timeout']})
+                           get_defaults={"timeout": options['http_timeout'],
+                                         "verify": patch_requests.cacert_path()
+                                         })
     # persist options have to be passed in the bisection, not handled here.
 
 

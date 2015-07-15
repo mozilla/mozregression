@@ -1,3 +1,7 @@
+# first thing, patch requests lib if required
+from mozregui import patch_requests
+patch_requests.patch()
+
 # Import PyQt4 classes
 import sys
 import mozregression

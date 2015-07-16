@@ -8,6 +8,7 @@ from mozregression.bisector import Bisector, Bisection, NightlyHandler, \
 from mozregression.download_manager import BuildDownloadManager
 from mozregression.test_runner import TestRunner
 from mozregression.errors import MozRegressionError
+from mozregression.utils import get_http_session
 
 from mozregui.ui.verdict import Ui_Verdict
 from mozregui.global_prefs import get_prefs, apply_prefs
@@ -22,7 +23,9 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
 
     def __init__(self, destdir, **kwargs):
         QObject.__init__(self)
-        BuildDownloadManager.__init__(self, None, destdir, **kwargs)
+        BuildDownloadManager.__init__(self, None, destdir,
+                                      session=get_http_session(),
+                                      **kwargs)
 
     def _download_started(self, task):
         self.download_started.emit(task)

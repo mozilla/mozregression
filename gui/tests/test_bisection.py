@@ -34,7 +34,8 @@ class TestGuiBuildDownloadManager(unittest.TestCase):
         tmpdir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, tmpdir)
         self.dl_manager = \
-            bisection.GuiBuildDownloadManager(tmpdir, session=self.session)
+            bisection.GuiBuildDownloadManager(tmpdir)
+        self.dl_manager.session = self.session
         self.signals = {}
         for sig in ('download_progress', 'download_started',
                     'download_finished'):

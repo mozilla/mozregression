@@ -390,8 +390,10 @@ class InboundBuildData(MozBuildData):
         self._logger.debug('Found %d pushlog entries using `%s`'
                            % (len(pushlogs), pushlogs_finder.pushlog_url()))
 
+        self._was_empty = False
         if len(pushlogs) < 2:
             # if we have 0 or 1 pushlog entry, we can not bisect.
+            self._was_empty = True
             return
 
         cache = []
@@ -401,6 +403,9 @@ class InboundBuildData(MozBuildData):
         self.set_cache(cache)
 
         self.info_fetcher = BuildFolderInfoFetcher(None, None)
+
+    def was_empty(self):
+        return self._was_empty
 
     def _get_valid_build(self, i):
         changeset = self.get_associated_data(i)[0]

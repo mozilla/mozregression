@@ -559,10 +559,11 @@ class BisectRunner(object):
             # NO_DATA
             self._logger.info("No inbound data found.")
             # check if we have found revisions
-            if handler.build_data.raw_revisions:
+            if not handler.build_data.was_empty():
                 # if we have, then these builds are probably too old
-                self._logger.info('There are no build dirs on inbound for'
-                                  ' these changesets.')
+                self._logger.info(
+                    'There are no build artifacts on inbound for these'
+                    ' changesets (these are probably too old).')
             return 1
         return 0
 

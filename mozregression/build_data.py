@@ -390,8 +390,10 @@ class InboundBuildData(MozBuildData):
         self._logger.debug('Found %d pushlog entries using `%s`'
                            % (len(pushlogs), pushlogs_finder.pushlog_url()))
 
+        self.was_empty = False
         if len(pushlogs) < 2:
             # if we have 0 or 1 pushlog entry, we can not bisect.
+            self.was_empty = True
             return
 
         cache = []

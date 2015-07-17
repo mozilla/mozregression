@@ -70,7 +70,7 @@ def do_test(options):
     call(py_script('flake8'), 'mozregui', 'build.py', 'tests')
     print('Running tests...')
     import pytest
-    pytest.main(['tests', '-v'])
+    sys.exit(pytest.main(['tests', '-v']))
 
 
 def call_cx_freeze():

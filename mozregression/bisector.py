@@ -14,6 +14,7 @@ from mozlog.structured import get_default_logger
 from mozregression.build_data import NightlyBuildData, InboundBuildData
 from mozregression.download_manager import BuildDownloadManager
 from mozregression.errors import MozRegressionError, LauncherError
+from mozregression.build_info import NightlyBuildInfo, InboundBuildInfo
 
 
 def compute_steps_left(steps):
@@ -28,7 +29,6 @@ class BisectorHandler(object):
 
     A BisectorHandler keep the state of the current bisection process.
     """
-    build_type = 'unknown'
 
     def __init__(self, find_fix=False):
         self.find_fix = find_fix
@@ -50,14 +50,9 @@ class BisectorHandler(object):
 
     def build_infos(self, index, fetch_config):
         """
-        Compute build infos (a dict) when a build is about to be tested.
+        Compute build infos when a build is about to be tested.
         """
-        infos = {
-            'build_type': self.build_type,
-            'app_name': fetch_config.app_name
-        }
-        infos.update(self.build_data[index])
-        return infos
+        return self.build_info_class(fetch_config, self.build_data, index)
 
     def _print_progress(self, new_data):
         """
@@ -140,7 +135,7 @@ class BisectorHandler(object):
 
 class NightlyHandler(BisectorHandler):
     build_data_class = NightlyBuildData
-    build_type = 'nightly'
+    build_info_class = NightlyBuildInfo
     good_date = None
     bad_date = None
 
@@ -150,12 +145,6 @@ class NightlyHandler(BisectorHandler):
         self.good_date, self.bad_date = \
             self._reverse_if_find_fix(self.build_data.get_associated_data(0),
                                       self.build_data.get_associated_data(-1))
-
-    def build_infos(self, index, fetch_config):
-        infos = BisectorHandler.build_infos(self, index, fetch_config)
-        infos['build_date'] = self.build_data.get_associated_data(index)
-        infos['repo'] = fetch_config.get_nightly_repo(infos['build_date'])
-        return infos
 
     def _print_progress(self, new_data):
         next_good_date = new_data.get_associated_data(0)
@@ -262,12 +251,7 @@ class NightlyHandler(BisectorHandler):
 
 class InboundHandler(BisectorHandler):
     build_data_class = InboundBuildData
-    build_type = 'inbound'
-
-    def build_infos(self, index, fetch_config):
-        infos = BisectorHandler.build_infos(self, index, fetch_config)
-        infos['repo'] = fetch_config.inbound_branch
-        return infos
+    build_info_class = InboundBuildInfo
 
     def _print_progress(self, new_data):
         self._logger.info("Narrowed inbound regression window from [%s, %s]"

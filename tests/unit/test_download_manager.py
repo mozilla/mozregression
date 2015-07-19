@@ -284,23 +284,14 @@ class TestBuildDownloadManager(unittest.TestCase):
                                                   session=self.session)
 
     def test__extract_download_info(self):
-        url, fname = self.dl_manager._extract_download_info({
-            'build_url': 'http://some/thing',
-            'build_type': 'nightly',
-            'build_date': date(2015, 01, 03),
-            'repo': 'my-repo',
-        })
+        class MyBuildInfo(dict):
+            def build_fname(self):
+                return '2015-01-03--my-repo--thing'
+
+        build_info = MyBuildInfo({'build_url': 'http://some/thing'})
+        url, fname = self.dl_manager._extract_download_info(build_info)
         self.assertEquals(url, 'http://some/thing')
         self.assertEquals(fname, '2015-01-03--my-repo--thing')
-
-        url, fname = self.dl_manager._extract_download_info({
-            'build_url': 'http://some/thing',
-            'build_type': 'inbound',
-            'changeset': '47856a21491834da3ab9b308145caa8ec1b98ee1',
-            'repo': 'my-repo',
-        })
-        self.assertEquals(url, 'http://some/thing')
-        self.assertEquals(fname, '47856a214918--my-repo--thing')
 
     @patch("mozregression.download_manager.BuildDownloadManager."
            "_extract_download_info")

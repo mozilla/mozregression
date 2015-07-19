@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
+import re
 
 
 class BuildInfo(dict):
@@ -44,12 +45,51 @@ class BuildInfo(dict):
         # merge the build data information of the build
         self.update(build_data[index])
 
-    def persist_prefix(self):
+    def _persist_prefix(self, move_index=0):
         raise NotImplementedError
+
+    def iter_prefixes(self, around):
+        around = abs(around)
+        nb_data = len(self.build_data)
+        assert nb_data > 0
+        yield self._persist_prefix(0)
+        for i in xrange(1, around + 1):
+            try:
+                yield self._persist_prefix(-i)
+            except IndexError:
+                pass
+            try:
+                yield self._persist_prefix(i)
+            except IndexError:
+                pass
+
+    def find_nearest_build_file(self, files, around):
+        """
+        Return the nearest file name for this build.
+
+        Given a list of files (what we can found in the persist folder)
+        and a "around" parameter, this method return the file that is
+        closer to this build.
+
+        The around parameter allow to search for +/- around. For example,
+        for a nightly build 2015-07-10, a value of 2 for around will search for
+        files from 2015-07-08 to 2015-07-12 included.
+        """
+        prefix2fname = {}
+        for f in files:
+            try:
+                date_or_chset, repo, fname = f.split('--', 2)
+            except ValueError:
+                continue
+            if re.match(self.fetch_config.build_regex(), fname):
+                prefix2fname['%s--%s--' % (date_or_chset, repo)] = f
+        for prefix in self.iter_prefixes(around):
+            if prefix in prefix2fname:
+                return prefix2fname[prefix]
 
     def build_fname(self):
         """Return the filename of the build (without the path)"""
-        return self.persist_prefix() + os.path.basename(self['build_url'])
+        return self._persist_prefix() + os.path.basename(self['build_url'])
 
 
 class NightlyBuildInfo(BuildInfo):
@@ -67,9 +107,12 @@ class NightlyBuildInfo(BuildInfo):
         self['build_date'] = build_data.get_associated_data(index)
         self['repo'] = fetch_config.get_nightly_repo(self['build_date'])
 
-    def persist_prefix(self):
-        return '{date}--{repo}--'.format(date=self['build_date'],
-                                         repo=self['repo'])
+    def _persist_prefix(self, move_index=0):
+        index = self.index + move_index
+        date = self.build_data.get_associated_data(index)
+        return '{date}--{repo}--'.format(
+            date=date,
+            repo=self.fetch_config.get_nightly_repo(date))
 
 
 class InboundBuildInfo(BuildInfo):
@@ -86,6 +129,19 @@ class InboundBuildInfo(BuildInfo):
         BuildInfo.__init__(self, 'inbound', fetch_config, build_data, index)
         self['repo'] = fetch_config.inbound_branch
 
-    def persist_prefix(self):
+    def _persist_prefix(self, move_index=0):
         return '{chset}--{repo}--'.format(chset=self['changeset'][:12],
                                           repo=self['repo'])
+
+    def iter_prefixes(self, around):
+        # not available for inbound now.
+        # We should look at InboundBuildData, and inject the
+        # mercurial push id in the associated data - so we could
+        # build a map chset -> push id and be able to detect
+        # previous/next changesets.
+        # but first we have to change the behavior of the
+        # PushLogFinder that order chsets by time (and not
+        # by push ids)
+        # TODO check this.
+        for prefix in BuildInfo.iter_prefixes(self, 0):
+            yield prefix

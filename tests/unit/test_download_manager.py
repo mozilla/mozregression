@@ -10,7 +10,6 @@ import shutil
 import os
 import time
 from mock import Mock, patch, ANY
-from datetime import date
 
 from mozregression import download_manager
 

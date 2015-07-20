@@ -364,3 +364,35 @@ class TestBuildDownloadManager(unittest.TestCase):
             "Using local file: %s (downloaded in background)" % dest_file)
 
         self.assertEquals(result, dest_file)
+
+    @patch("mozregression.download_manager.BuildDownloadManager."
+           "_extract_download_info")
+    def test_persist_chooser_approx(self, extract):
+        extract.return_value = ('http://foo/bar', 'myfile')
+        pc = self.dl_manager.persist_chooser = Mock()
+        pc.accept = Mock(return_value='myfile2')
+        build_info = Mock()
+        dest = self.dl_manager.focus_download(build_info)
+
+        pc.accept.assert_called_once_with(self.dl_manager, build_info)
+        build_info.update_from_approx_build.assert_called_once_with('myfile2')
+        self.dl_manager.logger.info.assert_called_once_with(
+            'Using `%s` as an acceptable approximative build file'
+            ' instead of downloading myfile' % os.path.join('dest', 'myfile2')
+        )
+        self.assertEqual(dest, self.dl_manager.get_dest('myfile2'))
+
+
+def test_approx_persist_chooser():
+    chooser = download_manager.ApproxPersistChooser(7)
+    build_info = Mock(build_data=range(8))
+    dlmanager = Mock(destdir='dest')
+    with patch('os.listdir') as listdir:
+        listdir.return_value = ['1']
+        chooser.accept(dlmanager, build_info)
+        listdir.assert_called_once_with('dest')
+
+    build_info.find_nearest_build_file.assert_called_once_with(
+        ['1'],
+        1  # 8/7
+    )

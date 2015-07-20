@@ -12,7 +12,8 @@ import pipes
 from mozlog.structured import get_default_logger
 
 from mozregression.build_data import NightlyBuildData, InboundBuildData
-from mozregression.download_manager import BuildDownloadManager
+from mozregression.download_manager import BuildDownloadManager, \
+    ApproxPersistChooser
 from mozregression.errors import MozRegressionError, LauncherError
 from mozregression.build_info import NightlyBuildInfo, InboundBuildInfo
 
@@ -421,7 +422,8 @@ class Bisector(object):
     :class:`BisectorHandler`.
     """
     def __init__(self, fetch_config, test_runner, persist=None,
-                 dl_in_background=True, background_dl_policy="cancel"):
+                 dl_in_background=True, background_dl_policy="cancel",
+                 persist_chooser=None):
         self.fetch_config = fetch_config
         self.test_runner = test_runner
         self.delete_dldir = False
@@ -435,6 +437,7 @@ class Bisector(object):
         self.download_dir = persist
         self.dl_in_background = dl_in_background
         self.background_dl_policy = background_dl_policy
+        self.persist_chooser = persist_chooser
 
     def __del__(self):
         if self.delete_dldir:
@@ -457,7 +460,9 @@ class Bisector(object):
         logger = handler._logger
         download_manager = BuildDownloadManager(
             logger, self.download_dir,
-            background_dl_policy=self.background_dl_policy
+            background_dl_policy=self.background_dl_policy,
+            # persist_chooser is None if we are in persist mode
+            persist_chooser=None if self.delete_dldir else self.persist_chooser
         )
 
         bisection = Bisection(handler, build_data, download_manager,
@@ -515,6 +520,9 @@ class BisectRunner(object):
         return self.bisector.bisect(handler, good, bad, **kwargs)
 
     def bisect_nightlies(self, good_date, bad_date):
+        # one day approximation is ok by week.
+        # see https://bugzilla.mozilla.org/show_bug.cgi?id=1160078#c1
+        self.bisector.persist_chooser = ApproxPersistChooser(7)
         handler = NightlyHandler(find_fix=self.options.find_fix)
         result = self.do_bisect(handler, good_date, bad_date)
         if result == Bisection.FINISHED:
@@ -547,6 +555,8 @@ class BisectRunner(object):
         return 0
 
     def bisect_inbound(self, good_rev, bad_rev):
+        # disable persist chooser anyway for inbound.
+        self.bisector.persist_chooser = None
         self._logger.info("Getting inbound builds between %s and %s"
                           % (good_rev, bad_rev))
         handler = InboundHandler(find_fix=self.options.find_fix)

@@ -4,6 +4,7 @@
 
 import os
 import re
+from datetime import date
 
 
 class BuildInfo(dict):
@@ -46,6 +47,11 @@ class BuildInfo(dict):
         self.update(build_data[index])
 
     def _persist_prefix(self, move_index=0):
+        raise NotImplementedError
+
+    def update_from_approx_build(self, fname):
+        """Update the build info dict when we decide to use an approximated
+           build"""
         raise NotImplementedError
 
     def iter_prefixes(self, around):
@@ -113,6 +119,11 @@ class NightlyBuildInfo(BuildInfo):
         return '{date}--{repo}--'.format(
             date=date,
             repo=self.fetch_config.get_nightly_repo(date))
+
+    def update_from_approx_build(self, fname):
+        year, month, day = [int(p) for p in
+                            fname.split('--', 1)[0].split('-')]
+        self['build_date'] = date(year, month, day)
 
 
 class InboundBuildInfo(BuildInfo):

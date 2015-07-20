@@ -98,3 +98,11 @@ def test_find_nearest(files, around, result):
     build_info = create_nightly_build_info(date(2015, 07, 01),
                                            date(2015, 07, 11))
     assert build_info.find_nearest_build_file(files, around) == result
+
+
+def test_update_from_approx_build():
+    build_info = create_nightly_build_info(date(2015, 07, 01),
+                                           date(2015, 07, 11))
+    assert build_info['build_date'] == date(2015, 07, 06)
+    build_info.update_from_approx_build('2015-07-07--repo--stuff.blah')
+    assert build_info['build_date'] == date(2015, 07, 07)

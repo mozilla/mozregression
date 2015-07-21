@@ -89,6 +89,10 @@ class TestGetBuildUrl(unittest.TestCase):
                                                with_ext=False),
                          r'test.*mac.*')
 
+    def test_unknown_os(self):
+        with self.assertRaises(errors.MozRegressionError):
+            utils.get_build_regex('test', 'unknown', 32)
+
 
 class TestRelease(unittest.TestCase):
     def test_valid_release_to_date(self):

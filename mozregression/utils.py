@@ -166,6 +166,11 @@ def get_build_regex(name, os, bits, with_ext=True):
             suffix, ext = r".*linux-i686", r"\.tar.bz2"
     elif os == "mac":
         suffix, ext = r".*mac.*", r"\.dmg"
+    else:
+        raise errors.MozRegressionError(
+            "mozregression supports linux, mac and windows but your"
+            " os is reported as '%s'." % os
+        )
 
     regex = '%s%s' % (name, suffix)
     if with_ext:

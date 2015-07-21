@@ -216,8 +216,8 @@ class NightlyHandler(BisectorHandler):
 
     def find_inbound_changesets(self, days_required=4):
         self._logger.info("... attempting to bisect inbound builds (starting"
-                          " from %d days ago, to make sure no inbound revision"
-                          " is missed)" % days_required)
+                          " from %d days prior, to make sure no inbound"
+                          " revision is missed)" % days_required)
         infos = {}
         days = days_required - 1
         too_many_attempts = False

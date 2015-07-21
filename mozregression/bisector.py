@@ -522,7 +522,10 @@ class BisectRunner(object):
     def bisect_nightlies(self, good_date, bad_date):
         # one day approximation is ok by week.
         # see https://bugzilla.mozilla.org/show_bug.cgi?id=1160078#c1
-        self.bisector.persist_chooser = ApproxPersistChooser(7)
+        self.bisector.persist_chooser = \
+            None if self.options.approx_policy == 'none' \
+            else ApproxPersistChooser(7)
+
         handler = NightlyHandler(find_fix=self.options.find_fix)
         result = self.do_bisect(handler, good_date, bad_date)
         if result == Bisection.FINISHED:

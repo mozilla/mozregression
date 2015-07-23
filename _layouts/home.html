@@ -18,4 +18,24 @@ layout: default
       </li>
     {% endfor %}
   </ul>
+
+  <br>
+  <h3>Number of downloads for the gui version:</h3>
+  <div id="downloads"></div>
+  <script>
+    function createElement(version1, version2) {
+      var tag = document.createElement('dl');
+      var template = '<dl>'
+      +  '<dd>Windows: ' + version1 + '</dd>'
+      +  '<dd>Linux: ' + version2 + '</dd>';
+      tag.innerHTML = template;
+      document.getElementById('downloads').appendChild(tag);
+    }
+    var tags = {};
+    $.ajax({
+      url: "https://api.github.com/repos/mozilla/mozregression/releases"
+    }).done(function(data1) {
+      createElement(data1[0].assets[0].download_count, data1[0].assets[1].download_count);
+    });
+  </script>
 </div>

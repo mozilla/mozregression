@@ -47,7 +47,7 @@ setup(name="mozregression",
         """,
       platforms=['Any'],
       install_requires=[
-          'mozfile >= 1.1',
+          'mozfile >= 1.2',
           'mozprofile >= 0.25',
           'mozrunner >= 6.8',
           'BeautifulSoup >= 3.0.4',

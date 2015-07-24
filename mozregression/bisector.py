@@ -221,10 +221,11 @@ class NightlyHandler(BisectorHandler):
         infos = {}
         days = days_required - 1
         too_many_attempts = False
+        max_attempts = 3
         first_date = min(self.good_date, self.bad_date)
         while 'changeset' not in infos:
             days += 1
-            if days >= days_required + 3:
+            if days >= days_required + max_attempts:
                 too_many_attempts = True
                 break
             prev_date = first_date - datetime.timedelta(days=days)
@@ -241,12 +242,19 @@ class NightlyHandler(BisectorHandler):
             good_rev = self.good_revision
             bad_rev = infos.get('changeset')
         if bad_rev is None or good_rev is None:
-            # old nightly builds do not have the changeset information
-            # so we can't go on inbound. Anyway, these are probably too
-            # old and won't even exists on inbound.
+            # we cannot find valid nightly builds in the searched range.
+            # two possible causes:
+            # - old nightly builds do not have the changeset information
+            #   so we can't go on inbound. Anyway, these are probably too
+            #   old and won't even exists on inbound.
+            # - something else (builds were not updated on ftp, or all invalid)
+            start_range = first_date - datetime.timedelta(days=days_required)
+            end_range = start_range - datetime.timedelta(days=max_attempts)
             raise MozRegressionError(
                 "Not enough changeset information to produce initial inbound"
-                " regression range. Builds are probably too old.")
+                " regression range (failed to find metadata between %s and %s)"
+                ". Nightly build folders are invalids or too old in this"
+                " range." % (start_range, end_range))
 
         return good_rev, bad_rev
 

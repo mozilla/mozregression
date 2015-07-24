@@ -164,7 +164,7 @@ class Download(object):
             else:
                 # if all goes well, then rename the file to the real dest
                 mozfile.remove(dest)  # just in case it already existed
-                os.rename(temp_dest, dest)
+                mozfile.move(temp_dest, dest)
         finally:
             if finished_callback:
                 finished_callback(self)

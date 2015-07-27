@@ -60,7 +60,11 @@ def do_run(options):
     do_uic(options)
     do_rcc(options)
     env = dict(os.environ)
-    env['PYTHONPATH'] = '.'
+    # update PYTHONPATH so python can find mozregui package
+    if env.get('PYTHONPATH'):
+        env['PYTHONPATH'] = '.' + os.pathsep + env['PYTHONPATH']
+    else:
+        env['PYTHONPATH'] = '.'
     call(sys.executable, 'mozregui/main.py', env=env)
 
 

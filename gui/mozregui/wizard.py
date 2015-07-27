@@ -119,13 +119,15 @@ class IntroPage(WizardPage):
 
 
 class WizardSelectionRangePage(WizardPage):
+    RANGE_TYPE = 'date'
+
     def changelabel(self, checkstatus):
         if checkstatus is True:
-            self.ui.label.setText("Last known bad date")
-            self.ui.label_2.setText("First known good date")
+            self.ui.label.setText("Last known bad %s" % self.RANGE_TYPE)
+            self.ui.label_2.setText("First known good %s" % self.RANGE_TYPE)
         else:
-            self.ui.label.setText("Last known good date")
-            self.ui.label_2.setText("First known bad date")
+            self.ui.label.setText("Last known good %s" % self.RANGE_TYPE)
+            self.ui.label_2.setText("First known bad %s" % self.RANGE_TYPE)
 
     def initializePage(self):
         checkstatus = self.wizard().field("find_fix").toBool()
@@ -171,6 +173,7 @@ class NightliesPage(WizardSelectionRangePage):
 
 
 class InboundPage(WizardSelectionRangePage):
+    RANGE_TYPE = "revision"
     UI_CLASS = Ui_Inbound
     TITLE = "Changesets range selection"
     SUBTITLE = "Select the inbound changesets range."

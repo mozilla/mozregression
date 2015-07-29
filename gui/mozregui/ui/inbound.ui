@@ -52,7 +52,7 @@
         <string>branch like [b2g-inbound|fx-team|...]</string>
        </property>
        <property name="placeholderText">
-        <string>you can choose an inbound branch name on ftp.mozilla.org.</string>
+        <string>you can choose an inbound branch name on archive.mozilla.org.</string>
        </property>
       </widget>
      </item>

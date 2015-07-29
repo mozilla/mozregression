@@ -77,8 +77,10 @@ class NightlyConfigMixin(object):
         """
         Returns the base part of the nightly build url for a given date.
         """
-        return ("http://ftp.mozilla.org/pub/mozilla.org/%s/nightly/%04d/%02d/"
-                % (self.nightly_base_repo_name, date.year, date.month))
+        return (
+            "https://archive.mozilla.org/pub/mozilla.org/%s/nightly/%04d/%02d/"
+            % (self.nightly_base_repo_name, date.year, date.month)
+        )
 
     def set_nightly_repo(self, repo):
         """

@@ -196,7 +196,7 @@ class TestNightlyUrlBuilder(unittest.TestCase):
             'bar/'
         ]
         urls = self.url_builder.get_urls(datetime.date(2014, 11, 01))
-        self.assertEqual(urls[0], 'http://ftp.mozilla.org/pub/mozilla.org/\
+        self.assertEqual(urls[0], 'https://archive.mozilla.org/pub/mozilla.org/\
 firefox/nightly/2014/11/2014-11-01-03-02-05-foo/')
         urls = self.url_builder.get_urls(datetime.date(2014, 11, 02))
         self.assertEqual(urls, [])
@@ -221,15 +221,15 @@ get_urls')
     def test_get_valid_build_for_date(self, get_urls,
                                       find_build_info, find_build_info_txt):
         get_urls.return_value = [
-            'http://ftp.mozilla.org/pub/mozilla.org/\
+            'https://archive.mozilla.org/pub/mozilla.org/\
 bar/nightly/2014/11/2014-11-15-08-02-05-mozilla-central/',
-            'http://ftp.mozilla.org/pub/mozilla.org/\
+            'https://archive.mozilla.org/pub/mozilla.org/\
 bar/nightly/2014/11/2014-11-15-04-02-05-mozilla-central/',
-            'http://ftp.mozilla.org/pub/mozilla.org/\
+            'https://archive.mozilla.org/pub/mozilla.org/\
 bar/nightly/2014/11/2014-11-15-03-02-05-mozilla-central',
-            'http://ftp.mozilla.org/pub/mozilla.org/\
+            'https://archive.mozilla.org/pub/mozilla.org/\
 bar/nightly/2014/11/2014-11-15-02-02-05-mozilla-central/',
-            'http://ftp.mozilla.org/pub/mozilla.org/\
+            'https://archive.mozilla.org/pub/mozilla.org/\
 bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/',
         ]
 

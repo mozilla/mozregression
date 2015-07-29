@@ -151,7 +151,7 @@ def parse_args(argv=None):
     parser.add_argument("--inbound-branch",
                         metavar="[b2g-inbound|fx-team|...]",
                         default=defaults.get("inbound-branch"),
-                        help="inbound branch name on ftp.mozilla.org.")
+                        help="inbound branch name on archive.mozilla.org.")
 
     parser.add_argument("--bits",
                         choices=("32", "64"),

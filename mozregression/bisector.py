@@ -247,7 +247,8 @@ class NightlyHandler(BisectorHandler):
             # - old nightly builds do not have the changeset information
             #   so we can't go on inbound. Anyway, these are probably too
             #   old and won't even exists on inbound.
-            # - something else (builds were not updated on ftp, or all invalid)
+            # - something else (builds were not updated on archive.mozilla.org,
+            #   or all invalid)
             start_range = first_date - datetime.timedelta(days=days_required)
             end_range = start_range - datetime.timedelta(days=max_attempts)
             raise MozRegressionError(

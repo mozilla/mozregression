@@ -184,6 +184,18 @@ class TestMainCli(unittest.TestCase):
                                 '--find-fix'])
         self.assertIn('not use the --find-fix flag', exitcode)
 
+    def test_bisect_nighlies_find_fix_and_no_good_date_should_use_today(self):
+        today = datetime.date.today()
+        self.do_cli(['--bad=2015-01-21', '--find-fix'])
+
+        self.assertIn(
+            ('info', "No 'good' date specified, using %s" % today),
+            self.pop_logs())
+
+        self.runner.bisect_nightlies.assert_called_with(
+            today,
+            datetime.date(2015, 01, 21))
+
     def test_commad_make_use_of_commandtestrunner(self):
         self.do_cli(['--command=my command'])
         self.assertIsInstance(self.runner.test_runner, CommandTestRunner)

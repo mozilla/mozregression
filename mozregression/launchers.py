@@ -80,8 +80,12 @@ class Launcher(object):
 
     def _create_profile(self, profile=None, addons=(), preferences=None):
         if profile:
-            profile = self.profile_class(profile=profile, addons=addons,
-                                         preferences=preferences)
+            # mozprofile makes some changes in the profile that can not
+            # be undone. Let's clone the profile to not have side effect
+            # on existing profile.
+            # see https://bugzilla.mozilla.org/show_bug.cgi?id=999009
+            profile = self.profile_class.clone(profile, addons=addons,
+                                               preferences=preferences)
         elif len(addons):
             profile = self.profile_class(addons=addons,
                                          preferences=preferences)

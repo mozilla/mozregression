@@ -22,6 +22,7 @@ class MyLauncher(launchers.Launcher):
 
 
 class TestLauncher(unittest.TestCase):
+
     def test_start_stop(self):
         launcher = MyLauncher('/foo/persist.zip')
         self.assertFalse(launcher.started)
@@ -39,6 +40,7 @@ class TestLauncher(unittest.TestCase):
 
 
 class TestMozRunnerLauncher(unittest.TestCase):
+
     @patch('mozregression.launchers.mozinstall')
     def setUp(self, mozinstall):
         mozinstall.get_binary.return_value = '/binary'
@@ -81,9 +83,8 @@ profile_class', spec=Profile)
     def test_start_with_profile_and_addons(self, Runner):
         self.launcher_start(profile='my-profile', addons=['my-addon'],
                             preferences='my-prefs')
-        self.profile_class.assert_called_once_with(profile='my-profile',
-                                                   addons=['my-addon'],
-                                                   preferences='my-prefs')
+        self.profile_class.clone.assert_called_once_with(
+            'my-profile', addons=['my-addon'], preferences='my-prefs')
         # runner is started
         self.launcher.runner.start.assert_called_once_with()
         self.launcher.stop()
@@ -105,10 +106,19 @@ profile_class', spec=Profile)
 
 
 class TestFennecLauncher(unittest.TestCase):
+
+    test_root = '/sdcard/tmp'
+
+    def setUp(self):
+        self.profile = Profile()
+        self.addCleanup(self.profile.cleanup)
+        self.remote_profile_path = self.test_root + \
+            '/' + os.path.basename(self.profile.profile)
+
     @patch('mozregression.launchers.mozversion.get_version')
     @patch('mozregression.launchers.ADBAndroid')
     def create_launcher(self, ADBAndroid, get_version, **kwargs):
-        self.adb = Mock(test_root='/sdcard/tmp')
+        self.adb = Mock(test_root=self.test_root)
         ADBAndroid.return_value = self.adb
         get_version.return_value = kwargs.get('version_value', {})
         return launchers.FennecLauncher('/binary')
@@ -118,24 +128,30 @@ class TestFennecLauncher(unittest.TestCase):
         self.adb.uninstall_app.assert_called_with("org.mozilla.fennec")
         self.adb.install_app.assert_called_with('/binary')
 
-    def test_start_stop(self):
+    @patch('mozregression.launchers.FennecLauncher._create_profile')
+    def test_start_stop(self, _create_profile):
+        # Force use of existing profile
+        _create_profile.return_value = self.profile
         launcher = self.create_launcher()
         launcher.start(profile='my_profile')
-        self.adb.exists.assert_called_once_with('/sdcard/tmp/my_profile')
-        self.adb.rm.assert_called_once_with('/sdcard/tmp/my_profile',
+        self.adb.exists.assert_called_once_with(self.remote_profile_path)
+        self.adb.rm.assert_called_once_with(self.remote_profile_path,
                                             recursive=True)
-        self.adb.push.assert_called_once_with(os.path.realpath('my_profile'),
-                                              '/sdcard/tmp/my_profile')
+        self.adb.push.assert_called_once_with(self.profile.profile,
+                                              self.remote_profile_path)
         self.adb.launch_fennec.assert_called_once_with(
             "org.mozilla.fennec",
-            extra_args=['-profile', '/sdcard/tmp/my_profile']
+            extra_args=['-profile', self.remote_profile_path]
         )
         # ensure get_app_info returns something
         self.assertIsNotNone(launcher.get_app_info())
         launcher.stop()
         self.adb.stop_application.assert_called_once_with("org.mozilla.fennec")
 
-    def test_adb_calls_with_custom_package_name(self):
+    @patch('mozregression.launchers.FennecLauncher._create_profile')
+    def test_adb_calls_with_custom_package_name(self, _create_profile):
+        # Force use of existing profile
+        _create_profile.return_value = self.profile
         pkg_name = 'org.mozilla.custom'
         launcher = \
             self.create_launcher(version_value={'package_name': pkg_name})
@@ -143,7 +159,7 @@ class TestFennecLauncher(unittest.TestCase):
         launcher.start(profile='my_profile')
         self.adb.launch_fennec.assert_called_once_with(
             pkg_name,
-            extra_args=['-profile', '/sdcard/tmp/my_profile']
+            extra_args=['-profile', self.remote_profile_path]
         )
         launcher.stop()
         self.adb.stop_application.assert_called_once_with(pkg_name)

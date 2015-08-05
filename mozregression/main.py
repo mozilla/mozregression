@@ -239,6 +239,9 @@ def bisect_nightlies(runner, logger):
     default_good_date = "2009-01-01"
     fetch_config = runner.fetch_config
     options = runner.options
+    if options.find_fix:
+        default_bad_date, default_good_date = \
+            default_good_date, default_bad_date
     # TODO: currently every fetch_config is nightly aware. Shoud we test
     # for this to be sure here ?
     fetch_config.set_nightly_repo(options.repo)

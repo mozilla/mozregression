@@ -244,6 +244,7 @@ class TestBisector(unittest.TestCase):
         self.bisector = Bisector(Mock(), self.test_runner,
                                  dl_in_background=False)
         self.bisector.download_background = False
+        self.addCleanup(self.bisector.__del__)
 
     @patch("mozregression.bisector.BuildDownloadManager")
     def test__bisect_no_data(self, dl):
@@ -431,6 +432,7 @@ class TestBisectRunner(unittest.TestCase):
         self.brunner = BisectRunner(self.fetch_config,
                                     self.test_runner,
                                     parse_args([]))
+        self.addCleanup(self.brunner.bisector.__del__)
 
     def test_create(self):
         self.assertIsInstance(self.brunner.bisector, Bisector)

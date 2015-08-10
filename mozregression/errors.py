@@ -68,3 +68,9 @@ class UnavailableRelease(MozRegressionError):
         MozRegressionError.__init__(self,
                                     "Unable to find a matching date for"
                                     " release %s" % release)
+
+
+class LauncherError(MozRegressionError):
+    """
+    Error when running the tested application.
+    """

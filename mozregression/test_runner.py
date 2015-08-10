@@ -15,7 +15,7 @@ import shlex
 import os
 
 from mozregression.launchers import create_launcher
-from mozregression.errors import TestCommandError
+from mozregression.errors import TestCommandError, LauncherError
 
 
 class TestRunner(object):
@@ -111,7 +111,13 @@ class ManualTestRunner(TestRunner):
         launcher.start(**self.launcher_kwargs)
         app_infos = launcher.get_app_info()
         verdict = self.get_verdict(build_info, allow_back)
-        launcher.stop()
+        try:
+            launcher.stop()
+        except LauncherError:
+            # we got an error on process termination, but user
+            # already gave the verdict, so pass this "silently"
+            # (it would be logged from the launcher anyway)
+            pass
         return verdict, app_infos
 
 

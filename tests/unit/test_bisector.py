@@ -14,6 +14,7 @@ from mozregression.bisector import (BisectorHandler, NightlyHandler,
 from mozregression.main import parse_args
 from mozregression.fetch_configs import create_config
 from mozregression import build_data
+from mozregression.errors import LauncherError
 
 
 class TestBisectorHandler(unittest.TestCase):
@@ -271,7 +272,10 @@ class TestBisector(unittest.TestCase):
         iter_verdict = iter(verdicts)
 
         def evaluate(build_info, allow_back=False):
-            return iter_verdict.next(), {
+            verdict = iter_verdict.next()
+            if isinstance(verdict, Exception):
+                raise verdict
+            return verdict, {
                 'application_changeset': 'unused',
                 'application_repository': 'unused'
             }
@@ -296,6 +300,26 @@ class TestBisector(unittest.TestCase):
         self.handler.initialize.assert_called_with()
         self.handler.build_good.assert_called_with(2, MyBuildData([3, 4, 5]))
         self.handler.build_bad.assert_called_with(1, MyBuildData([3, 4]))
+        self.assertTrue(self.handler.build_data.ensure_limits_called)
+        # bisection is finished
+        self.assertEqual(test_result['result'], Bisection.FINISHED)
+
+    def test__bisect_with_launcher_exception(self):
+        test_result = self.do__bisect(MyBuildData([1, 2, 3, 4, 5]),
+                                      ['g', LauncherError("err")])
+        # check that set_build_data was called
+        self.handler.set_build_data.assert_has_calls([
+            # first call
+            call(MyBuildData([1, 2, 3, 4, 5])),
+            # we answered good
+            call(MyBuildData([3, 4, 5])),
+            # launcher exception, equivalent to a skip
+            call(MyBuildData([3, 5])),
+        ])
+        # ensure that we called the handler's methods
+        self.handler.initialize.assert_called_with()
+        self.handler.build_good.assert_called_with(2, MyBuildData([3, 4, 5]))
+        self.handler.build_skip.assert_called_with(1)
         self.assertTrue(self.handler.build_data.ensure_limits_called)
         # bisection is finished
         self.assertEqual(test_result['result'], Bisection.FINISHED)

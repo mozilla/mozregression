@@ -19,7 +19,7 @@ import mozinstall
 import tempfile
 
 from mozregression.utils import ClassRegistry
-from mozregression.errors import LauncherNotRunnable
+from mozregression.errors import LauncherNotRunnable, LauncherError
 
 
 class Launcher(object):
@@ -42,14 +42,24 @@ class Launcher(object):
         self._running = False
         self._logger = get_default_logger('Test Runner')
 
-        self._install(dest)
+        try:
+            self._install(dest)
+        except Exception:
+            msg = "Unable to install %r" % dest
+            self._logger.error(msg, exc_info=True)
+            raise LauncherError(msg)
 
     def start(self, **kwargs):
         """
         Start the application.
         """
         if not self._running:
-            self._start(**kwargs)
+            try:
+                self._start(**kwargs)
+            except Exception:
+                msg = "Unable to start the application"
+                self._logger.error(msg, exc_info=True)
+                raise LauncherError(msg)
             self._running = True
 
     def stop(self):
@@ -57,7 +67,12 @@ class Launcher(object):
         Stop the application.
         """
         if self._running:
-            self._stop()
+            try:
+                self._stop()
+            except Exception:
+                msg = "Unable to stop the application"
+                self._logger.error(msg, exc_info=True)
+                raise LauncherError(msg)
             self._running = False
 
     def get_app_info(self):

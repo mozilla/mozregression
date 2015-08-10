@@ -88,6 +88,20 @@ class TestManualTestRunner(unittest.TestCase):
         launcher.stop.assert_called_with()
         self.assertEqual(result[0], 'g')
 
+    @patch('mozregression.test_runner.ManualTestRunner.create_launcher')
+    @patch('mozregression.test_runner.ManualTestRunner.get_verdict')
+    def test_evaluate_with_launcher_error_on_stop(self, get_verdict,
+                                                  create_launcher):
+        get_verdict.return_value = 'g'
+        launcher = Mock(stop=Mock(side_effect=errors.LauncherError))
+        create_launcher.return_value = launcher
+        build_infos = {'a': 'b'}
+        result = self.runner.evaluate(build_infos)
+
+        # the LauncherError is silently ignore here
+        launcher.stop.assert_called_with()
+        self.assertEqual(result[0], 'g')
+
 
 class TestCommandTestRunner(unittest.TestCase):
     def setUp(self):

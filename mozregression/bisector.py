@@ -13,7 +13,7 @@ from mozlog.structured import get_default_logger
 
 from mozregression.build_data import NightlyBuildData, InboundBuildData
 from mozregression.download_manager import BuildDownloadManager
-from mozregression.errors import MozRegressionError
+from mozregression.errors import MozRegressionError, LauncherError
 
 
 def compute_steps_left(steps):
@@ -470,8 +470,9 @@ class Bisector(object):
         """
         Starts a bisection for a :class:`mozregression.build_data.BuildData`.
         """
+        logger = handler._logger
         download_manager = BuildDownloadManager(
-            handler._logger, self.download_dir,
+            logger, self.download_dir,
             background_dl_policy=self.background_dl_policy
         )
 
@@ -494,7 +495,14 @@ class Bisector(object):
                     build_infos = previous_build_infos
                 else:
                     mid, build_infos = bisection.download_build(mid)
-                verdict, app_info = bisection.evaluate(build_infos)
+                try:
+                    verdict, app_info = bisection.evaluate(build_infos)
+                except LauncherError, exc:
+                    # we got an unrecoverable error while trying
+                    # to run the tested app. We can just fallback
+                    # to skip the build.
+                    logger.info("Error: %s. Skipping this build..." % exc)
+                    verdict, app_info = 's', {}
                 previous_verdict = verdict
                 previous_build_infos = build_infos
                 bisection.update_build_info(mid, app_info)

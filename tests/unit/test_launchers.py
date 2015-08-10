@@ -3,7 +3,7 @@ import unittest
 import os
 from mock import patch, Mock
 from mozprofile import Profile
-from mozregression.errors import LauncherNotRunnable
+from mozregression.errors import LauncherNotRunnable, LauncherError
 
 
 class MyLauncher(launchers.Launcher):
@@ -37,6 +37,29 @@ class TestLauncher(unittest.TestCase):
         launcher.stop()
         launcher.start()
         self.assertTrue(launcher.started)
+
+    def test_install_fail(self):
+        class FailingLauncher(MyLauncher):
+            def _install(self, dest):
+                raise Exception()
+
+        with self.assertRaises(LauncherError):
+            FailingLauncher('/foo/persist.zip')
+
+    def test_start_fail(self):
+        launcher = MyLauncher('/foo/persist.zip')
+        launcher._start = Mock(side_effect=Exception)
+
+        with self.assertRaises(LauncherError):
+            launcher.start()
+
+    def test_stop_fail(self):
+        launcher = MyLauncher('/foo/persist.zip')
+        launcher._stop = Mock(side_effect=Exception)
+
+        launcher.start()
+        with self.assertRaises(LauncherError):
+            launcher.stop()
 
 
 class TestMozRunnerLauncher(unittest.TestCase):

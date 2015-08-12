@@ -72,22 +72,6 @@ class TestDownload(unittest.TestCase):
         with open(self.tempfile) as f:
             self.assertEquals(f.read(), '1234' * 4)
 
-    def test_download_when_we_have_an_old_temp_file(self):
-        self.create_response('1234' * 4, 0.01)
-
-        # create a temp file before downloading
-        with open(self.tempfile + '.tmp', 'w') as f:
-            f.write('incomplete stuff')
-
-        self.dl.start()
-        self.dl.wait()
-
-        # file has been downloaded
-        with open(self.tempfile) as f:
-            self.assertEquals(f.read(), '1234' * 4)
-        # temp file does not exists anymore
-        self.assertFalse(os.path.exists(self.tempfile + '.tmp'))
-
     def test_download_cancel(self):
         self.create_response('1234' * 1000, wait=0.01)
 

@@ -1,3 +1,4 @@
+import tempfile
 import threading
 import requests
 from contextlib import closing
@@ -142,29 +143,37 @@ class Download(object):
         # this allow to not use a broken file in case things went really bad
         # while downloading the file (ie the python interpreter is killed
         # abruptly)
-        temp_dest = dest + '.tmp'
+        temp = None
         bytes_so_far = 0
         try:
             with closing(session.get(url, stream=True)) as response:
                 total_size = int(response.headers['Content-length'].strip())
                 self._update_progress(bytes_so_far, total_size)
-                with open(temp_dest, 'wb') as f:
+                # we use NamedTemporaryFile as raw open() call was causing
+                # issues on windows - see:
+                # https://bugzilla.mozilla.org/show_bug.cgi?id=1185756
+                with tempfile.NamedTemporaryFile(
+                        delete=False,
+                        suffix='.tmp',
+                        dir=os.path.dirname(dest)) as temp:
                     for chunk in response.iter_content(chunk_size):
                         if self.is_canceled():
                             break
                         if chunk:
-                            f.write(chunk)
+                            temp.write(chunk)
                         bytes_so_far += len(chunk)
                         self._update_progress(bytes_so_far, total_size)
         except:
             self.__error = sys.exc_info()
         try:
-            if self.is_canceled() or self.__error:
-                mozfile.remove(temp_dest)
+            if temp is None:
+                pass  # not even opened the temp file, nothing to do
+            elif self.is_canceled() or self.__error:
+                mozfile.remove(temp.name)
             else:
                 # if all goes well, then rename the file to the real dest
                 mozfile.remove(dest)  # just in case it already existed
-                mozfile.move(temp_dest, dest)
+                mozfile.move(temp.name, dest)
         finally:
             if finished_callback:
                 finished_callback(self)

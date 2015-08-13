@@ -274,36 +274,86 @@ def download_progress(_dl, bytes_so_far, total_size):
     sys.stdout.flush()
 
 
+class DefaultPersistChooser(object):
+    """
+    Allow to choose an already downloaded persistent file
+    instead of downloading a new one.
+
+    The DefaultPersistChooser is a no-op, subclasses must implement
+    the logic.
+    """
+    def accept(self, dlmanager, build_info):
+        """
+        return the file path of a persist build that is acceptable
+        for the given build_info.
+
+        The default implementation returns None as returning the
+        exact persist file is already handled by DownloadManager.
+        """
+        return None
+
+
+class ApproxPersistChooser(DefaultPersistChooser):
+    """
+    ApproxPersistChooser is able to pick a persistent file that is *near*
+    the one we should download.
+
+    It uses :meth:`mozregression.build_info.BuildInfo.find_nearest_build_file`
+    to find the nearest files, limiting the scope (*around* parameter) to
+    *bisection_range/one_every*.
+
+    For example, if you pass 7 for the *one_every* parameter, it will search
+    for builds around the one we need in this way:
+
+    0 if bisection range is < 7
+    1 if bisection range is >= 7 and < 14
+    2 if bisection range is >= 14 and < 21
+    ...
+
+    So if the desired nightly build is 2015-07-10 and the bisection range is
+    2015-07-05 - 2015-07-15, this will try to pick a persitent file from
+    (in this order):
+
+    2015-07-10
+    2015-07-9
+    2015-07-11
+    """
+    def __init__(self, one_every):
+        self.one_every = one_every
+
+    def accept(self, dlmanager, build_info):
+        return build_info.find_nearest_build_file(
+            os.listdir(dlmanager.destdir),
+            len(build_info.build_data) / self.one_every
+        )
+
+
 class BuildDownloadManager(DownloadManager):
     """
     A DownloadManager specialized to download builds.
     """
     def __init__(self, logger, destdir, session=requests,
-                 background_dl_policy='cancel'):
+                 background_dl_policy='cancel',
+                 persist_chooser=None):
         DownloadManager.__init__(self, destdir, session=session)
         self.logger = logger
         self._downloads_bg = set()
         assert background_dl_policy in ('cancel', 'keep')
         self.background_dl_policy = background_dl_policy
+        self.persist_chooser = persist_chooser or DefaultPersistChooser()
 
     def _extract_download_info(self, build_info):
-        if build_info['build_type'] == 'nightly':
-            persist_prefix = str(build_info['build_date'])
-
-        else:
-            persist_prefix = str(build_info['changeset'][:12])
-
-        persist_prefix += '--%s--' % build_info['repo']
-        build_url = build_info['build_url']
-        fname = persist_prefix + os.path.basename(build_url)
-        return build_url, fname
+        return build_info['build_url'], build_info.build_fname()
 
     def download_in_background(self, build_info):
         """
         Start a build download in background.
 
-        Don nothing is a build is already downloading/downloaded.
+        Do nothing is a build is already downloading/downloaded.
         """
+        if self.persist_chooser.accept(self, build_info):
+            return None
+
         build_url, fname = self._extract_download_info(build_info)
         result = self.download(build_url, fname)
         if result is not None:
@@ -329,10 +379,20 @@ class BuildDownloadManager(DownloadManager):
         """
         build_url, fname = self._extract_download_info(build_info)
         dest = self.get_dest(fname)
+
         # first, stop all downloads in background (except the one for this
         # build if any)
         if self.background_dl_policy == 'cancel':
             self.cancel(cancel_if=lambda dl: dest != dl.get_dest())
+
+        acceptable_fname = self.persist_chooser.accept(self, build_info)
+        if acceptable_fname and acceptable_fname != fname:
+            newdest = self.get_dest(acceptable_fname)
+            self.logger.info("Using `%s` as an acceptable approximative"
+                             " build file instead of downloading %s"
+                             % (newdest, fname))
+            build_info.update_from_approx_build(acceptable_fname)
+            return self.get_dest(acceptable_fname)
 
         dl = self.download(build_url, fname)
         if dl:

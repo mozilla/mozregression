@@ -12,8 +12,10 @@ import pipes
 from mozlog.structured import get_default_logger
 
 from mozregression.build_data import NightlyBuildData, InboundBuildData
-from mozregression.download_manager import BuildDownloadManager
+from mozregression.download_manager import BuildDownloadManager, \
+    ApproxPersistChooser
 from mozregression.errors import MozRegressionError, LauncherError
+from mozregression.build_info import NightlyBuildInfo, InboundBuildInfo
 
 
 def compute_steps_left(steps):
@@ -28,7 +30,6 @@ class BisectorHandler(object):
 
     A BisectorHandler keep the state of the current bisection process.
     """
-    build_type = 'unknown'
 
     def __init__(self, find_fix=False):
         self.find_fix = find_fix
@@ -50,14 +51,9 @@ class BisectorHandler(object):
 
     def build_infos(self, index, fetch_config):
         """
-        Compute build infos (a dict) when a build is about to be tested.
+        Compute build infos when a build is about to be tested.
         """
-        infos = {
-            'build_type': self.build_type,
-            'app_name': fetch_config.app_name
-        }
-        infos.update(self.build_data[index])
-        return infos
+        return self.build_info_class(fetch_config, self.build_data, index)
 
     def _print_progress(self, new_data):
         """
@@ -140,7 +136,7 @@ class BisectorHandler(object):
 
 class NightlyHandler(BisectorHandler):
     build_data_class = NightlyBuildData
-    build_type = 'nightly'
+    build_info_class = NightlyBuildInfo
     good_date = None
     bad_date = None
 
@@ -150,12 +146,6 @@ class NightlyHandler(BisectorHandler):
         self.good_date, self.bad_date = \
             self._reverse_if_find_fix(self.build_data.get_associated_data(0),
                                       self.build_data.get_associated_data(-1))
-
-    def build_infos(self, index, fetch_config):
-        infos = BisectorHandler.build_infos(self, index, fetch_config)
-        infos['build_date'] = self.build_data.get_associated_data(index)
-        infos['repo'] = fetch_config.get_nightly_repo(infos['build_date'])
-        return infos
 
     def _print_progress(self, new_data):
         next_good_date = new_data.get_associated_data(0)
@@ -262,12 +252,7 @@ class NightlyHandler(BisectorHandler):
 
 class InboundHandler(BisectorHandler):
     build_data_class = InboundBuildData
-    build_type = 'inbound'
-
-    def build_infos(self, index, fetch_config):
-        infos = BisectorHandler.build_infos(self, index, fetch_config)
-        infos['repo'] = fetch_config.inbound_branch
-        return infos
+    build_info_class = InboundBuildInfo
 
     def _print_progress(self, new_data):
         self._logger.info("Narrowed inbound regression window from [%s, %s]"
@@ -437,7 +422,8 @@ class Bisector(object):
     :class:`BisectorHandler`.
     """
     def __init__(self, fetch_config, test_runner, persist=None,
-                 dl_in_background=True, background_dl_policy="cancel"):
+                 dl_in_background=True, background_dl_policy="cancel",
+                 persist_chooser=None):
         self.fetch_config = fetch_config
         self.test_runner = test_runner
         self.delete_dldir = False
@@ -451,6 +437,7 @@ class Bisector(object):
         self.download_dir = persist
         self.dl_in_background = dl_in_background
         self.background_dl_policy = background_dl_policy
+        self.persist_chooser = persist_chooser
 
     def __del__(self):
         if self.delete_dldir:
@@ -473,7 +460,9 @@ class Bisector(object):
         logger = handler._logger
         download_manager = BuildDownloadManager(
             logger, self.download_dir,
-            background_dl_policy=self.background_dl_policy
+            background_dl_policy=self.background_dl_policy,
+            # persist_chooser is None if we are in persist mode
+            persist_chooser=None if self.delete_dldir else self.persist_chooser
         )
 
         bisection = Bisection(handler, build_data, download_manager,
@@ -531,6 +520,12 @@ class BisectRunner(object):
         return self.bisector.bisect(handler, good, bad, **kwargs)
 
     def bisect_nightlies(self, good_date, bad_date):
+        # one day approximation is ok by week.
+        # see https://bugzilla.mozilla.org/show_bug.cgi?id=1160078#c1
+        self.bisector.persist_chooser = \
+            None if self.options.approx_policy == 'none' \
+            else ApproxPersistChooser(7)
+
         handler = NightlyHandler(find_fix=self.options.find_fix)
         result = self.do_bisect(handler, good_date, bad_date)
         if result == Bisection.FINISHED:
@@ -563,6 +558,8 @@ class BisectRunner(object):
         return 0
 
     def bisect_inbound(self, good_rev, bad_rev):
+        # disable persist chooser anyway for inbound.
+        self.bisector.persist_chooser = None
         self._logger.info("Getting inbound builds between %s and %s"
                           % (good_rev, bad_rev))
         handler = InboundHandler(find_fix=self.options.find_fix)

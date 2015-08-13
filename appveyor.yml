@@ -5,12 +5,12 @@ environment:
     - PYTHON: "C:/Python27"
 init:
   - "ECHO %PYTHON%"
+  - "ECHO %PATH%"
 install:
   - ps: (new-object net.webclient).DownloadFile('https://raw.github.com/pypa/pip/master/contrib/get-pip.py', 'C:/get-pip.py')
   - "%PYTHON%/python.exe C:/get-pip.py"
   # install PyQt4
-  - ps: (new-object net.webclient).DownloadFile("http://sourceforge.net/projects/pyqt/files/PyQt4/PyQt-4.11.3/PyQt4-4.11.3-gpl-Py2.7-Qt4.8.6-x32.exe", "C:\install-PyQt4.exe")
-  - ps: Start-Process -FilePath C:\install-PyQt4.exe -ArgumentList "/S" -Wait -Passthru
+  - cinst pyqt4 -y
   # install mozregression code and test dependencies
   - "cd gui & %PYTHON%/Scripts/pip.exe install -r test-requirements.txt"
   - "cd .."

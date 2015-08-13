@@ -11,8 +11,7 @@ from tempfile import mkdtemp
 from PyQt4.QtGui import QApplication, QMainWindow, QMessageBox
 from PyQt4.QtCore import pyqtSlot as Slot, QSettings
 
-from mozlog.structured import set_default_logger
-from mozlog.structured.structuredlog import StructuredLogger
+from mozlog.structuredlog import set_default_logger, StructuredLogger
 
 from mozregui.ui.mainwindow import Ui_MainWindow
 from mozregui.wizard import BisectionWizard
@@ -114,10 +113,11 @@ class MainWindow(QMainWindow):
 
 
 def main():
-    set_default_logger(StructuredLogger('mozregression-gui'))
+    logger = StructuredLogger('mozregression-gui')
+    set_default_logger(logger)
     # Create a Qt application
     log_model = LogModel()
-    StructuredLogger('mozregression-gui').add_handler(log_model)
+    logger.add_handler(log_model)
     argv = [sys.argv[0].replace("main.py", "mozregression")] + sys.argv[1:]
     app = QApplication(argv)
     app.setOrganizationName('mozilla')

@@ -95,10 +95,10 @@ class MainWindow(QMainWindow):
     @Slot()
     def stop_bisection(self):
         # stop the bisection without blocking
-        self.bisect_runner.stop(False)
-        # clear the report model
         model = self.ui.report_view.model()
         model.attach_bisector(None)
+        self.bisect_runner.stop(False)
+        # clear the report model
         model.clear()
         # clear the build info main panel
         self.ui.build_info_browser.clear()

@@ -198,18 +198,6 @@ def parse_args(argv=None):
                               ' downloading them when persist mode is enabled.'
                               ' The default is %(default)s.'))
 
-    parser.add_argument('--approx-policy', choices=('auto', 'none'),
-                        default=defaults.get('approx-policy', 'auto'),
-                        help=("Policy to reuse approximate persistent builds"
-                              " instead of downloading the accurate ones."
-                              " The default is 'auto', so mozregression will"
-                              " try its best to reuse files in persistent"
-                              " mode, meaning that for 7 days of bisection"
-                              " range it will try to reuse a build which"
-                              " date approximates the build to download by"
-                              " one day (before or after)."
-                              " Use 'none' to disable this behavior."))
-
     commandline.add_logging_group(
         parser,
         include_formatters=commandline.TEXT_FORMATTERS

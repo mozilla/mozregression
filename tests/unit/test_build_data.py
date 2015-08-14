@@ -202,17 +202,15 @@ firefox/nightly/2014/11/2014-11-01-03-02-05-foo/')
         self.assertEqual(urls, [])
 
 
-def create_nightly_build_data(good_date, bad_date, fetch_config=None):
-    if fetch_config is None:
-        fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
-    return build_data.NightlyBuildData(fetch_config, good_date, bad_date)
-
-
 class TestNightlyBuildData(unittest.TestCase):
     def setUp(self):
         good_date = datetime.date(2014, 11, 10)
         bad_date = datetime.date(2014, 11, 20)
-        self.build_data = create_nightly_build_data(good_date, bad_date)
+        fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
+
+        self.build_data = build_data.NightlyBuildData(fetch_config,
+                                                      good_date,
+                                                      bad_date)
 
     @patch('mozregression.build_data.BuildFolderInfoFetcher.\
 find_build_info_txt')
@@ -327,23 +325,23 @@ class TestPushLogsFinder(unittest.TestCase):
         ])
 
 
-def create_inbound_build_data(good, bad, fetch_config=None):
-    if fetch_config is None:
+class TestInboundBuildData(unittest.TestCase):
+    @patch('mozregression.build_data.PushLogsFinder.get_pushlogs')
+    def create_inbound_build_data(self, good, bad, get_pushlogs):
         fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
-    # create fake pushlog returns
-    pushlogs = [
-        {'date': d, 'changesets': ['c' + str(d)]}
-        for d in xrange(int(good[1:]), int(bad[1:]))
-    ]
-    with patch('mozregression.build_data.PushLogsFinder.get_pushlogs') as gp:
-        gp.return_value = pushlogs
+        # create fake pushlog returns
+        pushlogs = [
+            {'date': d, 'changesets': ['c' + str(d)]}
+            for d in xrange(int(good[1:]), int(bad[1:]))
+        ]
+        get_pushlogs.return_value = pushlogs
+        # returns 100 possible build folders
+
         return build_data.InboundBuildData(fetch_config, good, bad)
 
-
-class TestInboundBuildData(unittest.TestCase):
     @patch('mozregression.build_data.BuildFolderInfoFetcher')
     def test_create(self, BuildFolderInfoFetcher):
-        data = create_inbound_build_data('c40', 'c60')
+        data = self.create_inbound_build_data('c40', 'c60')
         # there are 20 changesets
         self.assertEqual(len(data), 20)
         # BuildFolderInfoFetcher has been called and is defined
@@ -352,15 +350,15 @@ class TestInboundBuildData(unittest.TestCase):
         self.assertIsNotNone(data.info_fetcher)
 
     def test_create_empty(self):
-        data = create_inbound_build_data('c0', 'c0')
+        data = self.create_inbound_build_data('c0', 'c0')
         self.assertEqual(len(data), 0)
 
     def test_create_only_one_rev(self):
-        data = create_inbound_build_data('c0', 'c1')
+        data = self.create_inbound_build_data('c0', 'c1')
         self.assertEqual(len(data), 0)
 
     def test_get_valid_build_got_exception(self):
-        data = create_inbound_build_data('c0', 'c3')
+        data = self.create_inbound_build_data('c0', 'c3')
         # patch things in _get_valid_builds
         data.index.findTask = Mock(side_effect=build_data.TaskclusterFailure)
 
@@ -368,7 +366,7 @@ class TestInboundBuildData(unittest.TestCase):
         self.assertEqual(len(data), 0)
 
     def test_get_valid_build_no_artifacts(self):
-        data = create_inbound_build_data('c0', 'c3')
+        data = self.create_inbound_build_data('c0', 'c3')
         # patch things in _get_valid_builds
 
         def find_task(route):
@@ -384,7 +382,7 @@ class TestInboundBuildData(unittest.TestCase):
         self.assertEqual(len(data), 0)
 
     def test_get_valid_build(self):
-        data = create_inbound_build_data('c0', 'c3')
+        data = self.create_inbound_build_data('c0', 'c3')
         # patch things in _get_valid_builds
 
         def find_task(route):

@@ -74,3 +74,9 @@ class LauncherError(MozRegressionError):
     """
     Error when running the tested application.
     """
+
+
+class BuildInfoNotFound(MozRegressionError):
+    """
+    Raised when we can't find information about a build.
+    """

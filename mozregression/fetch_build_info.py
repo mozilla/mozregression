@@ -34,51 +34,20 @@ from mozregression.network import url_links, retry_get
 from mozregression.errors import BuildInfoNotFound
 
 
-class BuildFolderInfoFetcher(object):
-    """
-    Allow to retrieve information from build folders.
+class InfoFetcher(object):
+    def __init__(self, fetch_config):
+        self._logger = get_default_logger(__name__)
+        self.fetch_config = fetch_config
+        self.build_regex = re.compile(fetch_config.build_regex())
+        self.build_info_regex = re.compile(fetch_config.build_info_regex())
 
-    :param build_regex: a regexp or string regexp that
-        match the build file.
+    def _update_build_info_from_txt(self, build_info):
+        if 'build_txt_url' in build_info:
+            build_info.update(
+                self._fetch_txt_info(build_info['build_txt_url'])
+            )
 
-    :param build_info_regex: a regexp or string regexp
-        that can match the build
-                             info file (.txt).
-    """
-    def __init__(self, build_regex, build_info_regex):
-        if isinstance(build_regex, basestring):
-            build_regex = re.compile(build_regex)
-        if isinstance(build_info_regex, basestring):
-            build_info_regex = re.compile(build_info_regex)
-        self.build_regex = build_regex
-        self.build_info_regex = build_info_regex
-
-    def find_build_info(self, url, read_txt_content=False):
-        """
-        Retrieve information from a build folder url.
-
-        Returns a dict with keys build_url and build_txt_url if respectively
-        a build file and a build info file are found for the url.
-
-        If read_txt_content is True, the dict is updated with data found
-        by calling :meth:`find_build_info_txt`
-        """
-        data = {}
-        if not url.endswith('/'):
-            url += '/'
-        for link in url_links(url):
-            if 'build_url' not in data and self.build_regex.match(link):
-                data['build_url'] = url + link
-            elif 'build_txt_url' not in data  \
-                    and self.build_info_regex.match(link):
-                data['build_txt_url'] = url + link
-
-        if read_txt_content and 'build_txt_url' in data:
-            data.update(self.find_build_info_txt(data['build_txt_url']))
-
-        return data
-
-    def find_build_info_txt(self, url):
+    def _fetch_txt_info(self, url):
         """
         Retrieve information from a build information txt file.
 
@@ -101,24 +70,6 @@ class BuildFolderInfoFetcher(object):
             if matched:
                 data['changeset'] = matched.group(1)
         return data
-
-
-class InfoFetcher(object):
-    def __init__(self, fetch_config):
-        self._logger = get_default_logger(__name__)
-        self.fetch_config = fetch_config
-        self.build_folder_info_fetcher = BuildFolderInfoFetcher(
-            fetch_config.build_regex(),
-            fetch_config.build_info_regex()
-        )
-
-    def _update_build_info_from_txt(self, build_info):
-        if 'build_txt_url' in build_info:
-            build_info.update(
-                self.build_folder_info_fetcher.find_build_info_txt(
-                    build_info['build_txt_url']
-                )
-            )
 
     def find_build_info(self, changeset_or_date, fetch_txt_info=True):
         """
@@ -167,9 +118,9 @@ class InboundInfoFetcher(InfoFetcher):
         for a in artifacts:
             match = None
             name = os.path.basename(a['name'])
-            if self.build_folder_info_fetcher.build_regex.match(name):
+            if self.build_regex.match(name):
                 match = 'build_url'
-            elif self.build_folder_info_fetcher.build_info_regex.match(name):
+            elif self.build_info_regex.match(name):
                 match = 'build_txt_url'
             if match:
                 data[match] = self.queue.buildUrl(
@@ -228,6 +179,25 @@ class NightlyInfoFetcher(InfoFetcher):
         InfoFetcher.__init__(self, fetch_config)
         self.url_builder = NightlyUrlBuilder(fetch_config)
 
+    def _fetch_build_info_from_url(self, url):
+        """
+        Retrieve information from a build folder url.
+
+        Returns a dict with keys build_url and build_txt_url if respectively
+        a build file and a build info file are found for the url.
+        """
+        data = {}
+        if not url.endswith('/'):
+            url += '/'
+        for link in url_links(url):
+            if 'build_url' not in data and self.build_regex.match(link):
+                data['build_url'] = url + link
+            elif 'build_txt_url' not in data  \
+                    and self.build_info_regex.match(link):
+                data['build_txt_url'] = url + link
+
+        return data
+
     def find_build_info(self, date, fetch_txt_info=True, max_workers=2):
         """
         Find build info for a nightly build, given a date.
@@ -248,8 +218,8 @@ class NightlyInfoFetcher(InfoFetcher):
                 futures_results = {}
                 valid_builds = []
                 for i, url in enumerate(some):
-                    future = executor.submit(
-                        self.build_folder_info_fetcher.find_build_info, url)
+                    future = executor.submit(self._fetch_build_info_from_url,
+                                             url)
                     futures_results[future] = i
                 for future in futures.as_completed(futures_results):
                     i = futures_results[future]

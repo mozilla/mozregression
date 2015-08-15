@@ -5,29 +5,13 @@ from mock import patch, Mock
 from mozregression import fetch_build_info, fetch_configs, errors
 
 
-class TestBuildFolderInfoFetcher(unittest.TestCase):
+class TestInfoFetcher(unittest.TestCase):
     def setUp(self):
-        self.info_fetcher = fetch_build_info.\
-            BuildFolderInfoFetcher(r'app_test.*.tar.bz2$',
-                                   r'app_test.*.txt$')
-
-    @patch('mozregression.fetch_build_info.url_links')
-    def test_find_build_info(self, url_links):
-        url_links.return_value = [
-            'file1.txt.gz',
-            'file2.txt',
-            'app_test01linux-x86_64.txt',
-            'app_test01linux-x86_64.tar.bz2',
-        ]
-        expected = {
-            'build_txt_url': 'http://foo/app_test01linux-x86_64.txt',
-            'build_url': 'http://foo/app_test01linux-x86_64.tar.bz2',
-        }
-        self.assertEqual(self.info_fetcher.find_build_info('http://foo'),
-                         expected)
+        fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
+        self.info_fetcher = fetch_build_info.InfoFetcher(fetch_config)
 
     @patch('requests.get')
-    def test_find_build_info_txt(self, get):
+    def test__fetch_txt_info(self, get):
         response = Mock(text="20141101030205\nhttps://hg.mozilla.org/\
 mozilla-central/rev/b695d9575654\n")
         get.return_value = response
@@ -35,19 +19,17 @@ mozilla-central/rev/b695d9575654\n")
             'repository': 'https://hg.mozilla.org/mozilla-central',
             'changeset': 'b695d9575654',
         }
-        self.assertEqual(self.info_fetcher.
-                         find_build_info_txt('http://foo.txt'),
+        self.assertEqual(self.info_fetcher._fetch_txt_info('http://foo.txt'),
                          expected)
 
     @patch('requests.get')
-    def test_find_build_info_txt_old_format(self, get):
+    def test__fetch_txt_info_old_format(self, get):
         response = Mock(text="20110126030333 e0fc18b3bc41\n")
         get.return_value = response
         expected = {
             'changeset': 'e0fc18b3bc41',
         }
-        self.assertEqual(self.info_fetcher.
-                         find_build_info_txt('http://foo.txt'),
+        self.assertEqual(self.info_fetcher._fetch_txt_info('http://foo.txt'),
                          expected)
 
 
@@ -77,13 +59,25 @@ class TestNightlyInfoFetcher(unittest.TestCase):
         fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
         self.info_fetcher = fetch_build_info.NightlyInfoFetcher(fetch_config)
 
-    @patch('mozregression.fetch_build_info.BuildFolderInfoFetcher.\
-find_build_info_txt')
-    @patch('mozregression.fetch_build_info.BuildFolderInfoFetcher.\
-find_build_info')
+    @patch('mozregression.fetch_build_info.url_links')
+    def test__find_build_info_from_url(self, url_links):
+        url_links.return_value = [
+            'file1.txt.gz',
+            'file2.txt',
+            'firefox01linux-x86_64.txt',
+            'firefox01linux-x86_64.tar.bz2',
+        ]
+        expected = {
+            'build_txt_url': 'http://foo/firefox01linux-x86_64.txt',
+            'build_url': 'http://foo/firefox01linux-x86_64.tar.bz2',
+        }
+        self.assertEqual(
+            self.info_fetcher._fetch_build_info_from_url('http://foo'),
+            expected
+        )
+
     @patch('mozregression.fetch_build_info.NightlyUrlBuilder.get_urls')
-    def test_find_build_info(self, get_urls,
-                             find_build_info, find_build_info_txt):
+    def test_find_build_info(self, get_urls):
         get_urls.return_value = [
             'https://archive.mozilla.org/pub/mozilla.org/\
 bar/nightly/2014/11/2014-11-15-08-02-05-mozilla-central/',
@@ -105,7 +99,10 @@ bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/',
                 'build_txt_url': url,
                 'build_url': url,
             }
-        find_build_info.side_effect = my_find_build_info
+        self.info_fetcher._fetch_build_info_from_url = Mock(
+            side_effect=my_find_build_info
+        )
+        self.info_fetcher._fetch_txt_info = Mock(return_value={})
         result = self.info_fetcher.find_build_info(datetime.date(2014, 11, 15))
         # we must have found the last build url valid
         self.assertEqual(result, {
@@ -145,7 +142,7 @@ class TestInboundInfoFetcher(unittest.TestCase):
         self.info_fetcher.queue.listLatestArtifacts = \
             Mock(side_effect=list_artifacts)
         self.info_fetcher.queue.buildUrl = Mock(side_effect=build_url)
-        self.info_fetcher.build_folder_info_fetcher.find_build_info_txt = \
+        self.info_fetcher._fetch_txt_info = \
             Mock(return_value={'changeset': '123456789'})
 
         result = self.info_fetcher.find_build_info('123456789')

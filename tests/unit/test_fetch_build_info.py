@@ -33,27 +33,6 @@ mozilla-central/rev/b695d9575654\n")
                          expected)
 
 
-class TestNightlyUrlBuilder(unittest.TestCase):
-    def setUp(self):
-        fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
-        fetch_config.set_nightly_repo('foo')
-        self.url_builder = fetch_build_info.NightlyUrlBuilder(fetch_config)
-
-    @patch('mozregression.fetch_build_info.url_links')
-    def test_get_url(self, url_links):
-        url_links.return_value = [
-            '2014-11-01-03-02-05-mozilla-central/',
-            '2014-11-01-03-02-05-foo/',
-            'foo',
-            'bar/'
-        ]
-        urls = self.url_builder.get_urls(datetime.date(2014, 11, 01))
-        self.assertEqual(urls[0], 'https://archive.mozilla.org/pub/mozilla.org/\
-firefox/nightly/2014/11/2014-11-01-03-02-05-foo/')
-        urls = self.url_builder.get_urls(datetime.date(2014, 11, 02))
-        self.assertEqual(urls, [])
-
-
 class TestNightlyInfoFetcher(unittest.TestCase):
     def setUp(self):
         fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
@@ -76,9 +55,22 @@ class TestNightlyInfoFetcher(unittest.TestCase):
             expected
         )
 
-    @patch('mozregression.fetch_build_info.NightlyUrlBuilder.get_urls')
-    def test_find_build_info(self, get_urls):
-        get_urls.return_value = [
+    @patch('mozregression.fetch_build_info.url_links')
+    def test__get_url(self, url_links):
+        url_links.return_value = [
+            '2014-11-01-03-02-05-mozilla-central/',
+            '2014-11-01-03-02-05-foo/',
+            'foo',
+            'bar/'
+        ]
+        urls = self.info_fetcher._get_urls(datetime.date(2014, 11, 01))
+        self.assertEqual(urls[0], 'https://archive.mozilla.org/pub/mozilla.org/\
+firefox/nightly/2014/11/2014-11-01-03-02-05-mozilla-central/')
+        urls = self.info_fetcher._get_urls(datetime.date(2014, 11, 02))
+        self.assertEqual(urls, [])
+
+    def test_find_build_info(self):
+        get_urls = self.info_fetcher._get_urls = Mock(return_value=[
             'https://archive.mozilla.org/pub/mozilla.org/\
 bar/nightly/2014/11/2014-11-15-08-02-05-mozilla-central/',
             'https://archive.mozilla.org/pub/mozilla.org/\
@@ -89,7 +81,7 @@ bar/nightly/2014/11/2014-11-15-03-02-05-mozilla-central',
 bar/nightly/2014/11/2014-11-15-02-02-05-mozilla-central/',
             'https://archive.mozilla.org/pub/mozilla.org/\
 bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/',
-        ]
+        ])
 
         def my_find_build_info(url):
             # say only the last build url is invalid
@@ -110,9 +102,8 @@ bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/',
             'build_url': get_urls.return_value[-1],
         })
 
-    @patch('mozregression.fetch_build_info.NightlyUrlBuilder.get_urls')
-    def test_find_build_info_no_data(self, get_urls):
-        get_urls.return_value = []
+    def test_find_build_info_no_data(self):
+        self.info_fetcher._get_urls = Mock(return_value=[])
         with self.assertRaises(errors.BuildInfoNotFound):
             self.info_fetcher.find_build_info(datetime.date(2014, 11, 15))
 

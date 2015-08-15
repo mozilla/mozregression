@@ -136,48 +136,11 @@ class InboundInfoFetcher(InfoFetcher):
         return data
 
 
-class NightlyUrlBuilder(object):
-    """
-    Build a url for a nightly build folder for a given instance of
-    :class:`mozregression.fetch_configs.NightlyConfigMixin`.
-    """
-    def __init__(self, fetch_config):
-        self.fetch_config = fetch_config
-        self._cache_months = {}
-        self._lock = threading.Lock()
-
-    def _get_month_links(self, url):
-        with self._lock:
-            if url not in self._cache_months:
-                self._cache_months[url] = url_links(url)
-            return self._cache_months[url]
-
-    def get_urls(self, date):
-        """
-        Get the url list of the build folder for a given date.
-
-        This methods needs to be thread-safe as it is used in
-        :meth:`NightlyBuildData.get_build_url`.
-        """
-        url = self.fetch_config.get_nighly_base_url(date)
-        link_regex = re.compile(self.fetch_config.get_nightly_repo_regex(date))
-
-        month_links = self._get_month_links(url)
-
-        # first parse monthly list to get correct directory
-        matches = []
-        for dirlink in month_links:
-            if link_regex.match(dirlink):
-                matches.append(url + dirlink)
-        # the most recent build urls first
-        matches.reverse()
-        return matches
-
-
 class NightlyInfoFetcher(InfoFetcher):
     def __init__(self, fetch_config):
         InfoFetcher.__init__(self, fetch_config)
-        self.url_builder = NightlyUrlBuilder(fetch_config)
+        self._cache_months = {}
+        self._lock = threading.Lock()
 
     def _fetch_build_info_from_url(self, url):
         """
@@ -198,6 +161,33 @@ class NightlyInfoFetcher(InfoFetcher):
 
         return data
 
+    def _get_month_links(self, url):
+        with self._lock:
+            if url not in self._cache_months:
+                self._cache_months[url] = url_links(url)
+            return self._cache_months[url]
+
+    def _get_urls(self, date):
+        """
+        Get the url list of the build folder for a given date.
+
+        This methods needs to be thread-safe as it is used in
+        :meth:`NightlyBuildData.get_build_url`.
+        """
+        url = self.fetch_config.get_nighly_base_url(date)
+        link_regex = re.compile(self.fetch_config.get_nightly_repo_regex(date))
+
+        month_links = self._get_month_links(url)
+
+        # first parse monthly list to get correct directory
+        matches = []
+        for dirlink in month_links:
+            if link_regex.match(dirlink):
+                matches.append(url + dirlink)
+        # the most recent build urls first
+        matches.reverse()
+        return matches
+
     def find_build_info(self, date, fetch_txt_info=True, max_workers=2):
         """
         Find build info for a nightly build, given a date.
@@ -208,7 +198,7 @@ class NightlyInfoFetcher(InfoFetcher):
 
         # to save time, we will try multiple build folders at the same
         # time in some threads. The first good one found is returned.
-        build_urls = self.url_builder.get_urls(date)
+        build_urls = self._get_urls(date)
         build_infos = None
 
         while build_urls:

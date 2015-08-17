@@ -1,6 +1,23 @@
 """
 This module defines the configuration needed for nightly and inbound
-fetching for each application.
+fetching for each application. This configuration is a base block
+for everything done in mozregression since it holds information
+about how to get information about builds for a given application.
+
+The public entry point in there is :func:`create_config`, which
+creates an returns a fetch configuration. the configuration will
+be an instance of :class:`CommonConfig`, possibly using the mixins
+:class:`NightlyConfigMixin` and/or :class:`InboundConfigMixin`.
+
+Example to create a configuration for firefox on linux 64: ::
+
+  fetch_config = create_config('firefox', 'linux', 64)
+
+You can also use the variable *REGISTRY* defined in this module to get a
+list of application names that can be used to build a configuration. This is
+an instance of :class:`ClassRegistry`. Example: ::
+
+  print REGISTRY.names()
 """
 import datetime
 
@@ -268,6 +285,11 @@ REGISTRY = ClassRegistry('app_name')
 def create_config(name, os, bits):
     """
     Create and returns a configuration for the given name.
+
+    :param name: application name, such as 'firefox'
+    :param os: os name, e.g 'linux', 'win' or 'mac'
+    :param bits: the bit of the os as an int, e.g 32 or 64. Can be None
+                 if the bits do not make sense (e.g. fennec)
     """
     return REGISTRY.get(name)(os, bits)
 

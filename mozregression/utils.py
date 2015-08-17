@@ -37,41 +37,6 @@ def parse_bits(option_bits):
         return mozinfo.bits
 
 
-def get_build_regex(name, os, bits, with_ext=True):
-    """
-    Returns a string regexp that can match a build filename.
-
-    :param name: must be the beginning of the filename to match
-    :param os: the os, as returned by mozinfo.os
-    :param bits: the bits information of the build. Either 32 or 64.
-    :param with_ext: if True, the build extension will be appended (either
-                     .zip, .tar.bz2 or .dmg depending on the os).
-    """
-    if os == "win":
-        if bits == 64:
-            suffix, ext = r".*win64(-x86_64)?", r"\.zip"
-        else:
-            suffix, ext = r".*win32", r"\.zip"
-    elif os == "linux":
-        if bits == 64:
-            suffix, ext = r".*linux-x86_64", r"\.tar.bz2"
-        else:
-            suffix, ext = r".*linux-i686", r"\.tar.bz2"
-    elif os == "mac":
-        suffix, ext = r".*mac.*", r"\.dmg"
-    else:
-        raise errors.MozRegressionError(
-            "mozregression supports linux, mac and windows but your"
-            " os is reported as '%s'." % os
-        )
-
-    regex = '%s%s' % (name, suffix)
-    if with_ext:
-        return '%s%s' % (regex, ext)
-    else:
-        return regex
-
-
 def releases():
     """
     Provide the list of releases with their associated dates.

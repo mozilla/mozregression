@@ -28,41 +28,6 @@ class TestParseBits(unittest.TestCase):
         self.assertEqual(utils.parse_bits('64'), 64)
 
 
-class TestGetBuildUrl(unittest.TestCase):
-    def test_for_linux(self):
-        self.assertEqual(utils.get_build_regex('test', 'linux', 32),
-                         r'test.*linux-i686\.tar.bz2')
-
-        self.assertEqual(utils.get_build_regex('test', 'linux', 64),
-                         r'test.*linux-x86_64\.tar.bz2')
-
-        self.assertEqual(utils.get_build_regex('test', 'linux', 64,
-                                               with_ext=False),
-                         r'test.*linux-x86_64')
-
-    def test_for_win(self):
-        self.assertEqual(utils.get_build_regex('test', 'win', 32),
-                         r'test.*win32\.zip')
-        self.assertEqual(utils.get_build_regex('test', 'win', 64),
-                         r'test.*win64(-x86_64)?\.zip')
-        self.assertEqual(utils.get_build_regex('test', 'win', 64,
-                                               with_ext=False),
-                         r'test.*win64(-x86_64)?')
-
-    def test_for_mac(self):
-        self.assertEqual(utils.get_build_regex('test', 'mac', 32),
-                         r'test.*mac.*\.dmg')
-        self.assertEqual(utils.get_build_regex('test', 'mac', 64),
-                         r'test.*mac.*\.dmg')
-        self.assertEqual(utils.get_build_regex('test', 'mac', 64,
-                                               with_ext=False),
-                         r'test.*mac.*')
-
-    def test_unknown_os(self):
-        with self.assertRaises(errors.MozRegressionError):
-            utils.get_build_regex('test', 'unknown', 32)
-
-
 class TestRelease(unittest.TestCase):
     def test_valid_release_to_date(self):
         date = utils.date_of_release(8)

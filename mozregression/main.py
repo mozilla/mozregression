@@ -25,8 +25,8 @@ from mozregression.errors import MozRegressionError, UnavailableRelease
 from mozregression import limitedfilecache
 from mozregression import __version__
 from mozregression.utils import (parse_date, date_of_release,
-                                 parse_bits, set_http_cache_session,
-                                 formatted_valid_release_dates)
+                                 parse_bits, formatted_valid_release_dates)
+from mozregression.network import set_http_cache_session
 from mozregression.fetch_configs import create_config, REGISTRY as FC_REGISTRY
 from mozregression.bisector import BisectRunner
 from mozregression.launchers import REGISTRY as APP_REGISTRY

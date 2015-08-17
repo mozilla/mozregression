@@ -5,7 +5,7 @@ from mozregui.ui.global_prefs import Ui_GlobalPrefs
 from mozregui import patch_requests
 
 from mozregression import limitedfilecache
-from mozregression.utils import set_http_cache_session
+from mozregression.network import set_http_cache_session
 
 
 def get_prefs():

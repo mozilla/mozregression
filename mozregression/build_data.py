@@ -10,7 +10,7 @@ import taskcluster
 from taskcluster.exceptions import TaskclusterFailure
 
 from mozregression import errors
-from mozregression.utils import url_links, retry_get
+from mozregression.network import url_links, retry_get
 
 
 class BuildData(object):

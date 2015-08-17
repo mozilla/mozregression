@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 """
-network functions and classes for mozregression.
+network functions utilities for mozregression.
 """
 
 import re
@@ -14,6 +14,13 @@ from BeautifulSoup import BeautifulSoup
 
 
 def retry_get(url, **karwgs):
+    """
+    More robust `requests.get` equivalent function.
+
+    This is equivalent to the requests.get function, except that
+    it will retry the requests call three times in case of HTTPError or
+    ConnectionError.
+    """
     return redo.retry(get_http_session().get, attempts=3, sleeptime=1,
                       retry_exceptions=(requests.exceptions.HTTPError,
                                         requests.exceptions.ConnectionError),

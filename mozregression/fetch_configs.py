@@ -4,7 +4,8 @@ fetching for each application.
 """
 import datetime
 
-from mozregression.utils import get_build_regex, ClassRegistry
+from mozregression.utils import get_build_regex
+from mozregression.class_registry import ClassRegistry
 from mozregression import errors
 
 

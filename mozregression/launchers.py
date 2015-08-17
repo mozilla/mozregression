@@ -18,7 +18,7 @@ import mozversion
 import mozinstall
 import tempfile
 
-from mozregression.utils import ClassRegistry
+from mozregression.class_registry import ClassRegistry
 from mozregression.errors import LauncherNotRunnable, LauncherError
 
 

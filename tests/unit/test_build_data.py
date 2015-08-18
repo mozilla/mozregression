@@ -301,6 +301,14 @@ class TestPushLogsFinder(unittest.TestCase):
         self.assertEquals(finder.pushlog_url(), good_url)
 
     @patch('requests.get')
+    def test_get_pushlogs_404_error(self, get):
+        get.return_value = Mock(status_code=404)
+        finder = build_data.PushLogsFinder("azerty", "uiop")
+        with self.assertRaisesRegexp(errors.MozRegressionError,
+                                     ".*404 error.*"):
+            finder.get_pushlogs()
+
+    @patch('requests.get')
     def test_get_pushlogs(self, get):
         def my_get(url):
             result = None

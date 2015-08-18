@@ -350,19 +350,32 @@ class PushLogsFinder(object):
     def get_pushlogs(self):
         """
         Returns pushlog json objects (python dicts) sorted by date.
+
+        This will return at least one pushlog. If changesets are not valid
+        it will raise a MozRegressionError.
         """
+
+        def _check_response(response):
+            if response.status_code == 404:
+                raise errors.MozRegressionError(
+                    "The url %r returned a 404 error. Please check the"
+                    " validity of the given changesets (%r, %r)." %
+                    (str(response.url), self.start_rev, self.end_rev)
+                )
+            response.raise_for_status()
+
         # the first changeset is not taken into account in the result.
         # let's add it directly with this request
         chset_url = '%s/json-pushes?changeset=%s' % (
             self.get_repo_url(),
             self.start_rev)
         response = retry_get(chset_url)
-        response.raise_for_status()
+        _check_response(response)
         chsets = response.json()
 
         # now fetch all remaining changesets
         response = retry_get(self.pushlog_url())
-        response.raise_for_status()
+        _check_response(response)
         chsets.update(response.json())
         # sort pushlogs by date
         return sorted(chsets.itervalues(),

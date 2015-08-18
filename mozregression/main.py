@@ -388,9 +388,11 @@ def cli(argv=None):
     except KeyboardInterrupt:
         sys.exit("\nInterrupted.")
     except UnavailableRelease as exc:
-        sys.exit("%s\n%s" % (exc, formatted_valid_release_dates()))
+        logger.error("%s\n%s" % (exc, formatted_valid_release_dates()))
+        sys.exit(1)
     except (MozRegressionError, RequestException) as exc:
-        sys.exit(str(exc))
+        logger.error(str(exc))
+        sys.exit(1)
 
 
 if __name__ == "__main__":

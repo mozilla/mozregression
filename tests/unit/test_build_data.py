@@ -355,7 +355,7 @@ class TestInboundBuildData(unittest.TestCase):
 
     def test_create_only_one_rev(self):
         data = self.create_inbound_build_data('c0', 'c1')
-        self.assertEqual(len(data), 0)
+        self.assertEqual(len(data), 1)
 
     def test_get_valid_build_got_exception(self):
         data = self.create_inbound_build_data('c0', 'c3')

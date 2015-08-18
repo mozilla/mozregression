@@ -387,14 +387,8 @@ class InboundBuildData(MozBuildData):
                            inbound_branch=fetch_config.inbound_branch)
 
         pushlogs = pushlogs_finder.get_pushlogs()
-        self._logger.debug('Found %d pushlog entries using `%s`'
-                           % (len(pushlogs), pushlogs_finder.pushlog_url()))
-
-        self.was_empty = False
-        if len(pushlogs) < 2:
-            # if we have 0 or 1 pushlog entry, we can not bisect.
-            self.was_empty = True
-            return
+        self._logger.info('Found %d pushlog entries using `%s`'
+                          % (len(pushlogs), pushlogs_finder.pushlog_url()))
 
         cache = []
         for pushlog in pushlogs:

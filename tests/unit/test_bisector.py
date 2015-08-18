@@ -39,9 +39,16 @@ class TestBisectorHandler(unittest.TestCase):
         self.handler.found_repo = 'https://hg.mozilla.repo'
         self.handler.good_revision = '2'
         self.handler.bad_revision = '6'
-        self.assertEqual(self.handler.get_pushlog_url(),
-                         "https://hg.mozilla.repo/pushloghtml?\
-fromchange=2&tochange=6")
+        self.assertEqual(
+            self.handler.get_pushlog_url(),
+            "https://hg.mozilla.repo/pushloghtml?fromchange=2&tochange=6")
+
+    def test_get_pushlog_url_same_chsets(self):
+        self.handler.found_repo = 'https://hg.mozilla.repo'
+        self.handler.good_revision = self.handler.bad_revision = '2'
+        self.assertEqual(
+            self.handler.get_pushlog_url(),
+            "https://hg.mozilla.repo/pushloghtml?changeset=2")
 
     def test_print_range(self):
         self.handler.found_repo = 'https://hg.mozilla.repo'

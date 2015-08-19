@@ -200,6 +200,9 @@ class ProfilePage(WizardPage):
     def get_prefs(self):
         return self.ui.pref_widget.get_prefs()
 
+    def get_addons(self):
+        return self.ui.addons_widget.get_addons()
+
 
 class BisectionWizard(QWizard):
     def __init__(self, parent=None):
@@ -244,5 +247,7 @@ class BisectionWizard(QWizard):
 
         # get the prefs
         options['preferences'] = self.page(ProfilePage.ID).get_prefs()
+        # get the addons
+        options['addons'] = self.page(ProfilePage.ID).get_addons()
 
         return fetch_config, options

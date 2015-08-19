@@ -25,7 +25,7 @@ class PreferencesModel(QAbstractTableModel):
             return ('name', 'value')[section]
 
     def data(self, index, role=Qt.DisplayRole):
-        if role == Qt.DisplayRole:
+        if role in (Qt.DisplayRole, Qt.EditRole):
             name, value = self.prefs[index.row()]
             if index.column() == 0:
                 return name

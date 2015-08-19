@@ -178,7 +178,7 @@ class TestMainCli(unittest.TestCase):
             today,
             datetime.date(2015, 01, 21))
 
-    def test_commad_make_use_of_commandtestrunner(self):
+    def test_command_make_use_of_commandtestrunner(self):
         self.do_cli(['--command=my command'])
         self.assertIsInstance(self.runner.test_runner, CommandTestRunner)
 

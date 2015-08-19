@@ -256,6 +256,9 @@ class BisectRunner(QObject):
                 value = options[name]
                 if value:
                     launcher_kwargs[name] = value
+
+        # add add-ons paths to the app launcher
+        launcher_kwargs['addons'] = options['addons']
         self.bisector.test_runner.launcher_kwargs = launcher_kwargs
 
         self.thread.start()

@@ -34,6 +34,16 @@
    <item row="1" column="1">
     <widget class="PreferencesWidgetEditor" name="pref_widget" native="true"/>
    </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Custom addons:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="AddonsWidgetEditor" name="addons_widget" native="true"/>
+   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -47,6 +57,12 @@
    <class>PreferencesWidgetEditor</class>
    <extends>QWidget</extends>
    <header>mozregui.pref_editor</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AddonsWidgetEditor</class>
+   <extends>QWidget</extends>
+   <header>mozregui.addons_editor</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

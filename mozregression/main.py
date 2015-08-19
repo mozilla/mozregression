@@ -18,15 +18,14 @@ import requests
 import mozprofile
 from argparse import ArgumentParser
 from ConfigParser import SafeConfigParser, Error
-from mozlog.structured import commandline, get_default_logger
+from mozlog.structured import commandline
 from requests.exceptions import RequestException
 
 from mozregression.errors import MozRegressionError, UnavailableRelease
-from mozregression import limitedfilecache
 from mozregression import __version__
 from mozregression.utils import (parse_date, date_of_release,
                                  parse_bits, formatted_valid_release_dates)
-from mozregression.network import set_http_cache_session
+from mozregression.network import set_http_session
 from mozregression.fetch_configs import create_config, REGISTRY as FC_REGISTRY
 from mozregression.bisector import BisectRunner
 from mozregression.launchers import REGISTRY as APP_REGISTRY
@@ -169,12 +168,6 @@ def parse_args(argv=None):
                         default=defaults.get("persist"),
                         help=("the directory in which downloaded files are"
                               " to persist."))
-
-    parser.add_argument("--http-cache-dir",
-                        default=defaults.get("http-cache-dir"),
-                        help=("the directory for caching http requests."
-                              " If not set there will be an in-memory cache"
-                              " used."))
 
     parser.add_argument('--http-timeout', type=float,
                         default=float(defaults.get("http-timeout", 30.0)),
@@ -339,11 +332,7 @@ def cli(argv=None):
         print(formatted_valid_release_dates())
         sys.exit()
 
-    cache_session = limitedfilecache.get_cache(
-        options.http_cache_dir, limitedfilecache.ONE_GIGABYTE,
-        logger=get_default_logger('Limited File Cache'))
-    set_http_cache_session(cache_session,
-                           get_defaults={"timeout": options.http_timeout})
+    set_http_session(get_defaults={"timeout": options.http_timeout})
 
     user_defined_bits = options.bits is not None
     options.bits = parse_bits(options.bits or mozinfo.bits)

@@ -16,6 +16,9 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QFormLayout" name="formLayout">
+     <property name="fieldGrowthPolicy">
+      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+     </property>
      <item row="0" column="0">
       <widget class="QLabel" name="label">
        <property name="toolTip">
@@ -30,19 +33,6 @@
       <widget class="DirectorySelectWidget" name="persist" native="true"/>
      </item>
      <item row="1" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="toolTip">
-        <string>The directory for caching http requests. If not set there will be an in-memory cache used.</string>
-       </property>
-       <property name="text">
-        <string>http cache directory:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="DirectorySelectWidget" name="http_cache_dir" native="true"/>
-     </item>
-     <item row="2" column="0">
       <widget class="QLabel" name="label_3">
        <property name="toolTip">
         <string>Timeout in seconds to abort requests when there is no activity from the server. Default to 30.0 seconds - increase this if you are under a really slow network.</string>
@@ -52,7 +42,7 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="1" column="1">
       <widget class="QDoubleSpinBox" name="http_timeout">
        <property name="minimum">
         <double>1.000000000000000</double>

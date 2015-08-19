@@ -26,39 +26,39 @@ def retry_get(url, **karwgs):
                                         requests.exceptions.ConnectionError),
                       args=(url,), kwargs=karwgs)
 
-CACHE_SESSION = None
+SESSION = None
 
 
-def set_http_cache_session(cache_session, get_defaults=None):
+def set_http_session(session=None, get_defaults=None):
     """
     Define a cache http session.
 
-    :param cache_session: a customized request session (possibly using
-        CacheControl) or None to use a simple request session.
+    :param cache_session: a customized request session or None to use a
+                          simple request session.
     :param: get_defaults: if defined, it must be a dict that will provide
         default values for calls to cache_session.get.
     """
-    global CACHE_SESSION
+    global SESSION
     if get_defaults:
-        if cache_session is None:
-            cache_session = requests.Session()
+        if session is None:
+            session = requests.Session()
         # monkey patch to set default values to a session.get calls
         # I don't see other ways to do this globally for timeout for example
-        _get = cache_session.get
+        _get = session.get
 
         def _default_get(*args, **kwargs):
             for k, v in get_defaults.iteritems():
                 kwargs.setdefault(k, v)
             return _get(*args, **kwargs)
-        cache_session.get = _default_get
-    CACHE_SESSION = cache_session
+        session.get = _default_get
+    SESSION = session
 
 
 def get_http_session():
     """
     Returns the defined http session.
     """
-    return CACHE_SESSION or requests
+    return SESSION or requests
 
 
 def url_links(url, regex=None, auth=None):

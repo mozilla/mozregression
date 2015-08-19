@@ -24,10 +24,9 @@ class TestMainCli(unittest.TestCase):
     @patch('mozregression.main.check_mozregression_version')
     @patch('mozregression.main.get_defaults')
     @patch('mozlog.structured.commandline.setup_logging')
-    @patch('mozregression.main.set_http_cache_session')
-    @patch('mozregression.limitedfilecache.get_cache')
+    @patch('mozregression.main.set_http_session')
     @patch('mozregression.main.ResumeInfoBisectRunner')
-    def do_cli(self, argv, BisectRunner, get_cache, set_http_cache_session,
+    def do_cli(self, argv, BisectRunner, set_http_session,
                setup_logging, get_defaults, check_mozregression_version):
         get_defaults.return_value = dict()
         setup_logging.return_value = self.logger
@@ -79,7 +78,7 @@ class TestMainCli(unittest.TestCase):
 
     def test_get_defaults(self):
         valid_values = {'http-timeout': '10.2',
-                        'http-cache-dir': '/home/foo/.mozregression',
+                        'persist': '/home/foo/.mozregression',
                         'bits': '64'}
 
         handle, filepath = tempfile.mkstemp()
@@ -98,7 +97,7 @@ class TestMainCli(unittest.TestCase):
         options = main.parse_args(['--bits=32'])
 
         self.assertEqual(options.http_timeout, 10.2)
-        self.assertEqual(options.http_cache_dir, '/home/foo/.mozregression')
+        self.assertEqual(options.persist, '/home/foo/.mozregression')
         self.assertEqual(options.bits, '32')
 
     def test_without_args(self):

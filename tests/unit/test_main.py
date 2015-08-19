@@ -52,6 +52,11 @@ class TestMainCli(unittest.TestCase):
             logs.append((call[0], call[1][0]))
         return logs
 
+    def pop_exit_error_msg(self):
+        for lvl, msg in reversed(self.pop_logs()):
+            if lvl == 'error':
+                return msg
+
     @patch('sys.stdout')
     def test_get_usage(self, stdout):
         output = []
@@ -125,13 +130,17 @@ class TestMainCli(unittest.TestCase):
         ]
         for args in argslist:
             exitcode = self.do_cli(args)
-            self.assertIn('--good-rev and --bad-rev must be set', exitcode)
+            self.assertNotEqual(exitcode, 0)
+            self.assertIn('--good-rev and --bad-rev must be set',
+                          self.pop_exit_error_msg())
 
     @patch('mozregression.fetch_configs.FirefoxConfig.is_inbound')
     def test_inbound_must_be_doable(self, is_inbound):
         is_inbound.return_value = False
         exitcode = self.do_cli(['--good-rev=1', '--bad-rev=5'])
-        self.assertIn('Unable to bissect inbound', exitcode)
+        self.assertNotEqual(exitcode, 0)
+        self.assertIn('Unable to bissect inbound',
+                      self.pop_exit_error_msg())
 
     @patch('mozregression.main.formatted_valid_release_dates')
     def test_list_releases(self, formatted_valid_release_dates):
@@ -141,19 +150,25 @@ class TestMainCli(unittest.TestCase):
 
     def test_bad_date_and_bad_release_are_incompatible(self):
         exitcode = self.do_cli(['--bad=2014-11-10', '--bad-release=1'])
-        self.assertIn('incompatible', exitcode)
+        self.assertNotEqual(exitcode, 0)
+        self.assertIn('incompatible', self.pop_exit_error_msg())
 
     def test_bad_release_invalid(self):
         exitcode = self.do_cli(['--bad-release=-1'])
-        self.assertIn('Unable to find a matching date for release', exitcode)
+        self.assertNotEqual(exitcode, 0)
+        self.assertIn('Unable to find a matching date for release',
+                      self.pop_exit_error_msg())
 
     def test_good_date_and_good_release_are_incompatible(self):
         exitcode = self.do_cli(['--good=2014-11-10', '--good-release=1'])
-        self.assertIn('incompatible', exitcode)
+        self.assertNotEqual(exitcode, 0)
+        self.assertIn('incompatible', self.pop_exit_error_msg())
 
     def test_good_release_invalid(self):
         exitcode = self.do_cli(['--good-release=-1'])
-        self.assertIn('Unable to find a matching date for release', exitcode)
+        self.assertNotEqual(exitcode, 0)
+        self.assertIn('Unable to find a matching date for release',
+                      self.pop_exit_error_msg())
 
     def test_handle_keyboard_interrupt(self):
         # KeyboardInterrupt are handled with a nice error message.
@@ -166,7 +181,8 @@ class TestMainCli(unittest.TestCase):
         self.runner.bisect_nightlies.side_effect = \
             errors.MozRegressionError('my error')
         exitcode = self.do_cli([])
-        self.assertIn('my error', exitcode)
+        self.assertNotEqual(exitcode, 0)
+        self.assertIn('my error', self.pop_exit_error_msg())
 
     def test_handle_other_errors(self):
         # other exceptions are just thrown as usual
@@ -176,13 +192,16 @@ class TestMainCli(unittest.TestCase):
 
     def test_bisect_nightlies_with_find_fix_proposal(self):
         exitcode = self.do_cli(['--bad=2015-01-06', '--good=2015-01-21'])
-        self.assertIn('--find-fix flag', exitcode)
+        self.assertNotEqual(exitcode, 0)
+        self.assertIn('--find-fix flag', self.pop_exit_error_msg())
 
     def test_bisect_nightlies_with_find_fix_bad_usage(self):
         exitcode = self.do_cli(['--good=2015-01-06',
                                 '--bad=2015-01-21',
                                 '--find-fix'])
-        self.assertIn('not use the --find-fix flag', exitcode)
+        self.assertNotEqual(exitcode, 0)
+        self.assertIn('not use the --find-fix flag',
+                      self.pop_exit_error_msg())
 
     def test_bisect_nighlies_find_fix_and_no_good_date_should_use_today(self):
         today = datetime.date.today()

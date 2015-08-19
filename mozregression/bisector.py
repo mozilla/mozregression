@@ -88,6 +88,9 @@ class BisectorHandler(object):
 
     def get_pushlog_url(self):
         first_rev, last_rev = self.get_range()
+        if first_rev == last_rev:
+            return "%s/pushloghtml?changeset=%s" % (
+                self.found_repo, first_rev)
         return "%s/pushloghtml?fromchange=%s&tochange=%s" % (
             self.found_repo, first_rev, last_rev)
 
@@ -570,17 +573,19 @@ class BisectRunner(object):
         if result == Bisection.FINISHED:
             self._logger.info("Oh noes, no (more) inbound revisions :(")
             handler.print_range()
+            if handler.good_revision == handler.bad_revision:
+                self._logger.warning(
+                    "It seems that you used two changesets that are in"
+                    " in the same push. Check the pushlog url."
+                )
         elif result == Bisection.USER_EXIT:
             self.print_resume_info(handler)
         else:
-            # NO_DATA
-            self._logger.info("No inbound data found.")
-            # check if we have found revisions
-            if not handler.build_data.was_empty:
-                # if we have, then these builds are probably too old
-                self._logger.info(
-                    'There are no build artifacts on inbound for these'
-                    ' changesets (they are probably too old).')
+            # NO_DATA. With inbounds, this can not happen if changesets
+            # are incorrect - so builds are probably too old
+            self._logger.info(
+                'There are no build artifacts on inbound for these'
+                ' changesets (they are probably too old).')
             return 1
         return 0
 

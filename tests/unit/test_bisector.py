@@ -11,7 +11,7 @@ import datetime
 from mozregression.bisector import (BisectorHandler, NightlyHandler,
                                     InboundHandler, Bisector, Bisection,
                                     BisectRunner)
-from mozregression.main import parse_args
+from mozregression.cli import parse_args
 from mozregression.fetch_configs import create_config
 from mozregression import build_data
 from mozregression.errors import LauncherError
@@ -451,14 +451,12 @@ class TestBisector(unittest.TestCase):
 
 
 class TestBisectRunner(unittest.TestCase):
-    @patch('mozregression.main.get_defaults')
     @patch('mozregression.bisector.get_default_logger')
-    def setUp(self, get_default_logger, get_defaults):
+    def setUp(self, get_default_logger):
         self.fetch_config = Mock()
         self.test_runner = Mock()
         self.logger = Mock()
         self.logs = []
-        get_defaults.return_value = dict()
         get_default_logger.return_value = Mock(info=self.logs.append)
         self.brunner = BisectRunner(self.fetch_config,
                                     self.test_runner,

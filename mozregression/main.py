@@ -18,11 +18,10 @@ import mozprofile
 from mozlog.structured import commandline
 from requests.exceptions import RequestException
 
-from mozregression.cli import parse_args
 from mozregression.errors import MozRegressionError, UnavailableRelease
 from mozregression import __version__
-from mozregression.utils import (parse_date, date_of_release,
-                                 parse_bits, formatted_valid_release_dates)
+from mozregression.cli import (parse_args, parse_date, date_of_release,
+                               parse_bits, formatted_valid_release_dates)
 from mozregression.network import set_http_session
 from mozregression.fetch_configs import create_config
 from mozregression.bisector import BisectRunner

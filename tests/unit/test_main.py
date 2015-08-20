@@ -11,7 +11,7 @@ import tempfile
 import os
 import requests
 
-from mozregression import main, utils, errors
+from mozregression import main, cli, errors
 from mozregression.test_runner import CommandTestRunner
 from mozregression import __version__
 
@@ -183,15 +183,15 @@ class TestMainCli(unittest.TestCase):
         self.assertIsInstance(self.runner.test_runner, CommandTestRunner)
 
     def test_releases_to_dates(self):
-        releases = sorted(utils.releases().items(), key=lambda v: v[0])
+        releases = sorted(cli.releases().items(), key=lambda v: v[0])
         good = releases[0]
         bad = releases[-1]
         self.do_cli(['--good-release=%s' % good[0],
                      '--bad-release=%s' % bad[0]])
 
         self.runner.bisect_nightlies.\
-            assert_called_with(utils.parse_date(good[1]),
-                               utils.parse_date(bad[1]))
+            assert_called_with(cli.parse_date(good[1]),
+                               cli.parse_date(bad[1]))
 
     def test_download_in_background_is_on_by_default(self):
         self.do_cli([])

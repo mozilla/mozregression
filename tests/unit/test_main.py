@@ -5,220 +5,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import unittest
-from mock import patch, Mock
 import datetime
-import tempfile
-import os
+from mock import patch, Mock
 import requests
 
-from mozregression import main, cli, errors
-from mozregression.test_runner import CommandTestRunner
-from mozregression import __version__
-
-
-class TestMainCli(unittest.TestCase):
-    def setUp(self):
-        self.runner = Mock()
-        self.logger = Mock()
-
-    @patch('mozregression.main.check_mozregression_version')
-    @patch('mozlog.structured.commandline.setup_logging')
-    @patch('mozregression.main.set_http_session')
-    @patch('mozregression.main.ResumeInfoBisectRunner')
-    def do_cli(self, argv, BisectRunner, set_http_session,
-               setup_logging, check_mozregression_version):
-        setup_logging.return_value = self.logger
-
-        def create_runner(fetch_config, test_runner, options):
-            self.runner.fetch_config = fetch_config
-            self.runner.test_runner = test_runner
-            self.runner.options = options
-            return self.runner
-        BisectRunner.side_effect = create_runner
-        try:
-            main.cli(argv)
-        except SystemExit as exc:
-            return exc.code
-        else:
-            self.fail('mozregression.main.cli did not call sys.exit')
-
-    def pop_logs(self):
-        logs = []
-        for i in range(len(self.logger.mock_calls)):
-            call = self.logger.mock_calls.pop(0)
-            logs.append((call[0], call[1][0]))
-        return logs
-
-    def pop_exit_error_msg(self):
-        for lvl, msg in reversed(self.pop_logs()):
-            if lvl == 'error':
-                return msg
-
-    @patch('sys.stdout')
-    def test_get_usage(self, stdout):
-        output = []
-        stdout.write.side_effect = output.append
-
-        exitcode = self.do_cli(['-h'])
-        output = ''.join(output)
-        self.assertEqual(exitcode, 0)
-        self.assertIn('usage:', output)
-
-    def test_without_args(self):
-        self.runner.bisect_nightlies.return_value = 0
-        exitcode = self.do_cli([])
-        # application is by default firefox
-        self.assertEqual(self.runner.fetch_config.app_name,
-                         'firefox')
-        # bisect_nightlies has been called
-        self.runner.bisect_nightlies.assert_called_with(datetime.date(2009,
-                                                                      1, 1),
-                                                        datetime.date.today())
-        # we exited with the return value of bisect_nightlies
-        self.assertEquals(exitcode, 0)
-
-    def test_basic_inbound(self):
-        self.runner.bisect_inbound.return_value = 0
-        exitcode = self.do_cli(['--good-rev=1', '--bad-rev=5'])
-        # application is by default firefox
-        self.assertEqual(self.runner.fetch_config.app_name, 'firefox')
-        # bisect_inbound has been called
-        self.runner.bisect_inbound.assert_called_with('1', '5')
-        # we exited with the return value of bisect_inbound
-        self.assertEquals(exitcode, 0)
-
-    def test_inbound_revs_must_be_given(self):
-        argslist = [
-            ['--good-rev=1'], ['--bad-rev=5'],
-        ]
-        for args in argslist:
-            exitcode = self.do_cli(args)
-            self.assertNotEqual(exitcode, 0)
-            self.assertIn('--good-rev and --bad-rev must be set',
-                          self.pop_exit_error_msg())
-
-    @patch('mozregression.fetch_configs.FirefoxConfig.is_inbound')
-    def test_inbound_must_be_doable(self, is_inbound):
-        is_inbound.return_value = False
-        exitcode = self.do_cli(['--good-rev=1', '--bad-rev=5'])
-        self.assertNotEqual(exitcode, 0)
-        self.assertIn('Unable to bissect inbound',
-                      self.pop_exit_error_msg())
-
-    @patch('mozregression.main.formatted_valid_release_dates')
-    def test_list_releases(self, formatted_valid_release_dates):
-        exitcode = self.do_cli(['--list-releases'])
-        formatted_valid_release_dates.assert_called_once_with()
-        self.assertIn(exitcode, (0, None))
-
-    def test_bad_date_and_bad_release_are_incompatible(self):
-        exitcode = self.do_cli(['--bad=2014-11-10', '--bad-release=1'])
-        self.assertNotEqual(exitcode, 0)
-        self.assertIn('incompatible', self.pop_exit_error_msg())
-
-    def test_bad_release_invalid(self):
-        exitcode = self.do_cli(['--bad-release=-1'])
-        self.assertNotEqual(exitcode, 0)
-        self.assertIn('Unable to find a matching date for release',
-                      self.pop_exit_error_msg())
-
-    def test_good_date_and_good_release_are_incompatible(self):
-        exitcode = self.do_cli(['--good=2014-11-10', '--good-release=1'])
-        self.assertNotEqual(exitcode, 0)
-        self.assertIn('incompatible', self.pop_exit_error_msg())
-
-    def test_good_release_invalid(self):
-        exitcode = self.do_cli(['--good-release=-1'])
-        self.assertNotEqual(exitcode, 0)
-        self.assertIn('Unable to find a matching date for release',
-                      self.pop_exit_error_msg())
-
-    def test_handle_keyboard_interrupt(self):
-        # KeyboardInterrupt are handled with a nice error message.
-        self.runner.bisect_nightlies.side_effect = KeyboardInterrupt
-        exitcode = self.do_cli([])
-        self.assertIn('Interrupted', exitcode)
-
-    def test_handle_mozregression_errors(self):
-        # Any MozRegressionError subclass is handled with a nice error message
-        self.runner.bisect_nightlies.side_effect = \
-            errors.MozRegressionError('my error')
-        exitcode = self.do_cli([])
-        self.assertNotEqual(exitcode, 0)
-        self.assertIn('my error', self.pop_exit_error_msg())
-
-    def test_handle_other_errors(self):
-        # other exceptions are just thrown as usual
-        # so we have complete stacktrace
-        self.runner.bisect_nightlies.side_effect = NameError
-        self.assertRaises(NameError, self.do_cli, [])
-
-    def test_bisect_nightlies_with_find_fix_proposal(self):
-        exitcode = self.do_cli(['--bad=2015-01-06', '--good=2015-01-21'])
-        self.assertNotEqual(exitcode, 0)
-        self.assertIn('--find-fix flag', self.pop_exit_error_msg())
-
-    def test_bisect_nightlies_with_find_fix_bad_usage(self):
-        exitcode = self.do_cli(['--good=2015-01-06',
-                                '--bad=2015-01-21',
-                                '--find-fix'])
-        self.assertNotEqual(exitcode, 0)
-        self.assertIn('not use the --find-fix flag',
-                      self.pop_exit_error_msg())
-
-    def test_bisect_nighlies_find_fix_and_no_good_date_should_use_today(self):
-        today = datetime.date.today()
-        self.do_cli(['--bad=2015-01-21', '--find-fix'])
-
-        self.assertIn(
-            ('info', "No 'good' date specified, using %s" % today),
-            self.pop_logs())
-
-        self.runner.bisect_nightlies.assert_called_with(
-            today,
-            datetime.date(2015, 01, 21))
-
-    def test_command_make_use_of_commandtestrunner(self):
-        self.do_cli(['--command=my command'])
-        self.assertIsInstance(self.runner.test_runner, CommandTestRunner)
-
-    def test_releases_to_dates(self):
-        releases = sorted(cli.releases().items(), key=lambda v: v[0])
-        good = releases[0]
-        bad = releases[-1]
-        self.do_cli(['--good-release=%s' % good[0],
-                     '--bad-release=%s' % bad[0]])
-
-        self.runner.bisect_nightlies.\
-            assert_called_with(cli.parse_date(good[1]),
-                               cli.parse_date(bad[1]))
-
-    def test_download_in_background_is_on_by_default(self):
-        self.do_cli([])
-        self.assertTrue(self.runner.options.background_dl)
-
-    def test_deactive_download_in_background(self):
-        self.do_cli(['--no-background-dl'])
-        self.assertFalse(self.runner.options.background_dl)
-
-    @patch('mozregression.main.mozinfo')
-    def test_on_windows_64_we_should_log(self, mozinfo):
-        mozinfo.bits = 64
-        mozinfo.os = 'win'
-
-        log_entry = ('info', 'bits option not specified, using 64-bit builds.')
-
-        self.do_cli(['--app=firefox'])
-        self.assertIn(log_entry, self.pop_logs())
-
-        # don't log if we explicitly set the bits
-        self.do_cli(['--app=firefox', '--bits=64'])
-        self.assertNotIn(log_entry, self.pop_logs())
-
-        # or if we are not on windows
-        mozinfo.os = 'linux'
-        self.do_cli(['--app=firefox'])
-        self.assertNotIn(log_entry, self.pop_logs())
+from mozregression import main, errors, __version__
 
 
 class TestResumeInfoBisectRunner(unittest.TestCase):
@@ -258,30 +49,6 @@ class TestResumeInfoBisectRunner(unittest.TestCase):
         runner.print_resume_info.assert_called_with(handler)
 
 
-class TestPreference(unittest.TestCase):
-    def test_preference_file(self):
-        handle, filepath = tempfile.mkstemp()
-        self.addCleanup(os.unlink, filepath)
-
-        with os.fdopen(handle, 'w') as conf_file:
-            conf_file.write('{ "browser.tabs.remote.autostart": false }')
-
-        prefs_files = [filepath]
-        prefs = main.preference(prefs_files, None)
-        self.assertEqual(prefs, [('browser.tabs.remote.autostart', False)])
-
-    def test_preference_args(self):
-        prefs_args = ["browser.tabs.remote.autostart:false"]
-
-        prefs = main.preference(None, prefs_args)
-        self.assertEqual(prefs, [('browser.tabs.remote.autostart', False)])
-
-        prefs_args = ["browser.tabs.remote.autostart"]
-
-        prefs = main.preference(None, prefs_args)
-        self.assertEquals(len(prefs), 0)
-
-
 class TestCheckMozregresionVersion(unittest.TestCase):
     @patch('requests.get')
     def test_version_is_upto_date(self, get):
@@ -307,5 +74,77 @@ class TestCheckMozregresionVersion(unittest.TestCase):
         main.check_mozregression_version(logger)
         self.assertEqual(logger.warning.call_count, 2)
 
-if __name__ == '__main__':
-    unittest.main()
+
+class TestMain(unittest.TestCase):
+    def setUp(self):
+        self.runner = Mock()
+        self.logger = Mock()
+
+    @patch('mozregression.main.check_mozregression_version')
+    @patch('mozlog.structured.commandline.setup_logging')
+    @patch('mozregression.main.set_http_session')
+    @patch('mozregression.main.ResumeInfoBisectRunner')
+    def do_cli(self, argv, BisectRunner, set_http_session,
+               setup_logging, check_mozregression_version):
+        setup_logging.return_value = self.logger
+
+        def create_runner(fetch_config, test_runner, options):
+            self.runner.fetch_config = fetch_config
+            self.runner.test_runner = test_runner
+            self.runner.options = options
+            return self.runner
+        BisectRunner.side_effect = create_runner
+        try:
+            main.main(argv)
+        except SystemExit as exc:
+            return exc.code
+        else:
+            self.fail('mozregression.main.cli did not call sys.exit')
+
+    def pop_logs(self):
+        logs = []
+        for i in range(len(self.logger.mock_calls)):
+            call = self.logger.mock_calls.pop(0)
+            logs.append((call[0], call[1][0]))
+        return logs
+
+    def pop_exit_error_msg(self):
+        for lvl, msg in reversed(self.pop_logs()):
+            if lvl == 'error':
+                return msg
+
+    def test_without_args(self):
+        self.runner.bisect_nightlies.return_value = 0
+        exitcode = self.do_cli([])
+        # bisect_nightlies has been called
+        self.runner.bisect_nightlies.assert_called_with(datetime.date(2009,
+                                                                      1, 1),
+                                                        datetime.date.today())
+        # we exited with the return value of bisect_nightlies
+        self.assertEquals(exitcode, 0)
+
+    def test_bisect_inbounds(self):
+        self.runner.bisect_inbound.return_value = 0
+        exitcode = self.do_cli(['--good-rev=1', '--bad-rev=5'])
+        self.assertEqual(exitcode, 0)
+        self.runner.bisect_inbound.assert_called_with('1', '5')
+
+    def test_handle_keyboard_interrupt(self):
+        # KeyboardInterrupt is handled with a nice error message.
+        self.runner.bisect_nightlies.side_effect = KeyboardInterrupt
+        exitcode = self.do_cli([])
+        self.assertIn('Interrupted', exitcode)
+
+    def test_handle_mozregression_errors(self):
+        # Any MozRegressionError subclass is handled with a nice error message
+        self.runner.bisect_nightlies.side_effect = \
+            errors.MozRegressionError('my error')
+        exitcode = self.do_cli([])
+        self.assertNotEqual(exitcode, 0)
+        self.assertIn('my error', self.pop_exit_error_msg())
+
+    def test_handle_other_errors(self):
+        # other exceptions are just thrown as usual
+        # so we have complete stacktrace
+        self.runner.bisect_nightlies.side_effect = NameError
+        self.assertRaises(NameError, self.do_cli, [])

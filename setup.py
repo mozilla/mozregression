@@ -43,7 +43,7 @@ setup(name="mozregression",
       packages=['mozregression'],
       entry_points="""
           [console_scripts]
-          mozregression = mozregression.main:cli
+          mozregression = mozregression.main:main
         """,
       platforms=['Any'],
       install_requires=[

@@ -8,6 +8,7 @@ import unittest
 import tempfile
 import os
 import datetime
+import pytest
 
 from mock import patch
 
@@ -69,7 +70,31 @@ class TestRelease(unittest.TestCase):
             cli.date_of_release(441)
 
 
-class TestMainCli(unittest.TestCase):
+class TestPreferences(unittest.TestCase):
+    def test_preferences_file(self):
+        handle, filepath = tempfile.mkstemp()
+        self.addCleanup(os.unlink, filepath)
+
+        with os.fdopen(handle, 'w') as conf_file:
+            conf_file.write('{ "browser.tabs.remote.autostart": false }')
+
+        prefs_files = [filepath]
+        prefs = cli.preferences(prefs_files, None)
+        self.assertEqual(prefs, [('browser.tabs.remote.autostart', False)])
+
+    def test_preferences_args(self):
+        prefs_args = ["browser.tabs.remote.autostart:false"]
+
+        prefs = cli.preferences(None, prefs_args)
+        self.assertEqual(prefs, [('browser.tabs.remote.autostart', False)])
+
+        prefs_args = ["browser.tabs.remote.autostart"]
+
+        prefs = cli.preferences(None, prefs_args)
+        self.assertEquals(len(prefs), 0)
+
+
+class TestCli(unittest.TestCase):
 
     def test_get_erronous_cfg_defaults(self):
         handle, filepath = tempfile.mkstemp()
@@ -79,7 +104,7 @@ class TestMainCli(unittest.TestCase):
             conf_file.write('aaaaaaaaaaa [Defaults]\n')
 
         with self.assertRaises(SystemExit):
-            cli.get_defaults(filepath)
+            cli.cli(conf_file=filepath)
 
     def test_get_defaults(self):
         valid_values = {'http-timeout': '10.2',
@@ -87,23 +112,110 @@ class TestMainCli(unittest.TestCase):
                         'bits': '64'}
 
         handle, filepath = tempfile.mkstemp()
-        conf_default = cli.DEFAULT_CONF_FNAME
-
         self.addCleanup(os.unlink, filepath)
-        self.addCleanup(setattr, cli, "DEFAULT_CONF_FNAME", conf_default)
-
-        cli.DEFAULT_CONF_FNAME = filepath
 
         with os.fdopen(handle, 'w') as conf_file:
             conf_file.write('[Defaults]\n')
             for key, value in valid_values.iteritems():
                 conf_file.write("%s=%s\n" % (key, value))
 
-        options = cli.parse_args(['--bits=32'])
+        options = cli.cli(['--bits=32'], conf_file=filepath).options
 
         self.assertEqual(options.http_timeout, 10.2)
         self.assertEqual(options.persist, '/home/foo/.mozregression')
         self.assertEqual(options.bits, '32')
 
-if __name__ == '__main__':
-    unittest.main()
+
+def do_cli(*argv):
+    conf = cli.cli(argv, conf_file=None)
+    conf.validate()
+    return conf
+
+
+def test_get_usage():
+    output = []
+    with patch('sys.stdout') as stdout:
+        stdout.write.side_effect = output.append
+
+        with pytest.raises(SystemExit) as exc:
+            do_cli('-h')
+
+    assert exc.value.code == 0
+    assert "usage:" in ''.join(output)
+
+
+def test_no_args():
+    config = do_cli()
+    # application is by default firefox
+    assert config.fetch_config.app_name == 'firefox'
+    # nightly by default
+    assert config.action == 'bisect_nightlies'
+    assert config.options.good_date == datetime.date(2009, 1, 1)
+    assert config.options.bad_date == datetime.date.today()
+
+
+def test_find_fix_reverse_default_dates():
+    config = do_cli('--find-fix')
+    # application is by default firefox
+    assert config.fetch_config.app_name == 'firefox'
+    # nightly by default
+    assert config.action == 'bisect_nightlies'
+    assert config.options.bad_date == datetime.date(2009, 1, 1)
+    assert config.options.good_date == datetime.date.today()
+
+
+@pytest.mark.parametrize('arg1,arg2', [
+    ['--bad-release=31', '--bad=2015-01-01'],
+    ['--good-release=31', '--good=2015-01-01']
+])
+def test_date_release_are_incompatible(arg1, arg2):
+    with pytest.raises(errors.MozRegressionError) as exc:
+        do_cli(arg1, arg2)
+    assert 'incompatible' in str(exc.value)
+
+
+def test_with_releases():
+    releases = sorted(((k, v) for k, v in cli.releases().items()),
+                      key=(lambda (k, v): k))
+    conf = do_cli(
+        '--bad-release=%s' % releases[-1][0],
+        '--good-release=%s' % releases[0][0],
+    )
+    assert str(conf.options.good_date) == releases[0][1]
+    assert str(conf.options.bad_date) == releases[-1][1]
+
+
+def test_bad_date_later_than_good():
+    with pytest.raises(errors.MozRegressionError) as exc:
+        do_cli('--good=2015-01-01', '--bad=2015-01-10', '--find-fix')
+    assert 'is later than good' in str(exc.value)
+    assert "You should not use the --find-fix" in str(exc.value)
+
+
+def test_good_date_later_than_bad():
+    with pytest.raises(errors.MozRegressionError) as exc:
+        do_cli('--good=2015-01-10', '--bad=2015-01-01')
+    assert 'is later than bad' in str(exc.value)
+    assert "you wanted to use the --find-fix" in str(exc.value)
+
+
+def test_basic_inbound():
+    config = do_cli('--good-rev=1', '--bad-rev=5')
+    assert config.fetch_config.app_name == 'firefox'
+    assert config.action == 'bisect_inbounds'
+    assert config.options.last_good_revision == '1'
+    assert config.options.first_bad_revision == '5'
+
+
+@pytest.mark.parametrize('arg', ['--good-rev=1', '--bad-rev=5'])
+def test_both_inbound_revs_must_be_given(arg):
+    with pytest.raises(errors.MozRegressionError) as exc:
+        do_cli(arg)
+    assert '--good-rev and --bad-rev must be set' in str(exc.value)
+
+
+def test_inbound_must_be_doable():
+    # no inbounds for thunderbird
+    with pytest.raises(errors.MozRegressionError) as exc:
+        do_cli('--app', 'thunderbird', '--good-rev=1', '--bad-rev=5')
+        assert 'Unable to bissect inbound' in str(exc.value)

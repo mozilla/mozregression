@@ -135,73 +135,6 @@ class TestBuildData(unittest.TestCase):
         self.assertEqual(self.build_data.index_of(lambda k: k[1] == 15), 15)
 
 
-class TestBuildFolderInfoFetcher(unittest.TestCase):
-    def setUp(self):
-        self.info_fetcher = build_data.\
-            BuildFolderInfoFetcher(r'app_test.*.tar.bz2$',
-                                   r'app_test.*.txt$')
-
-    @patch('mozregression.build_data.url_links')
-    def test_find_build_info(self, url_links):
-        url_links.return_value = [
-            'file1.txt.gz',
-            'file2.txt',
-            'app_test01linux-x86_64.txt',
-            'app_test01linux-x86_64.tar.bz2',
-        ]
-        expected = {
-            'build_txt_url': 'http://foo/app_test01linux-x86_64.txt',
-            'build_url': 'http://foo/app_test01linux-x86_64.tar.bz2',
-        }
-        self.assertEqual(self.info_fetcher.find_build_info('http://foo'),
-                         expected)
-
-    @patch('requests.get')
-    def test_find_build_info_txt(self, get):
-        response = Mock(text="20141101030205\nhttps://hg.mozilla.org/\
-mozilla-central/rev/b695d9575654\n")
-        get.return_value = response
-        expected = {
-            'repository': 'https://hg.mozilla.org/mozilla-central',
-            'changeset': 'b695d9575654',
-        }
-        self.assertEqual(self.info_fetcher.
-                         find_build_info_txt('http://foo.txt'),
-                         expected)
-
-    @patch('requests.get')
-    def test_find_build_info_txt_old_format(self, get):
-        response = Mock(text="20110126030333 e0fc18b3bc41\n")
-        get.return_value = response
-        expected = {
-            'changeset': 'e0fc18b3bc41',
-        }
-        self.assertEqual(self.info_fetcher.
-                         find_build_info_txt('http://foo.txt'),
-                         expected)
-
-
-class TestNightlyUrlBuilder(unittest.TestCase):
-    def setUp(self):
-        fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
-        fetch_config.set_nightly_repo('foo')
-        self.url_builder = build_data.NightlyUrlBuilder(fetch_config)
-
-    @patch('mozregression.build_data.url_links')
-    def test_get_url(self, url_links):
-        url_links.return_value = [
-            '2014-11-01-03-02-05-mozilla-central/',
-            '2014-11-01-03-02-05-foo/',
-            'foo',
-            'bar/'
-        ]
-        urls = self.url_builder.get_urls(datetime.date(2014, 11, 01))
-        self.assertEqual(urls[0], 'https://archive.mozilla.org/pub/mozilla.org/\
-firefox/nightly/2014/11/2014-11-01-03-02-05-foo/')
-        urls = self.url_builder.get_urls(datetime.date(2014, 11, 02))
-        self.assertEqual(urls, [])
-
-
 class TestNightlyBuildData(unittest.TestCase):
     def setUp(self):
         good_date = datetime.date(2014, 11, 10)
@@ -211,67 +144,6 @@ class TestNightlyBuildData(unittest.TestCase):
         self.build_data = build_data.NightlyBuildData(fetch_config,
                                                       good_date,
                                                       bad_date)
-
-    @patch('mozregression.build_data.BuildFolderInfoFetcher.\
-find_build_info_txt')
-    @patch('mozregression.build_data.BuildFolderInfoFetcher.\
-find_build_info')
-    @patch('mozregression.build_data.NightlyUrlBuilder.\
-get_urls')
-    def test_get_valid_build_for_date(self, get_urls,
-                                      find_build_info, find_build_info_txt):
-        get_urls.return_value = [
-            'https://archive.mozilla.org/pub/mozilla.org/\
-bar/nightly/2014/11/2014-11-15-08-02-05-mozilla-central/',
-            'https://archive.mozilla.org/pub/mozilla.org/\
-bar/nightly/2014/11/2014-11-15-04-02-05-mozilla-central/',
-            'https://archive.mozilla.org/pub/mozilla.org/\
-bar/nightly/2014/11/2014-11-15-03-02-05-mozilla-central',
-            'https://archive.mozilla.org/pub/mozilla.org/\
-bar/nightly/2014/11/2014-11-15-02-02-05-mozilla-central/',
-            'https://archive.mozilla.org/pub/mozilla.org/\
-bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/',
-        ]
-
-        def my_find_build_info(url):
-            # say only the last build url is invalid
-            if url in get_urls.return_value[:-1]:
-                return {}
-            return {
-                'build_txt_url': url,
-                'build_url': url,
-            }
-        find_build_info.side_effect = my_find_build_info
-        result = self.build_data.\
-            _get_valid_build_for_date(datetime.date(2014, 11, 15))
-        # we must have found the last build url valid
-        self.assertEqual(result, {
-            'build_txt_url': get_urls.return_value[-1],
-            'build_url': get_urls.return_value[-1],
-        })
-
-    @patch('mozregression.build_data.NightlyUrlBuilder.get_urls')
-    def test_get_valid_build_for_date_no_data(self, get_urls):
-        get_urls.return_value = []
-        result = self.build_data.\
-            _get_valid_build_for_date(datetime.date(2014, 11, 15))
-        self.assertEqual(False, result)
-
-    @patch('mozregression.build_data.\
-NightlyBuildData._get_valid_build_for_date')
-    def test_get_valid_build(self, _get_valid_build_for_date):
-        self.build_data._get_valid_build(5)
-        _get_valid_build_for_date.\
-            assert_called_with(datetime.date(2014, 11, 15))
-
-    @patch('mozregression.build_data.\
-NightlyBuildData._get_valid_build_for_date')
-    def test_build_infos_for_date(self, _get_valid_build_for_date):
-        _get_valid_build_for_date.return_value = False
-        date = datetime.date(2015, 11, 15)
-        result = self.build_data.get_build_infos_for_date(date)
-        _get_valid_build_for_date.assert_called_with(date)
-        self.assertEqual(result, {})
 
     @patch('mozregression.build_data.NightlyBuildData._fetch')
     @patch('mozregression.build_data.MozBuildData.mid_point')
@@ -347,16 +219,6 @@ class TestInboundBuildData(unittest.TestCase):
 
         return build_data.InboundBuildData(fetch_config, good, bad)
 
-    @patch('mozregression.build_data.BuildFolderInfoFetcher')
-    def test_create(self, BuildFolderInfoFetcher):
-        data = self.create_inbound_build_data('c40', 'c60')
-        # there are 20 changesets
-        self.assertEqual(len(data), 20)
-        # BuildFolderInfoFetcher has been called and is defined
-        BuildFolderInfoFetcher.\
-            assert_called_with(None, None)
-        self.assertIsNotNone(data.info_fetcher)
-
     def test_create_empty(self):
         data = self.create_inbound_build_data('c0', 'c0')
         self.assertEqual(len(data), 0)
@@ -367,63 +229,12 @@ class TestInboundBuildData(unittest.TestCase):
 
     def test_get_valid_build_got_exception(self):
         data = self.create_inbound_build_data('c0', 'c3')
-        # patch things in _get_valid_builds
-        data.index.findTask = Mock(side_effect=build_data.TaskclusterFailure)
+
+        data.info_fetcher.find_build_info = \
+            Mock(side_effect=errors.BuildInfoNotFound)
 
         data.mid_point()
         self.assertEqual(len(data), 0)
-
-    def test_get_valid_build_no_artifacts(self):
-        data = self.create_inbound_build_data('c0', 'c3')
-        # patch things in _get_valid_builds
-
-        def find_task(route):
-            return {'taskId': 'task1'}
-
-        def list_artifacts(taskid):
-            return {"artifacts": []}
-
-        data.index.findTask = Mock(side_effect=find_task)
-        data.queue.listLatestArtifacts = Mock(side_effect=list_artifacts)
-
-        data.mid_point()
-        self.assertEqual(len(data), 0)
-
-    def test_get_valid_build(self):
-        data = self.create_inbound_build_data('c0', 'c3')
-        # patch things in _get_valid_builds
-
-        def find_task(route):
-            return {'taskId': 'task1'}
-
-        def list_artifacts(taskid):
-            return {"artifacts": [
-                # return two valid artifact names
-                {'name': 'firefox-42.0a1.en-US.linux-x86_64.tar.bz2'},
-                {'name': 'firefox-42.0a1.en-US.linux-x86_64.txt'},
-            ]}
-
-        def build_url(bname, taskid, name):
-            return 'http://' + name
-
-        data.index.findTask = Mock(side_effect=find_task)
-        data.queue.listLatestArtifacts = Mock(side_effect=list_artifacts)
-        data.queue.buildUrl = Mock(side_effect=build_url)
-        data.info_fetcher.find_build_info_txt = Mock(
-            return_value={'changeset': '123456789'})
-
-        mid = data.mid_point()
-        # we have 3 data points (min, mid and max)
-        self.assertEqual(len(data), 3)
-        # mid is 1
-        self.assertEqual(mid, 1)
-        self.assertEqual(data[mid], {
-            'build_txt_url': 'http://firefox-42.0a1.en-US.linux-x86_64.txt',
-            'build_url': 'http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2',
-            'changeset': '123456789',  # full chset
-            'revision': '12345678',  # chset[:8]
-            'timestamp': 1
-        })
 
 
 if __name__ == '__main__':

@@ -44,7 +44,7 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
     def focus_download(self, build_info):
         build_url, fname = self._extract_download_info(build_info)
         dest = self.get_dest(fname)
-        build_info['build_path'] = dest
+        build_info.build_file = dest
         # first, stop all downloads in background (except the one for this
         # build if any)
         self.cancel(cancel_if=lambda dl: dest != dl.get_dest())
@@ -156,8 +156,7 @@ class GuiBisector(QObject, Bisector):
         if result != Bisection.RUNNING:
             self.finished.emit(self.bisection, result)
         else:
-            self.build_infos = \
-                self.bisection.handler.build_infos(mid, self.fetch_config)
+            self.build_infos = self.bisection.handler.build_data[mid]
             self.download_manager.focus_download(self.build_infos)
             self.step_build_found.emit(self.bisection, self.build_infos)
 
@@ -171,7 +170,7 @@ class GuiBisector(QObject, Bisector):
     def _build_dl_finished(self, dl, dest):
         # here we are not in the working thread, since the connection was
         # done in the constructor
-        if not dest == self.build_infos['build_path']:
+        if not dest == self.build_infos.build_file:
             return
         if dl is not None and (dl.is_canceled() or dl.error()):
             # todo handle this
@@ -184,7 +183,9 @@ class GuiBisector(QObject, Bisector):
     def _evaluate_finished(self):
         # here we are not in the working thread, since the connection was
         # done in the constructor
-        self.bisection.update_build_info(self.mid, self.test_runner.app_info)
+        self.bisection.build_data[self.mid].update_from_app_info(
+            self.test_runner.app_info
+        )
         self.step_finished.emit(self.bisection, self.test_runner.verdict)
         result = self.bisection.handle_verdict(self.mid,
                                                self.test_runner.verdict)

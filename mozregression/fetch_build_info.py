@@ -2,36 +2,22 @@
 This module offers an API to get information for one build.
 
 The public API is composed of two classes, :class:`NightlyInfoFetcher` and
-:class:`InboundInfoFetcher`. they both inherit from the :class:`InfoFetcher`.
-
-Here is an example of usage, to get the build url of builds::
-
-  from datetime import date
-  from mozregression.fetch_config import create_config
-
-  fetch_config = create_config('firefox', 'linux', 64)
-  # note that you should configure the fetch_config to use another repo
-  # than the defaut one for the application.
-
-  # find build info for one date (looks in nightly builds)
-  info_fetcher = NightlyInfoFetcher(fetch_config)
-  print info_fetcher.find_build_info(date(2015, 01, 01))['build_url']
-
-  # find build info for one changeset (looks in inbound builds)
-  info_fetcher = InboundInfoFetcher(fetch_config)
-  print info_fetcher.find_build_info("a_valid_changeset")['build_url']
+:class:`InboundInfoFetcher`, able to return
+:class:`mozregression.build_info.BuildInfo` instances.
 """
 
 import os
 import re
 import threading
 import taskcluster
+from datetime import datetime
 from taskcluster.exceptions import TaskclusterFailure
 from mozlog.structuredlog import get_default_logger
 from concurrent import futures
 
 from mozregression.network import url_links, retry_get
 from mozregression.errors import BuildInfoNotFound
+from mozregression.build_info import NightlyBuildInfo, InboundBuildInfo
 
 
 class InfoFetcher(object):
@@ -76,20 +62,8 @@ class InfoFetcher(object):
         Abstract method to retrieve build information over the internet for
         one build.
 
-        This returns a dict that contain build information. At minima, this
-        contains the key "build_url" that is the url of the build to download.
-
-        If available (it *should*, but this is not ensured) there will be
-        also the key "build_txt_url", that is the url of the .txt file
-        corresponding to the build file.
-
-        if *fetch_txt_info* is True, this .txt file will be read to try to
-        get two following keys:
-
-         - "repository": the name of the repository where the source for the
-           build lives (ie, mozilla-central).
-         - "changeset": the changeset used in that repository to build the
-           sources.
+        This returns a :class:`BuildInfo` instance that contain build
+        information.
 
         Note that this method may raise :class:`BuildInfoNotFound` on error.
         """
@@ -105,27 +79,46 @@ class InboundInfoFetcher(InfoFetcher):
     def find_build_info(self, changeset, fetch_txt_info=True):
         """
         Find build info for an inbound build, given a changeset.
+
+        Return a :class:`InboundBuildInfo` instance.
         """
+        # find a task id
         tk_route = self.fetch_config.tk_inbound_route(changeset)
         self._logger.debug('using taskcluster route %r' % tk_route)
         try:
-            task = self.index.findTask(tk_route)
+            task_id = self.index.findTask(tk_route)['taskId']
         except TaskclusterFailure:
             raise BuildInfoNotFound("Unable to find build info using the"
                                     " taskcluster route %r" % tk_route)
-        artifacts = self.queue.listLatestArtifacts(task['taskId'])['artifacts']
+
+        # find a completed run for that task
+        run_id, build_date = None, None
+        status = self.queue.status(task_id)['status']
+        for run in reversed(status['runs']):
+            if run['state'] == 'completed':
+                run_id = run['runId']
+                build_date = datetime.strptime(run["resolved"],
+                                               '%Y-%m-%dT%H:%M:%S.%fZ')
+                break
+
+        if run_id is None:
+            raise BuildInfoNotFound("Unable to find completed runs for task %s"
+                                    % task_id)
+        artifacts = self.queue.listArtifacts(task_id, run_id)['artifacts']
         data = {}
+
+        # look over the artifacts of that run
         for a in artifacts:
             match = None
             name = os.path.basename(a['name'])
-            if self.build_regex.match(name):
+            if self.build_regex.search(name):
                 match = 'build_url'
             elif self.build_info_regex.match(name):
                 match = 'build_txt_url'
             if match:
                 data[match] = self.queue.buildUrl(
                     'getLatestArtifact',
-                    task['taskId'],
+                    task_id,
                     a['name']
                 )
         if 'build_url' not in data:
@@ -133,7 +126,16 @@ class InboundInfoFetcher(InfoFetcher):
                                     " changeset %r" % changeset)
         if fetch_txt_info:
             self._update_build_info_from_txt(data)
-        return data
+            # keep the most precise changeset.
+            if 'changeset' in data and len(data['changeset']) > changeset:
+                changeset = data['changeset']
+        return InboundBuildInfo(
+            self.fetch_config,
+            build_url=data['build_url'],
+            build_date=build_date,
+            changeset=changeset,
+            repo_url=data.get('repository')
+        )
 
 
 class NightlyInfoFetcher(InfoFetcher):
@@ -146,8 +148,9 @@ class NightlyInfoFetcher(InfoFetcher):
         """
         Retrieve information from a build folder url.
 
-        Returns a dict with keys build_url and build_txt_url if respectively
-        a build file and a build info file are found for the url.
+        Returns a :class:`NightlyBuildInfo` instance with keys build_url and
+        build_txt_url if respectively a build file and a build info file are
+        found for the url.
         """
         data = {}
         if not url.endswith('/'):
@@ -191,6 +194,8 @@ class NightlyInfoFetcher(InfoFetcher):
     def find_build_info(self, date, fetch_txt_info=True, max_workers=2):
         """
         Find build info for a nightly build, given a date.
+
+        Returns a :class:`NightlyBuildInfo` instance.
         """
         # getting a valid build for a given date on nightly is tricky.
         # there is multiple possible builds folders for one date,
@@ -199,7 +204,7 @@ class NightlyInfoFetcher(InfoFetcher):
         # to save time, we will try multiple build folders at the same
         # time in some threads. The first good one found is returned.
         build_urls = self._get_urls(date)
-        build_infos = None
+        build_info = None
 
         while build_urls:
             some = build_urls[:max_workers]
@@ -217,14 +222,21 @@ class NightlyInfoFetcher(InfoFetcher):
                     if infos:
                         valid_builds.append((i, infos))
                 if valid_builds:
-                    build_infos = sorted(valid_builds,
-                                         key=lambda b: b[0])[0][1]
+                    infos = sorted(valid_builds, key=lambda b: b[0])[0][1]
+                    if fetch_txt_info:
+                        self._update_build_info_from_txt(infos)
+
+                    build_info = NightlyBuildInfo(
+                        self.fetch_config,
+                        build_url=infos['build_url'],
+                        build_date=date,
+                        changeset=infos.get('changeset'),
+                        repo_url=infos.get('repository')
+                    )
                     break
             build_urls = build_urls[max_workers:]
 
-        if build_infos is None:
+        if build_info is None:
             raise BuildInfoNotFound("Unable to find build info for %s" % date)
 
-        if fetch_txt_info:
-            self._update_build_info_from_txt(build_infos)
-        return build_infos
+        return build_info

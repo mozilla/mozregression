@@ -31,17 +31,17 @@ class TestRunner(object):
         """
         Create and returns a :class:`mozregression.launchers.Launcher`.
         """
-        if build_info['build_type'] == 'nightly':
+        if build_info.build_type == 'nightly':
             self.logger.info("Running nightly for %s"
-                             % build_info["build_date"])
+                             % build_info.build_date)
         else:
-            self.logger.info("Testing inbound build with timestamp %s,"
+            self.logger.info("Testing inbound build built on %s,"
                              " revision %s"
-                             % (build_info['timestamp'],
-                                build_info['revision']))
+                             % (build_info.build_date,
+                                build_info.short_changeset))
 
-        return create_launcher(build_info['app_name'],
-                               build_info['build_path'])
+        return create_launcher(build_info.app_name,
+                               build_info.build_file)
 
     def evaluate(self, build_info, allow_back=False):
         """
@@ -57,17 +57,7 @@ class TestRunner(object):
         particular build.
 
         :param build_path: the path to the build file to test
-        :param build_info: is a dict containing information about the build
-                           to test. It is ensured to have the following keys:
-                            - build_type ('nightly' or 'inbound')
-                            - build_url
-                            - repository (mercurial repository of the build)
-                            - changeset (mercurial changeset of the build)
-                           Also, if the build_type is 'nightly':
-                            - build_date (datetime.date instance)
-                           Or 'inbound':
-                            - timestamp: timestamp of the build
-                            - revision (short version of changeset)
+        :param build_info: a :class:`mozrgression.uild_info.BuildInfo` instance
         :param allow_back: indicate if the back command should be proposed.
         """
         raise NotImplementedError
@@ -98,7 +88,7 @@ class ManualTestRunner(TestRunner):
         while verdict not in allowed_inputs:
             verdict = raw_input("Was this %s build good, bad, or broken?"
                                 " (type %s and press Enter): "
-                                % (build_info['build_type'],
+                                % (build_info.build_type,
                                    formatted_options))
 
         if verdict == 'back':
@@ -149,7 +139,8 @@ class CommandTestRunner(TestRunner):
     def evaluate(self, build_info, allow_back=False):
         launcher = self.create_launcher(build_info)
         app_info = launcher.get_app_info()
-        variables = dict((k, str(v)) for k, v in build_info.iteritems())
+        variables = dict((k, str(v))
+                         for k, v in build_info.to_dict().iteritems())
         if hasattr(launcher, 'binary'):
             variables['binary'] = launcher.binary
 

@@ -12,7 +12,6 @@ from mozregression.bisector import (BisectorHandler, NightlyHandler,
                                     InboundHandler, Bisector, Bisection,
                                     BisectRunner)
 from mozregression.cli import parse_args
-from mozregression.fetch_configs import create_config
 from mozregression import build_data
 from mozregression.errors import LauncherError
 
@@ -26,9 +25,9 @@ class TestBisectorHandler(unittest.TestCase):
 
     def test_initialize(self):
         self.handler.set_build_data([
-            {'changeset': '1', 'repository': 'my'},
-            {},
-            {'changeset': '3', 'repository': 'my'},
+            Mock(changeset='1', repo_url='my'),
+            Mock(),
+            Mock(changeset='3', repo_url='my'),
         ])
         self.handler.initialize()
         self.assertEqual(self.handler.found_repo, 'my')
@@ -80,22 +79,6 @@ class TestBisectorHandler(unittest.TestCase):
 class TestNightlyHandler(unittest.TestCase):
     def setUp(self):
         self.handler = NightlyHandler()
-
-    def test_build_infos(self):
-        fetch_config = create_config('fennec-2.3', 'linux', 64)
-        fetch_config.set_nightly_repo('my-repo')
-
-        def get_associated_data(index):
-            return index
-        new_data = MagicMock(get_associated_data=get_associated_data)
-        self.handler.set_build_data(new_data)
-        result = self.handler.build_infos(1, fetch_config)
-        self.assertEqual(result, {
-            'build_type': 'nightly',
-            'build_date': 1,
-            'app_name': 'fennec',
-            'repo': 'my-repo'
-        })
 
     @patch('mozregression.bisector.BisectorHandler.initialize')
     def test_initialize(self, initialize):
@@ -176,30 +159,19 @@ class TestInboundHandler(unittest.TestCase):
     def setUp(self):
         self.handler = InboundHandler()
 
-    def test_build_infos(self):
-        fetch_config = create_config('firefox', 'linux', 64)
-        fetch_config.set_inbound_branch('my-branch')
-
-        self.handler.set_build_data([{'changeset': '1', 'repository': 'my'}])
-        result = self.handler.build_infos(0, fetch_config)
-        self.assertEqual(result, {
-            'changeset': '1',
-            'repository': 'my',
-            'build_type': 'inbound',
-            'app_name': 'firefox',
-            'repo': 'my-branch',
-        })
-
     def test_print_progress(self):
         log = []
         self.handler._logger = Mock(info=log.append)
         self.handler.set_build_data([
-            {'revision': '12'},
-            {'revision': '123'},
-            {'revision': '1234'},
-            {'revision': '12345'},
+            Mock(short_changeset='12'),
+            Mock(short_changeset='123'),
+            Mock(short_changeset='1234'),
+            Mock(short_changeset='12345'),
         ])
-        new_data = [{'revision': '1234'}, {'revision': '12345'}]
+        new_data = [
+            Mock(short_changeset='1234'),
+            Mock(short_changeset='12345')
+        ]
 
         self.handler._print_progress(new_data)
         self.assertIn('from [12, 12345] (4 revisions)', log[0])
@@ -221,7 +193,7 @@ class MyBuildData(build_data.BuildData):
         # init with a dict for value, as we assume that build_info is a dict
         # Just override setdefault to not use it here
         class MyDict(dict):
-            def setdefault(self, key, value):
+            def update_from_app_info(self, app_info):
                 pass
 
         build_data.BuildData.__init__(self, [MyDict({v: v}) for v in data])

@@ -232,16 +232,6 @@ class MozBuildData(BuildData):
     def __init__(self, associated_data):
         BuildData.__init__(self, associated_data)
 
-    def _is_valid_build(self, build_info):
-        """
-        Indicate if a build folder is valid. By default, it check for the
-        existence of the build file and the build info file.
-
-        This must be used in :meth:`_get_valid_build` to ensure that a build
-        is valid.
-        """
-        return 'build_url' in build_info and 'build_txt_url' in build_info
-
     def _create_fetch_task(self, executor, i):
         return executor.submit(self._get_valid_build, i)
 
@@ -338,18 +328,9 @@ class InboundBuildData(MozBuildData):
     def _get_valid_build(self, i):
         changeset = self.get_associated_data(i)[0]
         try:
-            info = self.info_fetcher.find_build_info(changeset)
+            return self.info_fetcher.find_build_info(changeset)
         except errors.BuildInfoNotFound:
             return False
-        if self._is_valid_build(info):
-            return info
-        return False
-
-    def _set_data(self, i, data):
-        if data is not False:
-            data['timestamp'] = self.get_associated_data(i)[1]
-            data['revision'] = data['changeset'][:8]
-        MozBuildData._set_data(self, i, data)
 
 
 class NightlyBuildData(MozBuildData):

@@ -46,13 +46,13 @@ class TestGuiBuildDownloadManager(unittest.TestCase):
     def test_focus_download(self, extract_info):
         extract_info.return_value = ('http://foo', 'foo')
         mock_response(self.session_response, 'this is some data' * 10000, 0.01)
-        build_info = {}
+        build_info = Mock()
 
         with wait_signal(self.dl_manager.download_finished):
             self.dl_manager.focus_download(build_info)
 
         # build_path is defined
-        self.assertEquals(build_info['build_path'],
+        self.assertEquals(build_info.build_file,
                           self.dl_manager.get_dest('foo'))
 
         # signals have been emitted
@@ -61,7 +61,7 @@ class TestGuiBuildDownloadManager(unittest.TestCase):
         self.assertTrue(self.signals['download_progress'].call_count >= 2)
 
         # well, file has been downloaded finally
-        self.assertTrue(os.path.isfile(build_info['build_path']))
+        self.assertTrue(os.path.isfile(build_info.build_file))
 
 
 class TestGuiTestRunner(unittest.TestCase):

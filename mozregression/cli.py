@@ -26,8 +26,7 @@ from mozlog.structured import commandline
 
 from mozregression import __version__
 from mozregression.fetch_configs import REGISTRY as FC_REGISTRY, create_config
-from mozregression.test_runner import ManualTestRunner, CommandTestRunner
-from mozregression.errors import (MozRegressionError, DateFormatError)
+from mozregression.errors import MozRegressionError, DateFormatError
 from mozregression.releases import (formatted_valid_release_dates,
                                     date_of_release)
 
@@ -319,7 +318,6 @@ class Configuration(object):
                   ("bisect_inbounds" or "bisect_nightlies")
     :attr fetch_config: the fetch_config instance, required to find
                         information about a build
-    :attr test_runner: the TestRunner instance, required to run a build
     """
     def __init__(self, options):
         self.options = options
@@ -328,12 +326,11 @@ class Configuration(object):
                                                 {"mach": sys.stdout})
         self.action = None
         self.fetch_config = None
-        self.test_runner = None
 
     def validate(self):
         """
-        Validate the options, define the `action`, `fetch_config` and
-        `test_runner` that should be used to run the application.
+        Validate the options, define the `action` and `fetch_config` that
+        should be used to run the application.
         """
         options = self.options
 
@@ -366,15 +363,7 @@ class Configuration(object):
             self.action = "bisect_nightlies"
             check_nightlies(options, fetch_config, self.logger)
 
-        if options.command is None:
-            self.test_runner = ManualTestRunner(launcher_kwargs=dict(
-                addons=options.addons,
-                profile=options.profile,
-                cmdargs=options.cmdargs,
-                preferences=preferences(options.prefs_files, options.prefs),
-            ))
-        else:
-            self.test_runner = CommandTestRunner(options.command)
+        options.preferences = preferences(options.prefs_files, options.prefs)
 
 
 def cli(argv=None, conf_file=DEFAULT_CONF_FNAME):

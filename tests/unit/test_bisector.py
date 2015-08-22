@@ -8,10 +8,8 @@ import unittest
 from mock import patch, Mock, call, MagicMock
 import datetime
 
-from mozregression.bisector import (BisectorHandler, NightlyHandler,
-                                    InboundHandler, Bisector, Bisection,
-                                    BisectRunner)
-from mozregression.cli import parse_args
+from mozregression.bisector import (NightlyHandler, InboundHandler, Bisector,
+                                    Bisection, BisectorHandler)
 from mozregression import build_data
 from mozregression.errors import LauncherError
 
@@ -222,12 +220,11 @@ class TestBisector(unittest.TestCase):
         self.handler = MagicMock(find_fix=False)
         self.test_runner = Mock()
         self.bisector = Bisector(Mock(), self.test_runner,
+                                 Mock(),
                                  dl_in_background=False)
         self.bisector.download_background = False
-        self.addCleanup(self.bisector.__del__)
 
-    @patch("mozregression.bisector.BuildDownloadManager")
-    def test__bisect_no_data(self, dl):
+    def test__bisect_no_data(self):
         build_data = MyBuildData()
         result = self.bisector._bisect(self.handler, build_data)
         # test that handler methods where called
@@ -236,8 +233,7 @@ class TestBisector(unittest.TestCase):
         # check return code
         self.assertEqual(result, Bisection.NO_DATA)
 
-    @patch("mozregression.bisector.BuildDownloadManager")
-    def test__bisect_finished(self, dl):
+    def test__bisect_finished(self):
         build_data = MyBuildData([1])
         result = self.bisector._bisect(self.handler, build_data)
         # test that handler methods where called
@@ -246,8 +242,7 @@ class TestBisector(unittest.TestCase):
         # check return code
         self.assertEqual(result, Bisection.FINISHED)
 
-    @patch("mozregression.bisector.BuildDownloadManager")
-    def do__bisect(self, build_data, verdicts, dl):
+    def do__bisect(self, build_data, verdicts):
         iter_verdict = iter(verdicts)
 
         def evaluate(build_info, allow_back=False):
@@ -420,95 +415,6 @@ class TestBisector(unittest.TestCase):
         build_data_class.assert_called_with(self.bisector.fetch_config,
                                             'b', 'g', s=1)
         _bisect.assert_called_with(self.handler, build_data)
-
-
-class TestBisectRunner(unittest.TestCase):
-    @patch('mozregression.bisector.get_default_logger')
-    def setUp(self, get_default_logger):
-        self.fetch_config = Mock()
-        self.test_runner = Mock()
-        self.logger = Mock()
-        self.logs = []
-        get_default_logger.return_value = Mock(info=self.logs.append)
-        self.brunner = BisectRunner(self.fetch_config,
-                                    self.test_runner,
-                                    parse_args([]))
-        self.addCleanup(self.brunner.bisector.__del__)
-
-    def test_create(self):
-        self.assertIsInstance(self.brunner.bisector, Bisector)
-
-    def print_resume_info(self, handler_klass, **kwargs):
-        # print_resume_info require some handlers attribute
-        handler = handler_klass()
-        if isinstance(handler, NightlyHandler):
-            handler.good_date = datetime.date(2015, 1, 1)
-            handler.bad_date = datetime.date(2015, 1, 11)
-        else:
-            handler.good_revision = '123'
-            handler.bad_revision = '456'
-
-        for k, v in kwargs.iteritems():
-            setattr(self.brunner.options, k, v)
-        self.brunner.print_resume_info(handler)
-        return self.logs[-1]
-
-    def test_print_resume_infos_nightly(self):
-        result = self.print_resume_info(NightlyHandler, bits=64)
-        self.assertIn('--bits=64', result)
-        self.assertIn('--good=2015-01-01', result)
-        self.assertIn('--bad=2015-01-11', result)
-
-        self.assertNotIn('--find-fix', result)
-        result = self.print_resume_info(NightlyHandler, find_fix=True)
-        self.assertIn('--find-fix', result)
-
-        self.assertNotIn('--addon', result)
-        result = self.print_resume_info(NightlyHandler, addons=['1', '2'])
-        self.assertIn('--addon=1 --addon=2', result)
-
-        self.assertNotIn('--profile', result)
-        result = self.print_resume_info(NightlyHandler, profile='profile')
-        self.assertIn('--profile=profile', result)
-
-        self.assertNotIn('--inbound-branch', result)
-        result = self.print_resume_info(NightlyHandler, inbound_branch='i')
-        self.assertIn('--inbound-branch=i', result)
-
-        self.assertNotIn('--repo', result)
-        result = self.print_resume_info(NightlyHandler, repo='r')
-        self.assertIn('--repo=r', result)
-
-        self.assertNotIn('--persist', result)
-        result = self.print_resume_info(NightlyHandler, persist='/tmp')
-        self.assertIn('--persist=/tmp', result)
-
-        self.assertNotIn('--arg', result)
-        result = self.print_resume_info(NightlyHandler, cmdargs=['1', '2'])
-        self.assertIn('--arg=1 --arg=2', result)
-
-    def test_print_resume_infos_inbound(self):
-        result = self.print_resume_info(InboundHandler, bits=32, app='b2g')
-        self.assertIn('--bits=32', result)
-        self.assertIn('--app=b2g', result)
-        self.assertIn('--good-rev=123', result)
-        self.assertIn('--bad-rev=456', result)
-
-    def test_print_resume_info_shell_escape(self):
-        result = self.print_resume_info(
-            InboundHandler,
-            addons=['/path/ to'],
-            profile='/path/$to',
-            persist='/path/"to',
-            cmdargs=["https://treeherder.mozilla.org/#/jobs"
-                     "?repo=mozilla-inbound&revision=ceba6484abda"]
-        )
-        # cmdargs, profile, addons and persist are shell escaped
-        self.assertIn("--arg='https://treeherder.mozilla.org/#/jobs"
-                      "?repo=mozilla-inbound&revision=ceba6484abda'", result)
-        self.assertIn("--addon='/path/ to'", result)
-        self.assertIn("--profile='/path/$to'", result)
-        self.assertIn("--persist='/path/\"to'", result)
 
 
 if __name__ == '__main__':

@@ -23,7 +23,7 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
 
     def __init__(self, destdir, **kwargs):
         QObject.__init__(self)
-        BuildDownloadManager.__init__(self, None, destdir,
+        BuildDownloadManager.__init__(self, destdir,
                                       session=get_http_session(),
                                       **kwargs)
 
@@ -92,10 +92,10 @@ class GuiBisector(QObject, Bisector):
     step_testing = Signal(object, object)
     step_finished = Signal(object, str)
 
-    def __init__(self, fetch_config, persist=None):
+    def __init__(self, fetch_config, download_dir):
         QObject.__init__(self)
-        Bisector.__init__(self, fetch_config, GuiTestRunner(), persist=persist)
-        self.download_manager = GuiBuildDownloadManager(self.download_dir)
+        Bisector.__init__(self, fetch_config, GuiTestRunner(),
+                          GuiBuildDownloadManager(download_dir))
         self.bisection = None
         self.mid = None
         self.build_infos = None
@@ -226,12 +226,12 @@ class BisectRunner(QObject):
         # apply the global prefs now
         apply_prefs(global_prefs)
 
-        persist = global_prefs['persist']
-        if not persist:
-            persist = self.mainwindow.persist
+        download_dir = global_prefs['persist']
+        if not download_dir:
+            download_dir = self.mainwindow.persist
 
         self.bisector = GuiBisector(fetch_config,
-                                    persist=persist)
+                                    download_dir)
         # create a QThread, and move self.bisector in it. This will
         # allow to the self.bisector slots (connected after the move)
         # to be automatically called in the thread.

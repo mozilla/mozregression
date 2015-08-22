@@ -1,10 +1,12 @@
 import tempfile
 import threading
 import requests
-from contextlib import closing
 import os
 import sys
 import mozfile
+
+from contextlib import closing
+from mozlog.structuredlog import get_default_logger
 
 
 class DownloadInterrupt(Exception):
@@ -278,10 +280,10 @@ class BuildDownloadManager(DownloadManager):
     """
     A DownloadManager specialized to download builds.
     """
-    def __init__(self, logger, destdir, session=requests,
+    def __init__(self, destdir, session=requests,
                  background_dl_policy='cancel'):
         DownloadManager.__init__(self, destdir, session=session)
-        self.logger = logger
+        self.logger = get_default_logger('download')
         self._downloads_bg = set()
         assert background_dl_policy in ('cancel', 'keep')
         self.background_dl_policy = background_dl_policy

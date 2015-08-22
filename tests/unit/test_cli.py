@@ -13,6 +13,7 @@ import pytest
 from mock import patch
 
 from mozregression import cli, errors
+from mozregression.releases import releases
 
 
 class TestParseDate(unittest.TestCase):
@@ -37,37 +38,6 @@ class TestParseBits(unittest.TestCase):
         mozinfo.bits = 64
         self.assertEqual(cli.parse_bits('32'), 32)
         self.assertEqual(cli.parse_bits('64'), 64)
-
-
-class TestRelease(unittest.TestCase):
-    def test_valid_release_to_date(self):
-        date = cli.date_of_release(8)
-        self.assertEquals(date, "2011-08-16")
-        date = cli.date_of_release(15)
-        self.assertEquals(date, "2012-06-05")
-        date = cli.date_of_release(34)
-        self.assertEquals(date, "2014-09-02")
-
-    def test_valid_formatted_release_dates(self):
-        formatted_output = cli.formatted_valid_release_dates()
-        firefox_releases = cli.releases()
-
-        for line in formatted_output.splitlines():
-            if "Valid releases: " in line:
-                continue
-
-            fields = line.translate(None, " ").split(":")
-            version = int(fields[0])
-            date = fields[1]
-
-            self.assertTrue(version in firefox_releases)
-            self.assertEquals(date, firefox_releases[version])
-
-    def test_invalid_release_to_date(self):
-        with self.assertRaises(errors.UnavailableRelease):
-            cli.date_of_release(4)
-        with self.assertRaises(errors.UnavailableRelease):
-            cli.date_of_release(441)
 
 
 class TestPreferences(unittest.TestCase):
@@ -139,7 +109,6 @@ def test_get_usage():
 
         with pytest.raises(SystemExit) as exc:
             do_cli('-h')
-
     assert exc.value.code == 0
     assert "usage:" in ''.join(output)
 
@@ -175,14 +144,14 @@ def test_date_release_are_incompatible(arg1, arg2):
 
 
 def test_with_releases():
-    releases = sorted(((k, v) for k, v in cli.releases().items()),
-                      key=(lambda (k, v): k))
+    releases_data = sorted(((k, v) for k, v in releases().items()),
+                           key=(lambda (k, v): k))
     conf = do_cli(
-        '--bad-release=%s' % releases[-1][0],
-        '--good-release=%s' % releases[0][0],
+        '--bad-release=%s' % releases_data[-1][0],
+        '--good-release=%s' % releases_data[0][0],
     )
-    assert str(conf.options.good_date) == releases[0][1]
-    assert str(conf.options.bad_date) == releases[-1][1]
+    assert str(conf.options.good_date) == releases_data[0][1]
+    assert str(conf.options.bad_date) == releases_data[-1][1]
 
 
 def test_bad_date_later_than_good():

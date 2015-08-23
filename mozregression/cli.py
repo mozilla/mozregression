@@ -252,6 +252,9 @@ def preferences(prefs_files, prefs_args):
 def check_nightlies(options, fetch_config, logger):
     default_bad_date = str(datetime.date.today())
     default_good_date = "2009-01-01"
+    if mozinfo.os == 'win' and options.bits == 64:
+        # first firefox build date for win64 is 2010-05-28
+        default_good_date = "2010-05-28"
     if options.find_fix:
         default_bad_date, default_good_date = \
             default_good_date, default_bad_date

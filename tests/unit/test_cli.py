@@ -113,24 +113,41 @@ def test_get_usage():
     assert "usage:" in ''.join(output)
 
 
-def test_no_args():
-    config = do_cli()
-    # application is by default firefox
-    assert config.fetch_config.app_name == 'firefox'
-    # nightly by default
-    assert config.action == 'bisect_nightlies'
-    assert config.options.good_date == datetime.date(2009, 1, 1)
-    assert config.options.bad_date == datetime.date.today()
+DEFAULTS_DATE = [
+    ('linux', 64, datetime.date(2009, 1, 1)),
+    ('linux', 32, datetime.date(2009, 1, 1)),
+    ('mac', 64, datetime.date(2009, 1, 1)),
+    ('win', 32, datetime.date(2009, 1, 1)),
+    ('win', 64, datetime.date(2010, 5, 28)),
+]
 
 
-def test_find_fix_reverse_default_dates():
-    config = do_cli('--find-fix')
-    # application is by default firefox
-    assert config.fetch_config.app_name == 'firefox'
-    # nightly by default
-    assert config.action == 'bisect_nightlies'
-    assert config.options.bad_date == datetime.date(2009, 1, 1)
-    assert config.options.good_date == datetime.date.today()
+@pytest.mark.parametrize("os,bits,default_good_date", DEFAULTS_DATE)
+def test_no_args(os, bits, default_good_date):
+    with patch('mozregression.cli.mozinfo') as mozinfo:
+        mozinfo.os = os
+        mozinfo.bits = bits
+        config = do_cli()
+        # application is by default firefox
+        assert config.fetch_config.app_name == 'firefox'
+        # nightly by default
+        assert config.action == 'bisect_nightlies'
+        assert config.options.good_date == default_good_date
+        assert config.options.bad_date == datetime.date.today()
+
+
+@pytest.mark.parametrize("os,bits,default_bad_date", DEFAULTS_DATE)
+def test_find_fix_reverse_default_dates(os, bits, default_bad_date):
+    with patch('mozregression.cli.mozinfo') as mozinfo:
+        mozinfo.os = os
+        mozinfo.bits = bits
+        config = do_cli('--find-fix')
+        # application is by default firefox
+        assert config.fetch_config.app_name == 'firefox'
+        # nightly by default
+        assert config.action == 'bisect_nightlies'
+        assert config.options.bad_date == default_bad_date
+        assert config.options.good_date == datetime.date.today()
 
 
 @pytest.mark.parametrize('arg1,arg2', [

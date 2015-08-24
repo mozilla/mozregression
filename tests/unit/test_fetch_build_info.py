@@ -97,10 +97,7 @@ bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/',
         self.info_fetcher._fetch_txt_info = Mock(return_value={})
         result = self.info_fetcher.find_build_info(datetime.date(2014, 11, 15))
         # we must have found the last build url valid
-        self.assertEqual(result, {
-            'build_txt_url': get_urls.return_value[-1],
-            'build_url': get_urls.return_value[-1],
-        })
+        self.assertEqual(result.build_url, get_urls.return_value[-1])
 
     def test_find_build_info_no_data(self):
         self.info_fetcher._get_urls = Mock(return_value=[])
@@ -119,7 +116,14 @@ class TestInboundInfoFetcher(unittest.TestCase):
         def find_task(route):
             return {'taskId': 'task1'}
 
-        def list_artifacts(taskid):
+        def status(task_id):
+            return {"status": {"runs": [{
+                "state": "completed",
+                "runId": 0,
+                "resolved": '2015-06-01T22:13:02.115Z'
+            }]}}
+
+        def list_artifacts(taskid, run_id):
             return {"artifacts": [
                 # return two valid artifact names
                 {'name': 'firefox-42.0a1.en-US.linux-x86_64.tar.bz2'},
@@ -129,19 +133,18 @@ class TestInboundInfoFetcher(unittest.TestCase):
         def build_url(bname, taskid, name):
             return 'http://' + name
 
-        self.info_fetcher.index.findTask = Mock(side_effect=find_task)
-        self.info_fetcher.queue.listLatestArtifacts = \
-            Mock(side_effect=list_artifacts)
-        self.info_fetcher.queue.buildUrl = Mock(side_effect=build_url)
+        self.info_fetcher.index.findTask = find_task
+        self.info_fetcher.queue.status = status
+        self.info_fetcher.queue.listArtifacts = list_artifacts
+        self.info_fetcher.queue.buildUrl = build_url
         self.info_fetcher._fetch_txt_info = \
             Mock(return_value={'changeset': '123456789'})
 
         result = self.info_fetcher.find_build_info('123456789')
-        self.assertEqual(result, {
-            'build_txt_url': 'http://firefox-42.0a1.en-US.linux-x86_64.txt',
-            'build_url': 'http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2',
-            'changeset': '123456789',
-        })
+        self.assertEqual(result.build_url,
+                         'http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2')
+        self.assertEqual(result.changeset, '123456789')
+        self.assertEqual(result.build_type, "inbound")
 
     def test_find_build_info_no_task(self):
         self.info_fetcher.index.findTask = Mock(
@@ -154,12 +157,19 @@ class TestInboundInfoFetcher(unittest.TestCase):
         def find_task(route):
             return {'taskId': 'task1'}
 
-        def list_artifacts(taskid):
+        def status(task_id):
+            return {"status": {"runs": [{
+                "state": "completed",
+                "runId": 0,
+                "resolved": '2015-06-01T22:13:02.115Z'
+            }]}}
+
+        def list_artifacts(taskid, run_id):
             return {"artifacts": []}
 
-        self.info_fetcher.index.findTask = Mock(side_effect=find_task)
-        self.info_fetcher.queue.listLatestArtifacts = \
-            Mock(side_effect=list_artifacts)
+        self.info_fetcher.index.findTask = find_task
+        self.info_fetcher.queue.status = status
+        self.info_fetcher.queue.listArtifacts = list_artifacts
 
         with self.assertRaises(errors.BuildInfoNotFound):
             self.info_fetcher.find_build_info('123456789')

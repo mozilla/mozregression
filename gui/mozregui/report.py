@@ -2,6 +2,8 @@ from PyQt4.QtGui import QTextBrowser, QTableView, QDesktopServices, QColor
 from PyQt4.QtCore import QAbstractTableModel, QModelIndex, Qt,\
     pyqtSlot as Slot, pyqtSignal as Signal, QUrl
 
+from mozregression.bisector import NightlyHandler
+
 # Custom colors
 GRAY_WHITE = QColor(243, 243, 243)
 VERDICT_TO_ROW_COLORS = {
@@ -38,11 +40,16 @@ class StartItem(ReportItem):
     def update_pushlogurl(self, bisection):
         ReportItem.update_pushlogurl(self, bisection)
         handler = bisection.handler
-        self.build_type = handler.build_type
-        if handler.build_type == 'nightly':
+        if isinstance(handler, NightlyHandler):
+            self.build_type = "nightly"
+        else:
+            self.build_type = "inbound"
+        if self.build_type == 'nightly':
             self.first, self.last = handler.get_date_range()
         else:
             self.first, self.last = handler.get_range()
+            self.first = self.first[:8]
+            self.last = self.last[:8]
         if handler.find_fix:
             self.first, self.last = self.last, self.first
 
@@ -68,7 +75,7 @@ class StepItem(ReportItem):
         if self.data['build_type'] == 'nightly':
             msg = "%%s nightly build: %s" % self.data['build_date']
         else:
-            msg = "%%s inbound build: %s" % self.data['changeset']
+            msg = "%%s inbound build: %s" % self.data['changeset'][:8]
         if self.verdict is not None:
             msg += ' (verdict: %s)' % self.verdict
         return msg % self.state_text
@@ -191,11 +198,11 @@ class ReportModel(QAbstractTableModel):
             item = StepItem()
             item.state_text = 'Downloading'
             item.downloading = True
-            item.data.update(build_infos)
+            item.data.update(build_infos.to_dict())
             self.append_item(item)
         else:
             # previous item is a step, just update it
-            last_item.data.update(build_infos)
+            last_item.data.update(build_infos.to_dict())
             last_item.state_text = 'Downloading'
             last_item.downloading = True
             self.update_item(last_item)

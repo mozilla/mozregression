@@ -6,9 +6,12 @@
 
 import unittest
 from mock import patch, Mock
-import datetime
 
-from mozregression import test_runner, errors
+from mozregression import test_runner, errors, build_info
+
+
+def mockinfo(**kwargs):
+    return Mock(spec=build_info.BuildInfo, **kwargs)
 
 
 class TestManualTestRunner(unittest.TestCase):
@@ -19,14 +22,11 @@ class TestManualTestRunner(unittest.TestCase):
     def test_nightly_create_launcher(self, create_launcher):
         launcher = Mock()
         create_launcher.return_value = launcher
-        result_launcher = self.runner.create_launcher({
-            'build_type': 'nightly',
-            'build_date': datetime.date(2014, 12, 25),
-            'build_url': 'http://my-url',
-            'repo': 'my-repo',
-            'app_name': 'firefox',
-            'build_path': '/path/to',
-        })
+        result_launcher = self.runner.create_launcher(mockinfo(
+            build_type='nightly',
+            app_name="firefox",
+            build_file="/path/to"
+        ))
         create_launcher.\
             assert_called_with('firefox',
                                '/path/to')
@@ -38,15 +38,11 @@ class TestManualTestRunner(unittest.TestCase):
     def test_inbound_create_launcher(self, create_launcher, download):
         launcher = Mock()
         create_launcher.return_value = launcher
-        result_launcher = self.runner.create_launcher({
-            'build_type': 'inbound',
-            'timestamp': '123',
-            'revision': '12345678',
-            'build_url': 'http://my-url',
-            'repo': 'my-branch',
-            'app_name': 'firefox',
-            'build_path': '/path/to',
-        })
+        result_launcher = self.runner.create_launcher(mockinfo(
+            build_type='inbound',
+            app_name="firefox",
+            build_file="/path/to"
+        ))
         create_launcher.assert_called_with('firefox',
                                            '/path/to')
         self.assertEqual(result_launcher, launcher)
@@ -54,7 +50,8 @@ class TestManualTestRunner(unittest.TestCase):
     @patch('__builtin__.raw_input')
     def test_get_verdict(self, raw_input):
         raw_input.return_value = 'g'
-        verdict = self.runner.get_verdict({'build_type': 'inbound'}, False)
+        verdict = self.runner.get_verdict(mockinfo(build_type='inbound'),
+                                          False)
         self.assertEqual(verdict, 'g')
 
         output = raw_input.call_args[0][0]
@@ -66,7 +63,7 @@ class TestManualTestRunner(unittest.TestCase):
     @patch('__builtin__.raw_input')
     def test_get_verdict_allow_back(self, raw_input):
         raw_input.return_value = 'back'
-        verdict = self.runner.get_verdict({'build_type': 'inbound'}, True)
+        verdict = self.runner.get_verdict(mockinfo(build_type='inbound'), True)
         output = raw_input.call_args[0][0]
         # back is now proposed
         self.assertIn('back', output)
@@ -78,7 +75,7 @@ class TestManualTestRunner(unittest.TestCase):
         get_verdict.return_value = 'g'
         launcher = Mock()
         create_launcher.return_value = launcher
-        build_infos = {'a': 'b'}
+        build_infos = mockinfo()
         result = self.runner.evaluate(build_infos)
 
         create_launcher.assert_called_with(build_infos)
@@ -95,7 +92,7 @@ class TestManualTestRunner(unittest.TestCase):
         get_verdict.return_value = 'g'
         launcher = Mock(stop=Mock(side_effect=errors.LauncherError))
         create_launcher.return_value = launcher
-        build_infos = {'a': 'b'}
+        build_infos = mockinfo()
         result = self.runner.evaluate(build_infos)
 
         # the LauncherError is silently ignore here
@@ -122,7 +119,9 @@ class TestCommandTestRunner(unittest.TestCase):
             call.side_effect = subprocess_call_effect
         self.subprocess_call = call
         create_launcher.return_value = self.launcher
-        return self.runner.evaluate(build_info)[0]
+        return self.runner.evaluate(
+            mockinfo(to_dict=lambda: build_info)
+        )[0]
 
     def test_evaluate_retcode(self):
         self.assertEqual('g', self.evaluate(retcode=0))

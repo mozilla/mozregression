@@ -287,14 +287,13 @@ class BuildDownloadManager(DownloadManager):
         self.background_dl_policy = background_dl_policy
 
     def _extract_download_info(self, build_info):
-        if build_info['build_type'] == 'nightly':
-            persist_prefix = str(build_info['build_date'])
-
+        if build_info.build_type == 'nightly':
+            persist_prefix = str(build_info.build_date)
         else:
-            persist_prefix = str(build_info['changeset'][:12])
+            persist_prefix = str(build_info.changeset[:12])
 
-        persist_prefix += '--%s--' % build_info['repo']
-        build_url = build_info['build_url']
+        persist_prefix += '--%s--' % build_info.repo_name
+        build_url = build_info.build_url
         fname = persist_prefix + os.path.basename(build_url)
         return build_url, fname
 

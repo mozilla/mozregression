@@ -1,6 +1,7 @@
 from PyQt4.QtCore import Qt
 from mock import Mock
 
+from mozregression.build_info import NightlyBuildInfo
 from mozregui.report import ReportView
 
 
@@ -23,10 +24,15 @@ def test_report_basic(qtbot):
     assert index.isValid()
 
     # simulate a build found
-    build_infos = {"build_type": 'nightly', 'build_date': 'date'}
+    data = dict(build_type='nightly', build_date='date')
+    build_infos = Mock(
+        spec=NightlyBuildInfo,
+        to_dict=lambda: data,
+        **data
+    )
     bisection = Mock()
     bisection.handler.find_fix = False
-    bisection.handler.get_range.return_value = (1, 2)
+    bisection.handler.get_range.return_value = ('1', '2')
     view.model().step_build_found(bisection, build_infos)
     # now we have two rows
     assert view.model().rowCount() == 2

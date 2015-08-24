@@ -28,7 +28,6 @@ class BisectorHandler(object):
 
     A BisectorHandler keep the state of the current bisection process.
     """
-    build_type = 'unknown'
 
     def __init__(self, find_fix=False):
         self.find_fix = find_fix
@@ -48,17 +47,6 @@ class BisectorHandler(object):
         """
         self.build_data = build_data
 
-    def build_infos(self, index, fetch_config):
-        """
-        Compute build infos (a dict) when a build is about to be tested.
-        """
-        infos = {
-            'build_type': self.build_type,
-            'app_name': fetch_config.app_name
-        }
-        infos.update(self.build_data[index])
-        return infos
-
     def _print_progress(self, new_data):
         """
         Log the current state of the bisection process.
@@ -77,14 +65,14 @@ class BisectorHandler(object):
         """
         # these values could be missing for old inbound builds
         # until we tried the builds
-        repo = self.build_data[-1].get('repository')
+        repo = self.build_data[-1].repo_url
         if repo is not None:
             # do not update repo if we can' find it now
             # else we may override a previously defined one
             self.found_repo = repo
         self.good_revision, self.bad_revision = \
-            self._reverse_if_find_fix(self.build_data[0].get('changeset'),
-                                      self.build_data[-1].get('changeset'))
+            self._reverse_if_find_fix(self.build_data[0].changeset,
+                                      self.build_data[-1].changeset)
 
     def get_pushlog_url(self):
         first_rev, last_rev = self.get_range()
@@ -143,7 +131,6 @@ class BisectorHandler(object):
 
 class NightlyHandler(BisectorHandler):
     build_data_class = NightlyBuildData
-    build_type = 'nightly'
     good_date = None
     bad_date = None
 
@@ -153,12 +140,6 @@ class NightlyHandler(BisectorHandler):
         self.good_date, self.bad_date = \
             self._reverse_if_find_fix(self.build_data.get_associated_data(0),
                                       self.build_data.get_associated_data(-1))
-
-    def build_infos(self, index, fetch_config):
-        infos = BisectorHandler.build_infos(self, index, fetch_config)
-        infos['build_date'] = self.build_data.get_associated_data(index)
-        infos['repo'] = fetch_config.get_nightly_repo(infos['build_date'])
-        return infos
 
     def _print_progress(self, new_data):
         next_good_date = new_data.get_associated_data(0)
@@ -221,12 +202,12 @@ class NightlyHandler(BisectorHandler):
         self._logger.info("... attempting to bisect inbound builds (starting"
                           " from %d days prior, to make sure no inbound"
                           " revision is missed)" % days_required)
-        infos = {}
+        infos = None
         days = days_required - 1
         too_many_attempts = False
         max_attempts = 3
         first_date = min(self.good_date, self.bad_date)
-        while 'changeset' not in infos:
+        while not infos or not infos.changeset:
             days += 1
             if days >= days_required + max_attempts:
                 too_many_attempts = True
@@ -239,11 +220,11 @@ class NightlyHandler(BisectorHandler):
                               " to start from %d days ago." % days)
 
         if not self.find_fix:
-            good_rev = infos.get('changeset')
+            good_rev = infos.changeset
             bad_rev = self.bad_revision
         else:
             good_rev = self.good_revision
-            bad_rev = infos.get('changeset')
+            bad_rev = infos.changeset
         if bad_rev is None or good_rev is None:
             # we cannot find valid nightly builds in the searched range.
             # two possible causes:
@@ -265,22 +246,16 @@ class NightlyHandler(BisectorHandler):
 
 class InboundHandler(BisectorHandler):
     build_data_class = InboundBuildData
-    build_type = 'inbound'
-
-    def build_infos(self, index, fetch_config):
-        infos = BisectorHandler.build_infos(self, index, fetch_config)
-        infos['repo'] = fetch_config.inbound_branch
-        return infos
 
     def _print_progress(self, new_data):
         self._logger.info("Narrowed inbound regression window from [%s, %s]"
                           " (%d revisions) to [%s, %s] (%d revisions)"
                           " (~%d steps left)"
-                          % (self.build_data[0]['revision'],
-                             self.build_data[-1]['revision'],
+                          % (self.build_data[0].short_changeset,
+                             self.build_data[-1].short_changeset,
                              len(self.build_data),
-                             new_data[0]['revision'],
-                             new_data[-1]['revision'],
+                             new_data[0].short_changeset,
+                             new_data[-1].short_changeset,
                              len(new_data),
                              compute_steps_left(len(new_data))))
 
@@ -338,12 +313,12 @@ class Bisection(object):
         Returns a couple (new_mid_point, build_infos) where build_infos
         is the dict of build infos for the build.
         """
-        build_infos = self.handler.build_infos(mid_point, self.fetch_config)
+        build_infos = self.handler.build_data[mid_point]
         return self._download_build(mid_point, build_infos)
 
     def _download_build(self, mid_point, build_infos):
         dest = self.download_manager.focus_download(build_infos)
-        build_infos['build_path'] = dest
+        build_infos.build_file = dest
         if self.dl_in_background:
             mid_point = self._download_next_builds(mid_point)
         return mid_point, build_infos
@@ -365,7 +340,8 @@ class Bisection(object):
                 try:
                     # non-blocking download of the build
                     self.download_manager.download_in_background(
-                        self.handler.build_infos(m, self.fetch_config))
+                        self.handler.build_data[m]
+                    )
                 finally:
                     # put the real build_data back
                     self.handler.set_build_data(self.build_data)
@@ -383,16 +359,6 @@ class Bisection(object):
     def evaluate(self, build_infos):
         return self.test_runner.evaluate(build_infos,
                                          allow_back=bool(self.previous_data))
-
-    def update_build_info(self, mid_point, app_info):
-        # update build_info in build_data if possible
-        # this is required as some old builds do not have information
-        # on the server
-        build_info = self.build_data[mid_point]
-        build_info.setdefault('changeset',
-                              app_info.get('application_changeset'))
-        build_info.setdefault('repository',
-                              app_info.get('application_repository'))
 
     def handle_verdict(self, mid_point, verdict):
         if verdict == 'g':
@@ -508,7 +474,7 @@ class Bisector(object):
                     verdict, app_info = 's', {}
                 previous_verdict = verdict
                 previous_build_infos = build_infos
-                bisection.update_build_info(mid, app_info)
+                bisection.build_data[mid].update_from_app_info(app_info)
                 result = bisection.handle_verdict(mid, verdict)
                 if result != bisection.RUNNING:
                     return result

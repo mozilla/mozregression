@@ -62,6 +62,13 @@ class TestRunner(object):
         """
         raise NotImplementedError
 
+    def run_once(self, build_info):
+        """
+        Run the given build and wait for its completion. Return the error
+        code when available.
+        """
+        raise NotImplementedError
+
 
 class ManualTestRunner(TestRunner):
     """
@@ -109,6 +116,16 @@ class ManualTestRunner(TestRunner):
             # (it would be logged from the launcher anyway)
             pass
         return verdict, app_infos
+
+    def run_once(self, build_info):
+        launcher = self.create_launcher(build_info)
+        launcher.start(**self.launcher_kwargs)
+        launcher.get_app_info()
+        try:
+            return launcher.wait()
+        except:
+            launcher.stop()
+            raise
 
 
 def _raise_command_error(exc, msg=''):
@@ -164,3 +181,6 @@ class CommandTestRunner(TestRunner):
         self.logger.info('Test command result: %d (build is %s)'
                          % (retcode, 'good' if retcode == 0 else 'bad'))
         return 'g' if retcode == 0 else 'b', app_info
+
+    def run_once(self, build_info):
+        return 0 if self.evaluate(build_info) == 'g' else 1

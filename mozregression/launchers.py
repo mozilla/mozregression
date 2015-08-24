@@ -9,6 +9,7 @@ Define the launcher classes, responsible of running the tested applications.
 """
 
 import os
+import time
 from mozlog.structured import get_default_logger
 from mozprofile import FirefoxProfile, ThunderbirdProfile, Profile
 from mozrunner import Runner
@@ -62,6 +63,16 @@ class Launcher(object):
                 raise LauncherError(msg)
             self._running = True
 
+    def wait(self):
+        """
+        Wait for the application to be finished and return the error code
+        when available.
+        """
+        if self._running:
+            return_code = self._wait()
+            self.stop()
+            return return_code
+
     def stop(self):
         """
         Stop the application.
@@ -88,6 +99,9 @@ class Launcher(object):
         raise NotImplementedError
 
     def _start(self, **kwargs):
+        raise NotImplementedError
+
+    def _wait(self):
         raise NotImplementedError
 
     def _stop(self):
@@ -132,6 +146,9 @@ class MozRunnerLauncher(Launcher):
                              profile=profile,
                              process_args=process_args)
         self.runner.start()
+
+    def _wait(self):
+        return self.runner.wait()
 
     def _stop(self):
         self.runner.stop()
@@ -215,6 +232,10 @@ class FennecLauncher(Launcher):
 
         self.adb.launch_fennec(self.package_name,
                                extra_args=["-profile", self.remote_profile])
+
+    def _wait(self):
+        while self.adb.process_exist():
+            time.sleep(0.1)
 
     def _stop(self):
         self.adb.stop_application(self.package_name)

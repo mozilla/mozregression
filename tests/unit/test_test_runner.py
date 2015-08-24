@@ -99,6 +99,30 @@ class TestManualTestRunner(unittest.TestCase):
         launcher.stop.assert_called_with()
         self.assertEqual(result[0], 'g')
 
+    @patch('mozregression.test_runner.ManualTestRunner.create_launcher')
+    def test_run_once(self, create_launcher):
+        launcher = Mock(wait=Mock(return_value=0))
+        create_launcher.return_value = launcher
+        build_infos = mockinfo()
+        self.assertEqual(self.runner.run_once(build_infos), 0)
+        create_launcher.assert_called_with(build_infos)
+        launcher.get_app_info.assert_called_with()
+        launcher.start.assert_called_with()
+        launcher.wait.assert_called_with()
+
+    @patch('mozregression.test_runner.ManualTestRunner.create_launcher')
+    def test_run_once_ctrlc(self, create_launcher):
+        launcher = Mock(wait=Mock(side_effect=KeyboardInterrupt))
+        create_launcher.return_value = launcher
+        build_infos = mockinfo()
+        with self.assertRaises(KeyboardInterrupt):
+            self.runner.run_once(build_infos)
+        create_launcher.assert_called_with(build_infos)
+        launcher.get_app_info.assert_called_with()
+        launcher.start.assert_called_with()
+        launcher.wait.assert_called_with()
+        launcher.stop.assert_called_with()
+
 
 class TestCommandTestRunner(unittest.TestCase):
     def setUp(self):
@@ -175,3 +199,9 @@ class TestCommandTestRunner(unittest.TestCase):
         self.assertRaisesRegexp(errors.TestCommandError,
                                 'not found', self.evaluate,
                                 subprocess_call_effect=OSError)
+
+    def test_run_once(self):
+        self.runner.evaluate = Mock(return_value='g')
+        build_info = Mock()
+        self.assertEquals(self.runner.run_once(build_info), 0)
+        self.runner.evaluate.assert_called_once_with(build_info)

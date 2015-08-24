@@ -264,8 +264,9 @@ class TestBuildDownloadManager(unittest.TestCase):
     def setUp(self):
         self.session, self.session_response = mock_session()
         self.dl_manager = \
-            download_manager.BuildDownloadManager(Mock(), 'dest',
+            download_manager.BuildDownloadManager('dest',
                                                   session=self.session)
+        self.dl_manager.logger = Mock()
 
     def test__extract_download_info(self):
         url, fname = self.dl_manager._extract_download_info(Mock(**{

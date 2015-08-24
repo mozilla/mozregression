@@ -6,13 +6,9 @@
 
 import math
 import datetime
-import tempfile
-import mozfile
-import pipes
 from mozlog.structured import get_default_logger
 
 from mozregression.build_data import NightlyBuildData, InboundBuildData
-from mozregression.download_manager import BuildDownloadManager
 from mozregression.errors import MozRegressionError, LauncherError
 
 
@@ -405,25 +401,12 @@ class Bisector(object):
     Handle the logic of the bisection process, and report events to a given
     :class:`BisectorHandler`.
     """
-    def __init__(self, fetch_config, test_runner, persist=None,
-                 dl_in_background=True, background_dl_policy="cancel"):
+    def __init__(self, fetch_config, test_runner, download_manager,
+                 dl_in_background=True):
         self.fetch_config = fetch_config
         self.test_runner = test_runner
-        self.delete_dldir = False
-        if persist is None:
-            # always keep the downloaded files
-            # this allows to not re-download a file if a user retry a build.
-            persist = tempfile.mkdtemp()
-            self.delete_dldir = True
-            # cancel background downloads forced
-            background_dl_policy = "cancel"
-        self.download_dir = persist
+        self.download_manager = download_manager
         self.dl_in_background = dl_in_background
-        self.background_dl_policy = background_dl_policy
-
-    def __del__(self):
-        if self.delete_dldir:
-            mozfile.remove(self.download_dir)
 
     def bisect(self, handler, good, bad, **kwargs):
         if handler.find_fix:
@@ -440,146 +423,37 @@ class Bisector(object):
         Starts a bisection for a :class:`mozregression.build_data.BuildData`.
         """
         logger = handler._logger
-        download_manager = BuildDownloadManager(
-            logger, self.download_dir,
-            background_dl_policy=self.background_dl_policy
-        )
 
-        bisection = Bisection(handler, build_data, download_manager,
+        bisection = Bisection(handler, build_data, self.download_manager,
                               self.test_runner, self.fetch_config,
                               dl_in_background=self.dl_in_background)
 
         previous_verdict, previous_build_infos = None, None
-        try:
-            while True:
-                mid = bisection.search_mid_point()
-                result = bisection.init_handler(mid)
-                if result != bisection.RUNNING:
-                    return result
-                if previous_verdict == 'r':
-                    # if the last verdict was retry, do not download
-                    # the build. Futhermore trying to download if we are
-                    # in background download mode would stop the next builds
-                    # downloads.
-                    build_infos = previous_build_infos
-                else:
-                    mid, build_infos = bisection.download_build(mid)
-                try:
-                    verdict, app_info = bisection.evaluate(build_infos)
-                except LauncherError, exc:
-                    # we got an unrecoverable error while trying
-                    # to run the tested app. We can just fallback
-                    # to skip the build.
-                    logger.info("Error: %s. Skipping this build..." % exc)
-                    verdict, app_info = 's', {}
-                previous_verdict = verdict
-                previous_build_infos = build_infos
-                bisection.build_data[mid].update_from_app_info(app_info)
-                result = bisection.handle_verdict(mid, verdict)
-                if result != bisection.RUNNING:
-                    return result
-        finally:
-            # ensure we cancel any possible download done in the background
-            # else python will block until threads termination.
-            download_manager.cancel()
 
-
-class BisectRunner(object):
-    def __init__(self, fetch_config, test_runner, options):
-        self.fetch_config = fetch_config
-        self.options = options
-        self.bisector = Bisector(
-            fetch_config, test_runner,
-            persist=options.persist,
-            dl_in_background=options.background_dl,
-            background_dl_policy=options.background_dl_policy
-        )
-        self._logger = get_default_logger('Bisector')
-
-    def do_bisect(self, handler, good, bad, **kwargs):
-        return self.bisector.bisect(handler, good, bad, **kwargs)
-
-    def bisect_nightlies(self, good_date, bad_date):
-        handler = NightlyHandler(find_fix=self.options.find_fix)
-        result = self.do_bisect(handler, good_date, bad_date)
-        if result == Bisection.FINISHED:
-            self._logger.info("Got as far as we can go bisecting nightlies...")
-            handler.print_range()
-            if self.fetch_config.can_go_inbound():
-                try:
-                    good_rev, bad_rev = handler.find_inbound_changesets()
-                except MozRegressionError, exc:
-                    self._logger.warning(str(exc))
-                    return 1
-                return self.bisect_inbound(good_rev, bad_rev)
+        while True:
+            mid = bisection.search_mid_point()
+            result = bisection.init_handler(mid)
+            if result != bisection.RUNNING:
+                return result
+            if previous_verdict == 'r':
+                # if the last verdict was retry, do not download
+                # the build. Futhermore trying to download if we are
+                # in background download mode would stop the next builds
+                # downloads.
+                build_infos = previous_build_infos
             else:
-                message = ("Can not bissect inbound for application `%s`"
-                           % self.fetch_config.app_name)
-                if self.fetch_config.is_inbound():
-                    # the config is able to bissect inbound but not
-                    # for this repo.
-                    message += (" because the repo `%s` was specified"
-                                % self.options.repo)
-                self._logger.info(message + '.')
-        elif result == Bisection.USER_EXIT:
-            self.print_resume_info(handler)
-        else:
-            # NO_DATA
-            self._logger.info("Unable to get valid builds within the given"
-                              " range. You should try to launch mozregression"
-                              " again with a larger date range.")
-            return 1
-        return 0
-
-    def bisect_inbound(self, good_rev, bad_rev):
-        self._logger.info("Getting inbound builds between %s and %s"
-                          % (good_rev, bad_rev))
-        handler = InboundHandler(find_fix=self.options.find_fix)
-        result = self.do_bisect(handler, good_rev, bad_rev)
-        if result == Bisection.FINISHED:
-            self._logger.info("Oh noes, no (more) inbound revisions :(")
-            handler.print_range()
-            if handler.good_revision == handler.bad_revision:
-                self._logger.warning(
-                    "It seems that you used two changesets that are in"
-                    " in the same push. Check the pushlog url."
-                )
-        elif result == Bisection.USER_EXIT:
-            self.print_resume_info(handler)
-        else:
-            # NO_DATA. With inbounds, this can not happen if changesets
-            # are incorrect - so builds are probably too old
-            self._logger.info(
-                'There are no build artifacts on inbound for these'
-                ' changesets (they are probably too old).')
-            return 1
-        return 0
-
-    def print_resume_info(self, handler):
-        if isinstance(handler, NightlyHandler):
-            info = '--good=%s --bad=%s' % (handler.good_date, handler.bad_date)
-        else:
-            info = ('--good-rev=%s --bad-rev=%s'
-                    % (handler.good_revision, handler.bad_revision))
-        options = self.options
-        info += ' --app=%s' % options.app
-        if options.find_fix:
-            info += ' --find-fix'
-        if len(options.addons) > 0:
-            info += ' ' + ' '.join('--addon=%s' % pipes.quote(addon)
-                                   for addon in options.addons)
-        if options.cmdargs is not None:
-            info += ' ' + ' '.join('--arg=%s' % pipes.quote(arg)
-                                   for arg in options.cmdargs)
-        if options.profile is not None:
-            info += ' --profile=%s' % pipes.quote(options.profile)
-        if options.inbound_branch is not None:
-            info += ' --inbound-branch=%s' % options.inbound_branch
-        if options.repo is not None:
-            info += ' --repo=%s' % options.repo
-        info += ' --bits=%s' % options.bits
-        if options.persist is not None:
-            info += ' --persist=%s' % pipes.quote(options.persist)
-
-        self._logger.info('To resume, run:')
-        self._logger.info('mozregression %s' % info)
+                mid, build_infos = bisection.download_build(mid)
+            try:
+                verdict, app_info = bisection.evaluate(build_infos)
+            except LauncherError, exc:
+                # we got an unrecoverable error while trying
+                # to run the tested app. We can just fallback
+                # to skip the build.
+                logger.info("Error: %s. Skipping this build..." % exc)
+                verdict, app_info = 's', {}
+            previous_verdict = verdict
+            previous_build_infos = build_infos
+            bisection.build_data[mid].update_from_app_info(app_info)
+            result = bisection.handle_verdict(mid, verdict)
+            if result != bisection.RUNNING:
+                return result

@@ -20,6 +20,9 @@ class MyLauncher(launchers.Launcher):
     def _stop(self):
         self.stopped = True
 
+    def _wait(self):
+        return 0
+
 
 class TestLauncher(unittest.TestCase):
 
@@ -37,6 +40,16 @@ class TestLauncher(unittest.TestCase):
         launcher.stop()
         launcher.start()
         self.assertTrue(launcher.started)
+
+    def test_wait(self):
+        launcher = MyLauncher('/foo/persist.zip')
+        self.assertFalse(launcher.started)
+        launcher.start()
+        # now it has been started
+        self.assertTrue(launcher.started)
+
+        self.assertEqual(launcher.wait(), 0)
+        self.assertTrue(launcher.stopped)
 
     def test_install_fail(self):
         class FailingLauncher(MyLauncher):
@@ -63,11 +76,15 @@ class TestLauncher(unittest.TestCase):
 
 
 class TestMozRunnerLauncher(unittest.TestCase):
+    def clean_launcher(self):
+        if hasattr(self, 'launcher'):
+            del self.launcher
 
     @patch('mozregression.launchers.mozinstall')
     def setUp(self, mozinstall):
         mozinstall.get_binary.return_value = '/binary'
         self.launcher = launchers.MozRunnerLauncher('/binary')
+        self.addCleanup(self.clean_launcher)
 
     # patch profile_class else we will have some temporary dirs not deleted
     @patch('mozregression.launchers.MozRunnerLauncher.\
@@ -78,7 +95,6 @@ profile_class', spec=Profile)
 
     def test_installed(self):
         self.assertEqual(self.launcher.binary, '/binary')
-        del self.launcher
 
     @patch('mozregression.launchers.Runner')
     def test_start_no_args(self, Runner):
@@ -93,7 +109,14 @@ profile_class', spec=Profile)
         # runner is started
         self.launcher.runner.start.assert_called_once_with()
         self.launcher.stop()
-        del self.launcher
+
+    @patch('mozregression.launchers.Runner')
+    def test_wait(self, Runner):
+        runner = Mock(wait=Mock(return_value=0))
+        Runner.return_value = runner
+        self.launcher_start()
+        self.assertEqual(self.launcher.wait(), 0)
+        runner.wait.assert_called_once_with()
 
     @patch('mozregression.launchers.Runner')
     def test_start_with_addons(self, Runner):
@@ -103,7 +126,6 @@ profile_class', spec=Profile)
         # runner is started
         self.launcher.runner.start.assert_called_once_with()
         self.launcher.stop()
-        del self.launcher
 
     @patch('mozregression.launchers.Runner')
     def test_start_with_profile_and_addons(self, Runner):
@@ -114,7 +136,6 @@ profile_class', spec=Profile)
         # runner is started
         self.launcher.runner.start.assert_called_once_with()
         self.launcher.stop()
-        del self.launcher
 
     @patch('mozregression.launchers.Runner')
     @patch('mozregression.launchers.mozversion')
@@ -124,7 +145,6 @@ profile_class', spec=Profile)
         self.assertEqual(self.launcher.get_app_info(), {'some': 'infos'})
         mozversion.get_version.assert_called_once_with(binary='/binary')
         self.launcher.stop()
-        del self.launcher
 
     def test_launcher_deleted_remove_tempdir(self):
         tempdir = self.launcher.tempdir
@@ -211,3 +231,23 @@ class TestFennecLauncher(unittest.TestCase):
         devices.side_effect = OSError()
         self.assertRaises(LauncherNotRunnable,
                           launchers.FennecLauncher.check_is_runnable)
+
+    @patch('time.sleep')
+    @patch('mozregression.launchers.FennecLauncher._create_profile')
+    def test_wait(self, _create_profile, sleep):
+        # Force use of existing profile
+        _create_profile.return_value = self.profile
+        launcher = self.create_launcher()
+
+        passed = []
+
+        def proc_exists():
+            # return True one time, then False
+            result = not bool(passed)
+            passed.append(1)
+            return result
+
+        self.adb.process_exist = Mock(side_effect=proc_exists)
+        launcher.start()
+        launcher.wait()
+        self.adb.process_exist.assert_called_with()

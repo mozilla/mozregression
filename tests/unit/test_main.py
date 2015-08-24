@@ -64,17 +64,22 @@ def test_app_get_command_test_runner(create_app):
     assert app.test_runner.command == 'echo {binary}'
 
 
-@pytest.mark.parametrize("argv,background_dl_policy", [
-    ([], "cancel"),
+@pytest.mark.parametrize("argv,background_dl_policy,size_limit", [
+    ([], "cancel", 0),
     # without persist, cancel policy is forced
-    (['--background-dl-policy=keep'], "cancel"),
-    (['--persist=1', "--background-dl-policy=keep"], "keep"),
+    (['--background-dl-policy=keep'], "cancel", 0),
+    (['--persist=1', "--background-dl-policy=keep"], "keep", 0),
+    # persist limit
+    (['--persist-size-limit=10'], "cancel", 10 * 1073741824),
 ])
-def test_app_get_download_manager(create_app, argv, background_dl_policy):
+def test_app_get_download_manager(create_app, argv, background_dl_policy,
+                                  size_limit):
     app = create_app(argv)
     assert isinstance(app.build_download_manager, BuildDownloadManager)
     assert app.build_download_manager.background_dl_policy == \
         background_dl_policy
+    assert app.build_download_manager.persist_limit.size_limit == size_limit
+    assert app.build_download_manager.persist_limit.file_limit == 5
 
 
 def test_app_get_bisector(create_app):

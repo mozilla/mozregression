@@ -73,7 +73,7 @@ class TestCli(unittest.TestCase):
         with os.fdopen(handle, 'w') as conf_file:
             conf_file.write('aaaaaaaaaaa [Defaults]\n')
 
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(errors.MozRegressionError):
             cli.cli(conf_file=filepath)
 
     def test_get_defaults(self):
@@ -85,7 +85,6 @@ class TestCli(unittest.TestCase):
         self.addCleanup(os.unlink, filepath)
 
         with os.fdopen(handle, 'w') as conf_file:
-            conf_file.write('[Defaults]\n')
             for key, value in valid_values.iteritems():
                 conf_file.write("%s=%s\n" % (key, value))
 
@@ -205,3 +204,30 @@ def test_inbound_must_be_doable():
     with pytest.raises(errors.MozRegressionError) as exc:
         do_cli('--app', 'thunderbird', '--good-rev=1', '--bad-rev=5')
         assert 'Unable to bissect inbound' in str(exc.value)
+
+
+def test_list_releases(mocker):
+    out = []
+    stdout = mocker.patch('sys.stdout')
+    stdout.write = out.append
+    with pytest.raises(SystemExit):
+        do_cli('--list-releases')
+    assert 'Valid releases:' in '\n'.join(out)
+
+
+def test_write_confif(mocker):
+    out = []
+    stdout = mocker.patch('sys.stdout')
+    stdout.write = out.append
+    write_conf = mocker.patch('mozregression.cli.write_conf')
+    with pytest.raises(SystemExit):
+        do_cli('--write-conf')
+    assert len(write_conf.mock_calls) == 1
+
+
+def test_warning_no_conf(mocker):
+    out = []
+    stdout = mocker.patch('sys.stdout')
+    stdout.write = out.append
+    cli.cli([], conf_file='blah_this is not a valid file_I_hope')
+    assert "You should use a config file" in '\n'.join(out)

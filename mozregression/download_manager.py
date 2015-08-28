@@ -8,6 +8,8 @@ import mozfile
 from contextlib import closing
 from mozlog.structuredlog import get_default_logger
 
+from mozregression.persist_limit import PersistLimit
+
 
 class DownloadInterrupt(Exception):
     pass
@@ -208,12 +210,21 @@ class DownloadManager(object):
           # ensure we cancel all background downloads to ask the end
           # of possible remainings threads
           manager.cancel()
+
+    :param destdir: a directory where files are downloaded. It is required
+                    that it exists.
+    :param session: a requests session
+    :param persist_limit: an instance of :class:`PersistLimit`, to allow
+                          limiting the size of the download dir. Defaults
+                          to None, meaning no limit.
     """
-    def __init__(self, destdir, session=requests):
+    def __init__(self, destdir, session=requests, persist_limit=None):
         self.destdir = destdir
         self.session = session
         self._downloads = {}
         self._lock = threading.Lock()
+        self.persist_limit = persist_limit or PersistLimit(0)
+        self.persist_limit.register_dir_content(self.destdir)
 
     def get_dest(self, fname):
         return os.path.join(self.destdir, fname)
@@ -267,7 +278,10 @@ class DownloadManager(object):
 
     def _download_finished(self, dl):
         with self._lock:
-            del self._downloads[dl.get_dest()]
+            dest = dl.get_dest()
+            del self._downloads[dest]
+            self.persist_limit.register_file(dest)
+            self.persist_limit.remove_old_files()
 
 
 def download_progress(_dl, bytes_so_far, total_size):
@@ -281,8 +295,10 @@ class BuildDownloadManager(DownloadManager):
     A DownloadManager specialized to download builds.
     """
     def __init__(self, destdir, session=requests,
-                 background_dl_policy='cancel'):
-        DownloadManager.__init__(self, destdir, session=session)
+                 background_dl_policy='cancel',
+                 persist_limit=None):
+        DownloadManager.__init__(self, destdir, session=session,
+                                 persist_limit=persist_limit)
         self.logger = get_default_logger('download')
         self._downloads_bg = set()
         assert background_dl_policy in ('cancel', 'keep')

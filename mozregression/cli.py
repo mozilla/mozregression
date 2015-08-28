@@ -169,6 +169,15 @@ def parse_args(argv=None, defaults=None):
                         help=("the directory in which downloaded files are"
                               " to persist."))
 
+    parser.add_argument('--persist-size-limit', type=float,
+                        default=defaults.get('persist-size-limit', 0),
+                        help=("Size limit for the persist directory in"
+                              " gigabytes (GiB). When the limit is reached,"
+                              " old builds are removed. 0 means no limit. Note"
+                              " that at least 5 build files are kept,"
+                              " regardless of this value."
+                              " Defaults to %(default)s."))
+
     parser.add_argument('--http-timeout', type=float,
                         default=float(defaults.get("http-timeout", 30.0)),
                         help=("Timeout in seconds to abort requests when there"
@@ -367,6 +376,9 @@ class Configuration(object):
             check_nightlies(options, fetch_config, self.logger)
 
         options.preferences = preferences(options.prefs_files, options.prefs)
+        # convert GiB to bytes.
+        options.persist_size_limit = \
+            int(abs(float(options.persist_size_limit)) * 1073741824)
 
 
 def cli(argv=None, conf_file=DEFAULT_CONF_FNAME):

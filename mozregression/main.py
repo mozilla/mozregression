@@ -27,6 +27,7 @@ from mozregression.launchers import REGISTRY as APP_REGISTRY
 from mozregression.network import set_http_session
 from mozregression.test_runner import ManualTestRunner, CommandTestRunner
 from mozregression.download_manager import BuildDownloadManager
+from mozregression.persist_limit import PersistLimit
 
 
 class Application(object):
@@ -83,7 +84,8 @@ class Application(object):
                 background_dl_policy = "cancel"
             self._build_download_manager = BuildDownloadManager(
                 self._download_dir,
-                background_dl_policy=background_dl_policy
+                background_dl_policy=background_dl_policy,
+                persist_limit=PersistLimit(self.options.persist_size_limit)
             )
         return self._build_download_manager
 

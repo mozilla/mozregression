@@ -226,15 +226,15 @@ CHSET12 = "47856a214918"
 @pytest.mark.parametrize("app,os,bits,expected", [
     # firefox
     ("firefox", 'linux', 32,
-     'buildbot.revisions.%s.mozilla-inbound.linux' % CHSET12),
+     'buildbot.revisions.%s.mozilla-inbound.linux' % CHSET),
     ("firefox", 'linux', 64,
-     'buildbot.revisions.%s.mozilla-inbound.linux64' % CHSET12),
+     'buildbot.revisions.%s.mozilla-inbound.linux64' % CHSET),
     ("firefox", 'win', 32,
-     'buildbot.revisions.%s.mozilla-inbound.win32' % CHSET12),
+     'buildbot.revisions.%s.mozilla-inbound.win32' % CHSET),
     ("firefox", 'win', 64,
-     'buildbot.revisions.%s.mozilla-inbound.win64' % CHSET12),
+     'buildbot.revisions.%s.mozilla-inbound.win64' % CHSET),
     ("firefox", 'mac', 64,
-     'buildbot.revisions.%s.mozilla-inbound.macosx64' % CHSET12),
+     'buildbot.revisions.%s.mozilla-inbound.macosx64' % CHSET),
     # fennec
     ("fennec", None, None,
      'buildbot.revisions.%s.mozilla-inbound.android-api-11' % CHSET12),

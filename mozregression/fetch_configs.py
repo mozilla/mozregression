@@ -251,7 +251,7 @@ def _common_tk_part(inbound_conf):
 class FirefoxInboundConfigMixin(InboundConfigMixin):
     def tk_inbound_route(self, changeset):
         return 'buildbot.revisions.{}.{}.{}'.format(
-            changeset[:12], self.inbound_branch, _common_tk_part(self)
+            changeset, self.inbound_branch, _common_tk_part(self)
         )
 
 

@@ -342,10 +342,12 @@ class BuildDownloadManager(DownloadManager):
         this methods block until the build is available, or any error
         occurs.
 
-        Returns the complete path of the downloaded build.
+        Returns the complete path of the downloaded build. Also this path
+        is set for the `build_info.build_file` property.
         """
         build_url, fname = self._extract_download_info(build_info)
         dest = self.get_dest(fname)
+        build_info.build_file = dest
         # first, stop all downloads in background (except the one for this
         # build if any)
         if self.background_dl_policy == 'cancel':

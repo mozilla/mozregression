@@ -321,7 +321,8 @@ class TestBuildDownloadManager(unittest.TestCase):
         curent_download.is_running = Mock(return_value=True)
         other_download.is_running = Mock(return_value=True)
 
-        result = self.dl_manager.focus_download({'build': 'info'})
+        build_info = Mock(build='info')
+        result = self.dl_manager.focus_download(build_info)
 
         curent_download.set_progress.assert_called_with(
             download_manager.download_progress)
@@ -334,6 +335,7 @@ class TestBuildDownloadManager(unittest.TestCase):
             "Downloading build from: http://foo/bar")
 
         self.assertEquals(result, current_dest)
+        self.assertEquals(result, build_info.build_file)
 
     def test_focus_download(self):
         self._test_focus_download(True)
@@ -352,10 +354,12 @@ class TestBuildDownloadManager(unittest.TestCase):
         # fake that we downloaded that in background
         self.dl_manager._downloads_bg.add('myfile')
 
-        result = self.dl_manager.focus_download({'build': 'info'})
+        build_info = Mock(build='info')
+        result = self.dl_manager.focus_download(build_info)
 
         dest_file = os.path.join('dest', 'myfile')
         self.dl_manager.logger.info.assert_called_with(
             "Using local file: %s (downloaded in background)" % dest_file)
 
         self.assertEquals(result, dest_file)
+        self.assertEquals(result, build_info.build_file)

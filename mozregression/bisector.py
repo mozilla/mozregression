@@ -313,8 +313,7 @@ class Bisection(object):
         return self._download_build(mid_point, build_infos)
 
     def _download_build(self, mid_point, build_infos):
-        dest = self.download_manager.focus_download(build_infos)
-        build_infos.build_file = dest
+        self.download_manager.focus_download(build_infos)
         if self.dl_in_background:
             mid_point = self._download_next_builds(mid_point)
         return mid_point, build_infos

@@ -28,6 +28,8 @@ from mozregression.network import set_http_session
 from mozregression.test_runner import ManualTestRunner, CommandTestRunner
 from mozregression.download_manager import BuildDownloadManager
 from mozregression.persist_limit import PersistLimit
+from mozregression.releases import (UnavailableRelease,
+                                    formatted_valid_release_dates)
 
 
 class Application(object):
@@ -234,6 +236,10 @@ def main(argv=None):
 
     except KeyboardInterrupt:
         sys.exit("\nInterrupted.")
+    except UnavailableRelease, exc:
+        config.logger.error(str(exc)) if config else sys.exit(str(exc))
+        print formatted_valid_release_dates()
+        sys.exit(1)
     except (MozRegressionError, RequestException) as exc:
         config.logger.error(str(exc)) if config else sys.exit(str(exc))
         sys.exit(1)

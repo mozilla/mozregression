@@ -12,7 +12,6 @@ application.
 :func:`cli` is intended to be the only public interface of this module.
 """
 
-
 import os
 import sys
 import re
@@ -20,38 +19,42 @@ import mozinfo
 import datetime
 import mozprofile
 
-from argparse import ArgumentParser
-from ConfigParser import SafeConfigParser, Error
+from argparse import ArgumentParser, Action, SUPPRESS
 from mozlog.structured import commandline
+try:
+    import blessings
+except ImportError:
+    blessings = None
 
 from mozregression import __version__
+from mozregression.config import get_defaults, DEFAULT_CONF_FNAME, write_conf
 from mozregression.fetch_configs import REGISTRY as FC_REGISTRY, create_config
 from mozregression.errors import MozRegressionError, DateFormatError
 from mozregression.releases import (formatted_valid_release_dates,
                                     date_of_release)
 
 
-DEFAULT_CONF_FNAME = os.path.expanduser(os.path.join("~",
-                                                     ".mozregression.cfg"))
+class _StopAction(Action):
+    def __init__(self, option_strings, dest=SUPPRESS, default=SUPPRESS,
+                 help=None):
+        super(_StopAction, self).__init__(option_strings=option_strings,
+                                          dest=dest, default=default,
+                                          nargs=0, help=help)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        raise NotImplementedError
 
 
-def get_defaults(conf_name):
-    """
-    Get custom defaults from configuration file in argument
-    """
-    defaults = {}
+class ListReleasesAction(_StopAction):
+    def __call__(self, parser, namespace, values, option_string=None):
+        print(formatted_valid_release_dates())
+        parser.exit()
 
-    if os.path.isfile(conf_name):
-        try:
-            config = SafeConfigParser()
-            config.read([conf_name])
-            defaults = dict(config.items("Defaults"))
-            print("%s loaded" % conf_name)
-        except Error as err:
-            sys.exit("Error while parsing %s =>  no custom default values\n%s"
-                     % (conf_name, str(err)))
 
-    return defaults
+class WriteConfigAction(_StopAction):
+    def __call__(self, parser, namespace, values, option_string=None):
+        write_conf(DEFAULT_CONF_FNAME)
+        parser.exit()
 
 
 def parse_args(argv=None, defaults=None):
@@ -64,7 +67,11 @@ def parse_args(argv=None, defaults=None):
              " [[--good GOOD_DATE]|[--good-release GOOD_RELEASE]]"
              "\n"
              " %(prog)s [OPTIONS]"
-             " --bad-rev BAD_REV --good-rev GOOD_REV")
+             " --bad-rev BAD_REV --good-rev GOOD_REV"
+             "\n"
+             " %(prog)s --list-releases"
+             "\n"
+             " %(prog)s --write-conf")
 
     defaults = defaults or {}
     parser = ArgumentParser(usage=usage)
@@ -84,7 +91,7 @@ def parse_args(argv=None, defaults=None):
                         help="last known good nightly build.")
 
     parser.add_argument("--list-releases",
-                        action="store_true",
+                        action=ListReleasesAction,
                         help="list all known releases and exit")
 
     parser.add_argument("--bad-release",
@@ -167,7 +174,7 @@ def parse_args(argv=None, defaults=None):
     parser.add_argument("--persist",
                         default=defaults.get("persist"),
                         help=("the directory in which downloaded files are"
-                              " to persist."))
+                              " to persist. Defaults to %(default)r."))
 
     parser.add_argument('--persist-size-limit', type=float,
                         default=defaults.get('persist-size-limit', 0),
@@ -199,6 +206,10 @@ def parse_args(argv=None, defaults=None):
                               ' pending background downloads or "keep" to keep'
                               ' downloading them when persist mode is enabled.'
                               ' The default is %(default)s.'))
+
+    parser.add_argument('--write-config',
+                        action=WriteConfigAction,
+                        help="Helps to write the configuration file.")
 
     commandline.add_logging_group(
         parser,
@@ -346,9 +357,10 @@ class Configuration(object):
         """
         options = self.options
 
-        if options.list_releases:
-            print(formatted_valid_release_dates())
-            sys.exit()
+        if not options.persist:
+            # expicitely set None since we have code that rely on that
+            # TODO address this.
+            options.persist = None
 
         user_defined_bits = options.bits is not None
         options.bits = parse_bits(options.bits or mozinfo.bits)
@@ -388,4 +400,13 @@ def cli(argv=None, conf_file=DEFAULT_CONF_FNAME):
     defaults = None
     if conf_file:
         defaults = get_defaults(conf_file)
-    return Configuration(parse_args(argv=argv, defaults=defaults))
+    options = parse_args(argv=argv, defaults=defaults)
+    if conf_file and not os.path.isfile(conf_file):
+        term = blessings.Terminal() if blessings else None
+        print '*' * ((term and term.width) or 10)
+        print ("You should use a config file. Please use the " +
+               (term.bold('--write-config') if term else '--write-config') +
+               " command line flag to help you create one.")
+        print '*' * ((term and term.width) or 10)
+        print
+    return Configuration(options)

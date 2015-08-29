@@ -218,9 +218,9 @@ def main(argv=None):
         import logging
         logging.captureWarnings(True)
 
-    config = cli(argv=argv)
-    app = None
+    config, app = None, None
     try:
+        config = cli(argv=argv)
         check_mozregression_version(config.logger)
         config.validate()
         set_http_session(get_defaults={"timeout": config.options.http_timeout})
@@ -235,7 +235,7 @@ def main(argv=None):
     except KeyboardInterrupt:
         sys.exit("\nInterrupted.")
     except (MozRegressionError, RequestException) as exc:
-        config.logger.error(str(exc))
+        config.logger.error(str(exc)) if config else sys.exit(str(exc))
         sys.exit(1)
     finally:
         if app:

@@ -16,7 +16,7 @@ from mozlog.structuredlog import get_default_logger
 from concurrent import futures
 
 from mozregression.network import url_links, retry_get
-from mozregression.errors import BuildInfoNotFound
+from mozregression.errors import BuildInfoNotFound, MozRegressionError
 from mozregression.build_info import NightlyBuildInfo, InboundBuildInfo
 
 
@@ -76,13 +76,28 @@ class InboundInfoFetcher(InfoFetcher):
         self.index = taskcluster.client.Index()
         self.queue = taskcluster.Queue()
 
-    def find_build_info(self, changeset, fetch_txt_info=True):
+    def _check_changeset(self, changeset):
+        from mozregression.json_pushes import JsonPushes
+        jpushes = JsonPushes(branch=self.fetch_config.inbound_branch)
+        # return the full changeset
+        return jpushes.pushlog_for_change(changeset)['changesets'][-1]
+
+    def find_build_info(self, changeset, fetch_txt_info=True,
+                        check_changeset=False):
         """
         Find build info for an inbound build, given a changeset.
+
+        if `check_changeset` is True, the given changeset might be partial
+        (< 40 chars) because it will be verified and updated using json pushes.
 
         Return a :class:`InboundBuildInfo` instance.
         """
         # find a task id
+        if check_changeset:
+            try:
+                changeset = self._check_changeset(changeset)
+            except MozRegressionError, exc:
+                raise BuildInfoNotFound(str(exc))
         tk_route = self.fetch_config.tk_inbound_route(changeset)
         self._logger.debug('using taskcluster route %r' % tk_route)
         try:

@@ -173,3 +173,11 @@ class TestInboundInfoFetcher(unittest.TestCase):
 
         with self.assertRaises(errors.BuildInfoNotFound):
             self.info_fetcher.find_build_info('123456789')
+
+    @patch('mozregression.json_pushes.JsonPushes.pushlog_for_change')
+    def test_find_build_info_check_changeset_error(self, pushlog_for_change):
+        pushlog_for_change.side_effect = errors.MozRegressionError
+        with self.assertRaises(errors.BuildInfoNotFound):
+            self.info_fetcher.find_build_info('123456789',
+                                              check_changeset=True)
+        pushlog_for_change.assert_called_with('123456789')

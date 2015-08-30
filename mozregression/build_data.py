@@ -5,7 +5,7 @@ import copy
 import datetime
 
 from mozregression import errors
-from mozregression.network import retry_get
+from mozregression.json_pushes import JsonPushes
 from mozregression.fetch_build_info import NightlyInfoFetcher, \
     InboundInfoFetcher
 
@@ -245,60 +245,6 @@ class MozBuildData(BuildData):
         raise NotImplementedError
 
 
-class PushLogsFinder(object):
-    """
-    Find pushlog json objects within two revisions on inbound.
-    """
-    def __init__(self, start_rev, end_rev, path='integration',
-                 inbound_branch='mozilla-inbound'):
-        self.start_rev = start_rev
-        self.end_rev = end_rev
-        self.path = path
-        self.inbound_branch = inbound_branch
-
-    def get_repo_url(self):
-        return "https://hg.mozilla.org/%s/%s" % (self.path,
-                                                 self.inbound_branch)
-
-    def pushlog_url(self):
-        return ('%s/json-pushes?fromchange=%s&tochange=%s'
-                % (self.get_repo_url(), self.start_rev, self.end_rev))
-
-    def get_pushlogs(self):
-        """
-        Returns pushlog json objects (python dicts) sorted by date.
-
-        This will return at least one pushlog. If changesets are not valid
-        it will raise a MozRegressionError.
-        """
-
-        def _check_response(response):
-            if response.status_code == 404:
-                raise errors.MozRegressionError(
-                    "The url %r returned a 404 error. Please check the"
-                    " validity of the given changesets (%r, %r)." %
-                    (str(response.url), self.start_rev, self.end_rev)
-                )
-            response.raise_for_status()
-
-        # the first changeset is not taken into account in the result.
-        # let's add it directly with this request
-        chset_url = '%s/json-pushes?changeset=%s' % (
-            self.get_repo_url(),
-            self.start_rev)
-        response = retry_get(chset_url)
-        _check_response(response)
-        chsets = response.json()
-
-        # now fetch all remaining changesets
-        response = retry_get(self.pushlog_url())
-        _check_response(response)
-        chsets.update(response.json())
-        # sort pushlogs by date
-        return sorted(chsets.itervalues(),
-                      key=lambda push: push['date'])
-
-
 class InboundBuildData(MozBuildData):
     """
     Fetch build information for all builds between start_rev and end_rev.
@@ -311,13 +257,13 @@ class InboundBuildData(MozBuildData):
         self.fetch_config = fetch_config
         self.info_fetcher = InboundInfoFetcher(fetch_config)
 
-        pushlogs_finder = \
-            PushLogsFinder(start_rev, end_rev,
-                           inbound_branch=fetch_config.inbound_branch)
-
-        pushlogs = pushlogs_finder.get_pushlogs()
+        pushlogs_finder = JsonPushes(branch=fetch_config.inbound_branch)
+        pushlogs = pushlogs_finder.pushlog_within_changes(start_rev, end_rev)
         self._logger.info('Found %d pushlog entries using `%s`'
-                          % (len(pushlogs), pushlogs_finder.pushlog_url()))
+                          % (len(pushlogs),
+                             pushlogs_finder.json_pushes_url(
+                                 fromchange=start_rev,
+                                 tochange=end_rev)))
 
         cache = []
         for pushlog in pushlogs:

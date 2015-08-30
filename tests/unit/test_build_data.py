@@ -158,55 +158,8 @@ class TestNightlyBuildData(unittest.TestCase):
         self.assertEqual(result, 5)
 
 
-class TestPushLogsFinder(unittest.TestCase):
-    def test_pushlog_url(self):
-        finder = build_data.PushLogsFinder("azerty", "uiop")
-        good_url = ('https://hg.mozilla.org/integration/mozilla-inbound/'
-                    'json-pushes?fromchange=azerty&tochange=uiop')
-        self.assertEquals(finder.pushlog_url(), good_url)
-
-    def test_custom_pushlog_url(self):
-        finder = build_data.PushLogsFinder("1", "2", path="3",
-                                           inbound_branch="4")
-        good_url = 'https://hg.mozilla.org/3/4/json-pushes' \
-                   '?fromchange=1&tochange=2'
-        self.assertEquals(finder.pushlog_url(), good_url)
-
-    @patch('requests.get')
-    def test_get_pushlogs_404_error(self, get):
-        get.return_value = Mock(status_code=404)
-        finder = build_data.PushLogsFinder("azerty", "uiop")
-        with self.assertRaisesRegexp(errors.MozRegressionError,
-                                     ".*404 error.*"):
-            finder.get_pushlogs()
-
-    @patch('requests.get')
-    def test_get_pushlogs(self, get):
-        def my_get(url):
-            result = None
-            if url.endswith('?changeset=azerty'):
-                # return one value for this particular changeset
-                result = Mock(json=lambda: {1456: {'date': 1}})
-            elif url.endswith('?fromchange=azerty&tochange=uiop'):
-                # here comes the changeset between ou fake ones,
-                # qzerty (not included) and uiop.
-                result = Mock(json=lambda: {
-                    1234: {'date': 12},
-                    5789: {'date': 5},
-                })
-            return result
-        get.side_effect = my_get
-        finder = build_data.PushLogsFinder("azerty", "uiop")
-        # check that changesets are merged and ordered
-        self.assertEquals(finder.get_pushlogs(), [
-            {'date': 1},
-            {'date': 5},
-            {'date': 12},
-        ])
-
-
 class TestInboundBuildData(unittest.TestCase):
-    @patch('mozregression.build_data.PushLogsFinder.get_pushlogs')
+    @patch('mozregression.build_data.JsonPushes.pushlog_within_changes')
     def create_inbound_build_data(self, good, bad, get_pushlogs):
         fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
         # create fake pushlog returns

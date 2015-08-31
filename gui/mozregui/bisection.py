@@ -135,8 +135,8 @@ class GuiBisector(QObject, Bisector):
         except MozRegressionError:
             self._finish_on_exception(None)
 
-    def _bisect(self, handler, build_data):
-        self.bisection = Bisection(handler, build_data,
+    def _bisect(self, handler, build_range):
+        self.bisection = Bisection(handler, build_range,
                                    self.download_manager,
                                    self.test_runner,
                                    self.fetch_config,
@@ -156,7 +156,7 @@ class GuiBisector(QObject, Bisector):
         if result != Bisection.RUNNING:
             self.finished.emit(self.bisection, result)
         else:
-            self.build_infos = self.bisection.handler.build_data[mid]
+            self.build_infos = self.bisection.handler.build_range[mid]
             self.download_manager.focus_download(self.build_infos)
             self.step_build_found.emit(self.bisection, self.build_infos)
 
@@ -183,7 +183,7 @@ class GuiBisector(QObject, Bisector):
     def _evaluate_finished(self):
         # here we are not in the working thread, since the connection was
         # done in the constructor
-        self.bisection.build_data[self.mid].update_from_app_info(
+        self.bisection.build_range[self.mid].update_from_app_info(
             self.test_runner.app_info
         )
         self.step_finished.emit(self.bisection, self.test_runner.verdict)

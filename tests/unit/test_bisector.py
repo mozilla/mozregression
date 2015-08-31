@@ -10,7 +10,7 @@ import datetime
 
 from mozregression.bisector import (NightlyHandler, InboundHandler, Bisector,
                                     Bisection, BisectorHandler)
-from mozregression import build_data
+from mozregression import build_range
 from mozregression.errors import LauncherError
 
 
@@ -82,11 +82,12 @@ class TestNightlyHandler(unittest.TestCase):
     def test_initialize(self, initialize):
         def get_associated_data(index):
             return index
-        self.handler.build_data = Mock(get_associated_data=get_associated_data)
+        self.handler.build_data = [Mock(build_date=0),
+                                   Mock(build_date=1)]
         self.handler.initialize()
         # check that members are set
         self.assertEqual(self.handler.good_date, 0)
-        self.assertEqual(self.handler.bad_date, -1)
+        self.assertEqual(self.handler.bad_date, 1)
 
         initialize.assert_called_with(self.handler)
 
@@ -96,12 +97,10 @@ class TestNightlyHandler(unittest.TestCase):
         self.handler.good_date = datetime.date(2014, 11, 10)
         self.handler.bad_date = datetime.date(2014, 11, 20)
 
-        def get_associated_data(index):
-            if index == 0:
-                return datetime.date(2014, 11, 15)
-            elif index == -1:
-                return datetime.date(2014, 11, 20)
-        new_data = Mock(get_associated_data=get_associated_data)
+        new_data = [
+            Mock(build_date=datetime.date(2014, 11, 15)),
+            Mock(build_date=datetime.date(2014, 11, 20))
+        ]
 
         self.handler._print_progress(new_data)
         self.assertIn('from [2014-11-10, 2014-11-20] (10 days)', log[0])
@@ -186,33 +185,26 @@ class TestInboundHandler(unittest.TestCase):
         self.assertEqual('Oldest known bad inbound revision: 1', log[1])
 
 
-class MyBuildData(build_data.BuildData):
+class MyBuildData(build_range.BuildRange):
     def __init__(self, data=()):
-        # init with a dict for value, as we assume that build_info is a dict
-        # Just override setdefault to not use it here
-        class MyDict(dict):
-            def update_from_app_info(self, app_info):
-                pass
 
-        build_data.BuildData.__init__(self, [MyDict({v: v}) for v in data])
+        class FutureBuildInfo(build_range.FutureBuildInfo):
+            def __init__(self, *a, **kwa):
+                build_range.FutureBuildInfo.__init__(self, *a, **kwa)
+                self._build_info = Mock(data=self.data)
 
-    def _create_fetch_task(self, executor, i):
-        ad = self.get_associated_data(i)
-        return executor.submit(self._return_data, ad)
-
-    def _return_data(self, data):
-        return data
+        build_range.BuildRange.__init__(
+            self,
+            None,
+            [FutureBuildInfo(None, v) for v in data]
+        )
 
     def __repr__(self):
-        # only useful when test fails
-        return '[%s]' % ', '.join([str(self.get_associated_data(i).keys()[0])
-                                   for i in range(len(self))])
+        return repr([s.build_info.data[0] for s in self._future_build_infos])
 
     def __eq__(self, other):
-        # for testing purpose, say that MyBuildData instances are equals
-        # when there associated_data are equals.
-        return [self.get_associated_data(i) for i in range(len(self))] \
-            == [other.get_associated_data(i) for i in range(len(other))]
+        return [s.build_info.data for s in self._future_build_infos] == \
+            [s.build_info.data for s in other._future_build_infos]
 
 
 class TestBisector(unittest.TestCase):

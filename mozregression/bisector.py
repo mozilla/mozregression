@@ -8,7 +8,7 @@ import math
 import datetime
 from mozlog.structured import get_default_logger
 
-from mozregression.build_data import NightlyBuildData, InboundBuildData
+from mozregression.build_range import range_for_inbounds, range_for_nightlies
 from mozregression.errors import MozRegressionError, LauncherError
 
 
@@ -126,7 +126,7 @@ class BisectorHandler(object):
 
 
 class NightlyHandler(BisectorHandler):
-    build_data_class = NightlyBuildData
+    build_data_class = staticmethod(range_for_nightlies)
     good_date = None
     bad_date = None
 
@@ -134,12 +134,14 @@ class NightlyHandler(BisectorHandler):
         BisectorHandler.initialize(self)
         # register dates
         self.good_date, self.bad_date = \
-            self._reverse_if_find_fix(self.build_data.get_associated_data(0),
-                                      self.build_data.get_associated_data(-1))
+            self._reverse_if_find_fix(
+                self.build_data[0].build_date,
+                self.build_data[-1].build_date
+            )
 
     def _print_progress(self, new_data):
-        next_good_date = new_data.get_associated_data(0)
-        next_bad_date = new_data.get_associated_data(-1)
+        next_good_date = new_data[0].build_date
+        next_bad_date = new_data[-1].build_date
         next_days_range = abs((next_bad_date - next_good_date).days)
         self._logger.info("Narrowed nightly regression window from"
                           " [%s, %s] (%d days) to [%s, %s] (%d days)"
@@ -210,7 +212,7 @@ class NightlyHandler(BisectorHandler):
                 break
             prev_date = first_date - datetime.timedelta(days=days)
             build_data = self.build_data
-            infos = build_data.get_build_infos_for_date(prev_date)
+            infos = build_data.build_info_fetcher.find_build_info(prev_date)
         if days > days_required and not too_many_attempts:
             self._logger.info("At least one build folder was invalid, we have"
                               " to start from %d days ago." % days)
@@ -241,7 +243,7 @@ class NightlyHandler(BisectorHandler):
 
 
 class InboundHandler(BisectorHandler):
-    build_data_class = InboundBuildData
+    build_data_class = staticmethod(range_for_inbounds)
 
     def _print_progress(self, new_data):
         self._logger.info("Narrowed inbound regression window from [%s, %s]"
@@ -349,7 +351,7 @@ class Bisection(object):
         # the underlying cache may have changed and we need to find the new
         # mid point.
         self.build_data.filter_invalid_builds()
-        return self.build_data.index_of(lambda k: k[0] == bdata)
+        return self.build_data.index(bdata)
 
     def evaluate(self, build_infos):
         return self.test_runner.evaluate(build_infos,

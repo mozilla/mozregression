@@ -8,7 +8,7 @@ import math
 import datetime
 from mozlog.structured import get_default_logger
 
-from mozregression.build_data import NightlyBuildData, InboundBuildData
+from mozregression.build_range import range_for_inbounds, range_for_nightlies
 from mozregression.errors import MozRegressionError, LauncherError
 
 
@@ -28,20 +28,20 @@ class BisectorHandler(object):
     def __init__(self, find_fix=False):
         self.find_fix = find_fix
         self.found_repo = None
-        self.build_data = None
+        self.build_range = None
         self.good_revision = None
         self.bad_revision = None
         self._logger = get_default_logger('Bisector')
 
-    def set_build_data(self, build_data):
+    def set_build_range(self, build_range):
         """
-        Save a reference of the :class:`mozregression.build_data.BuildData`
+        Save a reference of the :class:`mozregression.build_range.BuildData`
         instance.
 
         This is called by the bisector before each step of the bisection
         process.
         """
-        self.build_data = build_data
+        self.build_range = build_range
 
     def _print_progress(self, new_data):
         """
@@ -61,14 +61,14 @@ class BisectorHandler(object):
         """
         # these values could be missing for old inbound builds
         # until we tried the builds
-        repo = self.build_data[-1].repo_url
+        repo = self.build_range[-1].repo_url
         if repo is not None:
             # do not update repo if we can' find it now
             # else we may override a previously defined one
             self.found_repo = repo
         self.good_revision, self.bad_revision = \
-            self._reverse_if_find_fix(self.build_data[0].changeset,
-                                      self.build_data[-1].changeset)
+            self._reverse_if_find_fix(self.build_range[0].changeset,
+                                      self.build_range[-1].changeset)
 
     def get_pushlog_url(self):
         first_rev, last_rev = self.get_range()
@@ -126,7 +126,7 @@ class BisectorHandler(object):
 
 
 class NightlyHandler(BisectorHandler):
-    build_data_class = NightlyBuildData
+    create_range = staticmethod(range_for_nightlies)
     good_date = None
     bad_date = None
 
@@ -134,12 +134,14 @@ class NightlyHandler(BisectorHandler):
         BisectorHandler.initialize(self)
         # register dates
         self.good_date, self.bad_date = \
-            self._reverse_if_find_fix(self.build_data.get_associated_data(0),
-                                      self.build_data.get_associated_data(-1))
+            self._reverse_if_find_fix(
+                self.build_range[0].build_date,
+                self.build_range[-1].build_date
+            )
 
     def _print_progress(self, new_data):
-        next_good_date = new_data.get_associated_data(0)
-        next_bad_date = new_data.get_associated_data(-1)
+        next_good_date = new_data[0].build_date
+        next_bad_date = new_data[-1].build_date
         next_days_range = abs((next_bad_date - next_good_date).days)
         self._logger.info("Narrowed nightly regression window from"
                           " [%s, %s] (%d days) to [%s, %s] (%d days)"
@@ -209,8 +211,8 @@ class NightlyHandler(BisectorHandler):
                 too_many_attempts = True
                 break
             prev_date = first_date - datetime.timedelta(days=days)
-            build_data = self.build_data
-            infos = build_data.get_build_infos_for_date(prev_date)
+            build_range = self.build_range
+            infos = build_range.build_info_fetcher.find_build_info(prev_date)
         if days > days_required and not too_many_attempts:
             self._logger.info("At least one build folder was invalid, we have"
                               " to start from %d days ago." % days)
@@ -241,15 +243,15 @@ class NightlyHandler(BisectorHandler):
 
 
 class InboundHandler(BisectorHandler):
-    build_data_class = InboundBuildData
+    create_range = staticmethod(range_for_inbounds)
 
     def _print_progress(self, new_data):
         self._logger.info("Narrowed inbound regression window from [%s, %s]"
                           " (%d revisions) to [%s, %s] (%d revisions)"
                           " (~%d steps left)"
-                          % (self.build_data[0].short_changeset,
-                             self.build_data[-1].short_changeset,
-                             len(self.build_data),
+                          % (self.build_range[0].short_changeset,
+                             self.build_range[-1].short_changeset,
+                             len(self.build_range),
                              new_data[0].short_changeset,
                              new_data[-1].short_changeset,
                              len(new_data),
@@ -269,10 +271,10 @@ class Bisection(object):
     FINISHED = 2
     USER_EXIT = 3
 
-    def __init__(self, handler, build_data, download_manager, test_runner,
+    def __init__(self, handler, build_range, download_manager, test_runner,
                  fetch_config, dl_in_background=True):
         self.handler = handler
-        self.build_data = build_data
+        self.build_range = build_range
         self.download_manager = download_manager
         self.test_runner = test_runner
         self.fetch_config = fetch_config
@@ -280,14 +282,14 @@ class Bisection(object):
         self.previous_data = []
 
     def search_mid_point(self):
-        self.handler.set_build_data(self.build_data)
+        self.handler.set_build_range(self.build_range)
         return self._search_mid_point()
 
     def _search_mid_point(self):
-        return self.build_data.mid_point()
+        return self.build_range.mid_point()
 
     def init_handler(self, mid_point):
-        if len(self.build_data) == 0:
+        if len(self.build_range) == 0:
             self.handler.no_data()
             return self.NO_DATA
 
@@ -309,7 +311,7 @@ class Bisection(object):
         Returns a couple (new_mid_point, build_infos) where build_infos
         is the dict of build infos for the build.
         """
-        build_infos = self.handler.build_data[mid_point]
+        build_infos = self.handler.build_range[mid_point]
         return self._download_build(mid_point, build_infos)
 
     def _download_build(self, mid_point, build_infos):
@@ -330,26 +332,26 @@ class Bisection(object):
             m = r.mid_point()
             if len(r) != 0:
                 # this is a trick to call build_infos
-                # with the the appropriate build_data
-                self.handler.set_build_data(r)
+                # with the the appropriate build_range
+                self.handler.set_build_range(r)
                 try:
                     # non-blocking download of the build
                     self.download_manager.download_in_background(
-                        self.handler.build_data[m]
+                        self.handler.build_range[m]
                     )
                 finally:
-                    # put the real build_data back
-                    self.handler.set_build_data(self.build_data)
-        bdata = self.build_data[mid_point]
+                    # put the real build_range back
+                    self.handler.set_build_range(self.build_range)
+        bdata = self.build_range[mid_point]
         # download next left mid point
-        start_dl(self.build_data[mid_point:])
+        start_dl(self.build_range[mid_point:])
         # download right next mid point
-        start_dl(self.build_data[:mid_point+1])
-        # since we called mid_point() on copy of self.build_data instance,
+        start_dl(self.build_range[:mid_point+1])
+        # since we called mid_point() on copy of self.build_range instance,
         # the underlying cache may have changed and we need to find the new
         # mid point.
-        self.build_data.filter_invalid_builds()
-        return self.build_data.index_of(lambda k: k[0] == bdata)
+        self.build_range.filter_invalid_builds()
+        return self.build_range.index(bdata)
 
     def evaluate(self, build_infos):
         return self.test_runner.evaluate(build_infos,
@@ -362,32 +364,32 @@ class Bisection(object):
             # [G, ?, ?, G, ?, B]
             # to
             #          [G, ?, B]
-            self.previous_data.append(self.build_data)
+            self.previous_data.append(self.build_range)
             if not self.handler.find_fix:
-                self.build_data = self.build_data[mid_point:]
+                self.build_range = self.build_range[mid_point:]
             else:
-                self.build_data = self.build_data[:mid_point+1]
-            self.handler.build_good(mid_point, self.build_data)
+                self.build_range = self.build_range[:mid_point+1]
+            self.handler.build_good(mid_point, self.build_range)
         elif verdict == 'b':
             # if build is bad and we are looking for a regression, we
             # have to split from
             # [G, ?, ?, B, ?, B]
             # to
             # [G, ?, ?, B]
-            self.previous_data.append(self.build_data)
+            self.previous_data.append(self.build_range)
             if not self.handler.find_fix:
-                self.build_data = self.build_data[:mid_point+1]
+                self.build_range = self.build_range[:mid_point+1]
             else:
-                self.build_data = self.build_data[mid_point:]
-            self.handler.build_bad(mid_point, self.build_data)
+                self.build_range = self.build_range[mid_point:]
+            self.handler.build_bad(mid_point, self.build_range)
         elif verdict == 'r':
             self.handler.build_retry(mid_point)
         elif verdict == 's':
             self.handler.build_skip(mid_point)
-            self.previous_data.append(self.build_data)
-            self.build_data = self.build_data.deleted(mid_point)
+            self.previous_data.append(self.build_range)
+            self.build_range = self.build_range.deleted(mid_point)
         elif verdict == 'back':
-            self.build_data = self.previous_data.pop(-1)
+            self.build_range = self.previous_data.pop(-1)
         else:
             # user exit
             self.handler.user_exit(mid_point)
@@ -410,20 +412,20 @@ class Bisector(object):
     def bisect(self, handler, good, bad, **kwargs):
         if handler.find_fix:
             good, bad = bad, good
-        build_data = handler.build_data_class(self.fetch_config,
-                                              good,
-                                              bad,
-                                              **kwargs)
+        build_range = handler.create_range(self.fetch_config,
+                                           good,
+                                           bad,
+                                           **kwargs)
 
-        return self._bisect(handler, build_data)
+        return self._bisect(handler, build_range)
 
-    def _bisect(self, handler, build_data):
+    def _bisect(self, handler, build_range):
         """
-        Starts a bisection for a :class:`mozregression.build_data.BuildData`.
+        Starts a bisection for a :class:`mozregression.build_range.BuildData`.
         """
         logger = handler._logger
 
-        bisection = Bisection(handler, build_data, self.download_manager,
+        bisection = Bisection(handler, build_range, self.download_manager,
                               self.test_runner, self.fetch_config,
                               dl_in_background=self.dl_in_background)
 
@@ -452,7 +454,7 @@ class Bisector(object):
                 verdict, app_info = 's', {}
             previous_verdict = verdict
             previous_build_infos = build_infos
-            bisection.build_data[mid].update_from_app_info(app_info)
+            bisection.build_range[mid].update_from_app_info(app_info)
             result = bisection.handle_verdict(mid, verdict)
             if result != bisection.RUNNING:
                 return result

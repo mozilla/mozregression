@@ -137,7 +137,11 @@ def parse_args(argv=None, defaults=None):
 
     parser.add_argument('--pref', nargs='*', dest='prefs',
                         help=(" A preference to set. Must be a key-value pair"
-                              " separated by a ':'"))
+                              " separated by a ':'. Note that if your"
+                              " preference is of type float, you should"
+                              " pass it as a string, e.g.:"
+                              " --pref \"layers.low-precision-opacity:'0.0'\""
+                              ))
 
     parser.add_argument('--preferences', nargs="*", dest='prefs_files',
                         help=("read preferences from a JSON or INI file. For"

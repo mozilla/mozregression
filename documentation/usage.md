@@ -83,10 +83,6 @@ Some useful command line usage.
 
         mozregression --persist temp
 
-- Use a cache for http transfer (speeds up downloading the same builds a second time)
-
-       mozregression --http-cache-dir cache
-
 - keep downloading files in background
 
   When download in background is enabled (the default), the background download that

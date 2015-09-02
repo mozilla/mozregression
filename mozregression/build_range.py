@@ -12,7 +12,7 @@ objects that are loaded on demand. A BuildRange is used for bisecting builds.
 import copy
 import datetime
 
-from concurrent import futures
+from threading import Thread
 from mozregression.errors import BuildInfoNotFound
 from mozregression.json_pushes import JsonPushes
 from mozregression.fetch_build_info import (InboundInfoFetcher,
@@ -92,15 +92,16 @@ class BuildRange(object):
         indexes = set(indexes)
         need_fetch = any(not self._future_build_infos[i].is_available()
                          for i in indexes)
-        if need_fetch:
-            with futures.ThreadPoolExecutor(max_workers=3) as executor:
-                results = []
-                for i in indexes:
-                    results.append(executor.submit(self.__getitem__, i))
-                for future in futures.as_completed(results):
-                    exc = future.exception()
-                    if exc:
-                        raise exc
+        if not need_fetch:
+            return
+        threads = [Thread(target=self.__getitem__, args=(i,))
+                   for i in indexes]
+        for thread in threads:
+            thread.daemon = True
+            thread.start()
+        for thread in threads:
+            while thread.is_alive():
+                thread.join(0.1)
 
     def mid_point(self):
         """

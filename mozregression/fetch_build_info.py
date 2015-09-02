@@ -8,12 +8,11 @@ The public API is composed of two classes, :class:`NightlyInfoFetcher` and
 
 import os
 import re
-import threading
 import taskcluster
 from datetime import datetime
 from taskcluster.exceptions import TaskclusterFailure
 from mozlog.structuredlog import get_default_logger
-from concurrent import futures
+from threading import Thread, Lock
 
 from mozregression.network import url_links, retry_get
 from mozregression.errors import BuildInfoNotFound, MozRegressionError
@@ -175,15 +174,16 @@ class NightlyInfoFetcher(InfoFetcher):
     def __init__(self, fetch_config):
         InfoFetcher.__init__(self, fetch_config)
         self._cache_months = {}
-        self._lock = threading.Lock()
+        self._lock = Lock()
+        self._fetch_lock = Lock()
 
-    def _fetch_build_info_from_url(self, url):
+    def _fetch_build_info_from_url(self, url, index, lst):
         """
         Retrieve information from a build folder url.
 
-        Returns a :class:`NightlyBuildInfo` instance with keys build_url and
-        build_txt_url if respectively a build file and a build info file are
-        found for the url.
+        Stores in a list the url index and a dict instance with keys
+        build_url and build_txt_url if respectively a build file and a
+        build info file are found for the url.
         """
         data = {}
         if not url.endswith('/'):
@@ -194,8 +194,9 @@ class NightlyInfoFetcher(InfoFetcher):
             elif 'build_txt_url' not in data  \
                     and self.build_info_regex.match(link):
                 data['build_txt_url'] = url + link
-
-        return data
+        if data:
+            with self._fetch_lock:
+                lst.append((index, data))
 
     def _get_month_links(self, url):
         with self._lock:
@@ -239,34 +240,31 @@ class NightlyInfoFetcher(InfoFetcher):
         build_urls = self._get_urls(date)
         build_info = None
 
+        valid_builds = []
         while build_urls:
             some = build_urls[:max_workers]
-            with futures.ThreadPoolExecutor(max_workers=max_workers) \
-                    as executor:
-                futures_results = {}
-                valid_builds = []
-                for i, url in enumerate(some):
-                    future = executor.submit(self._fetch_build_info_from_url,
-                                             url)
-                    futures_results[future] = i
-                for future in futures.as_completed(futures_results):
-                    i = futures_results[future]
-                    infos = future.result()
-                    if infos:
-                        valid_builds.append((i, infos))
-                if valid_builds:
-                    infos = sorted(valid_builds, key=lambda b: b[0])[0][1]
-                    if fetch_txt_info:
-                        self._update_build_info_from_txt(infos)
+            threads = [Thread(target=self._fetch_build_info_from_url,
+                              args=(url, i, valid_builds))
+                       for i, url in enumerate(some)]
+            for thread in threads:
+                thread.daemon = True
+                thread.start()
+            for thread in threads:
+                while thread.is_alive():
+                    thread.join(0.1)
+            if valid_builds:
+                infos = sorted(valid_builds, key=lambda b: b[0])[0][1]
+                if fetch_txt_info:
+                    self._update_build_info_from_txt(infos)
 
-                    build_info = NightlyBuildInfo(
-                        self.fetch_config,
-                        build_url=infos['build_url'],
-                        build_date=date,
-                        changeset=infos.get('changeset'),
-                        repo_url=infos.get('repository')
-                    )
-                    break
+                build_info = NightlyBuildInfo(
+                    self.fetch_config,
+                    build_url=infos['build_url'],
+                    build_date=date,
+                    changeset=infos.get('changeset'),
+                    repo_url=infos.get('repository')
+                )
+                break
             build_urls = build_urls[max_workers:]
 
         if build_info is None:

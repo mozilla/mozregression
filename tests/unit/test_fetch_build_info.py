@@ -50,10 +50,9 @@ class TestNightlyInfoFetcher(unittest.TestCase):
             'build_txt_url': 'http://foo/firefox01linux-x86_64.txt',
             'build_url': 'http://foo/firefox01linux-x86_64.tar.bz2',
         }
-        self.assertEqual(
-            self.info_fetcher._fetch_build_info_from_url('http://foo'),
-            expected
-        )
+        builds = []
+        self.info_fetcher._fetch_build_info_from_url('http://foo', 0, builds)
+        self.assertEqual(builds, [(0, expected)])
 
     @patch('mozregression.fetch_build_info.url_links')
     def test__get_url(self, url_links):
@@ -83,14 +82,14 @@ bar/nightly/2014/11/2014-11-15-02-02-05-mozilla-central/',
 bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/',
         ])
 
-        def my_find_build_info(url):
+        def my_find_build_info(url, index, lst):
             # say only the last build url is invalid
             if url in get_urls.return_value[:-1]:
-                return {}
-            return {
+                return
+            lst.append((index, {
                 'build_txt_url': url,
                 'build_url': url,
-            }
+            }))
         self.info_fetcher._fetch_build_info_from_url = Mock(
             side_effect=my_find_build_info
         )

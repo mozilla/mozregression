@@ -191,11 +191,14 @@ class Application(object):
         self._print_resume_info(handler)
 
 
-def check_mozregression_version(logger):
+def pypi_latest_version():
     url = "https://pypi.python.org/pypi/mozregression/json"
+    return requests.get(url, timeout=10).json()['info']['version']
+
+
+def check_mozregression_version(logger):
     try:
-        mozregression_version = \
-            requests.get(url, timeout=10).json()['info']['version']
+        mozregression_version = pypi_latest_version()
     except (RequestException, KeyError, ValueError):
         logger.critical("Unable to get latest version from pypi.")
         return
@@ -209,7 +212,7 @@ def check_mozregression_version(logger):
                        " --upgrade mozregression' command.")
 
 
-def main(argv=None):
+def main(argv=None, namespace=None, check_new_version=True):
     """
     main entry point of mozregression command line.
     """
@@ -222,8 +225,9 @@ def main(argv=None):
 
     config, app = None, None
     try:
-        config = cli(argv=argv)
-        check_mozregression_version(config.logger)
+        config = cli(argv=argv, namespace=namespace)
+        if check_new_version:
+            check_mozregression_version(config.logger)
         config.validate()
         set_http_session(get_defaults={"timeout": config.options.http_timeout})
         app = Application(config.fetch_config, config.options)

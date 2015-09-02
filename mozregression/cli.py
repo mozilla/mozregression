@@ -61,6 +61,14 @@ def parse_args(argv=None, defaults=None):
     """
     Parse command line options.
     """
+    parser = create_parser(defaults=defaults)
+    return parser.parse_args(argv)
+
+
+def create_parser(defaults=None):
+    """
+    Create the mozregression command line parser (ArgumentParser instance).
+    """
     usage = ("\n"
              " %(prog)s [OPTIONS]"
              " [[--bad BAD_DATE]|[--bad-release BAD_RELEASE]]"
@@ -215,8 +223,7 @@ def parse_args(argv=None, defaults=None):
         parser,
         include_formatters=commandline.TEXT_FORMATTERS
     )
-    options = parser.parse_args(argv)
-    return options
+    return parser
 
 
 def parse_date(date_string):
@@ -393,14 +400,20 @@ class Configuration(object):
             int(abs(float(options.persist_size_limit)) * 1073741824)
 
 
-def cli(argv=None, conf_file=DEFAULT_CONF_FNAME):
+def cli(argv=None, conf_file=DEFAULT_CONF_FNAME, namespace=None):
     """
     parse cli args basically and returns a :class:`Configuration`.
+
+    if namespace is given, it will be used as a arg parsing result, so no
+    arg parsing will be done.
     """
-    defaults = None
-    if conf_file:
-        defaults = get_defaults(conf_file)
-    options = parse_args(argv=argv, defaults=defaults)
+    if namespace:
+        options = namespace
+    else:
+        defaults = None
+        if conf_file:
+            defaults = get_defaults(conf_file)
+        options = parse_args(argv=argv, defaults=defaults)
     if conf_file and not os.path.isfile(conf_file):
         term = blessings.Terminal() if blessings else None
         print '*' * ((term and term.width) or 10)

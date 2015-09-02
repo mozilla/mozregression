@@ -103,8 +103,6 @@ profile_class', spec=Profile)
 
         self.assertEqual(kwargs['cmdargs'], ())
         self.assertEqual(kwargs['binary'], '/binary')
-        self.assertEqual(kwargs['process_args'],
-                         {'processOutputLine': [self.launcher._logger.debug]})
         self.assertIsInstance(kwargs['profile'], Profile)
         # runner is started
         self.launcher.runner.start.assert_called_once_with()

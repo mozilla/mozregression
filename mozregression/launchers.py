@@ -41,6 +41,7 @@ class Launcher(object):
 
     def __init__(self, dest):
         self._running = False
+        self._stopping = False
         self._logger = get_default_logger('Test Runner')
 
         try:
@@ -78,6 +79,7 @@ class Launcher(object):
         Stop the application.
         """
         if self._running:
+            self._stopping = True
             try:
                 self._stop()
             except Exception:
@@ -85,6 +87,7 @@ class Launcher(object):
                 self._logger.error(msg, exc_info=True)
                 raise LauncherError(msg)
             self._running = False
+            self._stopping = False
 
     def get_app_info(self):
         """
@@ -140,11 +143,40 @@ class MozRunnerLauncher(Launcher):
                                        preferences=preferences)
 
         self._logger.info("Launching %s" % self.binary)
-        process_args = {'processOutputLine': [self._logger.debug]}
         self.runner = Runner(binary=self.binary,
                              cmdargs=cmdargs,
-                             profile=profile,
-                             process_args=process_args)
+                             profile=profile)
+
+        def _on_exit():
+            # if we are stopping the process do not log anything.
+            if not self._stopping:
+                # mozprocess (behind mozrunner) fire 'onFinish'
+                # a bit early - let's ensure the process is finished.
+                # we have to call wait() directly on the subprocess
+                # instance of the ProcessHandler, else on windows
+                # None is returned...
+                # TODO: search that bug and fix that in mozprocess or
+                # mozrunner. (likely mozproces)
+                try:
+                    exitcode = self.runner.process_handler.proc.wait()
+                except Exception:
+                    print
+                    self._logger.error(
+                        "Error while waiting process, consider filing a bug.",
+                        exc_info=True
+                    )
+                    return
+                if exitcode != 0:
+                    # first print a blank line, to be sure we don't
+                    # write on an already printed line without EOL.
+                    print
+                    self._logger.warning('Process exited with code %s'
+                                         % exitcode)
+
+        self.runner.process_args = {
+            'processOutputLine': [self._logger.debug],
+            'onFinish': _on_exit,
+        }
         self.runner.start()
 
     def _wait(self):

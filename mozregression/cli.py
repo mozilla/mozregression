@@ -77,6 +77,7 @@ def create_parser(defaults=None):
              " %(prog)s [OPTIONS]"
              " --bad-rev BAD_REV --good-rev GOOD_REV"
              "\n"
+             " %(prog)s [OPTIONS] --launch"
              " %(prog)s --list-releases"
              "\n"
              " %(prog)s --write-conf")
@@ -222,6 +223,9 @@ def create_parser(defaults=None):
     parser.add_argument('--write-config',
                         action=WriteConfigAction,
                         help="Helps to write the configuration file.")
+
+    parser.add_argument('--launch',
+                        help="Launch a specific build by date or changeset")
 
     commandline.add_logging_group(
         parser,
@@ -389,9 +393,16 @@ class Configuration(object):
             # this can be useful for both inbound and nightly, because we
             # can go to inbound from nightly.
             fetch_config.set_inbound_branch(options.inbound_branch)
+        # set action for just use changset or data to bisect
+        if options.launch:
+            try:
+                options.launch = parse_date(options.launch)
+                self.action = "launch_nightlies"
+            except DateFormatError:
+                self.action = "launch_inbound"
 
         # bisect inbound if last good revision or first bad revision are set
-        if options.first_bad_revision or options.last_good_revision:
+        elif options.first_bad_revision or options.last_good_revision:
             self.action = "bisect_inbounds"
             check_inbounds(options, fetch_config, self.logger)
         else:

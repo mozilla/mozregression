@@ -30,6 +30,8 @@ from mozregression.download_manager import BuildDownloadManager
 from mozregression.persist_limit import PersistLimit
 from mozregression.releases import (UnavailableRelease,
                                     formatted_valid_release_dates)
+from mozregression.fetch_build_info import (NightlyInfoFetcher,
+                                            InboundInfoFetcher)
 
 
 class Application(object):
@@ -190,6 +192,19 @@ class Application(object):
         handler.print_range()
         self._print_resume_info(handler)
 
+    def launch_nightlies(self):
+        fetch_build_info = NightlyInfoFetcher(self.fetch_config)
+        build_info = fetch_build_info.find_build_info(self.options.launch)
+        self.build_download_manager.focus_download(build_info)
+        self.test_runner.run_once(build_info)
+
+    def launch_inbound(self):
+        fetch_build_info = InboundInfoFetcher(self.fetch_config)
+        build_info = fetch_build_info.find_build_info(self.options.launch,
+                                                      check_changeset=True)
+        self.build_download_manager.focus_download(build_info)
+        self.test_runner.run_once(build_info)
+
 
 def pypi_latest_version():
     url = "https://pypi.python.org/pypi/mozregression/json"
@@ -231,7 +246,6 @@ def main(argv=None, namespace=None, check_new_version=True):
         config.validate()
         set_http_session(get_defaults={"timeout": config.options.http_timeout})
         app = Application(config.fetch_config, config.options)
-
         launcher_class = APP_REGISTRY.get(config.fetch_config.app_name)
         launcher_class.check_is_runnable()
 

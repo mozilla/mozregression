@@ -14,6 +14,18 @@ def mockinfo(**kwargs):
     return Mock(spec=build_info.BuildInfo, **kwargs)
 
 
+class Launcher(object):
+    # mock does not play well with context manager, so this is a stub
+    def __init__(self, launcher):
+        self.launcher = launcher
+
+    def __enter__(self):
+        return self.launcher
+
+    def __exit__(self, *exc):
+        pass
+
+
 class TestManualTestRunner(unittest.TestCase):
     def setUp(self):
         self.runner = test_runner.ManualTestRunner()
@@ -74,7 +86,7 @@ class TestManualTestRunner(unittest.TestCase):
     def test_evaluate(self, get_verdict, create_launcher):
         get_verdict.return_value = 'g'
         launcher = Mock()
-        create_launcher.return_value = launcher
+        create_launcher.return_value = Launcher(launcher)
         build_infos = mockinfo()
         result = self.runner.evaluate(build_infos)
 
@@ -91,7 +103,7 @@ class TestManualTestRunner(unittest.TestCase):
                                                   create_launcher):
         get_verdict.return_value = 'g'
         launcher = Mock(stop=Mock(side_effect=errors.LauncherError))
-        create_launcher.return_value = launcher
+        create_launcher.return_value = Launcher(launcher)
         build_infos = mockinfo()
         result = self.runner.evaluate(build_infos)
 
@@ -102,7 +114,7 @@ class TestManualTestRunner(unittest.TestCase):
     @patch('mozregression.test_runner.ManualTestRunner.create_launcher')
     def test_run_once(self, create_launcher):
         launcher = Mock(wait=Mock(return_value=0))
-        create_launcher.return_value = launcher
+        create_launcher.return_value = Launcher(launcher)
         build_infos = mockinfo()
         self.assertEqual(self.runner.run_once(build_infos), 0)
         create_launcher.assert_called_with(build_infos)
@@ -113,7 +125,7 @@ class TestManualTestRunner(unittest.TestCase):
     @patch('mozregression.test_runner.ManualTestRunner.create_launcher')
     def test_run_once_ctrlc(self, create_launcher):
         launcher = Mock(wait=Mock(side_effect=KeyboardInterrupt))
-        create_launcher.return_value = launcher
+        create_launcher.return_value = Launcher(launcher)
         build_infos = mockinfo()
         with self.assertRaises(KeyboardInterrupt):
             self.runner.run_once(build_infos)
@@ -121,7 +133,6 @@ class TestManualTestRunner(unittest.TestCase):
         launcher.get_app_info.assert_called_with()
         launcher.start.assert_called_with()
         launcher.wait.assert_called_with()
-        launcher.stop.assert_called_with()
 
 
 class TestCommandTestRunner(unittest.TestCase):
@@ -142,7 +153,7 @@ class TestCommandTestRunner(unittest.TestCase):
         if subprocess_call_effect:
             call.side_effect = subprocess_call_effect
         self.subprocess_call = call
-        create_launcher.return_value = self.launcher
+        create_launcher.return_value = Launcher(self.launcher)
         return self.runner.evaluate(
             mockinfo(to_dict=lambda: build_info)
         )[0]

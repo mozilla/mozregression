@@ -104,28 +104,24 @@ class ManualTestRunner(TestRunner):
         return verdict[0]
 
     def evaluate(self, build_info, allow_back=False):
-        launcher = self.create_launcher(build_info)
-        launcher.start(**self.launcher_kwargs)
-        app_infos = launcher.get_app_info()
-        verdict = self.get_verdict(build_info, allow_back)
-        try:
-            launcher.stop()
-        except LauncherError:
-            # we got an error on process termination, but user
-            # already gave the verdict, so pass this "silently"
-            # (it would be logged from the launcher anyway)
-            pass
+        with self.create_launcher(build_info) as launcher:
+            launcher.start(**self.launcher_kwargs)
+            app_infos = launcher.get_app_info()
+            verdict = self.get_verdict(build_info, allow_back)
+            try:
+                launcher.stop()
+            except LauncherError:
+                # we got an error on process termination, but user
+                # already gave the verdict, so pass this "silently"
+                # (it would be logged from the launcher anyway)
+                launcher._running = False
         return verdict, app_infos
 
     def run_once(self, build_info):
-        launcher = self.create_launcher(build_info)
-        launcher.start(**self.launcher_kwargs)
-        launcher.get_app_info()
-        try:
+        with self.create_launcher(build_info) as launcher:
+            launcher.start(**self.launcher_kwargs)
+            launcher.get_app_info()
             return launcher.wait()
-        except:
-            launcher.stop()
-            raise
 
 
 def _raise_command_error(exc, msg=''):
@@ -154,30 +150,30 @@ class CommandTestRunner(TestRunner):
         self.command = command
 
     def evaluate(self, build_info, allow_back=False):
-        launcher = self.create_launcher(build_info)
-        app_info = launcher.get_app_info()
-        variables = dict((k, str(v))
-                         for k, v in build_info.to_dict().iteritems())
-        if hasattr(launcher, 'binary'):
-            variables['binary'] = launcher.binary
+        with self.create_launcher(build_info) as launcher:
+            app_info = launcher.get_app_info()
+            variables = dict((k, str(v))
+                             for k, v in build_info.to_dict().iteritems())
+            if hasattr(launcher, 'binary'):
+                variables['binary'] = launcher.binary
 
-        env = dict(os.environ)
-        for k, v in variables.iteritems():
-            env['MOZREGRESSION_' + k.upper()] = v
-        try:
-            command = self.command.format(**variables)
-        except KeyError as exc:
-            _raise_command_error(exc, ' (formatting error)')
-        self.logger.info('Running test command: `%s`' % command)
-        cmdlist = shlex.split(command)
-        try:
-            retcode = subprocess.call(cmdlist, env=env)
-        except IndexError:
-            _raise_command_error("Empty command")
-        except OSError as exc:
-            _raise_command_error(exc,
-                                 " (%s not found or not executable)"
-                                 % cmdlist[0])
+            env = dict(os.environ)
+            for k, v in variables.iteritems():
+                env['MOZREGRESSION_' + k.upper()] = v
+            try:
+                command = self.command.format(**variables)
+            except KeyError as exc:
+                _raise_command_error(exc, ' (formatting error)')
+            self.logger.info('Running test command: `%s`' % command)
+            cmdlist = shlex.split(command)
+            try:
+                retcode = subprocess.call(cmdlist, env=env)
+            except IndexError:
+                _raise_command_error("Empty command")
+            except OSError as exc:
+                _raise_command_error(exc,
+                                     " (%s not found or not executable)"
+                                     % cmdlist[0])
         self.logger.info('Test command result: %d (build is %s)'
                          % (retcode, 'good' if retcode == 0 else 'bad'))
         return 'g' if retcode == 0 else 'b', app_info

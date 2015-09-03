@@ -95,8 +95,14 @@ class Launcher(object):
         """
         raise NotImplementedError
 
-    def __del__(self):
+    def cleanup(self):
         self.stop()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.cleanup()
 
     def _install(self, dest):
         raise NotImplementedError
@@ -134,9 +140,14 @@ class MozRunnerLauncher(Launcher):
 
     def _install(self, dest):
         self.tempdir = tempfile.mkdtemp()
-        self.binary = mozinstall.get_binary(
-            mozinstall.install(src=dest, dest=self.tempdir),
-            self.app_name)
+        try:
+            self.binary = mozinstall.get_binary(
+                mozinstall.install(src=dest, dest=self.tempdir),
+                self.app_name
+            )
+        except:
+            rmtree(self.tempdir)
+            raise
 
     def _start(self, profile=None, addons=(), cmdargs=(), preferences=None):
         profile = self._create_profile(profile=profile, addons=addons,
@@ -184,10 +195,12 @@ class MozRunnerLauncher(Launcher):
 
     def _stop(self):
         self.runner.stop()
+        # release the runner since it holds a profile reference
+        del self.runner
 
-    def __del__(self):
+    def cleanup(self):
         try:
-            Launcher.__del__(self)
+            Launcher.cleanup(self)
         finally:
             # always remove tempdir
             if self.tempdir is not None:

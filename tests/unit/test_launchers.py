@@ -76,15 +76,10 @@ class TestLauncher(unittest.TestCase):
 
 
 class TestMozRunnerLauncher(unittest.TestCase):
-    def clean_launcher(self):
-        if hasattr(self, 'launcher'):
-            del self.launcher
-
     @patch('mozregression.launchers.mozinstall')
     def setUp(self, mozinstall):
         mozinstall.get_binary.return_value = '/binary'
         self.launcher = launchers.MozRunnerLauncher('/binary')
-        self.addCleanup(self.clean_launcher)
 
     # patch profile_class else we will have some temporary dirs not deleted
     @patch('mozregression.launchers.MozRunnerLauncher.\
@@ -94,60 +89,67 @@ profile_class', spec=Profile)
         self.launcher.start(*args, **kwargs)
 
     def test_installed(self):
-        self.assertEqual(self.launcher.binary, '/binary')
+        with self.launcher:
+            self.assertEqual(self.launcher.binary, '/binary')
 
     @patch('mozregression.launchers.Runner')
     def test_start_no_args(self, Runner):
-        self.launcher_start()
-        kwargs = Runner.call_args[1]
+        with self.launcher:
+            self.launcher_start()
+            kwargs = Runner.call_args[1]
 
-        self.assertEqual(kwargs['cmdargs'], ())
-        self.assertEqual(kwargs['binary'], '/binary')
-        self.assertIsInstance(kwargs['profile'], Profile)
-        # runner is started
-        self.launcher.runner.start.assert_called_once_with()
-        self.launcher.stop()
+            self.assertEqual(kwargs['cmdargs'], ())
+            self.assertEqual(kwargs['binary'], '/binary')
+            self.assertIsInstance(kwargs['profile'], Profile)
+            # runner is started
+            self.launcher.runner.start.assert_called_once_with()
+            self.launcher.stop()
 
     @patch('mozregression.launchers.Runner')
     def test_wait(self, Runner):
         runner = Mock(wait=Mock(return_value=0))
         Runner.return_value = runner
-        self.launcher_start()
-        self.assertEqual(self.launcher.wait(), 0)
-        runner.wait.assert_called_once_with()
+        with self.launcher:
+            self.launcher_start()
+            self.assertEqual(self.launcher.wait(), 0)
+            runner.wait.assert_called_once_with()
 
     @patch('mozregression.launchers.Runner')
     def test_start_with_addons(self, Runner):
-        self.launcher_start(addons=['my-addon'], preferences='my-prefs')
-        self.profile_class.assert_called_once_with(addons=['my-addon'],
-                                                   preferences='my-prefs')
-        # runner is started
-        self.launcher.runner.start.assert_called_once_with()
-        self.launcher.stop()
+        with self.launcher:
+            self.launcher_start(addons=['my-addon'], preferences='my-prefs')
+            self.profile_class.assert_called_once_with(addons=['my-addon'],
+                                                       preferences='my-prefs')
+            # runner is started
+            self.launcher.runner.start.assert_called_once_with()
+            self.launcher.stop()
 
     @patch('mozregression.launchers.Runner')
     def test_start_with_profile_and_addons(self, Runner):
-        self.launcher_start(profile='my-profile', addons=['my-addon'],
-                            preferences='my-prefs')
-        self.profile_class.clone.assert_called_once_with(
-            'my-profile', addons=['my-addon'], preferences='my-prefs')
-        # runner is started
-        self.launcher.runner.start.assert_called_once_with()
-        self.launcher.stop()
+        with self.launcher:
+            self.launcher_start(profile='my-profile', addons=['my-addon'],
+                                preferences='my-prefs')
+            self.profile_class.clone.assert_called_once_with(
+                'my-profile', addons=['my-addon'], preferences='my-prefs')
+            # runner is started
+            self.launcher.runner.start.assert_called_once_with()
+            self.launcher.stop()
 
     @patch('mozregression.launchers.Runner')
     @patch('mozregression.launchers.mozversion')
     def test_get_app_infos(self, mozversion, Runner):
         mozversion.get_version.return_value = {'some': 'infos'}
-        self.launcher_start()
-        self.assertEqual(self.launcher.get_app_info(), {'some': 'infos'})
-        mozversion.get_version.assert_called_once_with(binary='/binary')
-        self.launcher.stop()
+        with self.launcher:
+            self.launcher_start()
+            self.assertEqual(self.launcher.get_app_info(), {'some': 'infos'})
+            mozversion.get_version.assert_called_once_with(binary='/binary')
+            self.launcher.stop()
 
-    def test_launcher_deleted_remove_tempdir(self):
+    def test_launcher_deleted_whith_statement(self):
         tempdir = self.launcher.tempdir
         self.assertTrue(os.path.isdir(tempdir))
-        del self.launcher
+        with self.launcher:
+            pass
         self.assertFalse(os.path.isdir(tempdir))
 
 

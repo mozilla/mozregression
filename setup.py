@@ -28,7 +28,7 @@ if sys.version_info < (2, 7) or sys.version_info > (3, 0):
     sys.exit("mozregression currently require python >=2.7 and <3.")
 
 desc = """Regression range finder for Mozilla nightly builds"""
-long_desc = """Interactive regression range finder for Mozilla nightly builds.
+long_desc = """Regression range finder for Mozilla nightly builds.
 For more information see the mozregression website:
 http://mozilla.github.io/mozregression/"""
 
@@ -65,9 +65,9 @@ setup(name="mozregression",
       tests_require=['mock', 'pytest', 'pytest-mock'],
       test_suite='tests',
       cmdclass={'test': PyTest},
-      classifiers=['Development Status :: 4 - Beta',
-                   'Environment :: Console',
-                   'Intended Audience :: Developers',
-                   'Operating System :: OS Independent'
-                   ]
-      )
+      classifiers=[
+          'Development Status :: 5 - Production/Stable',
+          'Environment :: Console',
+          'Intended Audience :: Developers',
+          'Operating System :: OS Independent'
+      ])

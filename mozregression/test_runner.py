@@ -69,6 +69,14 @@ class TestRunner(object):
         """
         raise NotImplementedError
 
+    def index_to_try_after_skip(self, build_range):
+        """
+        Return the index of the build to use after a build was skipped.
+
+        By default this only returns the mid point of the remaining range.
+        """
+        return build_range.mid_point()
+
 
 class ManualTestRunner(TestRunner):
     """
@@ -122,6 +130,29 @@ class ManualTestRunner(TestRunner):
             launcher.start(**self.launcher_kwargs)
             launcher.get_app_info()
             return launcher.wait()
+
+    def index_to_try_after_skip(self, build_range):
+        mid = TestRunner.index_to_try_after_skip(self, build_range)
+        build_range_len = len(build_range)
+        if build_range_len <= 3:
+            # do not even ask if there is only one build to choose
+            return mid
+        min = -mid + 1
+        max = build_range_len - mid - 2
+        valid_range = range(min, max + 1)
+        print ("Build was skipped. You can manually choose a new build to"
+               " test, to be able to get out of a broken build range.")
+        print ("Please type the index of the build you would like to try - the"
+               " index is 0-based on the middle of the remaining build range.")
+        print "You can choose a build index between [%d, %d]:" % (min, max)
+        while True:
+            value = raw_input('> ')
+            try:
+                index = int(value)
+                if index in valid_range:
+                    return mid + index
+            except ValueError:
+                pass
 
 
 def _raise_command_error(exc, msg=''):

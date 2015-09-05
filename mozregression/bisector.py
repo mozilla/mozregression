@@ -300,7 +300,7 @@ class Bisection(object):
             return self.FINISHED
         return self.RUNNING
 
-    def download_build(self, mid_point):
+    def download_build(self, mid_point, allow_bg_download=True):
         """
         Download the build for the given mid_point.
 
@@ -312,11 +312,12 @@ class Bisection(object):
         is the dict of build infos for the build.
         """
         build_infos = self.handler.build_range[mid_point]
-        return self._download_build(mid_point, build_infos)
+        return self._download_build(mid_point, build_infos,
+                                    allow_bg_download=allow_bg_download)
 
-    def _download_build(self, mid_point, build_infos):
+    def _download_build(self, mid_point, build_infos, allow_bg_download=True):
         self.download_manager.focus_download(build_infos)
-        if self.dl_in_background:
+        if self.dl_in_background and allow_bg_download:
             mid_point = self._download_next_builds(mid_point)
         return mid_point, build_infos
 
@@ -429,32 +430,50 @@ class Bisector(object):
                               self.test_runner, self.fetch_config,
                               dl_in_background=self.dl_in_background)
 
-        previous_verdict, previous_build_infos = None, None
+        previous_verdict = None
 
         while True:
-            mid = bisection.search_mid_point()
-            result = bisection.init_handler(mid)
+            index = bisection.search_mid_point()
+            result = bisection.init_handler(index)
             if result != bisection.RUNNING:
                 return result
-            if previous_verdict == 'r':
+
+            allow_bg_download = True
+            if previous_verdict == 's':
+                # disallow background download since we are not sure of what
+                # to download next.
+                allow_bg_download = False
+                index = self.test_runner.index_to_try_after_skip(
+                    bisection.build_range
+                )
+
+            build_info = bisection.build_range[index]
+            if previous_verdict != 'r' and build_info:
                 # if the last verdict was retry, do not download
                 # the build. Futhermore trying to download if we are
                 # in background download mode would stop the next builds
                 # downloads.
-                build_infos = previous_build_infos
+                index, build_info = bisection.download_build(
+                    index,
+                    allow_bg_download=allow_bg_download
+                )
+
+            if not build_info:
+                logger.info(
+                    "Unable to find build info. Skipping this build...")
+                verdict = 's'
             else:
-                mid, build_infos = bisection.download_build(mid)
-            try:
-                verdict, app_info = bisection.evaluate(build_infos)
-            except LauncherError, exc:
-                # we got an unrecoverable error while trying
-                # to run the tested app. We can just fallback
-                # to skip the build.
-                logger.info("Error: %s. Skipping this build..." % exc)
-                verdict, app_info = 's', {}
+                try:
+                    verdict, app_info = bisection.evaluate(build_info)
+                except LauncherError, exc:
+                    # we got an unrecoverable error while trying
+                    # to run the tested app. We can just fallback
+                    # to skip the build.
+                    logger.info("Error: %s. Skipping this build..." % exc)
+                    verdict = 's'
+                else:
+                    build_info.update_from_app_info(app_info)
             previous_verdict = verdict
-            previous_build_infos = build_infos
-            bisection.build_range[mid].update_from_app_info(app_info)
-            result = bisection.handle_verdict(mid, verdict)
+            result = bisection.handle_verdict(index, verdict)
             if result != bisection.RUNNING:
                 return result

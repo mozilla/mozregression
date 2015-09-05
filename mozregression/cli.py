@@ -137,6 +137,20 @@ def create_parser(defaults=None):
                         metavar="PATH",
                         help="profile to use with nightlies.")
 
+    parser.add_argument('--profile-persistence',
+                        choices=('clone', 'clone-first', 'reuse'),
+                        default=defaults.get("profile-persistence", 'clone'),
+                        help=("Persistence of the used profile. Before"
+                              " each tested build, a profile is used. If"
+                              " the value of this option is 'clone', each"
+                              " test uses a fresh clone. If the value is"
+                              " 'clone-first', the profile is cloned once"
+                              " then reused for all builds during the "
+                              " bisection. If the value is 'reuse', the given"
+                              " profile is directly used. Note that the"
+                              " profile might be modified by mozregression."
+                              " Defaults to %(default)s."))
+
     parser.add_argument("-a", "--arg",
                         dest="cmdargs",
                         action='append',

@@ -47,6 +47,17 @@ class Application(object):
         if options.persist is None:
             self._download_dir = tempfile.mkdtemp()
             self._rm_download_dir = True
+        launcher_class = APP_REGISTRY.get(fetch_config.app_name)
+        launcher_class.check_is_runnable()
+        # init global profile if required
+        self._global_profile = None
+        if options.profile_persistence in ('clone-first', 'reuse'):
+            self._global_profile = launcher_class.create_profile(
+                profile=options.profile,
+                addons=options.addons,
+                preferences=options.preferences,
+                clone=options.profile_persistence == 'clone-first'
+            )
 
     def clear(self):
         if self._build_download_manager:
@@ -54,6 +65,9 @@ class Application(object):
             self._build_download_manager.cancel()
         if self._rm_download_dir:
             mozfile.remove(self._download_dir)
+        if self._global_profile \
+           and self.options.profile_persistence == 'clone-first':
+            self._global_profile.cleanup()
 
     @property
     def test_runner(self):
@@ -61,7 +75,7 @@ class Application(object):
             if self.options.command is None:
                 self._test_runner = ManualTestRunner(launcher_kwargs=dict(
                     addons=self.options.addons,
-                    profile=self.options.profile,
+                    profile=self._global_profile or self.options.profile,
                     cmdargs=self.options.cmdargs,
                     preferences=self.options.preferences,
                 ))
@@ -246,8 +260,6 @@ def main(argv=None, namespace=None, check_new_version=True):
         config.validate()
         set_http_session(get_defaults={"timeout": config.options.http_timeout})
         app = Application(config.fetch_config, config.options)
-        launcher_class = APP_REGISTRY.get(config.fetch_config.app_name)
-        launcher_class.check_is_runnable()
 
         method = getattr(app, config.action)
         sys.exit(method())

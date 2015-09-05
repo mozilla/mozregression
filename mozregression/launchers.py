@@ -117,18 +117,31 @@ class Launcher(object):
         raise NotImplementedError
 
     def _create_profile(self, profile=None, addons=(), preferences=None):
-        if profile:
-            # mozprofile makes some changes in the profile that can not
-            # be undone. Let's clone the profile to not have side effect
-            # on existing profile.
-            # see https://bugzilla.mozilla.org/show_bug.cgi?id=999009
-            profile = self.profile_class.clone(profile, addons=addons,
-                                               preferences=preferences)
-        elif len(addons):
-            profile = self.profile_class(addons=addons,
-                                         preferences=preferences)
+        if isinstance(profile, Profile):
+            return profile
         else:
-            profile = self.profile_class(preferences=preferences)
+            return self.create_profile(profile=profile, addons=addons,
+                                       preferences=preferences)
+
+    @classmethod
+    def create_profile(cls, profile=None, addons=(), preferences=None,
+                       clone=True):
+        if profile:
+            if clone:
+                # mozprofile makes some changes in the profile that can not
+                # be undone. Let's clone the profile to not have side effect
+                # on existing profile.
+                # see https://bugzilla.mozilla.org/show_bug.cgi?id=999009
+                profile = cls.profile_class.clone(profile, addons=addons,
+                                                  preferences=preferences)
+            else:
+                profile = cls.profile_class(profile, addons=addons,
+                                            preferences=preferences)
+        elif len(addons):
+            profile = cls.profile_class(addons=addons,
+                                        preferences=preferences)
+        else:
+            profile = cls.profile_class(preferences=preferences)
         return profile
 
 

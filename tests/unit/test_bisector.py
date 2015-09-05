@@ -200,7 +200,7 @@ class MyBuildData(build_range.BuildRange):
         )
 
     def __repr__(self):
-        return repr([s.build_info.data[0] for s in self._future_build_infos])
+        return repr([s.build_info.data for s in self._future_build_infos])
 
     def __eq__(self, other):
         return [s.build_info.data for s in self._future_build_infos] == \
@@ -241,10 +241,7 @@ class TestBisector(unittest.TestCase):
             verdict = iter_verdict.next()
             if isinstance(verdict, Exception):
                 raise verdict
-            return verdict, {
-                'application_changeset': 'unused',
-                'application_repository': 'unused'
-            }
+            return verdict
         self.test_runner.evaluate = Mock(side_effect=evaluate)
         result = self.bisector._bisect(self.handler, build_range)
         return {

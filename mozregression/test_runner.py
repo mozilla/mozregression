@@ -114,7 +114,7 @@ class ManualTestRunner(TestRunner):
     def evaluate(self, build_info, allow_back=False):
         with self.create_launcher(build_info) as launcher:
             launcher.start(**self.launcher_kwargs)
-            app_infos = launcher.get_app_info()
+            build_info.update_from_app_info(launcher.get_app_info())
             verdict = self.get_verdict(build_info, allow_back)
             try:
                 launcher.stop()
@@ -123,12 +123,12 @@ class ManualTestRunner(TestRunner):
                 # already gave the verdict, so pass this "silently"
                 # (it would be logged from the launcher anyway)
                 launcher._running = False
-        return verdict, app_infos
+        return verdict
 
     def run_once(self, build_info):
         with self.create_launcher(build_info) as launcher:
             launcher.start(**self.launcher_kwargs)
-            launcher.get_app_info()
+            build_info.update_from_app_info(launcher.get_app_info())
             return launcher.wait()
 
     def index_to_try_after_skip(self, build_range):
@@ -182,7 +182,7 @@ class CommandTestRunner(TestRunner):
 
     def evaluate(self, build_info, allow_back=False):
         with self.create_launcher(build_info) as launcher:
-            app_info = launcher.get_app_info()
+            build_info.update_from_app_info(launcher.get_app_info())
             variables = dict((k, str(v))
                              for k, v in build_info.to_dict().iteritems())
             if hasattr(launcher, 'binary'):
@@ -207,7 +207,7 @@ class CommandTestRunner(TestRunner):
                                      % cmdlist[0])
         self.logger.info('Test command result: %d (build is %s)'
                          % (retcode, 'good' if retcode == 0 else 'bad'))
-        return 'g' if retcode == 0 else 'b', app_info
+        return 'g' if retcode == 0 else 'b'
 
     def run_once(self, build_info):
         return 0 if self.evaluate(build_info) == 'g' else 1

@@ -464,15 +464,13 @@ class Bisector(object):
                 verdict = 's'
             else:
                 try:
-                    verdict, app_info = bisection.evaluate(build_info)
+                    verdict = bisection.evaluate(build_info)
                 except LauncherError, exc:
                     # we got an unrecoverable error while trying
                     # to run the tested app. We can just fallback
                     # to skip the build.
                     logger.info("Error: %s. Skipping this build..." % exc)
                     verdict = 's'
-                else:
-                    build_info.update_from_app_info(app_info)
             previous_verdict = verdict
             result = bisection.handle_verdict(index, verdict)
             if result != bisection.RUNNING:

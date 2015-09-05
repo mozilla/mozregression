@@ -65,7 +65,6 @@ class GuiTestRunner(QObject, TestRunner):
     def __init__(self):
         QObject.__init__(self)
         TestRunner.__init__(self)
-        self.app_info = {}
         self.verdict = None
         self.launcher = None
         self.launcher_kwargs = {}
@@ -73,7 +72,7 @@ class GuiTestRunner(QObject, TestRunner):
     def evaluate(self, build_info, allow_back=False):
         self.launcher = self.create_launcher(build_info)
         self.launcher.start(**self.launcher_kwargs)
-        self.app_info = self.launcher.get_app_info()
+        build_info.update_from_app_info(self.launcher.get_app_info())
         self.evaluate_started.emit()
 
     def finish(self, verdict):
@@ -183,9 +182,6 @@ class GuiBisector(QObject, Bisector):
     def _evaluate_finished(self):
         # here we are not in the working thread, since the connection was
         # done in the constructor
-        self.bisection.build_range[self.mid].update_from_app_info(
-            self.test_runner.app_info
-        )
         self.step_finished.emit(self.bisection, self.test_runner.verdict)
         result = self.bisection.handle_verdict(self.mid,
                                                self.test_runner.verdict)

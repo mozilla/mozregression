@@ -81,14 +81,13 @@ class TestGuiTestRunner(unittest.TestCase):
         self.assertEquals(self.evaluate_started.call_count, 0)
         self.assertEquals(self.evaluate_finished.call_count, 0)
 
-        self.test_runner.evaluate({})
+        self.test_runner.evaluate(Mock())
 
         # now evaluate_started has been called
         self.assertEquals(self.evaluate_started.call_count, 1)
         self.assertEquals(self.evaluate_finished.call_count, 0)
-        # launcher and app_info are defined
+        # launcher is defined
         self.assertEquals(self.test_runner.launcher, launcher)
-        self.assertEquals(self.test_runner.app_info, 'app_info')
 
         self.test_runner.finish('g')
 
@@ -97,4 +96,3 @@ class TestGuiTestRunner(unittest.TestCase):
         self.assertEquals(self.evaluate_finished.call_count, 1)
         # verdict is defined, launcher is None
         self.assertEquals(self.test_runner.verdict, 'g')
-        self.assertIsNone(self.test_runner.launcher)

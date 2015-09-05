@@ -81,7 +81,7 @@ class GuiTestRunner(QObject, TestRunner):
         self.launcher.stop()
         self.verdict = verdict
         self.evaluate_finished.emit()
-        self.launcher = None
+        self.launcher.cleanup()
 
 
 class GuiBisector(QObject, Bisector):

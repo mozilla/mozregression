@@ -77,7 +77,8 @@ def create_parser(defaults=None):
              " %(prog)s [OPTIONS]"
              " --bad-rev BAD_REV --good-rev GOOD_REV"
              "\n"
-             " %(prog)s [OPTIONS] --launch"
+             " %(prog)s [OPTIONS] --launch DATE_OR_REV"
+             "\n"
              " %(prog)s --list-releases"
              "\n"
              " %(prog)s --write-conf")
@@ -220,12 +221,14 @@ def create_parser(defaults=None):
                               ' downloading them when persist mode is enabled.'
                               ' The default is %(default)s.'))
 
+    parser.add_argument('--launch',
+                        metavar="DATE_OR_REV",
+                        help="Launch only one specific build by date (nightly)"
+                             " or changeset (inbound).")
+
     parser.add_argument('--write-config',
                         action=WriteConfigAction,
                         help="Helps to write the configuration file.")
-
-    parser.add_argument('--launch',
-                        help="Launch a specific build by date or changeset")
 
     commandline.add_logging_group(
         parser,

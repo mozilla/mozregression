@@ -134,6 +134,8 @@ class ReportModel(QAbstractTableModel):
     @Slot(object, int, int)
     def download_progress(self, dl, current, total):
         item = self.items[-1]
+        item.state_text = 'Downloading'
+        item.downloading = True
         item.set_progress(current, total)
         self.update_item(item)
 
@@ -196,15 +198,11 @@ class ReportModel(QAbstractTableModel):
 
             # and add the new step with build_infos
             item = StepItem()
-            item.state_text = 'Downloading'
-            item.downloading = True
             item.data.update(build_infos.to_dict())
             self.append_item(item)
         else:
             # previous item is a step, just update it
             last_item.data.update(build_infos.to_dict())
-            last_item.state_text = 'Downloading'
-            last_item.downloading = True
             self.update_item(last_item)
 
     @Slot(object, int, object)

@@ -118,6 +118,7 @@ class BuildRange(object):
                 # let's say that the middle point is 0 if there is not at least
                 # 2 points - still, fetch data if needed.
                 self._fetch(range(size))
+                self.filter_invalid_builds()
                 return 0
             mid = size/2
             self._fetch((0, mid, size-1))

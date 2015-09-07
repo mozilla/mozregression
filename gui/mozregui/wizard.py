@@ -80,7 +80,8 @@ class IntroPage(WizardPage):
         bits = int(self.ui.bits_combo.currentText())
         old_bisect_index = self.ui.bisect_combo.currentIndex()
         self.fetch_config = create_config(
-            str(self.ui.app_combo.itemText(index)), mozinfo.os, bits)
+            str(self.ui.app_combo.currentText()),
+            mozinfo.os, bits)
         bisect_types = ['nightlies']
         if self.fetch_config.is_inbound():
             bisect_types.append('inbound')

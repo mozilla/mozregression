@@ -7,7 +7,7 @@ from mozregression.bisector import Bisector, Bisection, NightlyHandler, \
     InboundHandler
 from mozregression.download_manager import BuildDownloadManager
 from mozregression.test_runner import TestRunner
-from mozregression.errors import MozRegressionError
+from mozregression.errors import MozRegressionError, LauncherError
 from mozregression.network import get_http_session
 
 from mozregui.ui.verdict import Ui_Verdict
@@ -59,7 +59,7 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
 
 
 class GuiTestRunner(QObject, TestRunner):
-    evaluate_started = Signal()
+    evaluate_started = Signal(str)
     evaluate_finished = Signal()
 
     def __init__(self):
@@ -70,17 +70,24 @@ class GuiTestRunner(QObject, TestRunner):
         self.launcher_kwargs = {}
 
     def evaluate(self, build_info, allow_back=False):
-        self.launcher = self.create_launcher(build_info)
-        self.launcher.start(**self.launcher_kwargs)
-        build_info.update_from_app_info(self.launcher.get_app_info())
-        self.evaluate_started.emit()
+        try:
+            self.launcher = self.create_launcher(build_info)
+            self.launcher.start(**self.launcher_kwargs)
+            build_info.update_from_app_info(self.launcher.get_app_info())
+        except LauncherError, exc:
+            self.evaluate_started.emit(str(exc))
+        else:
+            self.evaluate_started.emit('')
 
     def finish(self, verdict):
-        assert self.launcher
-        self.launcher.stop()
+        if self.launcher:
+            try:
+                self.launcher.stop()
+            except LauncherError:
+                pass  # silently pass stop process error
+            self.launcher.cleanup()
         self.verdict = verdict
         self.evaluate_finished.emit()
-        self.launcher.cleanup()
 
 
 class GuiBisector(QObject, Bisector):
@@ -293,9 +300,19 @@ class BisectRunner(QObject):
             if thread.isFinished():
                 self.pending_threads.remove(thread)
 
-    @Slot()
-    def evaluate(self):
-        verdict = get_verdict(self.mainwindow)
+    @Slot(str)
+    def evaluate(self, err_message):
+        if not err_message:
+            verdict = get_verdict(self.mainwindow)
+        else:
+            QMessageBox.warning(
+                self.mainwindow,
+                "Launcher Error",
+                ("An error occured while starting the process, so the build"
+                 " will be skipped. Error message:<br><strong>%s</strong>"
+                 % err_message)
+            )
+            verdict = 's'
         self.bisector.test_runner.finish(verdict)
 
     @Slot(object, int)

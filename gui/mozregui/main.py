@@ -19,6 +19,7 @@ from mozregui.bisection import BisectRunner
 from mozregui.global_prefs import change_prefs_dialog
 from mozregui.log_report import LogModel
 from mozregui.report_delegate import ReportItemDelegate
+from mozregui.check_release import CheckRelease
 
 
 ABOUT_TEXT = """\
@@ -127,6 +128,8 @@ def main():
     win = MainWindow()
     app.aboutToQuit.connect(win.bisect_runner.stop)
     app.aboutToQuit.connect(win.clear)
+    release_checker = CheckRelease(win)
+    release_checker.check()
     log_model.log.connect(win.ui.log_view.on_log_received)
     win.show()
     win.start_bisection_wizard()

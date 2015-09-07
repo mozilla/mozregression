@@ -160,6 +160,7 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QStatusBar" name="status_bar"/>
   <action name="actionStart_a_new_bisection">
    <property name="checkable">
     <bool>false</bool>

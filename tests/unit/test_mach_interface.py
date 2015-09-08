@@ -22,7 +22,13 @@ def test_new_release_on_pypi(mocker, pypi_version, result):
 
 def test_parser(mocker):
     get_defaults = mocker.patch('mozregression.mach_interface.get_defaults')
-    get_defaults.return_value = {'persist': 'stuff'}
+    get_defaults.return_value = {'profile-persistence': 'clone',
+                                 'app': 'firefox',
+                                 'persist-size-limit': 0,
+                                 'http-timeout': 30.0,
+                                 'no-background-dl': '',
+                                 'background-dl-policy': 'cancel',
+                                 'persist': 'stuff'}
     p = parser()
     assert isinstance(p, ArgumentParser)
     options = p.parse_args(['--persist-size-limit=1'])

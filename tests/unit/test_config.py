@@ -15,16 +15,31 @@ def tmp():
 
 @pytest.mark.parametrize('os_,bits,inputs,conf_dir_exists,results', [
     ('mac', 64, ['', ''], False,
-     {'persist': None, 'persist-size-limit': '20.0'}),
+     {'profile-persistence': 'clone', 'app': 'firefox',
+      'persist-size-limit': 0, 'http-timeout': 30.0,
+      'no-background-dl': '', 'background-dl-policy': 'cancel',
+      'persist': None, 'persist-size-limit': '20.0'}),
     ('linux', 32, ['NONE', 'NONE'], True,
-     {'persist': '', 'persist-size-limit': '0.0'}),
+     {'profile-persistence': 'clone', 'app': 'firefox',
+      'persist-size-limit': 0, 'http-timeout': 30.0,
+      'no-background-dl': '', 'background-dl-policy': 'cancel',
+      'persist': '', 'persist-size-limit': '0.0'}),
     ('win', 32, ['', '10'], True,
-     {'persist': None, 'persist-size-limit': '10.0'}),
+     {'profile-persistence': 'clone', 'app': 'firefox',
+      'persist-size-limit': 0, 'http-timeout': 30.0,
+      'no-background-dl': '', 'background-dl-policy': 'cancel',
+      'persist': None, 'persist-size-limit': '10.0'}),
     # on 64 bit (except for mac), bits option is asked
     ('linu', 64, ['NONE', 'NONE', ''], True,
-     {'persist': '', 'persist-size-limit': '0.0', 'bits': '64'}),
+     {'profile-persistence': 'clone', 'app': 'firefox',
+      'persist-size-limit': 0, 'http-timeout': 30.0,
+      'no-background-dl': '', 'background-dl-policy': 'cancel',
+      'persist': '', 'persist-size-limit': '0.0', 'bits': '64'}),
     ('win', 64, ['NONE', 'NONE', '32'], True,
-     {'persist': '', 'persist-size-limit': '0.0', 'bits': '32'}),
+     {'profile-persistence': 'clone', 'app': 'firefox',
+      'persist-size-limit': 0, 'http-timeout': 30.0,
+      'no-background-dl': '', 'background-dl-policy': 'cancel',
+      'persist': '', 'persist-size-limit': '0.0', 'bits': '32'}),
 ])
 def test_write_conf(tmp, mocker, os_, bits, inputs, conf_dir_exists, results):
     mozinfo = mocker.patch('mozregression.config.mozinfo')

@@ -39,7 +39,9 @@ def test_write_conf(tmp, mocker, os_, bits, inputs, conf_dir_exists, results):
     if 'persist' in results and results['persist'] is None:
         # default persist is base on the directory of the conf file
         results['persist'] = os.path.join(tmp, 'persist')
-    assert get_defaults(conf_path) == results
+    conf = get_defaults(conf_path)
+    for key in results:
+        assert conf[key] == results[key]
     with open(conf_path) as f:
         # ensure we have comments
         assert "# ------ mozregression configuration file ------" in f.read()

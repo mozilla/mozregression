@@ -3,6 +3,7 @@ import pytest
 from argparse import ArgumentParser, Namespace
 
 from mozregression import __version__
+from mozregression.config import DEFAULTS
 from mozregression.mach_interface import new_release_on_pypi, parser, run
 
 
@@ -21,8 +22,10 @@ def test_new_release_on_pypi(mocker, pypi_version, result):
 
 
 def test_parser(mocker):
+    defaults = dict(DEFAULTS)
+    defaults.update({'persist': 'stuff'})
     get_defaults = mocker.patch('mozregression.mach_interface.get_defaults')
-    get_defaults.return_value = {'persist': 'stuff'}
+    get_defaults.return_value = defaults
     p = parser()
     assert isinstance(p, ArgumentParser)
     options = p.parse_args(['--persist-size-limit=1'])

@@ -25,12 +25,28 @@ DEFAULT_CONF_FNAME = os.path.expanduser(
     os.path.join("~", ".mozilla", "mozregression", "mozregression.cfg")
 )
 
+# default values when not defined in config file.
+# Note that this is also the list of options that can be used in config file
+DEFAULTS = {
+    'persist': None,
+    'profile': None,
+    'repo': None,
+    'inbound-branch': None,
+    'bits': None,
+    'profile-persistence': 'clone',
+    'app': 'firefox',
+    'persist-size-limit': 0,
+    'http-timeout': 30.0,
+    'no-background-dl': '',
+    'background-dl-policy': 'cancel'
+}
+
 
 def get_defaults(conf_path):
     """
     Get custom defaults from configuration file in argument.
     """
-    defaults = {}
+    defaults = dict(DEFAULTS)
     try:
         config = ConfigObj(conf_path)
     except ParseError, exc:

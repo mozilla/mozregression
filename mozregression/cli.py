@@ -190,7 +190,8 @@ def create_parser(defaults):
                         choices=("32", "64"),
                         default=defaults["bits"],
                         help=("force 32 or 64 bit version (only applies to"
-                              " x86_64 boxes). Default: %(default)s bits."))
+                              " x86_64 boxes). Default: %s bits."
+                              % defaults["bits"] or mozinfo.bits))
 
     parser.add_argument("-c", "--command",
                         help=("Test command to evaluate builds automatically."

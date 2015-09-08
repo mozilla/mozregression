@@ -65,7 +65,7 @@ def parse_args(argv=None, defaults=None):
     return parser.parse_args(argv)
 
 
-def create_parser(defaults=None):
+def create_parser(defaults):
     """
     Create the mozregression command line parser (ArgumentParser instance).
     """
@@ -83,7 +83,6 @@ def create_parser(defaults=None):
              "\n"
              " %(prog)s --write-conf")
 
-    defaults = defaults or {}
     parser = ArgumentParser(usage=usage)
     parser.add_argument("--version", action="version", version=__version__,
                         help=("print the mozregression version number and"
@@ -139,7 +138,7 @@ def create_parser(defaults=None):
 
     parser.add_argument('--profile-persistence',
                         choices=('clone', 'clone-first', 'reuse'),
-                        default=defaults.get("profile-persistence", 'clone'),
+                        default=defaults.get("profile-persistence"),
                         help=("Persistence of the used profile. Before"
                               " each tested build, a profile is used. If"
                               " the value of this option is 'clone', each"
@@ -174,7 +173,7 @@ def create_parser(defaults=None):
 
     parser.add_argument("-n", "--app",
                         choices=FC_REGISTRY.names(),
-                        default=defaults.get("app", "firefox"),
+                        default=defaults.get("app"),
                         help="application name. Default: %(default)s.")
 
     parser.add_argument("--repo",
@@ -205,7 +204,7 @@ def create_parser(defaults=None):
                               " to persist. Defaults to %(default)r."))
 
     parser.add_argument('--persist-size-limit', type=float,
-                        default=defaults.get('persist-size-limit', 0),
+                        default=defaults.get('persist-size-limit'),
                         help=("Size limit for the persist directory in"
                               " gigabytes (GiB). When the limit is reached,"
                               " old builds are removed. 0 means no limit. Note"
@@ -214,7 +213,7 @@ def create_parser(defaults=None):
                               " Defaults to %(default)s."))
 
     parser.add_argument('--http-timeout', type=float,
-                        default=float(defaults.get("http-timeout", 30.0)),
+                        default=float(defaults.get('http-timeout')),
                         help=("Timeout in seconds to abort requests when there"
                               " is no activity from the server. Default to"
                               " %(default)s seconds - increase this if you"
@@ -222,13 +221,13 @@ def create_parser(defaults=None):
 
     parser.add_argument('--no-background-dl', action='store_false',
                         dest="background_dl",
-                        default=(defaults.get('no-background-dl', '').lower()
+                        default=(defaults.get('no-background-dl').lower()
                                  not in ('1', 'yes', 'true')),
                         help=("Do not download next builds in the background"
                               " while evaluating the current build."))
 
     parser.add_argument('--background-dl-policy', choices=('cancel', 'keep'),
-                        default=defaults.get('background-dl-policy', 'cancel'),
+                        default=defaults.get('background-dl-policy'),
                         help=('Policy to use for background downloads.'
                               ' Possible values are "cancel" to cancel all'
                               ' pending background downloads or "keep" to keep'
@@ -442,9 +441,7 @@ def cli(argv=None, conf_file=DEFAULT_CONF_FNAME, namespace=None):
     if namespace:
         options = namespace
     else:
-        defaults = None
-        if conf_file:
-            defaults = get_defaults(conf_file)
+        defaults = get_defaults(conf_file)
         options = parse_args(argv=argv, defaults=defaults)
     if conf_file and not os.path.isfile(conf_file):
         term = blessings.Terminal() if blessings else None

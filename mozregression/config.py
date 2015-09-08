@@ -30,7 +30,13 @@ def get_defaults(conf_path):
     """
     Get custom defaults from configuration file in argument.
     """
-    defaults = {}
+    defaults = {'profile-persistence': 'clone',
+                'app': 'firefox',
+                'persist-size-limit': 0,
+                'http-timeout': 30.0,
+                'no-background-dl': '',
+                'background-dl-policy': 'cancel'
+                }
     try:
         config = ConfigObj(conf_path)
     except ParseError, exc:

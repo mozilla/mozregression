@@ -44,7 +44,7 @@ class Application(object):
         self._logger = get_default_logger('main')
         self._download_dir = options.persist
         self._rm_download_dir = False
-        if options.persist is None:
+        if not options.persist:
             self._download_dir = tempfile.mkdtemp()
             self._rm_download_dir = True
         launcher_class = APP_REGISTRY.get(fetch_config.app_name)
@@ -97,7 +97,7 @@ class Application(object):
     def build_download_manager(self):
         if self._build_download_manager is None:
             background_dl_policy = self.options.background_dl_policy
-            if self.options.persist is None:
+            if not self.options.persist:
                 # cancel background downloads forced
                 background_dl_policy = "cancel"
             self._build_download_manager = BuildDownloadManager(
@@ -196,7 +196,7 @@ class Application(object):
         if options.repo is not None:
             info += ' --repo=%s' % options.repo
         info += ' --bits=%s' % options.bits
-        if options.persist is not None:
+        if options.persist:
             info += ' --persist=%s' % pipes.quote(options.persist)
 
         self._logger.info('To resume, run:')

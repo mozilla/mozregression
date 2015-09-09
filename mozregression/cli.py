@@ -389,11 +389,6 @@ class Configuration(object):
         """
         options = self.options
 
-        if not options.persist:
-            # expicitely set None since we have code that rely on that
-            # TODO address this.
-            options.persist = None
-
         user_defined_bits = options.bits is not None
         options.bits = parse_bits(options.bits or mozinfo.bits)
         fetch_config = create_config(options.app, mozinfo.os, options.bits)

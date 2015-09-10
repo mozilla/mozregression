@@ -1,33 +1,31 @@
-from PyQt4.QtCore import QSettings, QVariant
 from PyQt4.QtGui import QDialog
 
 from mozregui.ui.global_prefs import Ui_GlobalPrefs
 from mozregui import patch_requests
 
 from mozregression.network import set_http_session
+from mozregression.config import DEFAULT_CONF_FNAME, get_defaults
+from configobj import ConfigObj
 
 
 def get_prefs():
     """
     Return the global prefs as a dict.
     """
-    settings = QSettings()
-    options = {}
-    options['persist'] = \
-        str(settings.value("globalPrefs/persist",
-                           QVariant("")).toString()) or None
-    options['http_timeout'] = \
-        settings.value("globalPrefs/http_timeout",
-                       QVariant(30.0)).toDouble()[0]
+    settings = get_defaults(DEFAULT_CONF_FNAME)
+    options = dict()
+    options['persist'] = settings['persist']
+    options['http_timeout'] = float(settings['http-timeout'])
     return options
 
 
 def save_prefs(options):
-    settings = QSettings()
-    settings.setValue("globalPrefs/persist",
-                      QVariant(options['persist'] or ''))
-    settings.setValue("globalPrefs/http_timeout",
-                      QVariant(options['http_timeout']))
+    settings = ConfigObj(DEFAULT_CONF_FNAME)
+    settings.update({
+        'persist': options['persist'] or '',
+        'http-timeout': options['http_timeout'],
+    })
+    settings.write()
 
 
 def apply_prefs(options):

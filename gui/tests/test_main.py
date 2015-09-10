@@ -9,7 +9,8 @@ from mozregui import main  # noqa
 
 class TestMain(unittest.TestCase):
     @patch('mozregui.main.QApplication')
-    def run_app(self, func, QApplication):
+    @patch('mozregui.main.CheckRelease')
+    def run_app(self, func, _, QApplication):
         QApplication.return_value = APP
 
         def _quit():

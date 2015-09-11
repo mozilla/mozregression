@@ -289,9 +289,10 @@ class TestBuildDownloadManager(unittest.TestCase):
         self.assertIn('myfile', self.dl_manager._downloads_bg)
         self.assertEquals(result, ANY)
 
+    @patch('mozregression.download_manager.LOG')
     @patch("mozregression.download_manager.BuildDownloadManager."
            "_extract_download_info")
-    def _test_focus_download(self, other_canceled, extract):
+    def _test_focus_download(self, other_canceled, extract, LOG):
         extract.return_value = ('http://foo/bar', 'myfile')
         current_dest = os.path.join('dest', 'myfile')
         other_dest = os.path.join('dest', 'otherfile')
@@ -319,8 +320,8 @@ class TestBuildDownloadManager(unittest.TestCase):
 
         self.assertEquals(other_download.is_canceled(), other_canceled)
 
-        self.dl_manager.logger.info.assert_called_with(
-            "Downloading build from: http://foo/bar")
+        LOG.info.assert_called_with(
+            "Downloading build from: %s", "http://foo/bar")
 
         self.assertEquals(result, current_dest)
         self.assertEquals(result, build_info.build_file)
@@ -332,10 +333,11 @@ class TestBuildDownloadManager(unittest.TestCase):
         self.dl_manager.background_dl_policy = "keep"
         self._test_focus_download(False)
 
+    @patch('mozregression.download_manager.LOG')
     @patch("mozregression.download_manager.BuildDownloadManager."
            "_extract_download_info")
     @patch("mozregression.download_manager.BuildDownloadManager.download")
-    def test_focus_download_file_already_exists(self, download, extract):
+    def test_focus_download_file_already_exists(self, download, extract, LOG):
         extract.return_value = ('http://foo/bar', 'myfile')
         download.return_value = None
 
@@ -346,8 +348,10 @@ class TestBuildDownloadManager(unittest.TestCase):
         result = self.dl_manager.focus_download(build_info)
 
         dest_file = os.path.join('dest', 'myfile')
-        self.dl_manager.logger.info.assert_called_with(
-            "Using local file: %s (downloaded in background)" % dest_file)
+        LOG.info.assert_called_with(
+            "Using local file: %s (downloaded in background)"
+            % dest_file
+        )
 
         self.assertEquals(result, dest_file)
         self.assertEquals(result, build_info.build_file)

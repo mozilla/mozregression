@@ -9,13 +9,15 @@ This module implements a :class:`TestRunner` interface for testing builds
 and a default implementation :class:`ManualTestRunner`.
 """
 
-from mozlog.structured import get_default_logger
 import subprocess
 import shlex
 import os
+import logging
 
 from mozregression.launchers import create_launcher
 from mozregression.errors import TestCommandError, LauncherError
+
+LOG = logging.getLogger(__name__)
 
 
 class TestRunner(object):
@@ -24,21 +26,18 @@ class TestRunner(object):
 
     :meth:`evaluate` must be implemented by subclasses.
     """
-    def __init__(self):
-        self.logger = get_default_logger('Test Runner')
-
     def create_launcher(self, build_info):
         """
         Create and returns a :class:`mozregression.launchers.Launcher`.
         """
         if build_info.build_type == 'nightly':
-            self.logger.info("Running nightly for %s"
-                             % build_info.build_date)
+            LOG.info("Running nightly for %s", build_info.build_date)
         else:
-            self.logger.info("Testing inbound build built on %s,"
-                             " revision %s"
-                             % (build_info.build_date,
-                                build_info.short_changeset))
+            LOG.info(
+                "Testing inbound build built on %s, revision %s",
+                build_info.build_date,
+                build_info.short_changeset
+            )
 
         return create_launcher(build_info)
 
@@ -194,7 +193,7 @@ class CommandTestRunner(TestRunner):
                 command = self.command.format(**variables)
             except KeyError as exc:
                 _raise_command_error(exc, ' (formatting error)')
-            self.logger.info('Running test command: `%s`' % command)
+            LOG.info('Running test command: `%s`' % command)
             cmdlist = shlex.split(command)
             try:
                 retcode = subprocess.call(cmdlist, env=env)
@@ -204,8 +203,8 @@ class CommandTestRunner(TestRunner):
                 _raise_command_error(exc,
                                      " (%s not found or not executable)"
                                      % cmdlist[0])
-        self.logger.info('Test command result: %d (build is %s)'
-                         % (retcode, 'good' if retcode == 0 else 'bad'))
+        LOG.info('Test command result: %d (build is %s)',
+                 retcode, 'good' if retcode == 0 else 'bad')
         return 'g' if retcode == 0 else 'b'
 
     def run_once(self, build_info):

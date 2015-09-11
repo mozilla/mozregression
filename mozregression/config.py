@@ -25,6 +25,7 @@ DEFAULT_CONF_FNAME = os.path.expanduser(
 # default values when not defined in config file.
 # Note that this is also the list of options that can be used in config file
 DEFAULTS = {
+    'log-level': 'info',
     'build-type': 'opt',
     'persist': None,
     'profile': None,

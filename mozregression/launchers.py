@@ -10,7 +10,6 @@ Define the launcher classes, responsible of running the tested applications.
 
 import os
 import time
-from mozlog.structured import get_default_logger
 from mozprofile import FirefoxProfile, ThunderbirdProfile, Profile
 from mozrunner import Runner
 from mozfile import rmtree
@@ -18,9 +17,12 @@ from mozdevice import ADBAndroid, ADBHost, ADBError
 import mozversion
 import mozinstall
 import tempfile
+import logging
 
 from mozregression.class_registry import ClassRegistry
 from mozregression.errors import LauncherNotRunnable, LauncherError
+
+LOG = logging.getLogger(__name__)
 
 
 class Launcher(object):
@@ -42,13 +44,12 @@ class Launcher(object):
     def __init__(self, dest, **kwargs):
         self._running = False
         self._stopping = False
-        self._logger = get_default_logger('Test Runner')
 
         try:
             self._install(dest)
         except Exception:
             msg = "Unable to install %r" % dest
-            self._logger.error(msg, exc_info=True)
+            LOG.exception(msg)
             raise LauncherError(msg)
 
     def start(self, **kwargs):
@@ -60,7 +61,7 @@ class Launcher(object):
                 self._start(**kwargs)
             except Exception:
                 msg = "Unable to start the application"
-                self._logger.error(msg, exc_info=True)
+                LOG.exception(msg)
                 raise LauncherError(msg)
             self._running = True
 
@@ -84,7 +85,7 @@ class Launcher(object):
                 self._stop()
             except Exception:
                 msg = "Unable to stop the application"
-                self._logger.error(msg, exc_info=True)
+                LOG.exception(msg)
                 raise LauncherError(msg)
             self._running = False
             self._stopping = False
@@ -166,7 +167,7 @@ class MozRunnerLauncher(Launcher):
         profile = self._create_profile(profile=profile, addons=addons,
                                        preferences=preferences)
 
-        self._logger.info("Launching %s" % self.binary)
+        LOG.info("Launching %s" % self.binary)
         self.runner = Runner(binary=self.binary,
                              cmdargs=cmdargs,
                              profile=profile)
@@ -185,20 +186,18 @@ class MozRunnerLauncher(Launcher):
                     exitcode = self.runner.process_handler.proc.wait()
                 except Exception:
                     print
-                    self._logger.error(
-                        "Error while waiting process, consider filing a bug.",
-                        exc_info=True
+                    LOG.exception(
+                        "Error while waiting process, consider filing a bug."
                     )
                     return
                 if exitcode != 0:
                     # first print a blank line, to be sure we don't
                     # write on an already printed line without EOL.
                     print
-                    self._logger.warning('Process exited with code %s'
-                                         % exitcode)
+                    LOG.warning('Process exited with code %s', exitcode)
 
         self.runner.process_args = {
-            'processOutputLine': [self._logger.debug],
+            'processOutputLine': [LOG.debug],
             'onFinish': _on_exit,
         }
         self.runner.start()
@@ -305,7 +304,7 @@ class FennecLauncher(Launcher):
         try:
             self.adb.uninstall_app(self.package_name)
         except ADBError, msg:
-            self._logger.warning(
+            LOG.warning(
                 "Failed to uninstall %s (%s)\nThis is normal if it is the"
                 " first time the application is installed."
                 % (self.package_name, msg)

@@ -15,9 +15,9 @@ import atexit
 import pipes
 import tempfile
 import mozfile
+import logging
 import colorama
 
-from mozlog.structuredlog import get_default_logger
 from requests.exceptions import RequestException
 
 from mozregression import __version__
@@ -35,6 +35,8 @@ from mozregression.releases import (UnavailableRelease,
 from mozregression.fetch_build_info import (NightlyInfoFetcher,
                                             InboundInfoFetcher)
 
+LOG = logging.getLogger(__name__)
+
 
 class Application(object):
     def __init__(self, fetch_config, options):
@@ -43,7 +45,6 @@ class Application(object):
         self._test_runner = None
         self._bisector = None
         self._build_download_manager = None
-        self._logger = get_default_logger('main')
         self._download_dir = options.persist
         self._rm_download_dir = False
         if not options.persist:
@@ -114,7 +115,7 @@ class Application(object):
         handler = NightlyHandler(find_fix=self.options.find_fix)
         result = self._do_bisect(handler, good_date, bad_date)
         if result == Bisection.FINISHED:
-            self._logger.info("Got as far as we can go bisecting nightlies...")
+            LOG.info("Got as far as we can go bisecting nightlies...")
             handler.print_range()
             if self.fetch_config.can_go_inbound():
                 good_rev, bad_rev = handler.find_inbound_changesets()
@@ -127,14 +128,14 @@ class Application(object):
                     # for this repo.
                     message += (" because the repo `%s` was specified"
                                 % self.options.repo)
-                self._logger.info(message + '.')
+                LOG.info(message + '.')
         elif result == Bisection.USER_EXIT:
             self._print_resume_info(handler)
         else:
             # NO_DATA
-            self._logger.info("Unable to get valid builds within the given"
-                              " range. You should try to launch mozregression"
-                              " again with a larger date range.")
+            LOG.info("Unable to get valid builds within the given"
+                     " range. You should try to launch mozregression"
+                     " again with a larger date range.")
             return 1
         return 0
 
@@ -143,15 +144,15 @@ class Application(object):
                                      self.options.first_bad_revision)
 
     def _bisect_inbounds(self, good_rev, bad_rev):
-        self._logger.info("Getting inbound builds between %s and %s"
-                          % (good_rev, bad_rev))
+        LOG.info("Getting inbound builds between %s and %s"
+                 % (good_rev, bad_rev))
         handler = InboundHandler(find_fix=self.options.find_fix)
         result = self._do_bisect(handler, good_rev, bad_rev)
         if result == Bisection.FINISHED:
-            self._logger.info("Oh noes, no (more) inbound revisions :(")
+            LOG.info("Oh noes, no (more) inbound revisions :(")
             handler.print_range()
             if handler.good_revision == handler.bad_revision:
-                self._logger.warning(
+                LOG.warning(
                     "It seems that you used two changesets that are in"
                     " in the same push. Check the pushlog url."
                 )
@@ -160,7 +161,7 @@ class Application(object):
         else:
             # NO_DATA. With inbounds, this can not happen if changesets
             # are incorrect - so builds are probably too old
-            self._logger.info(
+            LOG.info(
                 'There are no build artifacts on inbound for these'
                 ' changesets (they are probably too old).')
             return 1
@@ -203,8 +204,8 @@ class Application(object):
             argv.append('--good-rev=%s' % handler.good_revision)
             argv.append('--bad-rev=%s' % handler.bad_revision)
 
-        self._logger.info('To resume, run:')
-        self._logger.info(' '.join([pipes.quote(arg) for arg in argv]))
+        LOG.info('To resume, run:')
+        LOG.info(' '.join([pipes.quote(arg) for arg in argv]))
 
     def _on_exit_print_resume_info(self, handler):
         handler.print_range()
@@ -229,20 +230,20 @@ def pypi_latest_version():
     return requests.get(url, timeout=10).json()['info']['version']
 
 
-def check_mozregression_version(logger):
+def check_mozregression_version():
     try:
         mozregression_version = pypi_latest_version()
     except (RequestException, KeyError, ValueError):
-        logger.critical("Unable to get latest version from pypi.")
+        LOG.critical("Unable to get latest version from pypi.")
         return
 
     if __version__ != mozregression_version:
-        logger.warning("You are using mozregression version %s, "
-                       "however version %s is available."
-                       % (__version__, mozregression_version))
+        LOG.warning("You are using mozregression version %s, "
+                    "however version %s is available."
+                    % (__version__, mozregression_version))
 
-        logger.warning("You should consider upgrading via the 'pip install"
-                       " --upgrade mozregression' command.")
+        LOG.warning("You should consider upgrading via the 'pip install"
+                    " --upgrade mozregression' command.")
 
 
 def main(argv=None, namespace=None, check_new_version=True):
@@ -264,7 +265,7 @@ def main(argv=None, namespace=None, check_new_version=True):
     try:
         config = cli(argv=argv, namespace=namespace)
         if check_new_version:
-            check_mozregression_version(config.logger)
+            check_mozregression_version()
         config.validate()
         set_http_session(get_defaults={"timeout": config.options.http_timeout})
         app = Application(config.fetch_config, config.options)
@@ -275,11 +276,11 @@ def main(argv=None, namespace=None, check_new_version=True):
     except KeyboardInterrupt:
         sys.exit("\nInterrupted.")
     except UnavailableRelease, exc:
-        config.logger.error(str(exc)) if config else sys.exit(str(exc))
+        LOG.error(str(exc)) if config else sys.exit(str(exc))
         print formatted_valid_release_dates()
         sys.exit(1)
     except (MozRegressionError, RequestException) as exc:
-        config.logger.error(str(exc)) if config else sys.exit(str(exc))
+        LOG.error(str(exc)) if config else sys.exit(str(exc))
         sys.exit(1)
     finally:
         if app:

@@ -1,3 +1,4 @@
+import os
 import sys
 from setuptools import setup
 from mozregression import __version__
@@ -34,7 +35,6 @@ DEPENDENCIES = [
     'BeautifulSoup >= 3.0.4',
     'mozinstall >= 1.12',
     'mozinfo >= 0.8',
-    'mozlog >= 3.0',
     'mozversion >= 1.3',
     # require requests <= 2.7.0 because taskcluster needs it.
     # else there is install errors, see
@@ -46,6 +46,11 @@ DEPENDENCIES = [
     'colorama',
     'configobj',
 ]
+
+if os.name == 'nt':
+    DEPENDENCIES.append('colorlog[windows]')
+else:
+    DEPENDENCIES.append('colorlog')
 
 desc = """Regression range finder for Mozilla nightly builds"""
 long_desc = """Regression range finder for Mozilla nightly builds.

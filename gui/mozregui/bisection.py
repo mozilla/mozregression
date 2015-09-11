@@ -9,6 +9,7 @@ from mozregression.download_manager import BuildDownloadManager
 from mozregression.test_runner import TestRunner
 from mozregression.errors import MozRegressionError, LauncherError
 from mozregression.network import get_http_session
+from mozregression.persist_limit import PersistLimit
 
 from mozregui.ui.verdict import Ui_Verdict
 from mozregui.global_prefs import get_prefs, apply_prefs
@@ -22,10 +23,12 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
     download_started = Signal(object)
     download_finished = Signal(object, str)
 
-    def __init__(self, destdir, **kwargs):
+    def __init__(self, destdir, persist_limit, **kwargs):
         QObject.__init__(self)
+        persist_limit = PersistLimit(persist_limit)
         BuildDownloadManager.__init__(self, destdir,
                                       session=get_http_session(),
+                                      persist_limit=persist_limit,
                                       **kwargs)
 
     def _download_started(self, task):
@@ -100,10 +103,10 @@ class GuiBisector(QObject, Bisector):
     step_testing = Signal(object, object)
     step_finished = Signal(object, str)
 
-    def __init__(self, fetch_config, download_dir):
+    def __init__(self, fetch_config, download_dir, persist_limit):
         QObject.__init__(self)
         Bisector.__init__(self, fetch_config, GuiTestRunner(),
-                          GuiBuildDownloadManager(download_dir))
+                          GuiBuildDownloadManager(download_dir, persist_limit))
         self.bisection = None
         self.mid = None
         self.build_infos = None
@@ -252,11 +255,13 @@ class BisectRunner(QObject):
         apply_prefs(global_prefs)
 
         download_dir = global_prefs['persist']
+        persist_limit = int(abs(global_prefs['persist_size_limit'])
+                            * 1073741824)
         if not download_dir:
             download_dir = self.mainwindow.persist
 
         self.bisector = GuiBisector(fetch_config,
-                                    download_dir)
+                                    download_dir, persist_limit)
         # create a QThread, and move self.bisector in it. This will
         # allow to the self.bisector slots (connected after the move)
         # to be automatically called in the thread.

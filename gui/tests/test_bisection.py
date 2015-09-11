@@ -7,6 +7,7 @@ from mock import Mock, patch
 from . import wait_signal
 
 from mozregui import bisection
+from mozregression.persist_limit import PersistLimit
 
 
 def mock_session():
@@ -32,9 +33,10 @@ class TestGuiBuildDownloadManager(unittest.TestCase):
     def setUp(self):
         self.session, self.session_response = mock_session()
         tmpdir = tempfile.mkdtemp()
+        tpersist_size = PersistLimit(10 * 1073741824)
         self.addCleanup(shutil.rmtree, tmpdir)
         self.dl_manager = \
-            bisection.GuiBuildDownloadManager(tmpdir)
+            bisection.GuiBuildDownloadManager(tmpdir, tpersist_size)
         self.dl_manager.session = self.session
         self.signals = {}
         for sig in ('download_progress', 'download_started',

@@ -10,10 +10,7 @@ import os
 import mozinfo
 
 from configobj import ConfigObj, ParseError
-try:
-    import blessings
-except ImportError:
-    blessings = None
+from colorama import Fore, Style
 
 from mozregression.errors import MozRegressionError
 
@@ -118,8 +115,6 @@ CONF_HELP = """\
 
 
 def write_conf(conf_path):
-    term = blessings.Terminal() if blessings else None
-
     conf_dir = os.path.dirname(conf_path)
     if not os.path.isdir(conf_dir):
         os.makedirs(conf_dir)
@@ -139,7 +134,7 @@ def write_conf(conf_path):
         else:
             print '%s already defined.' % optname
             value = config[optname]
-        name = term.green(optname) if term else optname
+        name = Fore.GREEN + optname + Style.RESET_ALL
         print "%s: %s" % (name, value)
 
     _set_option('persist', _get_persist_dir,
@@ -152,7 +147,7 @@ def write_conf(conf_path):
 
     config.write()
 
-    conf_path_str = term.bold(conf_path) if term else conf_path
+    conf_path_str = Style.BRIGHT + conf_path + Style.RESET_ALL
     print
     print "Config file ", conf_path_str, " written."
     print ("Note you can edit it manually, and there are other options you can"

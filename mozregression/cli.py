@@ -21,10 +21,7 @@ import mozprofile
 
 from argparse import ArgumentParser, Action, SUPPRESS
 from mozlog.structured import commandline
-try:
-    import blessings
-except ImportError:
-    blessings = None
+from colorama import Style
 
 from mozregression import __version__
 from mozregression.config import get_defaults, DEFAULT_CONF_FNAME, write_conf
@@ -440,11 +437,10 @@ def cli(argv=None, conf_file=DEFAULT_CONF_FNAME, namespace=None):
         defaults = get_defaults(conf_file)
         options = parse_args(argv=argv, defaults=defaults)
     if conf_file and not os.path.isfile(conf_file):
-        term = blessings.Terminal() if blessings else None
-        print '*' * ((term and term.width) or 10)
+        print '*' * 10
         print ("You should use a config file. Please use the " +
-               (term.bold('--write-config') if term else '--write-config') +
+               Style.BRIGHT + '--write-config' + Style.RESET_ALL +
                " command line flag to help you create one.")
-        print '*' * ((term and term.width) or 10)
+        print '*' * 10
         print
     return Configuration(options)

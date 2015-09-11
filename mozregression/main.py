@@ -8,12 +8,14 @@
 Entry point for the mozregression command line.
 """
 
+import os
 import sys
 import requests
 import atexit
 import pipes
 import tempfile
 import mozfile
+import colorama
 
 from mozlog.structuredlog import get_default_logger
 from requests.exceptions import RequestException
@@ -245,6 +247,10 @@ def main(argv=None, namespace=None, check_new_version=True):
     """
     main entry point of mozregression command line.
     """
+    # terminal color support on windows
+    if os.name == 'nt':
+        colorama.init()
+
     if sys.version_info <= (2, 7, 9):
         # requests uses urllib3, and on python <= 2.7.9 there will be a lot
         # of warnings that we do not want. See

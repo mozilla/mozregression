@@ -20,6 +20,7 @@ from mozregui.global_prefs import change_prefs_dialog
 from mozregui.log_report import LogModel
 from mozregui.report_delegate import ReportItemDelegate
 from mozregui.check_release import CheckRelease
+from mozregui.crash_reporter import CrashReporter
 
 
 ABOUT_TEXT = """\
@@ -121,6 +122,8 @@ def main():
     logger.add_handler(log_model)
     argv = [sys.argv[0].replace("main.py", "mozregression")] + sys.argv[1:]
     app = QApplication(argv)
+    crash_reporter = CrashReporter(app)
+    crash_reporter.install()
     app.setOrganizationName('mozilla')
     app.setOrganizationDomain('mozilla.org')
     app.setApplicationName('mozregression-gui')

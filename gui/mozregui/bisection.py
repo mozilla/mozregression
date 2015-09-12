@@ -12,6 +12,7 @@ from mozregression.network import get_http_session
 
 from mozregui.ui.verdict import Ui_Verdict
 from mozregui.global_prefs import get_prefs, apply_prefs
+from mozregui.skip_chooser import SkipDialog
 
 Bisection.EXCEPTION = -1  # new possible value of bisection end
 
@@ -93,6 +94,7 @@ class GuiTestRunner(QObject, TestRunner):
 class GuiBisector(QObject, Bisector):
     started = Signal()
     finished = Signal(object, int)
+    choose_next_build = Signal()
     step_started = Signal(object)
     step_build_found = Signal(object, object)
     step_testing = Signal(object, object)
@@ -107,6 +109,7 @@ class GuiBisector(QObject, Bisector):
         self.build_infos = None
         self._bisect_args = None
         self.error = None
+        self._next_build_index = None
 
         self.download_manager.download_finished.connect(
             self._build_dl_finished)
@@ -152,12 +155,31 @@ class GuiBisector(QObject, Bisector):
     @Slot()
     def _bisect_next(self):
         # this is executed in the working thread
-        self.step_started.emit(self.bisection)
         try:
             self.mid = mid = self.bisection.search_mid_point()
         except MozRegressionError:
             self._finish_on_exception(self.bisection)
             return
+
+        # if our last answer was skip, and that the next build
+        # to use is not chosen yet, ask to choose it.
+        if (self._next_build_index is None and
+                self.test_runner.verdict == 's' and
+                len(self.bisection.build_range) > 3):
+            self.choose_next_build.emit()
+            return
+
+        if self._next_build_index is not None:
+            # here user asked for specific build (eg from choose_next_build)
+            self.mid = mid = self._next_build_index
+            # this will download build infos if required
+            if self.bisection.build_range[mid] is False:
+                # in case no build info is found, ask to choose again
+                self.choose_next_build.emit()
+                return
+            self._next_build_index = None
+
+        self.step_started.emit(self.bisection)
         result = self.bisection.init_handler(mid)
         if result != Bisection.RUNNING:
             self.finished.emit(self.bisection, result)
@@ -243,6 +265,7 @@ class BisectRunner(QObject):
         self.bisector.test_runner.evaluate_started.connect(
             self.evaluate)
         self.bisector.finished.connect(self.bisection_finished)
+        self.bisector.choose_next_build.connect(self.choose_next_build)
         self.bisector_created.emit(self.bisector)
         if options['bisect_type'] == 'nightlies':
             handler = NightlyHandler(find_fix=options['find_fix'])
@@ -314,6 +337,12 @@ class BisectRunner(QObject):
             )
             verdict = 's'
         self.bisector.test_runner.finish(verdict)
+
+    @Slot()
+    def choose_next_build(self):
+        dlg = SkipDialog(self.bisector.bisection.build_range)
+        self.bisector._next_build_index = dlg.choose_next_build()
+        QTimer.singleShot(0, self.bisector._bisect_next)
 
     @Slot(object, int)
     def bisection_finished(self, bisection, resultcode):

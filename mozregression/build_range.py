@@ -63,6 +63,10 @@ class BuildRange(object):
         self.build_info_fetcher = build_info_fetcher
         self._future_build_infos = future_build_infos
 
+    @property
+    def future_build_infos(self):
+        return self._future_build_infos
+
     def __len__(self):
         return len(self._future_build_infos)
 

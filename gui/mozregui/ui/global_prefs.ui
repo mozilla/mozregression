@@ -33,6 +33,26 @@
       <widget class="DirectorySelectWidget" name="persist" native="true"/>
      </item>
      <item row="1" column="0">
+         <widget class="QLabel" name="label">
+             <property name="toolTip">
+                 <string>Size limit of the persist directory, in GiB. 0 means no limit.</string>
+             </property>
+             <property name="text">
+                 <string>persist size limit:</string>
+             </property>
+         </widget>
+     </item>
+     <item row="1" column="1">
+         <widget class="QDoubleSpinBox" name="persist_size_limit">
+             <property name="minimum">
+                 <double>0.0</double>
+             </property>
+             <property name="maximum">
+                 <double>999.99</double>
+             </property>
+         </widget>
+     </item>
+     <item row="2" column="0">
       <widget class="QLabel" name="label_3">
        <property name="toolTip">
         <string>Timeout in seconds to abort requests when there is no activity from the server. Default to 30.0 seconds - increase this if you are under a really slow network.</string>
@@ -42,7 +62,7 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="2" column="1">
       <widget class="QDoubleSpinBox" name="http_timeout">
        <property name="minimum">
         <double>1.000000000000000</double>

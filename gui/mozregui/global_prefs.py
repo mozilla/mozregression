@@ -16,6 +16,7 @@ def get_prefs():
     options = dict()
     options['persist'] = settings['persist']
     options['http_timeout'] = float(settings['http-timeout'])
+    options['persist_size_limit'] = float(settings['persist-size-limit'])
     return options
 
 
@@ -24,6 +25,7 @@ def save_prefs(options):
     settings.update({
         'persist': options['persist'] or '',
         'http-timeout': options['http_timeout'],
+        'persist-size-limit': options['persist_size_limit']
     })
     settings.write()
 
@@ -48,8 +50,10 @@ def change_prefs_dialog(parent=None):
     options = get_prefs()
     ui.persist.line_edit.setText(options['persist'] or '')
     ui.http_timeout.setValue(options['http_timeout'])
+    ui.persist_size_limit.setValue(options['persist_size_limit'])
 
     if dlg.exec_() == QDialog.Accepted:
         options['persist'] = str(ui.persist.line_edit.text()) or None
         options['http_timeout'] = ui.http_timeout.value()
+        options['persist_size_limit'] = ui.persist_size_limit.value()
         save_prefs(options)

@@ -35,14 +35,14 @@ class TestManualTestRunner(unittest.TestCase):
     def test_nightly_create_launcher(self, create_launcher):
         launcher = Mock()
         create_launcher.return_value = launcher
-        result_launcher = self.runner.create_launcher(mockinfo(
+        info = mockinfo(
             build_type='nightly',
             app_name="firefox",
             build_file="/path/to"
-        ))
+        )
+        result_launcher = self.runner.create_launcher(info)
         create_launcher.\
-            assert_called_with('firefox',
-                               '/path/to')
+            assert_called_with(info)
 
         self.assertEqual(result_launcher, launcher)
 
@@ -51,13 +51,13 @@ class TestManualTestRunner(unittest.TestCase):
     def test_inbound_create_launcher(self, create_launcher, download):
         launcher = Mock()
         create_launcher.return_value = launcher
-        result_launcher = self.runner.create_launcher(mockinfo(
+        info = mockinfo(
             build_type='inbound',
             app_name="firefox",
             build_file="/path/to"
-        ))
-        create_launcher.assert_called_with('firefox',
-                                           '/path/to')
+        )
+        result_launcher = self.runner.create_launcher(info)
+        create_launcher.assert_called_with(info)
         self.assertEqual(result_launcher, launcher)
 
     @patch('__builtin__.raw_input')

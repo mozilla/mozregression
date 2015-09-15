@@ -40,8 +40,7 @@ class TestRunner(object):
                              % (build_info.build_date,
                                 build_info.short_changeset))
 
-        return create_launcher(build_info.app_name,
-                               build_info.build_file)
+        return create_launcher(build_info)
 
     def evaluate(self, build_info, allow_back=False):
         """

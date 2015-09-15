@@ -1,3 +1,4 @@
+import datetime
 from mozregression.errors import MozRegressionError
 from mozregression.network import retry_get
 
@@ -21,21 +22,25 @@ class JsonPushes(object):
             return base_url + (
                 'fromchange=%s&tochange=%s' % (fromchange, tochange))
 
-    def _request(self, url, check_changeset):
+    def _request(self, url, check_changeset=None):
+        if check_changeset:
+            check_msg = 'given changeset %r' % check_changeset
+        else:
+            check_msg = 'url'
         response = retry_get(url)
         if response.status_code == 404:
             raise MozRegressionError(
                 "The url %r returned a 404 error. Please check the"
-                " validity of the given changeset %r." %
-                (url, check_changeset)
+                " validity of the %s." %
+                (url, check_msg)
             )
         response.raise_for_status()
         pushlog = response.json()
         if not pushlog:
             raise MozRegressionError(
                 "The url %r contains no pushlog. Please check the"
-                " validity of the given changeset %r." %
-                (url, check_changeset)
+                " validity of the %s." %
+                (url, check_msg)
             )
         return pushlog
 
@@ -76,3 +81,24 @@ class JsonPushes(object):
         ))
         # sort pushlogs by date
         return sorted(chsets.itervalues(), key=lambda push: push['date'])
+
+    def revision_for_date(self, date, last=False):
+        """
+        Returns the revision that matches the given date.
+
+        This will return a single revision for the date. If 'last' is True, it
+        will use the last revision pushed on that date, otherwise it will
+        return the first revision pushed on that date.
+        """
+        enddate = date + datetime.timedelta(days=1)
+        url = '%s/json-pushes?startdate=%s&enddate=%s' % (
+            self.repo_url(),
+            date,
+            enddate.strftime('%Y-%m-%d'),
+        )
+        chsets = self._request(url)
+        sorted_pushids = sorted(chsets)
+        idx = -1 if last else 0
+        pushlog = chsets[sorted_pushids[idx]]
+        # The last changeset in the push is the head rev used for the build
+        return pushlog['changesets'][-1]

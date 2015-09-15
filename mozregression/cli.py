@@ -118,6 +118,14 @@ def create_parser(defaults):
                         help=("last known good revision (for inbound"
                               " bisection)."))
 
+    parser.add_argument("--taskcluster",
+                        help=("the Taskcluster build product/name/type,"
+                              " such as 'b2g.aries-opt'"))
+
+    parser.add_argument("--artifact-name",
+                        help=("the Taskcluster artifact name to look"
+                              " for, such as 'aries.zip'"))
+
     parser.add_argument("--find-fix", action="store_true",
                         help="Search for a bug fix instead of a regression.")
 
@@ -353,6 +361,41 @@ def check_inbounds(options, fetch_config, logger):
                                  " and --bad-rev must be set")
 
 
+def check_taskcluster(options, fetch_config, logger):
+    if not options.artifact_name:
+        raise MozRegressionError('--artifact-name is required for taskcluster'
+                                 ' regression finding')
+    if options.last_good_revision and options.first_bad_revision:
+        # If we have revisions, use those
+        check_inbounds(options, fetch_config, logger)
+        print "Using revs: %s - %s" % (
+            options.last_good_revision,
+            options.first_bad_revision,
+        )
+    else:
+        # If we don't have revisions, use the nightly-style date range and
+        # convert it into a good/bad rev.
+        check_nightlies(options, fetch_config, logger)
+
+        from mozregression.json_pushes import JsonPushes
+        jpushes = JsonPushes(branch=fetch_config.inbound_branch)
+        options.last_good_revision = jpushes.revision_for_date(
+            options.good_date
+        )
+        options.first_bad_revision = jpushes.revision_for_date(
+            options.bad_date,
+            last=True
+        )
+        print "Using good rev %s for date %s" % (
+            options.last_good_revision,
+            options.good_date
+        )
+        print "Using bad rev %s for date %s" % (
+            options.first_bad_revision,
+            options.bad_date
+        )
+
+
 class Configuration(object):
     """
     Holds the configuration extracted from the command line.
@@ -410,8 +453,14 @@ class Configuration(object):
             except DateFormatError:
                 self.action = "launch_inbound"
 
-        # bisect inbound if last good revision or first bad revision are set
+        elif options.taskcluster:
+            self.action = "bisect_inbounds"
+            check_taskcluster(options, fetch_config, self.logger)
+            fetch_config.set_build_type(options.taskcluster)
+            fetch_config.set_artifact_name(options.artifact_name)
         elif options.first_bad_revision or options.last_good_revision:
+            # bisect inbound if last good revision or first bad revision are
+            # set
             self.action = "bisect_inbounds"
             check_inbounds(options, fetch_config, self.logger)
         else:

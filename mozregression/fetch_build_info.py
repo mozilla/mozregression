@@ -166,7 +166,8 @@ class InboundInfoFetcher(InfoFetcher):
             build_url=data['build_url'],
             build_date=build_date,
             changeset=changeset,
-            repo_url=data.get('repository')
+            repo_url=data.get('repository'),
+            task_id=task_id,
         )
 
 

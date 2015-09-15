@@ -39,7 +39,7 @@ class Launcher(object):
         """
         pass
 
-    def __init__(self, dest):
+    def __init__(self, dest, **kwargs):
         self._running = False
         self._stopping = False
         self._logger = get_default_logger('Test Runner')
@@ -226,11 +226,14 @@ class MozRunnerLauncher(Launcher):
 REGISTRY = ClassRegistry('app_name')
 
 
-def create_launcher(name, dest):
+def create_launcher(buildinfo):
     """
-    Create and returns an instance launcher for the given name.
+    Create and returns an instance launcher for the given buildinfo.
     """
-    return REGISTRY.get(name)(dest)
+    return REGISTRY.get(buildinfo.app_name)(
+        buildinfo.build_file,
+        task_id=buildinfo.task_id
+    )
 
 
 @REGISTRY.register('firefox')
@@ -246,6 +249,31 @@ class ThunderbirdLauncher(MozRunnerLauncher):
 @REGISTRY.register('b2g')
 class B2GLauncher(MozRunnerLauncher):
     pass
+
+
+@REGISTRY.register('b2g-device')
+class B2GDeviceLauncher(Launcher):
+    def __init__(self, dest, **kwargs):
+        self.task_id = kwargs['task_id']
+        super(B2GDeviceLauncher, self).__init__(dest, **kwargs)
+
+    def _install(self, dest):
+        task_url = 'https://tools.taskcluster.net/task-inspector/#%s/0' % (
+            self.task_id,
+        )
+        print " TODO: Automatically download private artifacts (bug 1204109)"
+        print "*** Please install %s on your device and test it manually." % (
+            task_url,
+        )
+
+    def _start(self, **kwargs):
+        pass
+
+    def _stop(self, **kwargs):
+        pass
+
+    def get_app_info(self):
+        return {}
 
 
 @REGISTRY.register('fennec')

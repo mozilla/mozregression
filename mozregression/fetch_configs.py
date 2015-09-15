@@ -269,6 +269,25 @@ class B2GInboundConfigMixin(InboundConfigMixin):
         )
 
 
+class B2GDeviceConfigMixin(InboundConfigMixin):
+    inbound_branch = 'b2g-inbound'
+    artifact_name = None
+
+    def set_build_type(self, build_type):
+        self.build_type = build_type
+
+    def set_artifact_name(self, artifact_name):
+        self.artifact_name = artifact_name
+
+    def tk_inbound_route(self, changeset):
+        print "Querying inbound route: 'gecko.v2.{}.revision.{}.{}'".format(
+            self.inbound_branch, changeset, self.build_type,
+        )
+        return 'gecko.v2.{}.revision.{}.{}'.format(
+            self.inbound_branch, changeset, self.build_type,
+        )
+
+
 class FennecInboundConfigMixin(InboundConfigMixin):
     tk_name = 'android-api-11'
 
@@ -312,6 +331,16 @@ class B2GConfig(CommonConfig,
                 B2GNightlyConfigMixin,
                 B2GInboundConfigMixin):
     pass
+
+
+@REGISTRY.register('b2g-device')
+class B2GDeviceConfig(CommonConfig,
+                      B2GDeviceConfigMixin):
+    def build_regex(self):
+        return self.artifact_name
+
+    def set_nightly_repo(self, repo):
+        pass
 
 
 @REGISTRY.register('fennec')

@@ -23,7 +23,7 @@ class BuildInfo(object):
     :meth:`mozregression.fetch_build_info.FetchBuildInfo.find_build_info`.
     """
     def __init__(self, fetch_config, build_type, build_url, build_date,
-                 changeset, repo_url, repo_name):
+                 changeset, repo_url, repo_name, task_id=None):
         self._fetch_config = fetch_config
         self._build_type = build_type
         self._build_url = build_url
@@ -32,6 +32,7 @@ class BuildInfo(object):
         self._repo_url = repo_url
         self._repo_name = repo_name
         self._build_file = None
+        self._task_id = task_id
 
     @property
     @export
@@ -98,6 +99,14 @@ class BuildInfo(object):
         """
         return self._build_file
 
+    @property
+    @export
+    def task_id(self):
+        """
+        The task ID, for Taskcluster builds.
+        """
+        return self._task_id
+
     @build_file.setter
     def build_file(self, build_file):
         self._build_file = build_file
@@ -138,7 +147,8 @@ class NightlyBuildInfo(BuildInfo):
 
 class InboundBuildInfo(BuildInfo):
     def __init__(self, fetch_config, build_url, build_date, changeset,
-                 repo_url):
+                 repo_url, task_id=None):
         BuildInfo.__init__(self, fetch_config, 'inbound', build_url,
                            build_date, changeset, repo_url,
-                           fetch_config.inbound_branch)
+                           fetch_config.inbound_branch,
+                           task_id=task_id)

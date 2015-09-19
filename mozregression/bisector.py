@@ -312,6 +312,10 @@ class Bisection(object):
         is the dict of build infos for the build.
         """
         build_infos = self.handler.build_range[mid_point]
+        if build_infos.app_name == 'b2g-device':
+            # for now we don't have the rights to download b2g devices
+            # builds. Until this is fixed, do not even try to download
+            return mid_point, build_infos
         return self._download_build(mid_point, build_infos,
                                     allow_bg_download=allow_bg_download)
 

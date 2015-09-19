@@ -14,7 +14,6 @@ import datetime
 
 from threading import Thread
 from mozregression.errors import BuildInfoNotFound
-from mozregression.json_pushes import JsonPushes
 from mozregression.fetch_build_info import (InboundInfoFetcher,
                                             NightlyInfoFetcher)
 
@@ -150,8 +149,7 @@ def range_for_inbounds(fetch_config, start_rev, end_rev):
     """
     info_fetcher = InboundInfoFetcher(fetch_config)
 
-    pushlogs_finder = JsonPushes(branch=fetch_config.inbound_branch)
-    pushlogs = pushlogs_finder.pushlog_within_changes(start_rev, end_rev)
+    pushlogs = info_fetcher.jpushes.pushlog_within_changes(start_rev, end_rev)
 
     futures_builds = []
     for pushlog in pushlogs:

@@ -97,7 +97,7 @@ def test_index(range_creator):
 
 def test_range_for_inbounds(mocker):
     fetch_config = create_config('firefox', 'linux', 64)
-    jpush_class = mocker.patch('mozregression.build_range.JsonPushes')
+    jpush_class = mocker.patch('mozregression.fetch_build_info.JsonPushes')
     jpush = mocker.Mock(
         pushlog_within_changes=mocker.Mock(
             return_value=[{'changesets': ['a', 'b']},

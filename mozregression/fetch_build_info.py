@@ -17,6 +17,7 @@ from threading import Thread, Lock
 from mozregression.network import url_links, retry_get
 from mozregression.errors import BuildInfoNotFound, MozRegressionError
 from mozregression.build_info import NightlyBuildInfo, InboundBuildInfo
+from mozregression.json_pushes import JsonPushes
 
 # Fix intermittent bug due to strptime first call not being thread safe
 # see https://bugzilla.mozilla.org/show_bug.cgi?id=1200270
@@ -79,12 +80,11 @@ class InboundInfoFetcher(InfoFetcher):
         InfoFetcher.__init__(self, fetch_config)
         self.index = taskcluster.client.Index()
         self.queue = taskcluster.Queue()
+        self.jpushes = JsonPushes(branch=fetch_config.inbound_branch)
 
     def _check_changeset(self, changeset):
-        from mozregression.json_pushes import JsonPushes
-        jpushes = JsonPushes(branch=self.fetch_config.inbound_branch)
         # return the full changeset
-        return jpushes.pushlog_for_change(changeset)['changesets'][-1]
+        return self.jpushes.pushlog_for_change(changeset)['changesets'][-1]
 
     def find_build_info(self, changeset, fetch_txt_info=True,
                         check_changeset=False):
@@ -137,36 +137,27 @@ class InboundInfoFetcher(InfoFetcher):
             raise BuildInfoNotFound("Unable to find completed runs for task %s"
                                     % task_id)
         artifacts = self.queue.listArtifacts(task_id, run_id)['artifacts']
-        data = {}
 
         # look over the artifacts of that run
+        build_url = None
         for a in artifacts:
-            match = None
             name = os.path.basename(a['name'])
             if self.build_regex.search(name):
-                match = 'build_url'
-            elif self.build_info_regex.match(name):
-                match = 'build_txt_url'
-            if match:
-                data[match] = self.queue.buildUrl(
+                build_url = self.queue.buildUrl(
                     'getLatestArtifact',
                     task_id,
                     a['name']
                 )
-        if 'build_url' not in data:
+                break
+        if build_url is None:
             raise BuildInfoNotFound("unable to find a build url for the"
                                     " changeset %r" % changeset)
-        if fetch_txt_info:
-            self._update_build_info_from_txt(data)
-            # keep the most precise changeset.
-            if 'changeset' in data and len(data['changeset']) > changeset:
-                changeset = data['changeset']
         return InboundBuildInfo(
             self.fetch_config,
-            build_url=data['build_url'],
+            build_url=build_url,
             build_date=build_date,
             changeset=changeset,
-            repo_url=data.get('repository'),
+            repo_url=self.jpushes.repo_url(),
             task_id=task_id,
         )
 

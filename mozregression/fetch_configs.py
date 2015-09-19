@@ -280,9 +280,6 @@ class B2GDeviceConfigMixin(InboundConfigMixin):
         self.artifact_name = artifact_name
 
     def tk_inbound_route(self, changeset):
-        print "Querying inbound route: 'gecko.v2.{}.revision.{}.{}'".format(
-            self.inbound_branch, changeset, self.build_type,
-        )
         return 'gecko.v2.{}.revision.{}.{}'.format(
             self.inbound_branch, changeset, self.build_type,
         )

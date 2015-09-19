@@ -362,9 +362,10 @@ def check_inbounds(options, fetch_config, logger):
 
 
 def check_taskcluster(options, fetch_config, logger):
-    if not options.artifact_name:
-        raise MozRegressionError('--artifact-name is required for taskcluster'
-                                 ' regression finding')
+    if not options.taskcluster or not options.artifact_name:
+        raise MozRegressionError('--taskcluster and --artifact-name are'
+                                 ' required for taskcluster regression'
+                                 ' finding')
     if options.last_good_revision and options.first_bad_revision:
         # If we have revisions, use those
         check_inbounds(options, fetch_config, logger)
@@ -453,7 +454,7 @@ class Configuration(object):
             except DateFormatError:
                 self.action = "launch_inbound"
 
-        elif options.taskcluster:
+        elif fetch_config.app_name == 'b2g-device':
             self.action = "bisect_inbounds"
             check_taskcluster(options, fetch_config, self.logger)
             fetch_config.set_build_type(options.taskcluster)

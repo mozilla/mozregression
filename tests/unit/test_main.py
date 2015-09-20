@@ -139,16 +139,19 @@ def test_app_bisect_inbounds_finished(create_app, same_chsets):
 
 @pytest.mark.parametrize("argv,expected_log", [
     (['--app=firefox', '--bits=64'], "--app=firefox --bits=64"),
-    (['--persist=blah stuff'], "--persist='blah stuff'"),
-    (['--addon=a b c', '--addon=d'], "--addon='a b c' --addon=d"),
-    (['--find-fix', '--arg=a b'], "--find-fix --arg='a b'"),
+    (['--persist', 'blah stuff'], "--persist 'blah stuff'"),
+    (['--addon=a b c', '--addon=d'], "'--addon=a b c' --addon=d"),
+    (['--find-fix', '--arg=a b'], "--find-fix '--arg=a b'"),
     (['--inbound-branch=branch'], '--inbound-branch=branch'),
     (['--repo=branch'], '--repo=branch'),
-    (['--profile=pro file'], "--profile='pro file'"),
+    (['--profile=pro file'], "'--profile=pro file'"),
 ])
-def test_app_bisect_nightlies_user_exit(create_app, argv, expected_log):
+def test_app_bisect_nightlies_user_exit(create_app, argv, expected_log,
+                                        mocker):
     app = create_app(argv)
     app.bisector.bisect = Mock(return_value=Bisection.USER_EXIT)
+    sys = mocker.patch('mozregression.main.sys')
+    sys.argv = argv
     assert app.bisect_nightlies() == 0
     assert create_app.find_in_log("To resume, run:")
     assert create_app.find_in_log(expected_log, False)

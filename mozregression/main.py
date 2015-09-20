@@ -176,33 +176,35 @@ class Application(object):
             raise
 
     def _print_resume_info(self, handler):
+        # copy sys.argv, remove every --good/--bad related argument,
+        # then add our own
+        argv = sys.argv[:]
+        args = ('--good', '--bad', '-g', '-b', '--good-rev', '--bad-rev')
+        indexes_to_remove = []
+        for i, arg in enumerate(argv):
+            if i in indexes_to_remove:
+                continue
+            for karg in args:
+                if karg == arg:
+                    # handle '--good 2015-01-01'
+                    indexes_to_remove.extend((i, i+1))
+                    break
+                elif arg.startswith(karg + '='):
+                    # handle '--good=2015-01-01'
+                    indexes_to_remove.append(i)
+                    break
+        for i in reversed(indexes_to_remove):
+            del argv[i]
+
         if isinstance(handler, NightlyHandler):
-            info = '--good=%s --bad=%s' % (handler.good_date, handler.bad_date)
+            argv.append('--good=%s' % handler.good_date)
+            argv.append('--bad=%s' % handler.bad_date)
         else:
-            info = ('--good-rev=%s --bad-rev=%s'
-                    % (handler.good_revision, handler.bad_revision))
-        options = self.options
-        info += ' --app=%s' % options.app
-        if options.find_fix:
-            info += ' --find-fix'
-        if len(options.addons) > 0:
-            info += ' ' + ' '.join('--addon=%s' % pipes.quote(addon)
-                                   for addon in options.addons)
-        if options.cmdargs:
-            info += ' ' + ' '.join('--arg=%s' % pipes.quote(arg)
-                                   for arg in options.cmdargs)
-        if options.profile is not None:
-            info += ' --profile=%s' % pipes.quote(options.profile)
-        if options.inbound_branch is not None:
-            info += ' --inbound-branch=%s' % options.inbound_branch
-        if options.repo is not None:
-            info += ' --repo=%s' % options.repo
-        info += ' --bits=%s' % options.bits
-        if options.persist:
-            info += ' --persist=%s' % pipes.quote(options.persist)
+            argv.append('--good-rev=%s' % handler.good_revision)
+            argv.append('--bad-rev=%s' % handler.bad_revision)
 
         self._logger.info('To resume, run:')
-        self._logger.info('mozregression %s' % info)
+        self._logger.info(' '.join([pipes.quote(arg) for arg in argv]))
 
     def _on_exit_print_resume_info(self, handler):
         handler.print_range()

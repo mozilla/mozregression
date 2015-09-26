@@ -63,8 +63,12 @@ class IntroPage(WizardPage):
         self.bisect_model = QStringListModel()
         self.ui.bisect_combo.setModel(self.bisect_model)
         if mozinfo.bits == 64:
-            self.bits_model = QStringListModel(['32', '64'])
-            bits_index = 1
+            if mozinfo.os == 'mac':
+                self.bits_model = QStringListModel(['64'])
+                bits_index = 0
+            else:
+                self.bits_model = QStringListModel(['32', '64'])
+                bits_index = 1
         elif mozinfo.bits == 32:
             self.bits_model = QStringListModel(['32'])
             bits_index = 0

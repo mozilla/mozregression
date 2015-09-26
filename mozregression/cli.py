@@ -452,6 +452,10 @@ class Configuration(object):
             # inform users on windows that we are using 64 bit builds.
             self.logger.info("bits option not specified, using 64-bit builds.")
 
+        if options.bits == 32 and mozinfo.os == 'mac':
+            self.logger.info("only 64-bit builds available for mac, using \
+64-bit builds")
+
         if fetch_config.is_inbound():
             # this can be useful for both inbound and nightly, because we
             # can go to inbound from nightly.

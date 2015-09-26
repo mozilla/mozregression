@@ -222,10 +222,14 @@ class InboundConfigMixin(object):
     Define the inbound-related required configuration.
     """
     inbound_branch = 'mozilla-inbound'
+    branch_path = 'integration'
 
     def set_inbound_branch(self, inbound_branch):
         if inbound_branch:
             self.inbound_branch = inbound_branch
+
+    def set_branch_path(self, path):
+        self.branch_path = path
 
     def tk_inbound_route(self, changeset):
         """

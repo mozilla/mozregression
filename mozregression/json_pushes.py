@@ -12,7 +12,8 @@ class JsonPushes(object):
         self.branch = branch
 
     def repo_url(self):
-        return "https://hg.mozilla.org/%s/%s" % (self.path, self.branch)
+        path = '' if not self.path else (self.path + '/')
+        return "https://hg.mozilla.org/%s%s" % (path, self.branch)
 
     def json_pushes_url(self, changeset=None, fromchange=None, tochange=None):
         base_url = '%s/json-pushes?' % self.repo_url()

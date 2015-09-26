@@ -110,7 +110,8 @@ def test_range_for_inbounds(mocker):
 
     b_range = build_range.range_for_inbounds(fetch_config, 'a', 'e')
 
-    jpush_class.assert_called_once_with(branch='mozilla-inbound')
+    jpush_class.assert_called_once_with(branch='mozilla-inbound',
+                                        path='integration')
     jpush.pushlog_within_changes.assert_called_once_with('a', 'e')
     assert isinstance(b_range, build_range.BuildRange)
     assert len(b_range) == 3

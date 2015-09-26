@@ -80,7 +80,8 @@ class InboundInfoFetcher(InfoFetcher):
         InfoFetcher.__init__(self, fetch_config)
         self.index = taskcluster.client.Index()
         self.queue = taskcluster.Queue()
-        self.jpushes = JsonPushes(branch=fetch_config.inbound_branch)
+        self.jpushes = JsonPushes(branch=fetch_config.inbound_branch,
+                                  path=fetch_config.branch_path)
 
     def _check_changeset(self, changeset):
         # return the full changeset

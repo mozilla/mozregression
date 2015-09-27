@@ -5,6 +5,7 @@
 """
 The BuildInfo classes, that are used to store information a build.
 """
+from urlparse import urlparse
 
 
 FIELDS = []
@@ -129,6 +130,25 @@ class BuildInfo(object):
             self._changeset = app_info.get('application_changeset')
         if self._repo_url is None:
             self._repo_url = app_info.get('application_repository')
+
+    @property
+    def persist_filename(self):
+        """
+        Compute and return the persist filename to use to store this build.
+        """
+        if self.build_type == 'nightly':
+            prefix = str(self.build_date)
+        else:
+            prefix = str(self.changeset[:12])
+        persist_part = self._fetch_config.persist_part()
+        if persist_part:
+            persist_part = '-' + persist_part
+        return '{}{}--{}--{}'.format(
+            prefix,
+            persist_part,
+            self.repo_name,
+            urlparse(self.build_url).path.split('/')[-1]
+        )
 
     def to_dict(self):
         """

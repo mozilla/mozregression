@@ -106,6 +106,13 @@ class CommonConfig(object):
         """
         return (32, 64)
 
+    def persist_part(self):
+        """
+        Allow to add a part in the generated persist file name to distinguish
+        builds. Returns an empty string by default.
+        """
+        return ''
+
 
 class NightlyConfigMixin(object):
     """
@@ -342,6 +349,9 @@ class B2GDeviceConfig(CommonConfig,
 
     def set_nightly_repo(self, repo):
         pass
+
+    def persist_part(self):
+        return self.build_type
 
 
 @REGISTRY.register('fennec')

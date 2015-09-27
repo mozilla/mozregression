@@ -10,7 +10,6 @@ import shutil
 import os
 import time
 from mock import Mock, patch, ANY
-from datetime import date
 
 from mozregression import download_manager
 
@@ -271,21 +270,10 @@ class TestBuildDownloadManager(unittest.TestCase):
     def test__extract_download_info(self):
         url, fname = self.dl_manager._extract_download_info(Mock(**{
             'build_url': 'http://some/thing',
-            'build_type': 'nightly',
-            'build_date': date(2015, 01, 03),
-            'repo_name': 'my-repo',
+            'persist_filename': '2015-01-03--my-repo--thing'
         }))
         self.assertEquals(url, 'http://some/thing')
         self.assertEquals(fname, '2015-01-03--my-repo--thing')
-
-        url, fname = self.dl_manager._extract_download_info(Mock(**{
-            'build_url': 'http://some/thing',
-            'build_type': 'inbound',
-            'changeset': '47856a21491834da3ab9b308145caa8ec1b98ee1',
-            'repo_name': 'my-repo',
-        }))
-        self.assertEquals(url, 'http://some/thing')
-        self.assertEquals(fname, '47856a214918--my-repo--thing')
 
     @patch("mozregression.download_manager.BuildDownloadManager."
            "_extract_download_info")

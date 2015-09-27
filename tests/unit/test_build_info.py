@@ -92,3 +92,29 @@ def test_to_dict(klass):
     assert isinstance(dct, dict)
     assert 'app_name' in dct
     assert dct['app_name'] == 'firefox'
+
+
+@pytest.mark.parametrize('klass,extra,result', [
+    # build with defaults given in create_build_info
+    (build_info.NightlyBuildInfo,
+     {},
+     '2015-09-01--mozilla-central--url'),
+    # same but for inbound
+    (build_info.InboundBuildInfo,
+     {},
+     '12ab12ab12ab--mozilla-inbound--url'),
+    # now with a persist_part, and a build url like we have
+    # for b2g device builds (private build from taskcluster)
+    (build_info.InboundBuildInfo,
+     {'persist_part': 'opt.aries',
+      'build_url': ("https://queue.taskcluster.net/...build/aries.zip"
+                    "?bewit=bW9pXDE...ZTMwPQ==")},
+     '12ab12ab12ab-opt.aries--mozilla-inbound--aries.zip'),
+])
+def test_persist_filename(klass, extra, result):
+    persist_part = extra.pop('persist_part', None)
+    binfo = create_build_info(klass, **extra)
+    if persist_part:
+        # fake that the fetch config should return the persist_part
+        binfo._fetch_config.persist_part = lambda: persist_part
+    assert binfo.persist_filename == result

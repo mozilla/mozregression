@@ -78,8 +78,8 @@ def _get_persist_dir(default):
 def _get_persist_size_limit(default):
     print("You should choose a size limit for the persist dir. I recommend you"
           " to use %s GiB, so leave it blank to use that default. Else you"
-          " can set NONE to not limit the persist dir, or any custom value"
-          " you like." % default)
+          " can type NONE to not limit the persist dir, or any number you like"
+          " (a GiB value, so type 0.5 to allow ~500 MiB)." % default)
     value = raw_input('persist-size-limit: ')
     if value == "NONE":
         return 0.0

@@ -257,5 +257,24 @@ def test_tk_inbound_route(app, os, bits, expected):
     result = conf.tk_inbound_route(CHSET)
     assert result == expected
 
+
+def test_set_build_type():
+    conf = create_config('firefox', 'linux', 64)
+    assert conf.build_type == 'opt'  # default is opt
+    conf.set_build_type('debug')
+    assert conf.build_type == 'debug'
+
+
+def test_set_bad_build_type():
+    conf = create_config('firefox', 'linux', 64)
+    with pytest.raises(errors.MozRegressionError):
+        conf.set_build_type("wrong build type")
+
+
+def test_cant_set_debug_build_type_for_b2g():
+    conf = create_config('b2g', 'linux', 64)
+    with pytest.raises(errors.MozRegressionError):
+        conf.set_build_type("debug")
+
 if __name__ == '__main__':
     unittest.main()

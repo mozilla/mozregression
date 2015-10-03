@@ -138,9 +138,10 @@ class BuildInfo(object):
         """
         if self.build_type == 'nightly':
             prefix = str(self.build_date)
+            persist_part = ''
         else:
             prefix = str(self.changeset[:12])
-        persist_part = self._fetch_config.persist_part()
+            persist_part = self._fetch_config.inbound_persist_part()
         if persist_part:
             persist_part = '-' + persist_part
         return '{}{}--{}--{}'.format(

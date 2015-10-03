@@ -118,6 +118,13 @@ def create_parser(defaults):
                         help=("last known good revision (for inbound"
                               " bisection)."))
 
+    parser.add_argument("--build-type",
+                        choices=FC_REGISTRY.get('firefox').BUILD_TYPES,
+                        default=defaults["build-type"],
+                        help=("Build flavor. Note that on nightly, only opt"
+                              " is available most of the time. Defaults to"
+                              " %(default)s."))
+
     parser.add_argument("--taskcluster",
                         help=("the Taskcluster build product/name/type,"
                               " such as 'b2g.aries-opt'"))
@@ -443,6 +450,10 @@ class Configuration(object):
         user_defined_bits = options.bits is not None
         options.bits = parse_bits(options.bits or mozinfo.bits)
         fetch_config = create_config(options.app, mozinfo.os, options.bits)
+        try:
+            fetch_config.set_build_type(options.build_type)
+        except MozRegressionError as msg:
+            self.logger.warning(str(msg))
         self.fetch_config = fetch_config
 
         if not user_defined_bits and \

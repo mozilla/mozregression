@@ -116,5 +116,5 @@ def test_persist_filename(klass, extra, result):
     binfo = create_build_info(klass, **extra)
     if persist_part:
         # fake that the fetch config should return the persist_part
-        binfo._fetch_config.persist_part = lambda: persist_part
+        binfo._fetch_config.inbound_persist_part = lambda: persist_part
     assert binfo.persist_filename == result

@@ -65,13 +65,16 @@ class TestPreferences(unittest.TestCase):
 
 
 class TestCli(unittest.TestCase):
-
-    def test_get_erronous_cfg_defaults(self):
+    def _create_conf_file(self, content):
         handle, filepath = tempfile.mkstemp()
         self.addCleanup(os.unlink, filepath)
 
         with os.fdopen(handle, 'w') as conf_file:
-            conf_file.write('aaaaaaaaaaa [Defaults]\n')
+            conf_file.write(content)
+        return filepath
+
+    def test_get_erronous_cfg_defaults(self):
+        filepath = self._create_conf_file('aaaaaaaaaaa [Defaults]\n')
 
         with self.assertRaises(errors.MozRegressionError):
             cli.cli(conf_file=filepath)
@@ -81,18 +84,26 @@ class TestCli(unittest.TestCase):
                         'persist': '/home/foo/.mozregression',
                         'bits': '64'}
 
-        handle, filepath = tempfile.mkstemp()
-        self.addCleanup(os.unlink, filepath)
-
-        with os.fdopen(handle, 'w') as conf_file:
-            for key, value in valid_values.iteritems():
-                conf_file.write("%s=%s\n" % (key, value))
+        content = ["%s=%s\n" % (key, value)
+                   for key, value in valid_values.iteritems()]
+        filepath = self._create_conf_file('\n'.join(content))
 
         options = cli.cli(['--bits=32'], conf_file=filepath).options
 
         self.assertEqual(options.http_timeout, 10.2)
         self.assertEqual(options.persist, '/home/foo/.mozregression')
         self.assertEqual(options.bits, '32')
+
+    def test_warn_invalid_build_type_in_conf(self):
+        filepath = self._create_conf_file('build-type=foo\n')
+        conf = cli.cli([], conf_file=filepath)
+        warns = []
+        conf.logger.warning = warns.append
+        conf.validate()
+        self.assertIn(
+            'foo is not a valid build type (valid: opt, debug)',
+            warns
+        )
 
 
 def do_cli(*argv):

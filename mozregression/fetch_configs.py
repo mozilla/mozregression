@@ -63,15 +63,14 @@ def get_build_regex(name, os, bits, with_ext=True):
 class CommonConfig(object):
     """
     Define the configuration for both nightly and inbound fetching.
-
-    :attr name: the name of the application
     """
-
+    BUILD_TYPES = ('opt', 'debug')
     app_name = None
 
     def __init__(self, os, bits):
         self.os = os
         self.bits = bits
+        self.build_type = 'opt'
 
     def build_regex(self):
         """
@@ -106,12 +105,18 @@ class CommonConfig(object):
         """
         return (32, 64)
 
-    def persist_part(self):
+    def set_build_type(self, build_type):
         """
-        Allow to add a part in the generated persist file name to distinguish
-        builds. Returns an empty string by default.
+        Define the build type (opt, debug).
+
+        :raises: MozRegressionError in case it is not possible.
         """
-        return ''
+        if build_type not in self.BUILD_TYPES:
+            raise errors.MozRegressionError(
+                "%s is not a valid build type (valid: %s)"
+                % (build_type, ', '.join(self.BUILD_TYPES))
+            )
+        self.build_type = build_type
 
 
 class NightlyConfigMixin(object):
@@ -244,6 +249,14 @@ class InboundConfigMixin(object):
         """
         raise NotImplementedError
 
+    def inbound_persist_part(self):
+        """
+        Allow to add a part in the generated persist file name to distinguish
+        builds. Returns an empty string by default, or 'debug' if build type
+        is debug.
+        """
+        return 'debug' if self.build_type == 'debug' else ''
+
 
 def _common_tk_part(inbound_conf):
     # private method to avoid copy/paste for building taskcluster route part.
@@ -261,8 +274,9 @@ def _common_tk_part(inbound_conf):
 
 class FirefoxInboundConfigMixin(InboundConfigMixin):
     def tk_inbound_route(self, changeset):
-        return 'buildbot.revisions.{}.{}.{}'.format(
-            changeset, self.inbound_branch, _common_tk_part(self)
+        debug = '-debug' if self.build_type == 'debug' else ''
+        return 'buildbot.revisions.{}.{}.{}{}'.format(
+            changeset, self.inbound_branch, _common_tk_part(self), debug
         )
 
 
@@ -300,8 +314,9 @@ class FennecInboundConfigMixin(InboundConfigMixin):
     tk_name = 'android-api-11'
 
     def tk_inbound_route(self, changeset):
-        return 'buildbot.revisions.{}.{}.{}'.format(
-            changeset, self.inbound_branch, self.tk_name
+        debug = '-debug' if self.build_type == 'debug' else ''
+        return 'buildbot.revisions.{}.{}.{}{}'.format(
+            changeset, self.inbound_branch, self.tk_name, debug
         )
 
 # ------------ full config implementations ------------
@@ -338,7 +353,12 @@ class ThunderbirdConfig(CommonConfig,
 class B2GConfig(CommonConfig,
                 B2GNightlyConfigMixin,
                 B2GInboundConfigMixin):
-    pass
+    def set_build_type(self, build_type):
+        if build_type != 'opt':
+            raise errors.MozRegressionError(
+                "Unable to use the build type %s for b2g." % build_type
+            )
+        CommonConfig.set_build_type(self, build_type)
 
 
 @REGISTRY.register('b2g-device')
@@ -349,9 +369,6 @@ class B2GDeviceConfig(CommonConfig,
 
     def set_nightly_repo(self, repo):
         pass
-
-    def persist_part(self):
-        return self.build_type
 
 
 @REGISTRY.register('fennec')

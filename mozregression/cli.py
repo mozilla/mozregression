@@ -54,6 +54,16 @@ class WriteConfigAction(_StopAction):
         parser.exit()
 
 
+class ListBuildTypesAction(_StopAction):
+    def __call__(self, parser, namespace, values, option_string=None):
+        for name in FC_REGISTRY.names():
+            print("%s:" % name)
+            klass = FC_REGISTRY.get(name)
+            for btype in klass.BUILD_TYPES:
+                print("  %s" % btype.replace('-', ','))
+        parser.exit()
+
+
 def parse_args(argv=None, defaults=None):
     """
     Parse command line options.
@@ -75,6 +85,8 @@ def create_parser(defaults):
              " --bad-rev BAD_REV --good-rev GOOD_REV"
              "\n"
              " %(prog)s [OPTIONS] --launch DATE_OR_REV"
+             "\n"
+             " %(prog)s --list-build-types"
              "\n"
              " %(prog)s --list-releases"
              "\n"
@@ -118,20 +130,16 @@ def create_parser(defaults):
                         help=("last known good revision (for inbound"
                               " bisection)."))
 
-    parser.add_argument("--build-type",
-                        choices=FC_REGISTRY.get('firefox').BUILD_TYPES,
+    parser.add_argument("-B", "--build-type",
                         default=defaults["build-type"],
-                        help=("Build flavor. Note that on nightly, only opt"
-                              " is available most of the time. Defaults to"
-                              " %(default)s."))
+                        help=("Build flavor - should be a comma separated list"
+                              " of build options. Note that on nightly, only"
+                              " opt is available most of the time. See"
+                              " --list-build-types to see available values"
+                              ". Defaults to %(default)s."))
 
-    parser.add_argument("--taskcluster",
-                        help=("the Taskcluster build product/name/type,"
-                              " such as 'b2g.aries-opt'"))
-
-    parser.add_argument("--artifact-name",
-                        help=("the Taskcluster artifact name to look"
-                              " for, such as 'aries.zip'"))
+    parser.add_argument("--list-build-types", action=ListBuildTypesAction,
+                        help="List available build types combinations.")
 
     parser.add_argument("--find-fix", action="store_true",
                         help="Search for a bug fix instead of a regression.")
@@ -369,10 +377,6 @@ def check_inbounds(options, fetch_config, logger):
 
 
 def check_taskcluster(options, fetch_config, logger):
-    if not options.taskcluster or not options.artifact_name:
-        raise MozRegressionError('--taskcluster and --artifact-name are'
-                                 ' required for taskcluster regression'
-                                 ' finding')
     if options.repo and options.inbound_branch:
         raise MozRegressionError('unable to define both --repo and'
                                  ' --inbound-branch for b2g-device')
@@ -453,7 +457,9 @@ class Configuration(object):
         try:
             fetch_config.set_build_type(options.build_type)
         except MozRegressionError as msg:
-            self.logger.warning(str(msg))
+            self.logger.warning(
+                "%s (Defaulting to %r)" % (msg, fetch_config.build_type)
+            )
         self.fetch_config = fetch_config
 
         if not user_defined_bits and \
@@ -479,11 +485,9 @@ class Configuration(object):
             except DateFormatError:
                 self.action = "launch_inbound"
 
-        elif fetch_config.app_name == 'b2g-device':
+        elif fetch_config.is_b2g_device():
             self.action = "bisect_inbounds"
             check_taskcluster(options, fetch_config, self.logger)
-            fetch_config.set_build_type(options.taskcluster)
-            fetch_config.set_artifact_name(options.artifact_name)
         elif options.first_bad_revision or options.last_good_revision:
             # bisect inbound if last good revision or first bad revision are
             # set

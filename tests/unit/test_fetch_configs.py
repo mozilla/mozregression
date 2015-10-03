@@ -258,6 +258,29 @@ def test_tk_inbound_route(app, os, bits, expected):
     assert result == expected
 
 
+@pytest.mark.parametrize("app,os,bits,build_type,expected", [
+    # firefox
+    ("firefox", 'linux', 32, "debug",
+     'buildbot.revisions.%s.mozilla-inbound.linux-debug' % CHSET),
+    # b2g-aries
+    ("b2g-aries", None, None, "opt,eng",
+     'gecko.v2.b2g-inbound.revision.%s.b2g.aries-eng-opt' % CHSET),
+    # b2g-flame
+    ("b2g-flame", None, None, "opt,spark,eng",
+     'gecko.v2.b2g-inbound.revision.%s.b2g.flame-kk-spark-eng-opt' % CHSET),
+    ("b2g-flame", None, None, "opt,spark,eng,kk",  # allow kk
+     'gecko.v2.b2g-inbound.revision.%s.b2g.flame-kk-spark-eng-opt' % CHSET),
+    # b2g-emulator
+    ("b2g-emulator", None, None, "debug,jb",
+     'gecko.v2.b2g-inbound.revision.%s.b2g.emulator-jb-debug' % CHSET),
+])
+def test_tk_inbound_route_with_build_type(app, os, bits, build_type, expected):
+    conf = create_config(app, os, bits)
+    conf.set_build_type(build_type)
+    result = conf.tk_inbound_route(CHSET)
+    assert result == expected
+
+
 def test_set_build_type():
     conf = create_config('firefox', 'linux', 64)
     assert conf.build_type == 'opt'  # default is opt

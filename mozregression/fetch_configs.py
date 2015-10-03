@@ -60,11 +60,16 @@ def get_build_regex(name, os, bits, with_ext=True):
         return regex
 
 
+def _extract_build_type(build_type):
+    """Internal function to return a list from a build type string"""
+    return [t.strip() for t in build_type.split(',')]
+
+
 class CommonConfig(object):
     """
     Define the configuration for both nightly and inbound fetching.
     """
-    BUILD_TYPES = ('opt', 'debug')
+    BUILD_TYPES = ('opt',)  # only opt allowed by default
     app_name = None
 
     def __init__(self, os, bits):
@@ -107,16 +112,25 @@ class CommonConfig(object):
 
     def set_build_type(self, build_type):
         """
-        Define the build type (opt, debug).
+        Define the build types (opt, debug, eng, jb, asan...).
 
-        :raises: MozRegressionError in case it is not possible.
+        *build_type* should be a comma separated list of wanted build
+        flavors. Calling this method should store a *build_type*
+        instance attribute suitable for taskcluster.
+
+        :raises: MozRegressionError on error.
         """
-        if build_type not in self.BUILD_TYPES:
-            raise errors.MozRegressionError(
-                "%s is not a valid build type (valid: %s)"
-                % (build_type, ', '.join(self.BUILD_TYPES))
-            )
-        self.build_type = build_type
+        flavors = set(_extract_build_type(build_type))
+        for available in self.BUILD_TYPES:
+            if flavors == set(available.split('-')):
+                self.build_type = available
+                return
+        raise errors.MozRegressionError(
+            "Unable to find a suitable build type %r." % str(build_type)
+        )
+
+    def is_b2g_device(self):
+        return isinstance(self, B2GDeviceConfigMixin)
 
 
 class NightlyConfigMixin(object):
@@ -296,17 +310,11 @@ class B2GInboundConfigMixin(InboundConfigMixin):
 
 class B2GDeviceConfigMixin(InboundConfigMixin):
     inbound_branch = 'b2g-inbound'
-    artifact_name = None
-
-    def set_build_type(self, build_type):
-        self.build_type = build_type
-
-    def set_artifact_name(self, artifact_name):
-        self.artifact_name = artifact_name
+    device_name = None
 
     def tk_inbound_route(self, changeset):
-        return 'gecko.v2.{}.revision.{}.{}'.format(
-            self.inbound_branch, changeset, self.build_type,
+        return 'gecko.v2.{}.revision.{}.b2g.{}-{}'.format(
+            self.inbound_branch, changeset, self.device_name, self.build_type
         )
 
 
@@ -340,7 +348,7 @@ def create_config(name, os, bits):
 class FirefoxConfig(CommonConfig,
                     FireFoxNightlyConfigMixin,
                     FirefoxInboundConfigMixin):
-    pass
+    BUILD_TYPES = ('opt', 'debug')
 
 
 @REGISTRY.register('thunderbird')
@@ -353,22 +361,43 @@ class ThunderbirdConfig(CommonConfig,
 class B2GConfig(CommonConfig,
                 B2GNightlyConfigMixin,
                 B2GInboundConfigMixin):
-    def set_build_type(self, build_type):
-        if build_type != 'opt':
-            raise errors.MozRegressionError(
-                "Unable to use the build type %s for b2g." % build_type
-            )
-        CommonConfig.set_build_type(self, build_type)
+    pass
 
 
-@REGISTRY.register('b2g-device')
-class B2GDeviceConfig(CommonConfig,
-                      B2GDeviceConfigMixin):
+@REGISTRY.register('b2g-aries', attr_value='b2g-device')
+class B2GAriesConfig(CommonConfig,
+                     B2GDeviceConfigMixin):
+    BUILD_TYPES = ('opt', 'debug', 'eng-opt')
+    artifact_name = 'aries.zip'
+    device_name = 'aries'
+
     def build_regex(self):
         return self.artifact_name
 
     def set_nightly_repo(self, repo):
         pass
+
+
+@REGISTRY.register('b2g-flame', attr_value='b2g-device')
+class B2GFlameConfig(B2GAriesConfig):
+    BUILD_TYPES = ('opt', 'debug', 'eng-opt', 'spark-eng-opt')
+    artifact_name = 'flame-kk.zip'
+    device_name = 'flame-kk'
+
+    def set_build_type(self, build_type):
+        # remove kk in case people define it, but we only have kk builds
+        flavors = _extract_build_type(build_type)
+        if 'kk' in flavors:
+            flavors.remove('kk')
+        CommonConfig.set_build_type(self, ','.join(flavors))
+
+
+@REGISTRY.register('b2g-emulator', attr_value='b2g-device')
+class B2GEmulatorConfig(B2GAriesConfig):
+    BUILD_TYPES = ('opt', 'debug', 'jb-debug', 'jb-opt',
+                   'kk-debug', 'kk-opt', 'l-debug', 'l-opt')
+    artifact_name = 'emulator.tar.gz'
+    device_name = 'emulator'
 
 
 @REGISTRY.register('fennec')

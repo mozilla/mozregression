@@ -101,7 +101,8 @@ class TestCli(unittest.TestCase):
         conf.logger.warning = warns.append
         conf.validate()
         self.assertIn(
-            'foo is not a valid build type (valid: opt, debug)',
+            "Unable to find a suitable build type 'foo'."
+            " (Defaulting to 'opt')",
             warns
         )
 
@@ -121,6 +122,17 @@ def test_get_usage():
             do_cli('-h')
     assert exc.value.code == 0
     assert "usage:" in ''.join(output)
+
+
+def test_list_build_types(mocker):
+    output = []
+    with patch('sys.stdout') as stdout:
+        stdout.write.side_effect = output.append
+
+        with pytest.raises(SystemExit) as exc:
+            do_cli('--list-build-types')
+    assert exc.value.code == 0
+    assert "firefox:\n  opt" in ''.join(output)
 
 
 DEFAULTS_DATE = [

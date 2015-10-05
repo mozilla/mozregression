@@ -301,7 +301,7 @@ class FennecInboundConfigMixin(InboundConfigMixin):
 
     def tk_inbound_route(self, changeset):
         return 'buildbot.revisions.{}.{}.{}'.format(
-            changeset[:12], self.inbound_branch, self.tk_name
+            changeset, self.inbound_branch, self.tk_name
         )
 
 # ------------ full config implementations ------------

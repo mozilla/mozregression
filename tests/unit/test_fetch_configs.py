@@ -237,9 +237,9 @@ CHSET12 = "47856a214918"
      'buildbot.revisions.%s.mozilla-inbound.macosx64' % CHSET),
     # fennec
     ("fennec", None, None,
-     'buildbot.revisions.%s.mozilla-inbound.android-api-11' % CHSET12),
+     'buildbot.revisions.%s.mozilla-inbound.android-api-11' % CHSET),
     ("fennec-2.3", None, None,
-     'buildbot.revisions.%s.mozilla-inbound.android-api-9' % CHSET12),
+     'buildbot.revisions.%s.mozilla-inbound.android-api-9' % CHSET),
     # b2g
     ("b2g", 'linux', 32,
      'buildbot.revisions.%s.b2g-inbound.linux_gecko' % CHSET),

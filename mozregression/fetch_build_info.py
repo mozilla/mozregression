@@ -109,10 +109,13 @@ class InboundInfoFetcher(InfoFetcher):
         except TaskclusterFailure:
             # HACK because of
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1199618
+            # and https://bugzilla.mozilla.org/show_bug.cgi?id=1211251
             # TODO remove the if statement once these tasks no longer exists
             # (just raise BuildInfoNotFound)
             err = True
-            if self.fetch_config.app_name == 'firefox':
+            if self.fetch_config.app_name in ('firefox',
+                                              'fennec',
+                                              'fennec-2.3'):
                 err = False
                 try:
                     tk_route = tk_route.replace(changeset, changeset[:12])

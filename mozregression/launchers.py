@@ -14,7 +14,7 @@ from mozlog.structured import get_default_logger
 from mozprofile import FirefoxProfile, ThunderbirdProfile, Profile
 from mozrunner import Runner
 from mozfile import rmtree
-from mozdevice import ADBAndroid, ADBHost
+from mozdevice import ADBAndroid, ADBHost, ADBError
 import mozversion
 import mozinstall
 import tempfile
@@ -302,7 +302,14 @@ class FennecLauncher(Launcher):
         self.package_name = self.app_info.get("package_name",
                                               "org.mozilla.fennec")
         self.adb = ADBAndroid()
-        self.adb.uninstall_app(self.package_name)
+        try:
+            self.adb.uninstall_app(self.package_name)
+        except ADBError, msg:
+            self._logger.warning(
+                "Failed to uninstall %s (%s)\nThis is normal if it is the"
+                " first time the application is installed."
+                % (self.package_name, msg)
+            )
         self.adb.install_app(dest)
 
     def _start(self, profile=None, addons=(), cmdargs=(), preferences=None):

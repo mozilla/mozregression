@@ -10,7 +10,7 @@ install:
   - ps: (new-object net.webclient).DownloadFile('https://raw.github.com/pypa/pip/master/contrib/get-pip.py', 'C:/get-pip.py')
   - "%PYTHON%/python.exe C:/get-pip.py"
   # install PyQt4
-  - cinst pyqt4 -y
+  - cinst pyqt4 -y -x86
   # install mozregression code and test dependencies
   - "cd gui & %PYTHON%/Scripts/pip.exe install -r test-requirements.txt"
   - "cd .."

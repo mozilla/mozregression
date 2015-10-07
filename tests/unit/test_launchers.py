@@ -1,7 +1,7 @@
 from mozregression import launchers
 import unittest
 import os
-from mock import patch, Mock
+from mock import patch, Mock, ANY
 from mozprofile import Profile
 from mozregression.errors import LauncherNotRunnable, LauncherError
 
@@ -167,6 +167,8 @@ class TestFennecLauncher(unittest.TestCase):
     @patch('mozregression.launchers.ADBAndroid')
     def create_launcher(self, ADBAndroid, get_version, **kwargs):
         self.adb = Mock(test_root=self.test_root)
+        if kwargs.get('uninstall_error'):
+            self.adb.uninstall_app.side_effect = launchers.ADBError
         ADBAndroid.return_value = self.adb
         get_version.return_value = kwargs.get('version_value', {})
         return launchers.FennecLauncher('/binary')
@@ -211,6 +213,14 @@ class TestFennecLauncher(unittest.TestCase):
         )
         launcher.stop()
         self.adb.stop_application.assert_called_once_with(pkg_name)
+
+    @patch('mozregression.launchers.get_default_logger')
+    def test_adb_first_uninstall_fail(self, gdl):
+        logger = Mock()
+        gdl.return_value = logger
+        self.create_launcher(uninstall_error=True)
+        logger.warning.assert_called_once_with(ANY)
+        self.adb.install_app.assert_called_once_with(ANY)
 
     @patch('mozregression.launchers.ADBHost')
     @patch('__builtin__.raw_input')

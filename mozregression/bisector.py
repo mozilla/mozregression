@@ -87,10 +87,14 @@ class BisectorHandler(object):
         appropriate pushlog url.
         """
         words = self._reverse_if_find_fix('Last', 'First')
-        self._logger.info("%s good revision: %s" % (words[0],
-                                                    self.good_revision))
-        self._logger.info("%s bad revision: %s" % (words[1],
-                                                   self.bad_revision))
+        self._logger.info(
+            "%s good revision: %s (%s)" %
+            (words[0],
+             self.good_revision,
+             self.build_data.get_associated_data(0)))
+        self._logger.info("%s bad revision: %s (%s)" % (
+            words[1], self.bad_revision,
+            self.build_data.get_associated_data(-1)))
         self._logger.info("Pushlog:\n%s\n" % self.get_pushlog_url())
 
     def build_good(self, mid, new_data):

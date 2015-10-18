@@ -252,6 +252,10 @@ def create_parser(defaults):
                         help="Launch only one specific build by date (nightly)"
                              " or changeset (inbound).")
 
+    parser.add_argument('--launch-release',
+                        metavar="RELEASE_NUMBER",
+                        help="Launch one specified release by give release number.")
+
     parser.add_argument('--write-config',
                         action=WriteConfigAction,
                         help="Helps to write the configuration file.")
@@ -471,6 +475,10 @@ class Configuration(object):
             # this can be useful for both inbound and nightly, because we
             # can go to inbound from nightly.
             fetch_config.set_inbound_branch(options.inbound_branch)
+        # set action for specified release number to launch
+        if options.launch_release:
+            options.launch_release = parse_date(date_of_release(int(options.launch_release)))
+            self.action = "launch_nightlies"
         # set action for just use changset or data to bisect
         if options.launch:
             try:

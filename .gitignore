@@ -7,6 +7,7 @@ build/*
 .coverage
 htmlcov/
 mozregression.egg-info/
+.eggs/
 
 gui/build/
 gui/dist/

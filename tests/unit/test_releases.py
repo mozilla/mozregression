@@ -13,6 +13,8 @@ class TestRelease(unittest.TestCase):
         self.assertEquals(date, "2012-06-05")
         date = date_of_release(34)
         self.assertEquals(date, "2014-09-02")
+        date = date_of_release('33')
+        self.assertEquals(date, "2014-07-21")
 
     def test_valid_formatted_release_dates(self):
         formatted_output = formatted_valid_release_dates()
@@ -34,3 +36,5 @@ class TestRelease(unittest.TestCase):
             date_of_release(4)
         with self.assertRaises(errors.UnavailableRelease):
             date_of_release(441)
+        with self.assertRaises(errors.UnavailableRelease):
+            date_of_release('ew21rtw112')

@@ -9,13 +9,28 @@ This module implements a :class:`TestRunner` interface for testing builds
 and a default implementation :class:`ManualTestRunner`.
 """
 
-from mozlog.structured import get_default_logger
 import subprocess
 import shlex
 import os
+import logging
 
 from mozregression.launchers import create_launcher
 from mozregression.errors import TestCommandError, LauncherError
+
+LOG = logging.getLogger(__name__)
+
+
+def get_app_info(launcher):
+    app_info = launcher.get_app_info()
+    not_displayed = ('remotingname', 'id', 'changeset', 'vendor', 'name')
+    output = []
+    for key, value in app_info.iteritems():
+        if key.startswith('application_'):
+            name = key[12:]  # remove application_
+            if name not in not_displayed:
+                output.append('%s: "%s"' % (name, value))
+    LOG.info("APP_INFO: {%s}" % ', '.join(output))
+    return app_info
 
 
 class TestRunner(object):
@@ -24,21 +39,25 @@ class TestRunner(object):
 
     :meth:`evaluate` must be implemented by subclasses.
     """
-    def __init__(self):
-        self.logger = get_default_logger('Test Runner')
-
     def create_launcher(self, build_info):
         """
         Create and returns a :class:`mozregression.launchers.Launcher`.
         """
+        LOG.info("********** [TESTING]")
         if build_info.build_type == 'nightly':
-            self.logger.info("Running nightly for %s"
-                             % build_info.build_date)
+            LOG.info(
+                "Running nightly for %s (%s on %s)",
+                build_info.build_date,
+                build_info.short_changeset,
+                build_info.repo_name
+            )
         else:
-            self.logger.info("Testing inbound build built on %s,"
-                             " revision %s"
-                             % (build_info.build_date,
-                                build_info.short_changeset))
+            LOG.info(
+                "Running inbound for %s (%s on %s)",
+                build_info.build_date.strftime("%Y-%m-%d %H:%M:%S"),
+                build_info.short_changeset,
+                build_info.repo_name
+            )
 
         return create_launcher(build_info)
 
@@ -113,7 +132,7 @@ class ManualTestRunner(TestRunner):
     def evaluate(self, build_info, allow_back=False):
         with self.create_launcher(build_info) as launcher:
             launcher.start(**self.launcher_kwargs)
-            build_info.update_from_app_info(launcher.get_app_info())
+            build_info.update_from_app_info(get_app_info(launcher))
             verdict = self.get_verdict(build_info, allow_back)
             try:
                 launcher.stop()
@@ -122,12 +141,13 @@ class ManualTestRunner(TestRunner):
                 # already gave the verdict, so pass this "silently"
                 # (it would be logged from the launcher anyway)
                 launcher._running = False
+        LOG.info("********** [RESULT] %s", verdict)
         return verdict
 
     def run_once(self, build_info):
         with self.create_launcher(build_info) as launcher:
             launcher.start(**self.launcher_kwargs)
-            build_info.update_from_app_info(launcher.get_app_info())
+            build_info.update_from_app_info(get_app_info(launcher))
             return launcher.wait()
 
     def index_to_try_after_skip(self, build_range):
@@ -181,7 +201,7 @@ class CommandTestRunner(TestRunner):
 
     def evaluate(self, build_info, allow_back=False):
         with self.create_launcher(build_info) as launcher:
-            build_info.update_from_app_info(launcher.get_app_info())
+            build_info.update_from_app_info(get_app_info(launcher))
             variables = dict((k, str(v))
                              for k, v in build_info.to_dict().iteritems())
             if hasattr(launcher, 'binary'):
@@ -194,7 +214,7 @@ class CommandTestRunner(TestRunner):
                 command = self.command.format(**variables)
             except KeyError as exc:
                 _raise_command_error(exc, ' (formatting error)')
-            self.logger.info('Running test command: `%s`' % command)
+            LOG.info('Running test command: `%s`' % command)
             cmdlist = shlex.split(command)
             try:
                 retcode = subprocess.call(cmdlist, env=env)
@@ -204,8 +224,8 @@ class CommandTestRunner(TestRunner):
                 _raise_command_error(exc,
                                      " (%s not found or not executable)"
                                      % cmdlist[0])
-        self.logger.info('Test command result: %d (build is %s)'
-                         % (retcode, 'good' if retcode == 0 else 'bad'))
+        LOG.info('Test command result: %d (build is %s)',
+                 retcode, 'good' if retcode == 0 else 'bad')
         return 'g' if retcode == 0 else 'b'
 
     def run_once(self, build_info):

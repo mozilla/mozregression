@@ -13,22 +13,24 @@ application.
 """
 
 import os
-import sys
 import re
+import logging
 import mozinfo
 import datetime
 import mozprofile
 
 from argparse import ArgumentParser, Action, SUPPRESS
-from mozlog.structured import commandline
 from colorama import Style
 
 from mozregression import __version__
+from mozregression.log import setup_logging
 from mozregression.config import get_defaults, DEFAULT_CONF_FNAME, write_conf
 from mozregression.fetch_configs import REGISTRY as FC_REGISTRY, create_config
 from mozregression.errors import MozRegressionError, DateFormatError
 from mozregression.releases import (formatted_valid_release_dates,
                                     date_of_release)
+
+LOG = logging.getLogger(__name__)
 
 
 class _StopAction(Action):
@@ -264,10 +266,10 @@ def create_parser(defaults):
                         action=WriteConfigAction,
                         help="Helps to write the configuration file.")
 
-    commandline.add_logging_group(
-        parser,
-        include_formatters=commandline.TEXT_FORMATTERS
-    )
+    parser.add_argument("--log-level",
+                        choices=('info', 'debug'),
+                        default=defaults['log-level'],
+                        help=("Log output level. Defaults to %(default)s"))
     return parser
 
 
@@ -321,7 +323,7 @@ def preferences(prefs_files, prefs_args):
     return prefs()
 
 
-def check_nightlies(options, fetch_config, logger):
+def check_nightlies(options, fetch_config):
     default_bad_date = str(datetime.date.today())
     default_good_date = "2009-01-01"
     if mozinfo.os == 'win' and options.bits == 64:
@@ -335,25 +337,25 @@ def check_nightlies(options, fetch_config, logger):
     fetch_config.set_nightly_repo(options.repo)
     if not options.bad_release and not options.bad_date:
         options.bad_date = default_bad_date
-        logger.info("No 'bad' date specified, using %s" % options.bad_date)
+        LOG.info("No 'bad' date specified, using %s" % options.bad_date)
     elif options.bad_release and options.bad_date:
         raise MozRegressionError("Options '--bad-release' and '--bad'"
                                  " are incompatible.")
     elif options.bad_release:
         options.bad_date = date_of_release(options.bad_release)
-        logger.info("Using 'bad' date %s for release %s"
-                    % (options.bad_date, options.bad_release))
+        LOG.info("Using 'bad' date %s for release %s"
+                 % (options.bad_date, options.bad_release))
     if not options.good_release and not options.good_date:
         options.good_date = default_good_date
-        logger.info("No 'good' date specified, using %s"
-                    % options.good_date)
+        LOG.info("No 'good' date specified, using %s"
+                 % options.good_date)
     elif options.good_release and options.good_date:
         raise MozRegressionError("Options '--good-release' and '--good'"
                                  " are incompatible.")
     elif options.good_release:
         options.good_date = date_of_release(options.good_release)
-        logger.info("Using 'good' date %s for release %s"
-                    % (options.good_date, options.good_release))
+        LOG.info("Using 'good' date %s for release %s"
+                 % (options.good_date, options.good_release))
 
     options.good_date = good_date = parse_date(options.good_date)
     options.bad_date = bad_date = parse_date(options.bad_date)
@@ -367,7 +369,7 @@ def check_nightlies(options, fetch_config, logger):
                                   " in this case...") % (bad_date, good_date))
 
 
-def check_inbounds(options, fetch_config, logger):
+def check_inbounds(options, fetch_config):
     if not fetch_config.is_inbound():
         raise MozRegressionError('Unable to bisect inbound for `%s`'
                                  % fetch_config.app_name)
@@ -376,7 +378,7 @@ def check_inbounds(options, fetch_config, logger):
                                  " and --bad-rev must be set")
 
 
-def check_taskcluster(options, fetch_config, logger):
+def check_taskcluster(options, fetch_config):
     if options.repo and options.inbound_branch:
         raise MozRegressionError('unable to define both --repo and'
                                  ' --inbound-branch for b2g-device')
@@ -388,15 +390,14 @@ def check_taskcluster(options, fetch_config, logger):
         fetch_config.set_inbound_branch(options.repo)
     if options.last_good_revision and options.first_bad_revision:
         # If we have revisions, use those
-        check_inbounds(options, fetch_config, logger)
-        print "Using revs: %s - %s" % (
-            options.last_good_revision,
-            options.first_bad_revision,
-        )
+        check_inbounds(options, fetch_config)
+        LOG.info("Using revs: %s - %s",
+                 options.last_good_revision,
+                 options.first_bad_revision)
     else:
         # If we don't have revisions, use the nightly-style date range and
         # convert it into a good/bad rev.
-        check_nightlies(options, fetch_config, logger)
+        check_nightlies(options, fetch_config)
 
         from mozregression.json_pushes import JsonPushes
         jpushes = JsonPushes(branch=fetch_config.inbound_branch,
@@ -408,14 +409,12 @@ def check_taskcluster(options, fetch_config, logger):
             options.bad_date,
             last=True
         )
-        print "Using good rev %s for date %s" % (
-            options.last_good_revision,
-            options.good_date
-        )
-        print "Using bad rev %s for date %s" % (
-            options.first_bad_revision,
-            options.bad_date
-        )
+        LOG.info("Using good rev %s for date %s",
+                 options.last_good_revision,
+                 options.good_date)
+        LOG.info("Using bad rev %s for date %s",
+                 options.first_bad_revision,
+                 options.bad_date)
 
 
 class Configuration(object):
@@ -424,12 +423,8 @@ class Configuration(object):
 
     This is usually instantiated by calling :func:`cli`.
 
-    The constructor only initializes the `logger`.
+    The configuration should not be used until :meth:`validate` is called.
 
-    The configuration should not be used (except for the logger attribute)
-    until :meth:`validate` is called.
-
-    :attr logger: the mozlog logger, created using the command line options
     :attr options: the raw command line options
     :attr action: the action that the user want to do. This is a string
                   ("bisect_inbounds" or "bisect_nightlies")
@@ -438,9 +433,6 @@ class Configuration(object):
     """
     def __init__(self, options):
         self.options = options
-        self.logger = commandline.setup_logging("mozregression",
-                                                self.options,
-                                                {"mach": sys.stdout})
         self.action = None
         self.fetch_config = None
 
@@ -457,7 +449,7 @@ class Configuration(object):
         try:
             fetch_config.set_build_type(options.build_type)
         except MozRegressionError as msg:
-            self.logger.warning(
+            LOG.warning(
                 "%s (Defaulting to %r)" % (msg, fetch_config.build_type)
             )
         self.fetch_config = fetch_config
@@ -467,11 +459,11 @@ class Configuration(object):
                 mozinfo.os == 'win' and \
                 32 in fetch_config.available_bits():
             # inform users on windows that we are using 64 bit builds.
-            self.logger.info("bits option not specified, using 64-bit builds.")
+            LOG.info("bits option not specified, using 64-bit builds.")
 
         if options.bits == 32 and mozinfo.os == 'mac':
-            self.logger.info("only 64-bit builds available for mac, using "
-                             "64-bit builds")
+            LOG.info("only 64-bit builds available for mac, using "
+                     "64-bit builds")
 
         if fetch_config.is_inbound():
             # this can be useful for both inbound and nightly, because we
@@ -487,15 +479,15 @@ class Configuration(object):
 
         elif fetch_config.is_b2g_device():
             self.action = "bisect_inbounds"
-            check_taskcluster(options, fetch_config, self.logger)
+            check_taskcluster(options, fetch_config)
         elif options.first_bad_revision or options.last_good_revision:
             # bisect inbound if last good revision or first bad revision are
             # set
             self.action = "bisect_inbounds"
-            check_inbounds(options, fetch_config, self.logger)
+            check_inbounds(options, fetch_config)
         else:
             self.action = "bisect_nightlies"
-            check_nightlies(options, fetch_config, self.logger)
+            check_nightlies(options, fetch_config)
 
         options.preferences = preferences(options.prefs_files, options.prefs)
         # convert GiB to bytes.
@@ -515,6 +507,7 @@ def cli(argv=None, conf_file=DEFAULT_CONF_FNAME, namespace=None):
     else:
         defaults = get_defaults(conf_file)
         options = parse_args(argv=argv, defaults=defaults)
+    setup_logging(log_level=options.log_level)
     if conf_file and not os.path.isfile(conf_file):
         print '*' * 10
         print ("You should use a config file. Please use the " +

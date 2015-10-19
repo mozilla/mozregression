@@ -94,11 +94,12 @@ class TestCli(unittest.TestCase):
         self.assertEqual(options.persist, '/home/foo/.mozregression')
         self.assertEqual(options.bits, '32')
 
-    def test_warn_invalid_build_type_in_conf(self):
+    @patch("mozregression.cli.LOG")
+    def test_warn_invalid_build_type_in_conf(self, LOG):
         filepath = self._create_conf_file('build-type=foo\n')
         conf = cli.cli([], conf_file=filepath)
         warns = []
-        conf.logger.warning = warns.append
+        LOG.warning = warns.append
         conf.validate()
         self.assertIn(
             "Unable to find a suitable build type 'foo'."

@@ -7,11 +7,10 @@ import sys
 import mozregression
 import mozregui
 import mozfile
+import logging
 from tempfile import mkdtemp
 from PyQt4.QtGui import QApplication, QMainWindow, QMessageBox
 from PyQt4.QtCore import pyqtSlot as Slot, QSettings
-
-from mozlog.structuredlog import set_default_logger, StructuredLogger
 
 from mozregui.ui.mainwindow import Ui_MainWindow
 from mozregui.wizard import BisectionWizard
@@ -115,11 +114,11 @@ class MainWindow(QMainWindow):
 
 
 def main():
-    logger = StructuredLogger('mozregression-gui')
-    set_default_logger(logger)
-    # Create a Qt application
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
     log_model = LogModel()
-    logger.add_handler(log_model)
+    logger.addHandler(log_model)
+    # Create a Qt application
     argv = [sys.argv[0].replace("main.py", "mozregression")] + sys.argv[1:]
     app = QApplication(argv)
     crash_reporter = CrashReporter(app)
@@ -133,7 +132,7 @@ def main():
     app.aboutToQuit.connect(win.clear)
     release_checker = CheckRelease(win)
     release_checker.check()
-    log_model.log.connect(win.ui.log_view.on_log_received)
+    log_model.qlog.log.connect(win.ui.log_view.on_log_received)
     win.show()
     win.start_bisection_wizard()
     # Enter Qt application main loop

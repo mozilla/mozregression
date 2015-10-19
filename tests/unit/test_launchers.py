@@ -214,10 +214,8 @@ class TestFennecLauncher(unittest.TestCase):
         launcher.stop()
         self.adb.stop_application.assert_called_once_with(pkg_name)
 
-    @patch('mozregression.launchers.get_default_logger')
-    def test_adb_first_uninstall_fail(self, gdl):
-        logger = Mock()
-        gdl.return_value = logger
+    @patch('mozregression.launchers.LOG')
+    def test_adb_first_uninstall_fail(self, logger):
         self.create_launcher(uninstall_error=True)
         logger.warning.assert_called_once_with(ANY)
         self.adb.install_app.assert_called_once_with(ANY)

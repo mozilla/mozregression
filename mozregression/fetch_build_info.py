@@ -8,10 +8,10 @@ The public API is composed of two classes, :class:`NightlyInfoFetcher` and
 
 import os
 import re
+import logging
 import taskcluster
 from datetime import datetime
 from taskcluster.exceptions import TaskclusterFailure
-from mozlog.structuredlog import get_default_logger
 from threading import Thread, Lock
 
 from mozregression.network import url_links, retry_get
@@ -24,10 +24,11 @@ from mozregression.json_pushes import JsonPushes
 # and http://bugs.python.org/issue7980
 import _strptime  # noqa
 
+LOG = logging.getLogger(__name__)
+
 
 class InfoFetcher(object):
     def __init__(self, fetch_config):
-        self._logger = get_default_logger(__name__)
         self.fetch_config = fetch_config
         self.build_regex = re.compile(fetch_config.build_regex())
         self.build_info_regex = re.compile(fetch_config.build_info_regex())
@@ -104,7 +105,7 @@ class InboundInfoFetcher(InfoFetcher):
             except MozRegressionError, exc:
                 raise BuildInfoNotFound(str(exc))
         tk_route = self.fetch_config.tk_inbound_route(changeset)
-        self._logger.debug('using taskcluster route %r' % tk_route)
+        LOG.debug('using taskcluster route %r' % tk_route)
         try:
             task_id = self.index.findTask(tk_route)['taskId']
         except TaskclusterFailure:

@@ -86,7 +86,7 @@ class TestManualTestRunner(unittest.TestCase):
     @patch('mozregression.test_runner.ManualTestRunner.get_verdict')
     def test_evaluate(self, get_verdict, create_launcher):
         get_verdict.return_value = 'g'
-        launcher = Mock()
+        launcher = Mock(get_app_info=Mock(return_value={}))
         create_launcher.return_value = Launcher(launcher)
         build_infos = mockinfo()
         result = self.runner.evaluate(build_infos)
@@ -103,7 +103,8 @@ class TestManualTestRunner(unittest.TestCase):
     def test_evaluate_with_launcher_error_on_stop(self, get_verdict,
                                                   create_launcher):
         get_verdict.return_value = 'g'
-        launcher = Mock(stop=Mock(side_effect=errors.LauncherError))
+        launcher = Mock(stop=Mock(side_effect=errors.LauncherError),
+                        get_app_info=Mock(return_value={}))
         create_launcher.return_value = Launcher(launcher)
         build_infos = mockinfo()
         result = self.runner.evaluate(build_infos)
@@ -114,7 +115,8 @@ class TestManualTestRunner(unittest.TestCase):
 
     @patch('mozregression.test_runner.ManualTestRunner.create_launcher')
     def test_run_once(self, create_launcher):
-        launcher = Mock(wait=Mock(return_value=0))
+        launcher = Mock(wait=Mock(return_value=0),
+                        get_app_info=Mock(return_value={}))
         create_launcher.return_value = Launcher(launcher)
         build_infos = mockinfo()
         self.assertEqual(self.runner.run_once(build_infos), 0)
@@ -125,7 +127,8 @@ class TestManualTestRunner(unittest.TestCase):
 
     @patch('mozregression.test_runner.ManualTestRunner.create_launcher')
     def test_run_once_ctrlc(self, create_launcher):
-        launcher = Mock(wait=Mock(side_effect=KeyboardInterrupt))
+        launcher = Mock(wait=Mock(side_effect=KeyboardInterrupt),
+                        get_app_info=Mock(return_value={}))
         create_launcher.return_value = Launcher(launcher)
         build_infos = mockinfo()
         with self.assertRaises(KeyboardInterrupt):
@@ -139,7 +142,7 @@ class TestManualTestRunner(unittest.TestCase):
 class TestCommandTestRunner(unittest.TestCase):
     def setUp(self):
         self.runner = test_runner.CommandTestRunner('my command')
-        self.launcher = Mock()
+        self.launcher = Mock(get_app_info=Mock(return_value={}))
         del self.launcher.binary  # block the auto attr binary on the mock
 
     def test_create(self):

@@ -212,8 +212,8 @@ class TestDownloadManager(unittest.TestCase):
         self.assertEquals(self.dl_manager._downloads, {})
 
     def test_cancel(self):
-        dl1 = self.do_download('http://foo', 'foo', 'foo' * 500, wait=0.02)
-        dl2 = self.do_download('http://foo', 'bar', 'bar' * 500, wait=0.02)
+        dl1 = self.do_download('http://foo', 'foo', 'foo' * 50000, wait=0.02)
+        dl2 = self.do_download('http://foo', 'bar', 'bar' * 50000, wait=0.02)
         dl3 = self.do_download('http://foo', 'foobar', 'foobar' * 4)
 
         # let's cancel only one

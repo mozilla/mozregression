@@ -81,16 +81,17 @@ class BisectorHandler(object):
     def get_range(self):
         return self._reverse_if_find_fix(self.good_revision, self.bad_revision)
 
-    def print_range(self):
+    def print_range(self, full=True):
         """
         Log the state of the current state of the bisection process, with an
         appropriate pushlog url.
         """
-        words = self._reverse_if_find_fix('Last', 'First')
-        self._logger.info("%s good revision: %s" % (words[0],
-                                                    self.good_revision))
-        self._logger.info("%s bad revision: %s" % (words[1],
-                                                   self.bad_revision))
+        if full:
+            words = self._reverse_if_find_fix('Last', 'First')
+            self._logger.info("%s good revision: %s" % (words[0],
+                                                        self.good_revision))
+            self._logger.info("%s bad revision: %s" % (words[1],
+                                                       self.bad_revision))
         self._logger.info("Pushlog:\n%s\n" % self.get_pushlog_url())
 
     def build_good(self, mid, new_data):
@@ -170,18 +171,20 @@ class NightlyHandler(BisectorHandler):
     def get_date_range(self):
         return self._reverse_if_find_fix(self.good_date, self.bad_date)
 
-    def print_range(self):
+    def print_range(self, full=True):
         if self.found_repo is None:
             # this may happen if we are bisecting old builds without
             # enough tests of the builds.
             self._logger.error("Sorry, but mozregression was unable to get"
                                " a repository - no pushlog url available.")
             # still we can print date range
-            self._print_date_range()
+            if full:
+                self._print_date_range()
         elif self.are_revisions_available():
-            BisectorHandler.print_range(self)
+            BisectorHandler.print_range(self, full=full)
         else:
-            self._print_date_range()
+            if full:
+                self._print_date_range()
             self._logger.info("Pushlog:\n%s\n" % self.get_pushlog_url())
 
     def get_pushlog_url(self):
@@ -441,6 +444,7 @@ class Bisector(object):
             result = bisection.init_handler(index)
             if result != bisection.RUNNING:
                 return result
+            bisection.handler.print_range(full=False)
 
             allow_bg_download = True
             if previous_verdict == 's':

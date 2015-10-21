@@ -63,7 +63,7 @@ class TestNightlyInfoFetcher(unittest.TestCase):
             'bar/'
         ]
         urls = self.info_fetcher._get_urls(datetime.date(2014, 11, 01))
-        self.assertEqual(urls[0], 'https://archive.mozilla.org/pub/mozilla.org/\
+        self.assertEqual(urls[0], 'http://ftp-origin-scl3.mozilla.org/pub/\
 firefox/nightly/2014/11/2014-11-01-03-02-05-mozilla-central/')
         urls = self.info_fetcher._get_urls(datetime.date(2014, 11, 02))
         self.assertEqual(urls, [])

@@ -130,7 +130,7 @@ class NightlyConfigMixin(object):
         Returns the base part of the nightly build url for a given date.
         """
         return (
-            "https://archive.mozilla.org/pub/mozilla.org/%s/nightly/%04d/%02d/"
+            "http://ftp-origin-scl3.mozilla.org/pub/%s/nightly/%04d/%02d/"
             % (self.nightly_base_repo_name, date.year, date.month)
         )
 

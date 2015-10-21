@@ -58,7 +58,7 @@ class IntroPage(WizardPage):
         WizardPage.__init__(self)
         self.fetch_config = None
         self.app_model = QStringListModel([a for a in REGISTRY.names()
-                                           if a != 'b2g-device'])
+                                           if not a.startswith('b2g-')])
         self.ui.app_combo.setModel(self.app_model)
         self.bisect_model = QStringListModel()
         self.ui.bisect_combo.setModel(self.bisect_model)

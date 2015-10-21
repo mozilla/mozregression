@@ -33,6 +33,17 @@ class TestUrlLinks(unittest.TestCase):
             network.url_links('', regex="thing2.*"),
             ['thing2/'])
 
+    @patch('requests.get')
+    def test_url_with_absolute_links(self, get):
+        get.return_value = Mock(text="""
+        <body>
+        <a href="/useless/thing/">thing</a>
+        <a href="/useless/thing2">thing2</a>
+        </body>
+        """)
+        self.assertEquals(network.url_links(''),
+                          ['thing/', 'thing2'])
+
 
 def test_set_http_session():
     try:

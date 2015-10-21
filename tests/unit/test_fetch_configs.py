@@ -40,7 +40,7 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
     def test_get_nighly_base_url(self):
         base_url = self.conf.get_nighly_base_url(datetime.date(2008,
                                                                6, 27))
-        self.assertEqual(base_url, 'https://archive.mozilla.org/pub/mozilla.org/\
+        self.assertEqual(base_url, 'http://ftp-origin-scl3.mozilla.org/pub/\
 firefox/nightly/2008/06/')
 
     def test_nightly_repo_regex(self):

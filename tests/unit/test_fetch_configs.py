@@ -4,7 +4,7 @@ import re
 import pytest
 
 from mozregression.fetch_configs import (FirefoxConfig, create_config, errors,
-                                         get_build_regex)
+                                         get_build_regex, NIGHTLY_BASE_URL)
 
 
 class TestFirefoxConfigLinux64(unittest.TestCase):
@@ -40,8 +40,8 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
     def test_get_nighly_base_url(self):
         base_url = self.conf.get_nighly_base_url(datetime.date(2008,
                                                                6, 27))
-        self.assertEqual(base_url, 'http://ftp-origin-scl3.mozilla.org/pub/\
-firefox/nightly/2008/06/')
+        self.assertEqual(base_url,
+                         NIGHTLY_BASE_URL + '/firefox/nightly/2008/06/')
 
     def test_nightly_repo_regex(self):
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008,

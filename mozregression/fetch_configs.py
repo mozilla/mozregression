@@ -25,6 +25,9 @@ from mozregression.class_registry import ClassRegistry
 from mozregression import errors
 
 
+NIGHTLY_BASE_URL = "http://ftp-origin-scl3.mozilla.org/pub"
+
+
 def get_build_regex(name, os, bits, with_ext=True):
     """
     Returns a string regexp that can match a build filename.
@@ -129,10 +132,10 @@ class NightlyConfigMixin(object):
         """
         Returns the base part of the nightly build url for a given date.
         """
-        return (
-            "http://ftp-origin-scl3.mozilla.org/pub/%s/nightly/%04d/%02d/"
-            % (self.nightly_base_repo_name, date.year, date.month)
-        )
+        return "%s/%s/nightly/%04d/%02d/" % (NIGHTLY_BASE_URL,
+                                             self.nightly_base_repo_name,
+                                             date.year,
+                                             date.month)
 
     def set_nightly_repo(self, repo):
         """

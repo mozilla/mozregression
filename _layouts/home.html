@@ -4,7 +4,6 @@ layout: default
 <div class="home">
   {{ content }}
 
-  <br>
   <h3>Recent news:</h3>
   <ul class="post-list">
     {% for post in site.posts limit:3 %}
@@ -19,3 +18,48 @@ layout: default
     {% endfor %}
   </ul>
 </div>
+
+
+<br>
+<h3>Number of downloads for the gui version:</h3>
+<div id="downloads">
+</div>
+<br>
+
+<script>
+function createElement(tags) {
+  var tag = document.createElement('dl');
+  var template = '<dl>'
+  +  '<dd>linux: ' + tags.data.linux + '</dd>'
+  +  '<dd>windows: ' + tags.data.windows + '</dd>';
+  tag.innerHTML = template;
+  document.getElementById('downloads').appendChild(tag);
+}
+
+$.ajax({
+  url: "https://api.github.com/repos/mozilla/mozregression/releases"
+}).done(function(data1) {
+
+  var tags = { 'windows': 0, 'linux':0, 'osx':0 }
+
+  $.each(data1, function( index, tagData ){
+
+    $.each(tagData.assets, function( index, platformData ){
+      
+      var platformName = platformData.name;
+
+      if(platformName.match(/\.[0-9a-z]{1,5}$/g) == '.exe') {
+        tags['windows'] += platformData.download_count;
+      } else if (platformName.match(/.*\.(tgz$)|(tar\.gz$)/g) == 'tar.gz') {
+        tags['linux'] += platformData.download_count;
+      } else if (platformName.match(/\.[0-9a-z]{1,5}$/g) == '.dmg') {
+        tags['osx'] += platformData.download_count;
+      }
+      
+    });
+
+  });
+
+  createElement({data: tags});
+});
+</script>

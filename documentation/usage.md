@@ -70,16 +70,27 @@ Some useful command line usage.
 
        mozregression --command 'test-command {binary}'
 
+- Disable background download of next builds
+
+  Downloading next builds in background (while you are testing one build) is generally good as it
+  improves performance. Still you can disable this with:
+
+       mozregression --no-background-dl
+
 ## Network persistence
 
 - Use a folder to keep downloaded files
 
         mozregression --persist temp
 
-- Use a cache for http transfer (speeds up downloading the same builds a second time)
+- keep downloading files in background
 
-       mozregression --http-cache-dir cache
+  When download in background is enabled (the default), the background download that
+  is not used for testing is canceled. If you use the persist option and want to force
+  the full download of these files (to be able to use them later), then you can keep
+  these files by specifying a background download policy of keep:
 
+       mozregression --persist tmp/ --background-dl-policy keep
 
 ## Increase verbosity
 

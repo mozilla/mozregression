@@ -59,8 +59,8 @@ def date_of_release(release):
     Provide the date of a release.
     """
     try:
-        return releases()[release]
-    except KeyError:
+        return releases()[int(release)]
+    except (KeyError, ValueError):
         raise UnavailableRelease(release)
 
 

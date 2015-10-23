@@ -26,7 +26,8 @@ from colorama import Style
 from mozregression import __version__
 from mozregression.config import get_defaults, DEFAULT_CONF_FNAME, write_conf
 from mozregression.fetch_configs import REGISTRY as FC_REGISTRY, create_config
-from mozregression.errors import MozRegressionError, DateFormatError
+from mozregression.errors import (MozRegressionError, DateFormatError,
+                                  UnavailableRelease)
 from mozregression.releases import (formatted_valid_release_dates,
                                     date_of_release)
 
@@ -258,7 +259,8 @@ def create_parser(defaults):
     parser.add_argument('--launch',
                         metavar="DATE_OR_REV",
                         help="Launch only one specific build by date (nightly)"
-                             " or changeset (inbound).")
+                             " or changeset (inbound). You can also launch a"
+                             " release using a specific release number.")
 
     parser.add_argument('--write-config',
                         action=WriteConfigAction,
@@ -483,7 +485,12 @@ class Configuration(object):
                 options.launch = parse_date(options.launch)
                 self.action = "launch_nightlies"
             except DateFormatError:
-                self.action = "launch_inbound"
+                try:
+                    options.launch = parse_date(date_of_release(
+                        options.launch))
+                    self.action = "launch_nightlies"
+                except UnavailableRelease:
+                    self.action = "launch_inbound"
 
         elif fetch_config.is_b2g_device():
             self.action = "bisect_inbounds"

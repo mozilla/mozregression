@@ -193,6 +193,15 @@ def test_with_releases():
     assert str(conf.options.bad_date) == releases_data[-1][1]
 
 
+@pytest.mark.parametrize('arg', [
+    '--launch=34'
+])
+def test_launch_with_release_number(arg):
+    config = do_cli(arg)
+    assert config.action == 'launch_nightlies'
+    assert config.options.launch == cli.parse_date(releases()[34])
+
+
 def test_bad_date_later_than_good():
     with pytest.raises(errors.MozRegressionError) as exc:
         do_cli('--good=2015-01-01', '--bad=2015-01-10', '--find-fix')

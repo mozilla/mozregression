@@ -233,7 +233,7 @@ class BisectionWizard(QWizard):
             for fieldname in wizard_class.FIELDS:
                 value = self.field(fieldname).toPyObject()
                 if isinstance(value, QString):
-                    value = str(value)
+                    value = unicode(value)
                 elif isinstance(value, QDate):
                     value = value.toPyDate()
                 options[fieldname] = value

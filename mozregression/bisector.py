@@ -81,17 +81,20 @@ class BisectorHandler(object):
     def get_range(self):
         return self._reverse_if_find_fix(self.good_revision, self.bad_revision)
 
-    def print_range(self, full=True):
+    def print_range(self, good_date=None, bad_date=None, full=True):
         """
         Log the state of the current state of the bisection process, with an
         appropriate pushlog url.
         """
+        if good_date and bad_date:
+            good_date = '(%s)' % good_date
+            bad_date = '(%s)' % bad_date
         if full:
             words = self._reverse_if_find_fix('Last', 'First')
-            self._logger.info("%s good revision: %s" % (words[0],
-                                                        self.good_revision))
-            self._logger.info("%s bad revision: %s" % (words[1],
-                                                       self.bad_revision))
+            self._logger.info("%s good revision: %s %s" % (
+                words[0], self.good_revision, good_date if good_date else ''))
+            self._logger.info("%s bad revision: %s %s" % (
+                words[1], self.bad_revision, bad_date if bad_date else ''))
         self._logger.info("Pushlog:\n%s\n" % self.get_pushlog_url())
 
     def build_good(self, mid, new_data):
@@ -181,7 +184,8 @@ class NightlyHandler(BisectorHandler):
             if full:
                 self._print_date_range()
         elif self.are_revisions_available():
-            BisectorHandler.print_range(self, full=full)
+            BisectorHandler.print_range(self, self.good_date,
+                                        self.bad_date, full=full)
         else:
             if full:
                 self._print_date_range()

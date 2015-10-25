@@ -55,8 +55,8 @@ class TestBisectorHandler(unittest.TestCase):
         self.handler._logger = Mock(info=log.append)
 
         self.handler.print_range()
-        self.assertEqual(log[0], "Last good revision: 2")
-        self.assertEqual(log[1], "First bad revision: 6")
+        self.assertEqual(log[0], "Last good revision: 2 ")
+        self.assertEqual(log[1], "First bad revision: 6 ")
         self.assertIn(self.handler.get_pushlog_url(), log[2])
 
     @patch('mozregression.bisector.BisectorHandler._print_progress')
@@ -134,8 +134,8 @@ class TestNightlyHandler(unittest.TestCase):
         self.handler._logger = Mock(info=log.append)
 
         self.handler.print_range()
-        self.assertEqual(log[0], "Last good revision: 2")
-        self.assertEqual(log[1], "First bad revision: 6")
+        self.assertEqual(log[0], "Last good revision: 2 ")
+        self.assertEqual(log[1], "First bad revision: 6 ")
         self.assertIn(self.handler.get_pushlog_url(), log[2])
 
     def test_print_range_no_rev_availables(self):

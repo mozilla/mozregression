@@ -185,8 +185,20 @@ class InboundPage(WizardSelectionRangePage):
     SUBTITLE = "Select the inbound changesets range."
     FIELDS = {"start_changeset": "start_changeset",
               "end_changeset": "end_changeset",
+              "build_type": "build_type",
               "inbound_branch": "inbound_branch"}
     ID = 2
+
+    def __init__(self):
+        WizardPage.__init__(self)
+        self.build_type_model = QStringListModel()
+
+    def initializePage(self):
+        WizardSelectionRangePage.initializePage(self)
+        application_name = self.field('application').toPyObject()
+        self.build_type_model = QStringListModel(
+            [i for i in REGISTRY.get(str(application_name)).BUILD_TYPES])
+        self.ui.build_type.setModel(self.build_type_model)
 
     def nextId(self):
         return ProfilePage.ID
@@ -244,6 +256,8 @@ class BisectionWizard(QWizard):
         else:
             kind = "changeset"
             fetch_config.set_inbound_branch(options['inbound_branch'])
+        if options['build_type']:
+            fetch_config.set_build_type(options['build_type'])
         if options['find_fix'] is False:
             options['good_' + kind] = options.pop('start_' + kind)
             options['bad_' + kind] = options.pop('end_' + kind)

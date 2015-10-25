@@ -130,12 +130,14 @@ class TestNightlyHandler(unittest.TestCase):
         self.handler.found_repo = 'https://hg.mozilla.repo'
         self.handler.good_revision = '2'
         self.handler.bad_revision = '6'
+        self.handler.good_date = datetime.date(2015, 1, 1)
+        self.handler.bad_date = datetime.date(2015, 1, 2)
         log = []
         self.handler._logger = Mock(info=log.append)
 
         self.handler.print_range()
-        self.assertEqual(log[0], "Last good revision: 2")
-        self.assertEqual(log[1], "First bad revision: 6")
+        self.assertEqual(log[0], "Last good revision: 2 (2015-01-01)")
+        self.assertEqual(log[1], "First bad revision: 6 (2015-01-02)")
         self.assertIn(self.handler.get_pushlog_url(), log[2])
 
     def test_print_range_no_rev_availables(self):

@@ -36,13 +36,13 @@ DEPENDENCIES = [
     'mozinfo >= 0.8',
     'mozlog >= 3.0',
     'mozversion >= 1.3',
-    # require requests <= 2.7.0 because taskcluster needs it.
+    # require requests <3 because taskcluster needs it.
     # else there is install errors, see
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1212170
-    'requests>=2.4.3,<=2.7.0',
+    'requests>=2.4.3,<3',
     'redo',
     'mozdevice >= 0.46',
-    'taskcluster',
+    'taskcluster>=0.0.29',
     'colorama',
     'configobj',
 ]

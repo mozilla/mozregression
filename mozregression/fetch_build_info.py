@@ -78,8 +78,9 @@ class InfoFetcher(object):
 class InboundInfoFetcher(InfoFetcher):
     def __init__(self, fetch_config):
         InfoFetcher.__init__(self, fetch_config)
-        self.index = taskcluster.client.Index()
-        self.queue = taskcluster.Queue()
+        options = fetch_config.tk_options()
+        self.index = taskcluster.client.Index(options)
+        self.queue = taskcluster.Queue(options)
         self.jpushes = JsonPushes(branch=fetch_config.inbound_branch,
                                   path=fetch_config.branch_path)
 
@@ -147,9 +148,13 @@ class InboundInfoFetcher(InfoFetcher):
         for a in artifacts:
             name = os.path.basename(a['name'])
             if self.build_regex.search(name):
-                build_url = self.queue.buildUrl(
-                    'getLatestArtifact',
+                meth = self.queue.buildUrl
+                if self.fetch_config.tk_needs_auth():
+                    meth = self.queue.buildSignedUrl
+                build_url = meth(
+                    'getArtifact',
                     task_id,
+                    run_id,
                     a['name']
                 )
                 break

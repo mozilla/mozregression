@@ -106,6 +106,37 @@ class TestCli(unittest.TestCase):
             warns
         )
 
+    def test_missing_tk_credentials(self):
+        filepath = self._create_conf_file('app=b2g-aries\n')
+        conf = cli.cli([], conf_file=filepath)
+        with self.assertRaisesRegexp(
+                errors.MozRegressionError,
+                "taskcluster-clientid and taskcluster-accesstoken are"
+                " required"):
+            conf.validate()
+
+    @patch("mozregression.cli.get_defaults")
+    def test_with_tk_credentials(self, get_defaults):
+        from mozregression.config import DEFAULTS
+        values = dict(DEFAULTS)
+        values.update({
+            'app': 'b2g-aries',
+            'taskcluster-clientid': 'id1',
+            'taskcluster-accesstoken': 'mytoken',
+        })
+        get_defaults.return_value = values
+        filepath = self._create_conf_file(
+            '\n'.join('%s=%s' % (k, v) for k, v in values.items())
+        )
+        conf = cli.cli(['--good-rev=1', '--bad-rev=2'], conf_file=filepath)
+        conf.validate()
+        self.assertEquals(conf.fetch_config.tk_options(), {
+            'credentials': {
+                'accessToken': 'mytoken',
+                'clientId': 'id1'
+            }
+        })
+
 
 def do_cli(*argv):
     conf = cli.cli(argv, conf_file=None)

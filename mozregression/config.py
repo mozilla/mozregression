@@ -36,7 +36,9 @@ DEFAULTS = {
     'persist-size-limit': 0,
     'http-timeout': 30.0,
     'no-background-dl': '',
-    'background-dl-policy': 'cancel'
+    'background-dl-policy': 'cancel',
+    'taskcluster-clientid': None,
+    'taskcluster-accesstoken': None,
 }
 
 

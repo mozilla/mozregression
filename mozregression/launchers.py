@@ -253,18 +253,9 @@ class B2GLauncher(MozRunnerLauncher):
 
 @REGISTRY.register('b2g-device')
 class B2GDeviceLauncher(Launcher):
-    def __init__(self, dest, **kwargs):
-        self.task_id = kwargs['task_id']
-        super(B2GDeviceLauncher, self).__init__(dest, **kwargs)
-
     def _install(self, dest):
-        task_url = 'https://tools.taskcluster.net/task-inspector/#%s/0' % (
-            self.task_id,
-        )
-        print " TODO: Automatically download private artifacts (bug 1204109)"
-        print "*** Please install %s on your device and test it manually." % (
-            task_url,
-        )
+        print ("*** Please install %s on your device and test it manually."
+               % dest)
 
     def _start(self, **kwargs):
         pass

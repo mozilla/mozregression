@@ -388,6 +388,7 @@ def check_taskcluster(options, fetch_config, logger):
         # branch path.
         fetch_config.set_branch_path(None)
         fetch_config.set_inbound_branch(options.repo)
+
     if options.last_good_revision and options.first_bad_revision:
         # If we have revisions, use those
         check_inbounds(options, fetch_config, logger)
@@ -479,6 +480,21 @@ class Configuration(object):
             # this can be useful for both inbound and nightly, because we
             # can go to inbound from nightly.
             fetch_config.set_inbound_branch(options.inbound_branch)
+
+            if fetch_config.tk_needs_auth():
+                # re-read configuration to get taskcluster options
+                # TODO: address this to avoid re-reading the conf file
+                defaults = get_defaults(DEFAULT_CONF_FNAME)
+                client_id = defaults.get('taskcluster-clientid')
+                access_token = defaults.get('taskcluster-accesstoken')
+                if not (client_id and access_token):
+                    raise MozRegressionError(
+                        "taskcluster-clientid and taskcluster-accesstoken are"
+                        " required in the configuration file (%s) for %s"
+                        % (DEFAULT_CONF_FNAME, fetch_config.app_name)
+                    )
+                fetch_config.set_tk_credentials(client_id, access_token)
+
         # set action for just use changset or data to bisect
         if options.launch:
             try:

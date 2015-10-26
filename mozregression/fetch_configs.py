@@ -252,6 +252,8 @@ class InboundConfigMixin(object):
     """
     inbound_branch = 'mozilla-inbound'
     branch_path = 'integration'
+    _tk_client_id = None
+    _tk_access_token = None
 
     def set_inbound_branch(self, inbound_branch):
         if inbound_branch:
@@ -273,6 +275,34 @@ class InboundConfigMixin(object):
         is debug.
         """
         return 'debug' if self.build_type == 'debug' else ''
+
+    def tk_needs_auth(self):
+        """
+        Returns True if we need taskcluster credentials
+        """
+        return False
+
+    def set_tk_credentials(self, client_id, access_token):
+        """
+        Define the clientId and accessToken taskcluster credentials required
+        to download private builds.
+        """
+        self._tk_client_id = client_id
+        self._tk_access_token = access_token
+
+    def tk_options(self):
+        """
+        Returns the takcluster options, including the credentials required to
+        download private artifacts.
+        """
+        if not self.tk_needs_auth():
+            return None
+        return {
+            'credentials': {
+                'clientId': self._tk_client_id,
+                'accessToken': self._tk_access_token,
+            }
+        }
 
 
 def _common_tk_part(inbound_conf):
@@ -319,6 +349,9 @@ class B2GDeviceConfigMixin(InboundConfigMixin):
         return 'gecko.v2.{}.revision.{}.b2g.{}-{}'.format(
             self.inbound_branch, changeset, self.device_name, self.build_type
         )
+
+    def inbound_persist_part(self):
+        return self.build_type
 
 
 class FennecInboundConfigMixin(InboundConfigMixin):
@@ -380,6 +413,9 @@ class B2GAriesConfig(CommonConfig,
     def set_nightly_repo(self, repo):
         pass
 
+    def tk_needs_auth(self):
+        return True
+
 
 @REGISTRY.register('b2g-flame', attr_value='b2g-device')
 class B2GFlameConfig(B2GAriesConfig):
@@ -401,6 +437,9 @@ class B2GEmulatorConfig(B2GAriesConfig):
                    'kk-debug', 'kk-opt', 'l-debug', 'l-opt')
     artifact_name = 'emulator.tar.gz'
     device_name = 'emulator'
+
+    def tk_needs_auth(self):
+        return False
 
 
 @REGISTRY.register('fennec')

@@ -167,6 +167,7 @@ class Download(object):
                             temp.write(chunk)
                         bytes_so_far += len(chunk)
                         self._update_progress(bytes_so_far, total_size)
+            response.raise_for_status()
         except:
             self.__error = sys.exc_info()
         try:

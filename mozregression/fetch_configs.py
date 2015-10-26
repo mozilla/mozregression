@@ -25,7 +25,7 @@ from mozregression.class_registry import ClassRegistry
 from mozregression import errors
 
 
-NIGHTLY_BASE_URL = "http://ftp-origin-scl3.mozilla.org/pub"
+NIGHTLY_BASE_URL = "https://archive.mozilla.org/pub"
 
 
 def get_build_regex(name, os, bits, with_ext=True):

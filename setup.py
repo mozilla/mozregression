@@ -30,10 +30,10 @@ if sys.version_info < (2, 7) or sys.version_info > (3, 0):
 DEPENDENCIES = [
     'mozfile >= 1.2',
     'mozprofile >= 0.26',
-    'mozrunner >= 6.8',
+    'mozrunner >= 6.11',
     'BeautifulSoup >= 3.0.4',
     'mozinstall >= 1.12',
-    'mozinfo >= 0.8',
+    'mozinfo >= 0.9',
     'mozlog >= 3.0',
     'mozversion >= 1.3',
     # require requests <3 because taskcluster needs it.

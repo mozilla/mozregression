@@ -127,6 +127,8 @@ class Launcher(object):
     def create_profile(cls, profile=None, addons=(), preferences=None,
                        clone=True):
         if profile:
+            if not os.path.exists(profile):
+                os.makedirs(profile)
             if clone:
                 # mozprofile makes some changes in the profile that can not
                 # be undone. Let's clone the profile to not have side effect

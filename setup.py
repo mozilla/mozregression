@@ -41,7 +41,7 @@ DEPENDENCIES = [
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1212170
     'requests>=2.4.3,<3',
     'redo',
-    'mozdevice >= 0.46',
+    'mozdevice >= 0.47',
     'taskcluster>=0.0.29',
     'colorama',
     'configobj',

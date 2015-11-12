@@ -382,7 +382,6 @@ def check_taskcluster(options, fetch_config, logger):
         # if repo is defined, use that to bisect using taskcluster,
         # ie the "inbound way" for now. Just remove the "integration"
         # branch path.
-        fetch_config.set_branch_path(None)
         fetch_config.set_inbound_branch(options.repo)
 
     if options.last_good_revision and options.first_bad_revision:
@@ -398,8 +397,7 @@ def check_taskcluster(options, fetch_config, logger):
         check_nightlies(options, fetch_config, logger)
 
         from mozregression.json_pushes import JsonPushes
-        jpushes = JsonPushes(branch=fetch_config.inbound_branch,
-                             path=fetch_config.branch_path)
+        jpushes = JsonPushes(branch=fetch_config.inbound_branch)
         options.last_good_revision = jpushes.revision_for_date(
             options.good_date
         )

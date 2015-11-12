@@ -81,8 +81,7 @@ class InboundInfoFetcher(InfoFetcher):
         options = fetch_config.tk_options()
         self.index = taskcluster.client.Index(options)
         self.queue = taskcluster.Queue(options)
-        self.jpushes = JsonPushes(branch=fetch_config.inbound_branch,
-                                  path=fetch_config.branch_path)
+        self.jpushes = JsonPushes(branch=fetch_config.inbound_branch)
 
     def _check_changeset(self, changeset):
         # return the full changeset

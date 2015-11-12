@@ -22,7 +22,7 @@ an instance of :class:`ClassRegistry`. Example: ::
 import datetime
 
 from mozregression.class_registry import ClassRegistry
-from mozregression import errors
+from mozregression import errors, branches
 
 
 NIGHTLY_BASE_URL = "https://archive.mozilla.org/pub"
@@ -170,7 +170,7 @@ class NightlyConfigMixin(object):
         If None, :meth:`_get_nightly_repo` will be called to return a value
         when :meth:`get_nightly_repo` is called.
         """
-        self.nightly_repo = repo
+        self.nightly_repo = branches.get_name(repo) if repo else None
 
     def get_nightly_repo(self, date):
         """
@@ -266,16 +266,12 @@ class InboundConfigMixin(object):
     Define the inbound-related required configuration.
     """
     inbound_branch = 'mozilla-inbound'
-    branch_path = 'integration'
     _tk_client_id = None
     _tk_access_token = None
 
     def set_inbound_branch(self, inbound_branch):
         if inbound_branch:
-            self.inbound_branch = inbound_branch
-
-    def set_branch_path(self, path):
-        self.branch_path = path
+            self.inbound_branch = branches.get_name(inbound_branch)
 
     def tk_inbound_route(self, changeset):
         """

@@ -1,19 +1,19 @@
 import datetime
 from mozregression.errors import MozRegressionError
 from mozregression.network import retry_get
+from mozregression import branches
 
 
 class JsonPushes(object):
     """
     Find pushlog json objects from a mozilla hg json-pushes api.
     """
-    def __init__(self, path='integration', branch='mozilla-inbound'):
-        self.path = path
+    def __init__(self, branch='mozilla-inbound'):
         self.branch = branch
+        self._repo_url = branches.get_url(branch)
 
     def repo_url(self):
-        path = '' if not self.path else (self.path + '/')
-        return "https://hg.mozilla.org/%s%s" % (path, self.branch)
+        return self._repo_url
 
     def json_pushes_url(self, changeset=None, fromchange=None, tochange=None):
         base_url = '%s/json-pushes?' % self.repo_url()

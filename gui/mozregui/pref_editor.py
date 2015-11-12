@@ -30,13 +30,16 @@ class PreferencesModel(QAbstractTableModel):
             if index.column() == 0:
                 return name
             else:
-                return repr(value)
+                if isinstance(value, basestring):
+                    return '"' + value + '"'
+                else:
+                    return value
 
     def flags(self, index):
         return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
 
     def setData(self, index, new_value, role=Qt.EditRole):
-        new_value = str(new_value.toString())
+        new_value = unicode(new_value.toString())
         name, value = self.prefs[index.row()]
         if index.column() == 0:
             # change pref name

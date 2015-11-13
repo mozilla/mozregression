@@ -203,10 +203,9 @@ class NightlyConfigMixin(object):
 
     def can_go_inbound(self):
         """
-        Indicate if we can bissect inbound from this nightly config.
+        Indicate if we can bisect inbound from this nightly config.
         """
-        # we can go on inbound if no nightly repo has been specified.
-        return self.is_inbound() and not self.nightly_repo
+        return self.is_inbound()
 
 
 class FireFoxNightlyConfigMixin(NightlyConfigMixin):

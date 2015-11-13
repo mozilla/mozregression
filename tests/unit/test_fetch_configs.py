@@ -68,9 +68,6 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
 
     def test_can_go_inbound(self):
         self.assertTrue(self.conf.can_go_inbound())
-        # if nightly_repo is set, we can not bissect inbound
-        self.conf.set_nightly_repo('foo-bar')
-        self.assertFalse(self.conf.can_go_inbound())
 
 
 class TestFirefoxConfigLinux32(TestFirefoxConfigLinux64):

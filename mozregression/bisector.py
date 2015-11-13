@@ -12,6 +12,8 @@ from mozregression.dates import to_datetime
 from mozregression.build_range import range_for_inbounds, range_for_nightlies
 from mozregression.errors import MozRegressionError, LauncherError
 from mozregression.history import BisectionHistory
+from mozregression.branches import find_branch_in_merge_commit
+from mozregression.json_pushes import JsonPushes
 
 
 def compute_steps_left(steps):
@@ -205,6 +207,7 @@ class NightlyHandler(BisectorHandler):
             return ("%s/pushloghtml?startdate=%s&enddate=%s\n"
                     % (self.found_repo, start, end))
 
+    # TODO: get rid of that method when GUI will use handle_merge
     def find_inbound_changesets(self, days_required=4):
         self._logger.info("... attempting to bisect inbound builds (starting"
                           " from %d days prior, to make sure no inbound"
@@ -275,6 +278,54 @@ class InboundHandler(BisectorHandler):
                           % (words[0], self.good_revision))
         self._logger.info('%s known bad inbound revision: %s'
                           % (words[1], self.bad_revision))
+
+    def handle_merge(self):
+        # let's check if we are facing a merge, and in that case,
+        # continue the bisection from the merged branch.
+        result = None
+
+        self._logger.debug("Starting merge handling...")
+        # so, we have to check the commit of the interesting push
+        # that is the most recent push
+        interesting_push = self.build_range[1]
+        jp = JsonPushes(interesting_push.repo_name)
+        push = jp.pushlog_for_change(interesting_push.changeset, full='1')
+        msg = push['changesets'][-1]['desc']
+        self._logger.debug("Found commit message:\n%s\n" % msg)
+        branch = find_branch_in_merge_commit(msg)
+        if branch and len(push['changesets']) >= 2:
+            # so, this is a merge. We can find the oldest and youngest
+            # changesets, and the branch where the merge comes from.
+            oldest = push['changesets'][0]['node']
+            # exclude the merge commit
+            youngest = push['changesets'][-2]['node']
+            self._logger.debug("This is a merge from %s" % branch)
+
+            # we can't use directly the youngest changeset because we
+            # don't know yet if it is good.
+            #
+            # PUSH1    PUSH2
+            # [1 2] [3 4 5 6 7]
+            #    G    MERGE  B
+            #
+            # so first, grab it. This needs to be done on the right branch.
+            jp2 = JsonPushes(branch)
+            raw = [int(i) for i in
+                   jp2.pushlog_within_changes(oldest, youngest, raw=True)]
+            data = jp2._request(jp2.json_pushes_url(
+                startID=str(min(raw) - 2),
+                endID=str(max(raw)),
+            ))
+            datakeys = [int(i) for i in data]
+            oldest = data[str(min(datakeys))]["changesets"][0]
+            youngest = data[str(max(datakeys))]["changesets"][-1]
+
+            # we are ready to bisect further
+            self._logger.info("************* Switching to %s" % branch)
+            gr, br = self._reverse_if_find_fix(oldest, youngest)
+            result = (branch, gr, br)
+        self._logger.debug('End merge handling')
+        return result
 
 
 class Bisection(object):

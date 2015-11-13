@@ -117,17 +117,11 @@ class Application(object):
             self._logger.info("Got as far as we can go bisecting nightlies...")
             handler.print_range()
             if self.fetch_config.can_go_inbound():
-                good_rev, bad_rev = handler.find_inbound_changesets()
-                return self._bisect_inbounds(good_rev, bad_rev)
-            else:
-                message = ("Can not bisect inbound for application `%s`"
-                           % self.fetch_config.app_name)
-                if self.fetch_config.is_inbound():
-                    # the config is able to bissect inbound but not
-                    # for this repo.
-                    message += (" because the repo `%s` was specified"
-                                % self.options.repo)
-                self._logger.info(message + '.')
+                self._logger.info("Switching bisection method to taskcluster")
+                self.fetch_config.set_inbound_branch(
+                    self.fetch_config.get_nightly_repo(handler.bad_date))
+                return self._bisect_inbounds(handler.good_revision,
+                                             handler.bad_revision)
         elif result == Bisection.USER_EXIT:
             self._print_resume_info(handler)
         else:
@@ -155,6 +149,13 @@ class Application(object):
                     "It seems that you used two changesets that are in"
                     " in the same push. Check the pushlog url."
                 )
+            elif len(handler.build_range) == 2:
+                # range reduced to 2 pushes: one good, one bad.
+                result = handler.handle_merge()
+                if result:
+                    branch, good_rev, bad_rev = result
+                    self.fetch_config.set_inbound_branch(branch)
+                    return self._bisect_inbounds(good_rev, bad_rev)
         elif result == Bisection.USER_EXIT:
             self._print_resume_info(handler)
         else:

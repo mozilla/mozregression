@@ -15,13 +15,9 @@ class JsonPushes(object):
     def repo_url(self):
         return self._repo_url
 
-    def json_pushes_url(self, changeset=None, fromchange=None, tochange=None):
+    def json_pushes_url(self, **kwargs):
         base_url = '%s/json-pushes?' % self.repo_url()
-        if changeset:
-            return base_url + ('changeset=%s' % changeset)
-        else:
-            return base_url + (
-                'fromchange=%s&tochange=%s' % (fromchange, tochange))
+        return base_url + '&'.join("%s=%s" % kv for kv in kwargs.iteritems())
 
     def _request(self, url, check_changeset=None):
         if check_changeset:
@@ -45,18 +41,18 @@ class JsonPushes(object):
             )
         return pushlog
 
-    def pushlog_for_change(self, changeset):
+    def pushlog_for_change(self, changeset, **kwargs):
         """
         Returns the json pushlog object that match the given changeset.
 
         A MozRegressionError is thrown if None is found.
         """
         return next(self._request(
-            self.json_pushes_url(changeset=changeset),
+            self.json_pushes_url(changeset=changeset, **kwargs),
             changeset
         ).itervalues())
 
-    def pushlog_within_changes(self, fromchange, tochange):
+    def pushlog_within_changes(self, fromchange, tochange, raw=False):
         """
         Returns pushlog json objects (python dicts) sorted by date.
 
@@ -80,6 +76,8 @@ class JsonPushes(object):
             # tochange changeset, because we checked the fromchange previously.
             tochange
         ))
+        if raw:
+            return chsets
         # sort pushlogs by date
         return sorted(chsets.itervalues(), key=lambda push: push['date'])
 

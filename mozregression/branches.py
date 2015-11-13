@@ -2,6 +2,7 @@
 Access to mozilla branches information.
 """
 
+import re
 from mozregression.errors import MozRegressionError
 
 
@@ -68,3 +69,18 @@ BRANCHES = create_branches()
 
 get_url = BRANCHES.get_url
 get_name = BRANCHES.get_name
+
+
+RE_MERGE_BRANCH = re.compile(r"merge ([\w-]+) to [\w-]+.*", re.I)
+
+
+def find_branch_in_merge_commit(message):
+    """
+    Try to extract the branch name where commits comes from in a merge commit
+    message.
+
+    Return None if the message does not looks like a merge commit.
+    """
+    match = RE_MERGE_BRANCH.match(message)
+    if match:
+        return get_name(match.group(1))

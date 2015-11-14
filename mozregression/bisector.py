@@ -5,12 +5,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import math
-import datetime
 from mozlog.structured import get_default_logger
 
-from mozregression.dates import to_datetime
 from mozregression.build_range import range_for_inbounds, range_for_nightlies
-from mozregression.errors import MozRegressionError, LauncherError
+from mozregression.errors import LauncherError
 from mozregression.history import BisectionHistory
 from mozregression.branches import find_branch_in_merge_commit
 from mozregression.json_pushes import JsonPushes
@@ -206,55 +204,6 @@ class NightlyHandler(BisectorHandler):
             start, end = self.get_date_range()
             return ("%s/pushloghtml?startdate=%s&enddate=%s\n"
                     % (self.found_repo, start, end))
-
-    # TODO: get rid of that method when GUI will use handle_merge
-    def find_inbound_changesets(self, days_required=4):
-        self._logger.info("... attempting to bisect inbound builds (starting"
-                          " from %d days prior, to make sure no inbound"
-                          " revision is missed)" % days_required)
-        infos = None
-        days = days_required - 1
-        too_many_attempts = False
-        max_attempts = 3
-        first_date = min(to_datetime(self.good_date),
-                         to_datetime(self.bad_date))
-
-        while not infos or not infos.changeset:
-            days += 1
-            if days >= days_required + max_attempts:
-                too_many_attempts = True
-                break
-            prev_date = first_date - datetime.timedelta(days=days)
-            build_range = self.build_range
-            infos = build_range.build_info_fetcher.find_build_info(
-                prev_date.date())
-        if days > days_required and not too_many_attempts:
-            self._logger.info("At least one build folder was invalid, we have"
-                              " to start from %d days ago." % days)
-
-        if not self.find_fix:
-            good_rev = infos.changeset
-            bad_rev = self.bad_revision
-        else:
-            good_rev = self.good_revision
-            bad_rev = infos.changeset
-        if bad_rev is None or good_rev is None:
-            # we cannot find valid nightly builds in the searched range.
-            # two possible causes:
-            # - old nightly builds do not have the changeset information
-            #   so we can't go on inbound. Anyway, these are probably too
-            #   old and won't even exists on inbound.
-            # - something else (builds were not updated on archive.mozilla.org,
-            #   or all invalid)
-            start_range = first_date - datetime.timedelta(days=days_required)
-            end_range = start_range - datetime.timedelta(days=max_attempts)
-            raise MozRegressionError(
-                "Not enough changeset information to produce initial inbound"
-                " regression range (failed to find metadata between %s and %s)"
-                ". Nightly build folders are invalids or too old in this"
-                " range." % (start_range, end_range))
-
-        return good_rev, bad_rev
 
 
 class InboundHandler(BisectorHandler):

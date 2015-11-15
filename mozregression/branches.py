@@ -69,6 +69,7 @@ BRANCHES = create_branches()
 
 get_url = BRANCHES.get_url
 get_name = BRANCHES.get_name
+get_branches = BRANCHES.get_branches
 
 
 RE_MERGE_BRANCH = re.compile(r"merge ([\w-]+) to [\w-]+.*", re.I)

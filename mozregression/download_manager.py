@@ -149,6 +149,7 @@ class Download(object):
         # abruptly)
         temp = None
         bytes_so_far = 0
+
         try:
             with closing(session.get(url, stream=True)) as response:
                 total_size = int(response.headers['Content-length'].strip())
@@ -218,6 +219,7 @@ class DownloadManager(object):
     :param persist_limit: an instance of :class:`PersistLimit`, to allow
                           limiting the size of the download dir. Defaults
                           to None, meaning no limit.
+
     """
     def __init__(self, destdir, session=requests, persist_limit=None):
         self.destdir = destdir
@@ -254,6 +256,7 @@ class DownloadManager(object):
         if a download is already running for the given fname, it is just
         returned. Else the download is created, started and returned.
         """
+
         dest = self.get_dest(fname)
         with self._lock:
             # if we are downloading, just returns the instance
@@ -262,6 +265,8 @@ class DownloadManager(object):
 
         if os.path.exists(dest):
             return None
+        else:
+            os.makedirs(dest)
 
         # else create the download (will be automatically removed of
         # the list on completion) start it, and returns that.

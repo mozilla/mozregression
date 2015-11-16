@@ -13,6 +13,7 @@ from mozlog.structured import get_default_logger
 import subprocess
 import shlex
 import os
+import datetime
 
 from mozregression.launchers import create_launcher
 from mozregression.errors import TestCommandError, LauncherError
@@ -32,8 +33,13 @@ class TestRunner(object):
         Create and returns a :class:`mozregression.launchers.Launcher`.
         """
         if build_info.build_type == 'nightly':
-            self.logger.info("Running nightly for %s"
-                             % build_info.build_date)
+            if isinstance(build_info.build_date, datetime.datetime):
+                self.logger.info("Running nightly for buildid %s"
+                                 % build_info.build_date.strftime(
+                                     "%Y%m%d%H%M%S"))
+            else:
+                self.logger.info("Running nightly for %s"
+                                 % build_info.build_date)
         else:
             self.logger.info("Testing inbound build built on %s,"
                              " revision %s"

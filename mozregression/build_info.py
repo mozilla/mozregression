@@ -5,6 +5,7 @@
 """
 The BuildInfo classes, that are used to store information a build.
 """
+import datetime
 from urlparse import urlparse
 
 
@@ -137,7 +138,10 @@ class BuildInfo(object):
         Compute and return the persist filename to use to store this build.
         """
         if self.build_type == 'nightly':
-            prefix = str(self.build_date)
+            if isinstance(self.build_date, datetime.datetime):
+                prefix = self.build_date.strftime("%Y-%m-%d-%H-%M-%S")
+            else:
+                prefix = str(self.build_date)
             persist_part = ''
         else:
             prefix = str(self.changeset[:12])

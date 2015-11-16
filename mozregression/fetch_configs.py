@@ -176,6 +176,8 @@ class NightlyConfigMixin(object):
         """
         Returns the repo name for a given date.
         """
+        if isinstance(date, datetime.datetime):
+            date = date.date()
         return self.nightly_repo or self._get_nightly_repo(date)
 
     def _get_nightly_repo(self, date):
@@ -190,6 +192,10 @@ class NightlyConfigMixin(object):
         date.
         """
         repo = self.get_nightly_repo(date)
+        if isinstance(date, datetime.datetime):
+            return (r'^%04d-%02d-%02d-%02d-%02d-%02d-%s/$'
+                    % (date.year, date.month, date.day, date.hour,
+                       date.minute, date.second, repo))
         return (r'^%04d-%02d-%02d-[\d-]+%s/$'
                 % (date.year, date.month, date.day, repo))
 

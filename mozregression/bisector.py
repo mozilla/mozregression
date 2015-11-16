@@ -8,6 +8,7 @@ import math
 import datetime
 from mozlog.structured import get_default_logger
 
+from mozregression.dates import to_datetime
 from mozregression.build_range import range_for_inbounds, range_for_nightlies
 from mozregression.errors import MozRegressionError, LauncherError
 
@@ -211,7 +212,9 @@ class NightlyHandler(BisectorHandler):
         days = days_required - 1
         too_many_attempts = False
         max_attempts = 3
-        first_date = min(self.good_date, self.bad_date)
+        first_date = min(to_datetime(self.good_date),
+                         to_datetime(self.bad_date))
+
         while not infos or not infos.changeset:
             days += 1
             if days >= days_required + max_attempts:
@@ -219,7 +222,8 @@ class NightlyHandler(BisectorHandler):
                 break
             prev_date = first_date - datetime.timedelta(days=days)
             build_range = self.build_range
-            infos = build_range.build_info_fetcher.find_build_info(prev_date)
+            infos = build_range.build_info_fetcher.find_build_info(
+                prev_date.date())
         if days > days_required and not too_many_attempts:
             self._logger.info("At least one build folder was invalid, we have"
                               " to start from %d days ago." % days)

@@ -14,7 +14,6 @@ application.
 
 import os
 import sys
-import re
 import mozinfo
 import datetime
 import mozprofile
@@ -24,6 +23,7 @@ from mozlog.structured import commandline
 from colorama import Style
 
 from mozregression import __version__
+from mozregression.dates import to_datetime, parse_date
 from mozregression.config import get_defaults, DEFAULT_CONF_FNAME, write_conf
 from mozregression.fetch_configs import REGISTRY as FC_REGISTRY, create_config
 from mozregression.errors import (MozRegressionError, DateFormatError,
@@ -102,12 +102,14 @@ def create_parser(defaults):
                         metavar="YYYY-MM-DD",
                         dest="bad_date",
                         help=("first known bad nightly build, default is"
-                              " today."))
+                              " today. You can also use a buildid, like"
+                              " 20151103030248."))
 
     parser.add_argument("-g", "--good",
                         metavar="YYYY-MM-DD",
                         dest="good_date",
-                        help="last known good nightly build.")
+                        help=("last known good nightly build. You can also"
+                              " use a buildid, like 20151103030248."))
 
     parser.add_argument("--list-releases",
                         action=ListReleasesAction,
@@ -257,10 +259,11 @@ def create_parser(defaults):
                               ' The default is %(default)s.'))
 
     parser.add_argument('--launch',
-                        metavar="DATE_OR_REV",
+                        metavar="DATE_OR_BUILDID_OR_REV",
                         help="Launch only one specific build by date (nightly)"
                              " or changeset (inbound). You can also launch a"
-                             " release using a specific release number.")
+                             " release using a specific release number, and"
+                             " a nightly using a specific buildid")
 
     parser.add_argument('--write-config',
                         action=WriteConfigAction,
@@ -271,19 +274,6 @@ def create_parser(defaults):
         include_formatters=commandline.TEXT_FORMATTERS
     )
     return parser
-
-
-def parse_date(date_string):
-    """
-    Returns a date from a string.
-    """
-    regex = re.compile(r'(\d{4})\-(\d{1,2})\-(\d{1,2})')
-    matched = regex.match(date_string)
-    if not matched:
-        raise DateFormatError(date_string)
-    return datetime.date(int(matched.group(1)),
-                         int(matched.group(2)),
-                         int(matched.group(3)))
 
 
 def parse_bits(option_bits):
@@ -359,11 +349,11 @@ def check_nightlies(options, fetch_config, logger):
 
     options.good_date = good_date = parse_date(options.good_date)
     options.bad_date = bad_date = parse_date(options.bad_date)
-    if good_date > bad_date and not options.find_fix:
+    if not options.find_fix and to_datetime(good_date) > to_datetime(bad_date):
         raise MozRegressionError(("Good date %s is later than bad date %s."
                                   " Maybe you wanted to use the --find-fix"
                                   " flag ?") % (good_date, bad_date))
-    elif good_date < bad_date and options.find_fix:
+    elif options.find_fix and to_datetime(good_date) < to_datetime(bad_date):
         raise MozRegressionError(("Bad date %s is later than good date %s."
                                   " You should not use the --find-fix flag"
                                   " in this case...") % (bad_date, good_date))

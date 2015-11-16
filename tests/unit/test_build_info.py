@@ -1,5 +1,5 @@
 import pytest
-from datetime import date
+from datetime import date, datetime
 
 from mozregression.fetch_configs import create_config
 from mozregression import build_info
@@ -99,6 +99,10 @@ def test_to_dict(klass):
     (build_info.NightlyBuildInfo,
      {},
      '2015-09-01--mozilla-central--url'),
+    # this time with a datetime instance (buildid)
+    (build_info.NightlyBuildInfo,
+     {'build_date': datetime(2015, 11, 16, 10, 2, 5)},
+     '2015-11-16-10-02-05--mozilla-central--url'),
     # same but for inbound
     (build_info.InboundBuildInfo,
      {},

@@ -1,5 +1,5 @@
 import pytest
-from datetime import date
+from datetime import date, datetime
 
 from mozregression import build_range
 from mozregression.fetch_build_info import InfoFetcher
@@ -138,3 +138,25 @@ def test_range_for_nightlies():
     assert b_range[0] == date(2015, 01, 01)
     assert b_range[1] == date(2015, 01, 02)
     assert b_range[2] == date(2015, 01, 03)
+
+
+@pytest.mark.parametrize('start,end,range_size', [
+    (datetime(2015, 11, 16, 10, 2, 5), date(2015, 11, 19), 4),
+    (date(2015, 11, 14), datetime(2015, 11, 16, 10, 2, 5), 3),
+    (datetime(2015, 11, 16, 10, 2, 5),
+     datetime(2015, 11, 20, 11, 4, 9), 5),
+])
+def test_range_for_nightlies_datetime(start, end, range_size):
+    fetch_config = create_config('firefox', 'linux', 64)
+
+    b_range = build_range.range_for_nightlies(fetch_config, start, end)
+
+    assert isinstance(b_range, build_range.BuildRange)
+    assert len(b_range) == range_size
+
+    b_range.build_info_fetcher.find_build_info = lambda v: v
+    assert b_range[0] == start
+    assert b_range[-1] == end
+    # between, we only have date instances
+    for i in range(1, range_size - 1):
+        assert isinstance(b_range[i], date)

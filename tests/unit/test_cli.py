@@ -21,9 +21,16 @@ class TestParseDate(unittest.TestCase):
         date = cli.parse_date("2014-07-05")
         self.assertEquals(date, datetime.date(2014, 7, 5))
 
+    def test_parse_buildid(self):
+        date = cli.parse_date("20151103030248")
+        self.assertEquals(date, datetime.datetime(2015, 11, 3, 3, 2, 48))
+
     def test_invalid_date(self):
         self.assertRaises(errors.DateFormatError, cli.parse_date,
                           "invalid_format")
+        # test invalid buildid (43 is not a valid day)
+        self.assertRaises(errors.DateFormatError, cli.parse_date,
+                          "20151143030248")
 
 
 class TestParseBits(unittest.TestCase):

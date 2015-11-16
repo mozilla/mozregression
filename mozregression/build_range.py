@@ -13,6 +13,7 @@ import copy
 import datetime
 
 from threading import Thread
+from mozregression.dates import to_date
 from mozregression.errors import BuildInfoNotFound
 from mozregression.fetch_build_info import (InboundInfoFetcher,
                                             NightlyInfoFetcher)
@@ -164,11 +165,17 @@ def range_for_nightlies(fetch_config, start_date, end_date):
     """
     info_fetcher = NightlyInfoFetcher(fetch_config)
     futures_builds = []
-    for i in range((end_date - start_date).days + 1):
+    # build the build range using only dates
+    sd = to_date(start_date)
+    for i in range((to_date(end_date) - sd).days + 1):
         futures_builds.append(
             FutureBuildInfo(
                 info_fetcher,
-                start_date + datetime.timedelta(days=i)
+                sd + datetime.timedelta(days=i)
             )
         )
+    # and now put back the real start and end dates
+    # in case they were datetime instances (coming from buildid)
+    futures_builds[0].data = start_date
+    futures_builds[-1].data = end_date
     return BuildRange(info_fetcher, futures_builds)

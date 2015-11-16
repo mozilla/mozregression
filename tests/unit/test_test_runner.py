@@ -6,6 +6,7 @@
 
 import pytest
 import unittest
+import datetime
 from mock import patch, Mock
 
 from mozregression import test_runner, errors, build_info
@@ -43,6 +44,25 @@ class TestManualTestRunner(unittest.TestCase):
         result_launcher = self.runner.create_launcher(info)
         create_launcher.\
             assert_called_with(info)
+
+        self.assertEqual(result_launcher, launcher)
+
+    @patch('mozregression.test_runner.create_launcher')
+    def test_nightly_create_launcher_buildid(self, create_launcher):
+        launcher = Mock()
+        create_launcher.return_value = launcher
+        info = mockinfo(
+            build_type='nightly',
+            app_name="firefox",
+            build_file="/path/to",
+            build_date=datetime.datetime(2015, 11, 6, 5, 4, 3),
+        )
+        self.runner.logger.info = Mock()
+        result_launcher = self.runner.create_launcher(info)
+        create_launcher.\
+            assert_called_with(info)
+        self.runner.logger.info.assert_called_with(
+            'Running nightly for buildid 20151106050403')
 
         self.assertEqual(result_launcher, launcher)
 

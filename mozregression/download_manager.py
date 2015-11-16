@@ -229,6 +229,10 @@ class DownloadManager(object):
         self.persist_limit = persist_limit or PersistLimit(0)
         self.persist_limit.register_dir_content(self.destdir)
 
+        #if folder does not exist, create it
+        if not os.path.isdir(destdir):
+            os.makedirs(destdir)
+
     def get_dest(self, fname):
         return os.path.join(self.destdir, fname)
 
@@ -265,8 +269,6 @@ class DownloadManager(object):
 
         if os.path.exists(dest):
             return None
-        else:
-            os.makedirs(dest)
 
         # else create the download (will be automatically removed of
         # the list on completion) start it, and returns that.

@@ -66,7 +66,19 @@ Next thing to do is to install the others dependencies. It is highly suggested t
 a virtualenv here, just be sure to pass the *-\-system-site-packages* flag
 when you create it to be able to use the system-wide pyqt4. See this link
 (http://docs.python-guide.org/en/latest/dev/virtualenvs/) to learn more
-about python virtualenvs.
+about python virtualenvs. You should also consider using virtualenvwrapper
+(https://virtualenvwrapper.readthedocs.org/en/latest/).
+
+Install with virtualenvwrapper: ::
+
+   mkvirtualenv --system-site-package mozregression
+   cd gui && pip install -r test-requirements.txt
+
+Or with virtualenv: ::
+
+   virtualenv --system-site-package venv
+   source venv/bin/activate
+   cd gui && pip install -r test-requirements.txt
 
 
 Launching the application
@@ -74,7 +86,8 @@ Launching the application
 
 Activate your virtualenv. On Linux or OSX: ::
 
-  . venv/bin/activate
+  source venv/bin/activate
+  # or 'workon mozregression' if you use virtualenvwrapper
 
 Then simply run: ::
 

@@ -1,4 +1,4 @@
-import tempfile
+#import tempfile
 import threading
 import requests
 import os
@@ -229,7 +229,7 @@ class DownloadManager(object):
         self.persist_limit = persist_limit or PersistLimit(0)
         self.persist_limit.register_dir_content(self.destdir)
 
-        #if folder does not exist, create it
+        # if folder does not exist, create it
         if not os.path.isdir(destdir):
             os.makedirs(destdir)
 

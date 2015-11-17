@@ -12,16 +12,6 @@ from mozregression.launchers import REGISTRY as LAUNCHER_REGISTRY
 from mozregression.errors import LauncherNotRunnable
 
 
-def get_all_subclasses(cls):
-    all_subclasses = []
-
-    for subclass in cls.__subclasses__():
-        all_subclasses.append(subclass)
-        all_subclasses.extend(get_all_subclasses(subclass))
-
-    return all_subclasses
-
-
 def resolve_obj_name(obj, name):
     names = name.split('.')
     while names:
@@ -241,7 +231,8 @@ class BisectionWizard(QWizard):
 
     def options(self):
         options = {}
-        for wizard_class in get_all_subclasses(WizardPage):
+        for page_id in self.pageIds():
+            wizard_class = self.page(page_id).__class__
             for fieldname in wizard_class.FIELDS:
                 value = self.field(fieldname).toPyObject()
                 if isinstance(value, QString):

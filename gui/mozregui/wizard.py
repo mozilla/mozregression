@@ -1,6 +1,7 @@
 import mozinfo
+import datetime
 from PyQt4.QtGui import QWizard, QWizardPage, QStringListModel, QMessageBox
-from PyQt4.QtCore import QString, QDate, QDateTime
+from PyQt4.QtCore import QString, QDateTime
 
 from ui.intro import Ui_Intro
 from ui.nightlies import Ui_Nightlies
@@ -9,7 +10,8 @@ from ui.profile import Ui_Profile
 
 from mozregression.fetch_configs import create_config, REGISTRY
 from mozregression.launchers import REGISTRY as LAUNCHER_REGISTRY
-from mozregression.errors import LauncherNotRunnable
+from mozregression.errors import LauncherNotRunnable, DateFormatError
+from mozregression.dates import to_datetime
 
 
 def resolve_obj_name(obj, name):
@@ -134,20 +136,29 @@ class NightliesPage(WizardSelectionRangePage):
     UI_CLASS = Ui_Nightlies
     TITLE = "Date range selection"
     SUBTITLE = ("Select the nightlies date range.")
-    FIELDS = {"start_date": "start_date", "end_date": "end_date",
-              "repository": "repository"}
+    FIELDS = {"repository": "repository"}
     ID = 1
 
     def __init__(self):
         WizardPage.__init__(self)
         now = QDateTime.currentDateTime()
-        self.ui.start_date.setDateTime(now.addYears(-1))
-        self.ui.end_date.setDateTime(now)
+        self.ui.start_date.datew.setDateTime(now.addYears(-1))
+        self.ui.end_date.datew.setDateTime(now)
+
+    def get_start_date(self):
+        return self.ui.start_date.get_date()
+
+    def get_end_date(self):
+        return self.ui.end_date.get_date()
 
     def validatePage(self):
-        start_date = self.ui.start_date.date()
-        end_date = self.ui.end_date.date()
-        current = QDateTime.currentDateTime().date()
+        try:
+            start_date = to_datetime(self.get_start_date())
+            end_date = to_datetime(self.get_end_date())
+        except DateFormatError as exc:
+            QMessageBox.critical(self, "Error", unicode(exc))
+            return False
+        current = datetime.datetime.now()
         if start_date < end_date:
             if end_date <= current:
                 return True
@@ -221,8 +232,6 @@ class BisectionWizard(QWizard):
         # associate current text to comboboxes fields instead of current index
         self.setDefaultProperty("QComboBox", "currentText",
                                 "currentIndexChanged")
-        # store QDate instead of QDateTime
-        self.setDefaultProperty("QDateEdit", "date", "dateChanged")
 
         self.addPage(IntroPage())
         self.addPage(NightliesPage())
@@ -237,12 +246,13 @@ class BisectionWizard(QWizard):
                 value = self.field(fieldname).toPyObject()
                 if isinstance(value, QString):
                     value = unicode(value)
-                elif isinstance(value, QDate):
-                    value = value.toPyDate()
                 options[fieldname] = value
         fetch_config = self.page(IntroPage.ID).fetch_config
         if options['bisect_type'] == 'nightlies':
             kind = "date"
+            nightlies_page = self.page(NightliesPage.ID)
+            options['start_date'] = nightlies_page.get_start_date()
+            options['end_date'] = nightlies_page.get_end_date()
             fetch_config.set_nightly_repo(options['repository'])
         else:
             kind = "changeset"

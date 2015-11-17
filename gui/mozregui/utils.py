@@ -1,6 +1,11 @@
 from PyQt4.QtCore import QDir
 from PyQt4.QtGui import QLineEdit, QPushButton, QWidget, QHBoxLayout, \
-    QFileDialog, QFileSystemModel, QCompleter
+    QFileDialog, QFileSystemModel, QCompleter, QComboBox, QDateEdit, \
+    QStackedWidget
+
+from mozregression.releases import date_of_release, releases
+from mozregression.dates import parse_date
+from mozregression.errors import DateFormatError
 
 
 class FSLineEdit(QLineEdit):
@@ -44,3 +49,45 @@ class DirectorySelectWidget(QWidget):
         )
         if path:
             self.line_edit.setPath(path)
+
+
+class NightlyInputSelection(QWidget):
+    """
+    Allow to select a date, a build id or a release number.
+    """
+    def __init__(self, parent=None):
+        QWidget.__init__(self, parent)
+        layout = QHBoxLayout(self)
+        self._create_widgets()
+        layout.addWidget(self.stacked)
+        layout.addWidget(self.select_combo)
+        self.setLayout(layout)
+
+    def _create_widgets(self):
+        self.stacked = QStackedWidget()
+        self.datew = QDateEdit()
+        self.datew.setDisplayFormat("yyyy-MM-dd")
+        self.stacked.addWidget(self.datew)
+        self.buildidw = QLineEdit()
+        self.stacked.addWidget(self.buildidw)
+        self.releasew = QComboBox()
+        self.releasew.addItems([str(k) for k in sorted(releases())])
+        self.stacked.addWidget(self.releasew)
+
+        self.select_combo = QComboBox()
+        self.select_combo.addItems(['date', 'buildid', 'release'])
+        self.select_combo.activated.connect(self.stacked.setCurrentIndex)
+
+    def get_date(self):
+        currentw = self.stacked.currentWidget()
+        if currentw == self.datew:
+            return self.datew.date().toPyDate()
+        elif currentw == self.buildidw:
+            buildid = unicode(self.buildidw.text())
+            try:
+                return parse_date(buildid)
+            except DateFormatError:
+                raise DateFormatError(buildid, "Not a valid build id: `%s`")
+        elif currentw == self.releasew:
+            return parse_date(
+                date_of_release(str(self.releasew.currentText())))

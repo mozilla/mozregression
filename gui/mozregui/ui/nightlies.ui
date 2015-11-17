@@ -26,24 +26,10 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QDateEdit" name="start_date">
-       <property name="displayFormat">
-        <string>yyyy-MM-dd</string>
-       </property>
-      </widget>
-     </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>First known bad date</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QDateEdit" name="end_date">
-       <property name="displayFormat">
-        <string>yyyy-MM-dd</string>
        </property>
       </widget>
      </item>
@@ -67,10 +53,24 @@
        </property>
       </widget>
      </item>
+     <item row="0" column="1">
+      <widget class="NightlyInputSelection" name="start_date" native="true"/>
+     </item>
+     <item row="1" column="1">
+      <widget class="NightlyInputSelection" name="end_date" native="true"/>
+     </item>
     </layout>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>NightlyInputSelection</class>
+   <extends>QWidget</extends>
+   <header>mozregui.utils</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

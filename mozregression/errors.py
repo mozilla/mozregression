@@ -35,10 +35,8 @@ class DateFormatError(MozRegressionError):
     """
     Raised when a date can not be parsed from a string.
     """
-    def __init__(self, date_string):
-        MozRegressionError.__init__(self,
-                                    "Incorrect date format: `%s`"
-                                    % date_string)
+    def __init__(self, date_string, format="Incorrect date format: `%s`"):
+        MozRegressionError.__init__(self, format % date_string)
 
 
 class DownloadError(MozRegressionError):

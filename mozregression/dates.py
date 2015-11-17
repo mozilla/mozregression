@@ -17,7 +17,7 @@ def parse_date(date_string):
         try:
             return datetime.datetime.strptime(date_string, "%Y%m%d%H%M%S")
         except ValueError:
-            raise DateFormatError(date_string)
+            raise DateFormatError(date_string, "Not a valid build id: `%s`")
     regex = re.compile(r'(\d{4})\-(\d{1,2})\-(\d{1,2})')
     matched = regex.match(date_string)
     if not matched:

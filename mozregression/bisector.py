@@ -276,6 +276,17 @@ class InboundHandler(BisectorHandler):
                           % (words[1], self.bad_revision))
 
 
+class BuildHistoryContext(object):
+    def __init__(self):
+        self.build_history = []
+
+    def store_range(self, index, build_range):
+        self.build_history.append((index, build_range))
+
+    def get_range(self, index):
+        return self.build_history[index]
+
+
 class Bisection(object):
     RUNNING = 0
     NO_DATA = 1
@@ -290,7 +301,7 @@ class Bisection(object):
         self.test_runner = test_runner
         self.fetch_config = fetch_config
         self.dl_in_background = dl_in_background
-        self.previous_data = []
+        self.previous_data = BuildHistoryContext()
 
     def search_mid_point(self):
         self.handler.set_build_range(self.build_range)
@@ -376,7 +387,7 @@ class Bisection(object):
             # [G, ?, ?, G, ?, B]
             # to
             #          [G, ?, B]
-            self.previous_data.append(self.build_range)
+            self.previous_data.store_range(mid_point, self.build_range)
             if not self.handler.find_fix:
                 self.build_range = self.build_range[mid_point:]
             else:
@@ -388,7 +399,7 @@ class Bisection(object):
             # [G, ?, ?, B, ?, B]
             # to
             # [G, ?, ?, B]
-            self.previous_data.append(self.build_range)
+            self.previous_data.store_range(mid_point, self.build_range)
             if not self.handler.find_fix:
                 self.build_range = self.build_range[:mid_point+1]
             else:
@@ -398,10 +409,10 @@ class Bisection(object):
             self.handler.build_retry(mid_point)
         elif verdict == 's':
             self.handler.build_skip(mid_point)
-            self.previous_data.append(self.build_range)
+            self.previous_data.store_range(mid_point, self.build_range)
             self.build_range = self.build_range.deleted(mid_point)
         elif verdict == 'back':
-            self.build_range = self.previous_data.pop(-1)
+            self.build_range = self.previous_data.get_range(-1)[1]
         else:
             # user exit
             self.handler.user_exit(mid_point)

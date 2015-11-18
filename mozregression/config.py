@@ -39,6 +39,7 @@ DEFAULTS = {
     'background-dl-policy': 'cancel',
     'taskcluster-clientid': None,
     'taskcluster-accesstoken': None,
+    'process-output': None,
 }
 
 

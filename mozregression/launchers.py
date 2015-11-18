@@ -200,7 +200,7 @@ class MozRunnerLauncher(Launcher):
                                          % exitcode)
 
         self.runner.process_args = {
-            'processOutputLine': [self._logger.debug],
+            'processOutputLine': [get_default_logger("process").info],
             'onFinish': _on_exit,
         }
         self.runner.start()

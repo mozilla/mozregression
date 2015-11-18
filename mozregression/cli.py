@@ -19,7 +19,7 @@ import datetime
 import mozprofile
 
 from argparse import ArgumentParser, Action, SUPPRESS
-from mozlog.structured import commandline
+from mozlog.structured import commandline, get_default_logger
 from colorama import Style
 
 from mozregression import __version__
@@ -265,6 +265,12 @@ def create_parser(defaults):
                              " release using a specific release number, and"
                              " a nightly using a specific buildid")
 
+    parser.add_argument('-P', '--process-output', choices=('0', '1'),
+                        default=defaults['process-output'],
+                        help=("Manage process output logging. 1 to enable, 0"
+                              " to disable. Only enabled by default is the"
+                              " build type is not 'opt'."))
+
     parser.add_argument('--write-config',
                         action=WriteConfigAction,
                         help="Helps to write the configuration file.")
@@ -434,6 +440,15 @@ class Configuration(object):
         self.logger = commandline.setup_logging("mozregression",
                                                 self.options,
                                                 {"mach": sys.stdout})
+        # allow to filter process output based on the user option
+        if options.process_output is None:
+            # process_output not user defined
+            log_process_output = options.build_type != 'opt'
+        else:
+            log_process_output = options.process_output == '1'
+        get_default_logger("process").component_filter = \
+            lambda data: data if log_process_output else None
+
         self.action = None
         self.fetch_config = None
 

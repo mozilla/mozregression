@@ -11,6 +11,7 @@ import datetime
 import pytest
 
 from mock import patch
+from mozlog import get_default_logger
 
 from mozregression import cli, errors
 from mozregression.releases import releases
@@ -301,3 +302,20 @@ def test_warning_no_conf(mocker):
     stdout.write = out.append
     cli.cli([], conf_file='blah_this is not a valid file_I_hope')
     assert "You should use a config file" in '\n'.join(out)
+
+
+@pytest.mark.parametrize('args,enabled', [
+    ([], False),  # not enabled by default, because build_type is opt
+    (['-P=1'], True),  # explicitly enabled
+    (['-B=debug'], True),  # enabled because build type is not opt
+    (['-B=debug', '-P=0'], False),  # explicitly disabled
+])
+def test_process_output_enabled(args, enabled):
+    do_cli(*args)
+    log_filter = get_default_logger("process").component_filter
+
+    result = log_filter({'some': 'data'})
+    if enabled:
+        assert result
+    else:
+        assert not result

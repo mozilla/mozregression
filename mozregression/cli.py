@@ -265,10 +265,10 @@ def create_parser(defaults):
                              " release using a specific release number, and"
                              " a nightly using a specific buildid")
 
-    parser.add_argument('-P', '--process-output', choices=('0', '1'),
+    parser.add_argument('-P', '--process-output', choices=('none', 'stdout'),
                         default=defaults['process-output'],
-                        help=("Manage process output logging. 1 to enable, 0"
-                              " to disable. Not enabled by default."))
+                        help=("Manage process output logging. Set to stdout by"
+                              " default when the build type is not 'opt'."))
 
     parser.add_argument('--write-config',
                         action=WriteConfigAction,
@@ -440,7 +440,11 @@ class Configuration(object):
                                                 self.options,
                                                 {"mach": sys.stdout})
         # allow to filter process output based on the user option
-        log_process_output = options.process_output == '1'
+        if options.process_output is None:
+            # process_output not user defined
+            log_process_output = options.build_type != 'opt'
+        else:
+            log_process_output = options.process_output == 'stdout'
         get_default_logger("process").component_filter = \
             lambda data: data if log_process_output else None
 

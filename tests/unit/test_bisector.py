@@ -364,15 +364,7 @@ class TestBisector(unittest.TestCase):
         # check that set_build_range was called
         self.handler.set_build_range.assert_has_calls([
             call(MyBuildData([1, 2, 3, 4, 5])),  # first call
-            call(MyBuildData([3, 4, 5])),  # download backgound
-            call(MyBuildData([1, 2, 3, 4, 5])),   # put back the right data
-            call(MyBuildData([1, 2, 3])),  # download backgound
-            call(MyBuildData([1, 2, 3, 4, 5])),   # put back the right data
             call(MyBuildData([3, 4, 5])),  # we answered good
-            call(MyBuildData([4, 5])),  # download backgound
-            call(MyBuildData([3, 4, 5])),  # put back the right data
-            call(MyBuildData([3, 4])),  # download backgound
-            call(MyBuildData([3, 4, 5])),  # put back the right data
             call(MyBuildData([3, 4]))  # we answered bad
         ])
         # ensure that we called the handler's methods

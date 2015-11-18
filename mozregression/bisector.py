@@ -343,17 +343,8 @@ class Bisection(object):
             # (we need to find the build info)
             m = r.mid_point()
             if len(r) != 0:
-                # this is a trick to call build_infos
-                # with the the appropriate build_range
-                self.handler.set_build_range(r)
-                try:
-                    # non-blocking download of the build
-                    self.download_manager.download_in_background(
-                        self.handler.build_range[m]
-                    )
-                finally:
-                    # put the real build_range back
-                    self.handler.set_build_range(self.build_range)
+                # non-blocking download of the build
+                self.download_manager.download_in_background(r[m])
         bdata = self.build_range[mid_point]
         # download next left mid point
         start_dl(self.build_range[mid_point:])

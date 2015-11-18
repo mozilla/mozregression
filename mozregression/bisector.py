@@ -283,12 +283,11 @@ class Bisection(object):
     USER_EXIT = 3
 
     def __init__(self, handler, build_range, download_manager, test_runner,
-                 fetch_config, dl_in_background=True):
+                 dl_in_background=True):
         self.handler = handler
         self.build_range = build_range
         self.download_manager = download_manager
         self.test_runner = test_runner
-        self.fetch_config = fetch_config
         self.dl_in_background = dl_in_background
         self.previous_data = []
 
@@ -429,7 +428,7 @@ class Bisector(object):
         logger = handler._logger
 
         bisection = Bisection(handler, build_range, self.download_manager,
-                              self.test_runner, self.fetch_config,
+                              self.test_runner,
                               dl_in_background=self.dl_in_background)
 
         previous_verdict = None

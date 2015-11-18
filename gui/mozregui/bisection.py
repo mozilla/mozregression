@@ -151,7 +151,6 @@ class GuiBisector(QObject, Bisector):
         self.bisection = Bisection(handler, build_range,
                                    self.download_manager,
                                    self.test_runner,
-                                   self.fetch_config,
                                    dl_in_background=False)
         self._bisect_next()
 
@@ -361,7 +360,7 @@ class BisectRunner(QObject):
             msg = "Error: %s" % self.bisector.error[1]
             dialog = QMessageBox.critical
         else:
-            if bisection.fetch_config.can_go_inbound() and \
+            if self.bisector.fetch_config.can_go_inbound() and \
                     isinstance(bisection.handler, NightlyHandler):
                 # we can go on inbound, let's ask the user
                 if QMessageBox.question(

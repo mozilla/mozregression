@@ -17,6 +17,7 @@ import sys
 import mozinfo
 import datetime
 import mozprofile
+import re
 
 from argparse import ArgumentParser, Action, SUPPRESS
 from mozlog.structured import commandline, get_default_logger
@@ -447,6 +448,15 @@ class Configuration(object):
             log_process_output = options.process_output == 'stdout'
         get_default_logger("process").component_filter = \
             lambda data: data if log_process_output else None
+
+        # filter some mozversion log lines
+        re_ignore_mozversion_line = re.compile(
+            r"^(platform_.+|application_vendor|application_remotingname"
+            r"|application_id|application_display_name): .+"
+        )
+        get_default_logger("mozversion").component_filter = lambda data: (
+            None if re_ignore_mozversion_line.match(data['message']) else data
+        )
 
         self.action = None
         self.fetch_config = None

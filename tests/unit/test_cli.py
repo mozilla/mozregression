@@ -319,3 +319,25 @@ def test_process_output_enabled(args, enabled):
         assert result
     else:
         assert not result
+
+
+@pytest.mark.parametrize('mozversion_msg,shown', [
+    ("platform_changeset: abc123", False),
+    ("application_changeset: abc123", True),
+    ("application_version: stuff:thing", True),
+    ("application_remotingname: stuff", False),
+    ("application_id: stuff", False),
+    ("application_vendor: stuff", False),
+    ("application_display_name: stuff", False),
+    ("not a valid key value pair", True),
+])
+def test_mozversion_output_filtered(mozversion_msg, shown):
+    do_cli()
+    log_filter = get_default_logger("mozversion").component_filter
+    log_data = {'message': mozversion_msg}
+
+    result = log_filter(log_data)
+    if shown:
+        assert result == log_data
+    else:
+        assert not result

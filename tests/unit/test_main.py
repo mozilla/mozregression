@@ -142,7 +142,6 @@ def test_app_bisect_inbounds_finished(create_app, same_chsets):
     (['--persist', 'blah stuff'], "--persist 'blah stuff'"),
     (['--addon=a b c', '--addon=d'], "'--addon=a b c' --addon=d"),
     (['--find-fix', '--arg=a b'], "--find-fix '--arg=a b'"),
-    (['--inbound-branch=branch'], '--inbound-branch=branch'),
     (['--repo=branch'], '--repo=branch'),
     (['--profile=pro file'], "'--profile=pro file'"),
 ])

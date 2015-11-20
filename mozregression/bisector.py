@@ -11,6 +11,7 @@ from mozlog.structured import get_default_logger
 from mozregression.dates import to_datetime
 from mozregression.build_range import range_for_inbounds, range_for_nightlies
 from mozregression.errors import MozRegressionError, LauncherError
+from mozregression.history import BisectionHistory
 
 
 def compute_steps_left(steps):
@@ -289,7 +290,7 @@ class Bisection(object):
         self.download_manager = download_manager
         self.test_runner = test_runner
         self.dl_in_background = dl_in_background
-        self.previous_data = []
+        self.history = BisectionHistory()
 
     def search_mid_point(self):
         self.handler.set_build_range(self.build_range)
@@ -357,7 +358,7 @@ class Bisection(object):
 
     def evaluate(self, build_infos):
         return self.test_runner.evaluate(build_infos,
-                                         allow_back=bool(self.previous_data))
+                                         allow_back=bool(self.history))
 
     def handle_verdict(self, mid_point, verdict):
         if verdict == 'g':
@@ -366,7 +367,7 @@ class Bisection(object):
             # [G, ?, ?, G, ?, B]
             # to
             #          [G, ?, B]
-            self.previous_data.append(self.build_range)
+            self.history.add(self.build_range, mid_point, verdict)
             if not self.handler.find_fix:
                 self.build_range = self.build_range[mid_point:]
             else:
@@ -378,7 +379,7 @@ class Bisection(object):
             # [G, ?, ?, B, ?, B]
             # to
             # [G, ?, ?, B]
-            self.previous_data.append(self.build_range)
+            self.history.add(self.build_range, mid_point, verdict)
             if not self.handler.find_fix:
                 self.build_range = self.build_range[:mid_point+1]
             else:
@@ -388,10 +389,10 @@ class Bisection(object):
             self.handler.build_retry(mid_point)
         elif verdict == 's':
             self.handler.build_skip(mid_point)
-            self.previous_data.append(self.build_range)
+            self.history.add(self.build_range, mid_point, verdict)
             self.build_range = self.build_range.deleted(mid_point)
         elif verdict == 'back':
-            self.build_range = self.previous_data.pop(-1)
+            self.build_range = self.history[-1].build_range
         else:
             # user exit
             self.handler.user_exit(mid_point)
@@ -439,6 +440,9 @@ class Bisector(object):
             if result != bisection.RUNNING:
                 return result
             bisection.handler.print_range(full=False)
+
+            if previous_verdict == 'back':
+                index = bisection.history.pop(-1).index
 
             allow_bg_download = True
             if previous_verdict == 's':

@@ -1,7 +1,7 @@
 import mozinfo
 import datetime
 from PyQt4.QtGui import QWizard, QWizardPage, QStringListModel, QMessageBox
-from PyQt4.QtCore import QString, QDateTime
+from PyQt4.QtCore import QString, QDateTime, QTimer
 
 from ui.intro import Ui_Intro
 from ui.nightlies import Ui_Nightlies
@@ -144,6 +144,11 @@ class NightliesPage(WizardSelectionRangePage):
         now = QDateTime.currentDateTime()
         self.ui.start_date.datew.setDateTime(now.addYears(-1))
         self.ui.end_date.datew.setDateTime(now)
+
+    def initializePage(self):
+        WizardSelectionRangePage.initializePage(self)
+        QTimer.singleShot(0,
+                          self.ui.start_date.stacked.currentWidget().setFocus)
 
     def get_start_date(self):
         return self.ui.start_date.get_date()

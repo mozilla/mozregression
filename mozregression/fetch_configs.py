@@ -191,7 +191,9 @@ class NightlyConfigMixin(object):
         Returns a string regex that can match the last folder name for a given
         date.
         """
-        repo = self.get_nightly_repo(date)
+        return self._get_nightly_repo_regex(date, self.get_nightly_repo(date))
+
+    def _get_nightly_repo_regex(self, date, repo):
         if isinstance(date, datetime.datetime):
             return (r'^%04d-%02d-%02d-%02d-%02d-%02d-%s/$'
                     % (date.year, date.month, date.day, date.hour,
@@ -245,11 +247,18 @@ class FennecNightlyConfigMixin(NightlyConfigMixin):
     nightly_base_repo_name = "mobile"
 
     def _get_nightly_repo(self, date):
-        if date < datetime.date(2014, 12, 6):
-            return "mozilla-central-android"
-        if date < datetime.date(2014, 12, 13):
-            return "mozilla-central-android-api-10"
-        return "mozilla-central-android-api-11"
+        return 'mozilla-central'
+
+    def get_nightly_repo_regex(self, date):
+        repo = self.get_nightly_repo(date)
+        if repo == 'mozilla-central':
+            if date < datetime.date(2014, 12, 6):
+                repo = "mozilla-central-android"
+            elif date < datetime.date(2014, 12, 13):
+                repo = "mozilla-central-android-api-10"
+            else:
+                repo = "mozilla-central-android-api-11"
+        return self._get_nightly_repo_regex(date, repo)
 
 
 class InboundConfigMixin(object):
@@ -467,7 +476,11 @@ class FennecConfig(CommonConfig,
 class Fennec23Config(FennecConfig):
     tk_name = 'android-api-9'
 
-    def _get_nightly_repo(self, date):
-        if date < datetime.date(2014, 12, 6):
-            return "mozilla-central-android"
-        return "mozilla-central-android-api-9"
+    def get_nightly_repo_regex(self, date):
+        repo = self.get_nightly_repo(date)
+        if repo == 'mozilla-central':
+            if date < datetime.date(2014, 12, 6):
+                repo = "mozilla-central-android"
+            else:
+                repo = "mozilla-central-android-api-9"
+        return self._get_nightly_repo_regex(date, repo)

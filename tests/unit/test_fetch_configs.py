@@ -145,16 +145,16 @@ class TestFennecConfig(unittest.TestCase):
     def setUp(self):
         self.conf = create_config('fennec', 'linux', 64)
 
-    def test_get_nightly_repo(self):
-        repo = self.conf.get_nightly_repo(datetime.date(2014,
-                                                        12, 5))
-        self.assertEqual(repo, "mozilla-central-android")
-        repo = self.conf.get_nightly_repo(datetime.date(2014,
-                                                        12, 10))
-        self.assertEqual(repo, "mozilla-central-android-api-10")
-        repo = self.conf.get_nightly_repo(datetime.date(2015,
-                                                        1, 1))
-        self.assertEqual(repo, "mozilla-central-android-api-11")
+    def test_get_nightly_repo_regex(self):
+        regex = self.conf.get_nightly_repo_regex(datetime.date(2014,
+                                                               12, 5))
+        self.assertIn("mozilla-central-android", regex)
+        regex = self.conf.get_nightly_repo_regex(datetime.date(2014,
+                                                               12, 10))
+        self.assertIn("mozilla-central-android-api-10", regex)
+        regex = self.conf.get_nightly_repo_regex(datetime.date(2015,
+                                                               1, 1))
+        self.assertIn("mozilla-central-android-api-11", regex)
 
     def test_build_regex(self):
         regex = re.compile(self.conf.build_regex())
@@ -172,11 +172,11 @@ class TestFennec23Config(unittest.TestCase):
     def test_class_attr_name(self):
         self.assertEqual(self.conf.app_name, 'fennec')
 
-    def test_get_nightly_repo(self):
-        repo = self.conf.get_nightly_repo(datetime.date(2014, 12, 5))
-        self.assertEqual(repo, "mozilla-central-android")
-        repo = self.conf.get_nightly_repo(datetime.date(2015, 1, 1))
-        self.assertEqual(repo, "mozilla-central-android-api-9")
+    def test_get_nightly_repo_regex(self):
+        regex = self.conf.get_nightly_repo_regex(datetime.date(2014, 12, 5))
+        self.assertIn("mozilla-central-android", regex)
+        regex = self.conf.get_nightly_repo_regex(datetime.date(2015, 1, 1))
+        self.assertIn("mozilla-central-android-api-9", regex)
 
 
 class TestB2GConfig(unittest.TestCase):

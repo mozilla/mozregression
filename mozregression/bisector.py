@@ -8,7 +8,7 @@ import math
 from mozlog.structured import get_default_logger
 
 from mozregression.build_range import range_for_inbounds, range_for_nightlies
-from mozregression.errors import LauncherError
+from mozregression.errors import LauncherError, MozRegressionError
 from mozregression.history import BisectionHistory
 from mozregression.branches import find_branch_in_merge_commit
 from mozregression.json_pushes import JsonPushes
@@ -234,15 +234,16 @@ class InboundHandler(BisectorHandler):
         result = None
 
         self._logger.debug("Starting merge handling...")
-        # so, we have to check the commit of the interesting push
-        # that is the most recent push
-        interesting_push = self.build_range[1]
-        jp = JsonPushes(interesting_push.repo_name)
-        push = jp.pushlog_for_change(interesting_push.changeset, full='1')
+        # we have to check the commit of the most recent push
+        most_recent_push = self.build_range[1]
+        jp = JsonPushes(most_recent_push.repo_name)
+        push = jp.pushlog_for_change(most_recent_push.changeset, full='1')
         msg = push['changesets'][-1]['desc']
         self._logger.debug("Found commit message:\n%s\n" % msg)
         branch = find_branch_in_merge_commit(msg)
-        if branch and len(push['changesets']) >= 2:
+        if not (branch and len(push['changesets']) >= 2):
+            return
+        try:
             # so, this is a merge. We can find the oldest and youngest
             # changesets, and the branch where the merge comes from.
             oldest = push['changesets'][0]['node']
@@ -273,6 +274,16 @@ class InboundHandler(BisectorHandler):
             self._logger.info("************* Switching to %s" % branch)
             gr, br = self._reverse_if_find_fix(oldest, youngest)
             result = (branch, gr, br)
+        except MozRegressionError:
+            self._logger.debug("Got exception", exc_info=True)
+            raise MozRegressionError(
+                "Unable to exploit the merge commit. Origin branch is {}, and"
+                " the commit message for {} was:\n{}".format(
+                    most_recent_push.repo_name,
+                    most_recent_push.short_changeset,
+                    msg
+                )
+            )
         self._logger.debug('End merge handling')
         return result
 

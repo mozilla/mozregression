@@ -13,6 +13,8 @@ import copy
 import datetime
 
 from threading import Thread
+from mozlog import get_default_logger
+
 from mozregression.dates import to_date
 from mozregression.errors import BuildInfoNotFound
 from mozregression.fetch_build_info import (InboundInfoFetcher,
@@ -24,6 +26,7 @@ class FutureBuildInfo(object):
         self.build_info_fetcher = build_info_fetcher
         self.data = data
         self._build_info = None
+        self._logger = get_default_logger('Bisector')
 
     def _fetch(self):
         return self.build_info_fetcher.find_build_info(self.data)
@@ -33,7 +36,9 @@ class FutureBuildInfo(object):
         if self._build_info is None:
             try:
                 self._build_info = self._fetch()
-            except BuildInfoNotFound:
+            except BuildInfoNotFound, exc:
+                self._logger.warning("Skipping build %s: %s"
+                                     % (self.data, exc))
                 self._build_info = False
         return self._build_info
 

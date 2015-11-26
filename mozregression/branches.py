@@ -3,6 +3,8 @@ Access to mozilla branches information.
 """
 
 import re
+from collections import defaultdict
+
 from mozregression.errors import MozRegressionError
 
 
@@ -12,13 +14,17 @@ class Branches(object):
     def __init__(self):
         self._branches = {}
         self._aliases = {}
+        self._categories = defaultdict(list)
 
-    def set_branch(self, name, path):
+    def set_branch(self, name, path, category='default'):
         assert name not in self._branches, "branch %s already defined" % name
         self._branches[name] = self.DEFAULT_REPO_URL + path
+        self._categories[category].append(name)
 
-    def get_branches(self):
-        return self._branches.keys()
+    def get_branches(self, category=None):
+        if category is None:
+            return self._branches.keys()
+        return self._categories[category]
 
     def set_alias(self, alias, branch_name):
         assert alias not in self._aliases, "alias %s already defined" % alias
@@ -35,6 +41,12 @@ class Branches(object):
     def get_name(self, branch_name_or_alias):
         return self._aliases.get(branch_name_or_alias) or branch_name_or_alias
 
+    def get_category(self, branch_name_or_alias):
+        name = self.get_name(branch_name_or_alias)
+        for cat, names in self._categories.iteritems():
+            if name in names:
+                return cat
+
 
 def create_branches():
     branches = Branches()
@@ -43,7 +55,8 @@ def create_branches():
 
     # integration branches
     for name in ("b2g-inbound", "fx-team", "mozilla-inbound"):
-        branches.set_branch(name, "integration/%s" % name)
+        branches.set_branch(name, "integration/%s" % name,
+                            category='integration')
 
     # release branches
     for name in ("comm-aurora", "comm-beta", "comm-release", "mozilla-aurora",
@@ -70,6 +83,7 @@ BRANCHES = create_branches()
 get_url = BRANCHES.get_url
 get_name = BRANCHES.get_name
 get_branches = BRANCHES.get_branches
+get_category = BRANCHES.get_category
 
 
 RE_MERGE_BRANCH = re.compile(r"merge ([\w-]+) to [\w-]+.*", re.I)

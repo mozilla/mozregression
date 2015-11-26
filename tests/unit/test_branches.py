@@ -25,16 +25,34 @@ def test_get_urls(branch, url):
     assert branches.get_url(branch) == url
 
 
-def test_get_branches():
-    names = branches.get_branches()
-    assert 'mozilla-central' in names
-    # no aliases returned
-    assert 'm-c' not in names
+@pytest.mark.parametrize('category,present,not_present', [
+    # no category, list all branches but not aliases
+    (None, ['mozilla-central', 'mozilla-inbound'], ['m-c', 'm-i']),
+    # specific category list only branches under that category
+    ('integration', ['mozilla-inbound'], ['m-i', 'mozilla-central']),
+])
+def test_get_branches(category, present, not_present):
+    names = branches.get_branches(category=category)
+    for name in present:
+        assert name in names
+    for name in not_present:
+        assert name not in names
 
 
 def test_get_url_unknown_branch():
     with pytest.raises(errors.MozRegressionError):
         branches.get_url("unknown branch")
+
+
+@pytest.mark.parametrize('name, expected', [
+    ('mozilla-central', 'default'),
+    ('fx-team', 'integration'),
+    ('m-i', 'integration'),
+    ('', None),
+    (None, None)
+])
+def test_get_category(name, expected):
+    assert branches.get_category(name) == expected
 
 
 @pytest.mark.parametrize('commit, branch', [

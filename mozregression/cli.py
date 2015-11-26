@@ -23,7 +23,7 @@ from argparse import ArgumentParser, Action, SUPPRESS
 from mozlog.structured import commandline, get_default_logger
 from colorama import Style
 
-from mozregression import __version__
+from mozregression import __version__, branches
 from mozregression.dates import to_datetime, parse_date
 from mozregression.config import get_defaults, DEFAULT_CONF_FNAME, write_conf
 from mozregression.fetch_configs import REGISTRY as FC_REGISTRY, create_config
@@ -323,9 +323,7 @@ def check_nightlies(options, fetch_config, logger):
     if options.find_fix:
         default_bad_date, default_good_date = \
             default_good_date, default_bad_date
-    # TODO: currently every fetch_config is nightly aware. Shoud we test
-    # for this to be sure here ?
-    fetch_config.set_nightly_repo(options.repo)
+
     if not options.bad_release and not options.bad_date:
         options.bad_date = default_bad_date
         logger.info("No 'bad' date specified, using %s" % options.bad_date)
@@ -367,27 +365,6 @@ def check_inbounds(options, fetch_config, logger):
     if not options.last_good_revision or not options.first_bad_revision:
         raise MozRegressionError("If bisecting inbound, both --good-rev"
                                  " and --bad-rev must be set")
-
-
-def check_taskcluster(options, fetch_config, logger):
-    if options.repo:
-        # if repo is defined, use that to bisect using taskcluster,
-        # ie the "inbound way" for now. Just remove the "integration"
-        # branch path.
-        fetch_config.set_inbound_branch(options.repo)
-
-    if options.last_good_revision and options.first_bad_revision:
-        # If we have revisions, use those
-        check_inbounds(options, fetch_config, logger)
-        print "Using revs: %s - %s" % (
-            options.last_good_revision,
-            options.first_bad_revision,
-        )
-    else:
-        # If we don't have revisions, pass date instead
-        check_nightlies(options, fetch_config, logger)
-        options.last_good_revision = options.good_date
-        options.first_bad_revision = options.bad_date
 
 
 class Configuration(object):
@@ -452,6 +429,16 @@ class Configuration(object):
             )
         self.fetch_config = fetch_config
 
+        # TODO: get rid of the nightly/inbound branch distinction
+        if fetch_config.is_nightly():
+            fetch_config.set_nightly_repo(options.repo)
+        if fetch_config.is_inbound():
+            fetch_config.set_inbound_branch(options.repo)
+
+        # we need to use taskcluser for integration branches and b2g
+        use_taskcluster = (branches.get_category(options.repo) == 'integration'
+                           or fetch_config.is_b2g_device())
+
         if not user_defined_bits and \
                 options.bits == 64 and \
                 mozinfo.os == 'win' and \
@@ -479,11 +466,12 @@ class Configuration(object):
 
         # set action for just use changset or data to bisect
         if options.launch:
-            if fetch_config.is_inbound():
-                fetch_config.set_inbound_branch(options.repo)
             try:
                 options.launch = parse_date(options.launch)
-                self.action = "launch_nightlies"
+                if use_taskcluster:
+                    self.action = "launch_inbound"
+                else:
+                    self.action = "launch_nightlies"
             except DateFormatError:
                 try:
                     options.launch = parse_date(date_of_release(
@@ -492,18 +480,19 @@ class Configuration(object):
                 except UnavailableRelease:
                     self.action = "launch_inbound"
 
-        elif fetch_config.is_b2g_device():
-            self.action = "bisect_inbounds"
-            check_taskcluster(options, fetch_config, self.logger)
         elif options.first_bad_revision or options.last_good_revision:
             # bisect inbound if last good revision or first bad revision are
             # set
             self.action = "bisect_inbounds"
             check_inbounds(options, fetch_config, self.logger)
-            fetch_config.set_inbound_branch(options.repo)
         else:
             self.action = "bisect_nightlies"
             check_nightlies(options, fetch_config, self.logger)
+            if use_taskcluster:
+                self.action = 'bisect_inbounds'
+                options.last_good_revision = options.good_date
+                options.first_bad_revision = options.bad_date
+                check_inbounds(options, fetch_config, self.logger)
 
         options.preferences = preferences(options.prefs_files, options.prefs)
         # convert GiB to bytes.

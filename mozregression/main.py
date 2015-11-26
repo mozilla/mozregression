@@ -20,7 +20,7 @@ import colorama
 from mozlog.structuredlog import get_default_logger
 from requests.exceptions import RequestException
 
-from mozregression import __version__
+from mozregression import __version__, dates
 from mozregression.cli import cli
 from mozregression.errors import MozRegressionError
 from mozregression.bisector import (Bisector, NightlyHandler, InboundHandler,
@@ -219,8 +219,12 @@ class Application(object):
 
     def launch_inbound(self):
         fetch_build_info = InboundInfoFetcher(self.fetch_config)
-        build_info = fetch_build_info.find_build_info(self.options.launch,
-                                                      check_changeset=True)
+        rev, check = self.options.launch, True
+        if dates.is_date_or_datetime(rev):
+            rev = fetch_build_info.jpushes.revision_for_date(rev)
+            check = False
+        build_info = fetch_build_info.find_build_info(rev,
+                                                      check_changeset=check)
         self.build_download_manager.focus_download(build_info)
         self.test_runner.run_once(build_info)
 

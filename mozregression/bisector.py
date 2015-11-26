@@ -5,13 +5,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import math
-import datetime
 from mozlog.structured import get_default_logger
 
-from mozregression.dates import to_datetime
 from mozregression.build_range import range_for_inbounds, range_for_nightlies
-from mozregression.errors import MozRegressionError, LauncherError
+from mozregression.errors import LauncherError, MozRegressionError
 from mozregression.history import BisectionHistory
+from mozregression.branches import find_branch_in_merge_commit
+from mozregression.json_pushes import JsonPushes
 
 
 def compute_steps_left(steps):
@@ -205,54 +205,6 @@ class NightlyHandler(BisectorHandler):
             return ("%s/pushloghtml?startdate=%s&enddate=%s\n"
                     % (self.found_repo, start, end))
 
-    def find_inbound_changesets(self, days_required=4):
-        self._logger.info("... attempting to bisect inbound builds (starting"
-                          " from %d days prior, to make sure no inbound"
-                          " revision is missed)" % days_required)
-        infos = None
-        days = days_required - 1
-        too_many_attempts = False
-        max_attempts = 3
-        first_date = min(to_datetime(self.good_date),
-                         to_datetime(self.bad_date))
-
-        while not infos or not infos.changeset:
-            days += 1
-            if days >= days_required + max_attempts:
-                too_many_attempts = True
-                break
-            prev_date = first_date - datetime.timedelta(days=days)
-            build_range = self.build_range
-            infos = build_range.build_info_fetcher.find_build_info(
-                prev_date.date())
-        if days > days_required and not too_many_attempts:
-            self._logger.info("At least one build folder was invalid, we have"
-                              " to start from %d days ago." % days)
-
-        if not self.find_fix:
-            good_rev = infos.changeset
-            bad_rev = self.bad_revision
-        else:
-            good_rev = self.good_revision
-            bad_rev = infos.changeset
-        if bad_rev is None or good_rev is None:
-            # we cannot find valid nightly builds in the searched range.
-            # two possible causes:
-            # - old nightly builds do not have the changeset information
-            #   so we can't go on inbound. Anyway, these are probably too
-            #   old and won't even exists on inbound.
-            # - something else (builds were not updated on archive.mozilla.org,
-            #   or all invalid)
-            start_range = first_date - datetime.timedelta(days=days_required)
-            end_range = start_range - datetime.timedelta(days=max_attempts)
-            raise MozRegressionError(
-                "Not enough changeset information to produce initial inbound"
-                " regression range (failed to find metadata between %s and %s)"
-                ". Nightly build folders are invalids or too old in this"
-                " range." % (start_range, end_range))
-
-        return good_rev, bad_rev
-
 
 class InboundHandler(BisectorHandler):
     create_range = staticmethod(range_for_inbounds)
@@ -275,6 +227,65 @@ class InboundHandler(BisectorHandler):
                           % (words[0], self.good_revision))
         self._logger.info('%s known bad inbound revision: %s'
                           % (words[1], self.bad_revision))
+
+    def handle_merge(self):
+        # let's check if we are facing a merge, and in that case,
+        # continue the bisection from the merged branch.
+        result = None
+
+        self._logger.debug("Starting merge handling...")
+        # we have to check the commit of the most recent push
+        most_recent_push = self.build_range[1]
+        jp = JsonPushes(most_recent_push.repo_name)
+        push = jp.pushlog_for_change(most_recent_push.changeset, full='1')
+        msg = push['changesets'][-1]['desc']
+        self._logger.debug("Found commit message:\n%s\n" % msg)
+        branch = find_branch_in_merge_commit(msg)
+        if not (branch and len(push['changesets']) >= 2):
+            return
+        try:
+            # so, this is a merge. We can find the oldest and youngest
+            # changesets, and the branch where the merge comes from.
+            oldest = push['changesets'][0]['node']
+            # exclude the merge commit
+            youngest = push['changesets'][-2]['node']
+            self._logger.debug("This is a merge from %s" % branch)
+
+            # we can't use directly the youngest changeset because we
+            # don't know yet if it is good.
+            #
+            # PUSH1    PUSH2
+            # [1 2] [3 4 5 6 7]
+            #    G    MERGE  B
+            #
+            # so first, grab it. This needs to be done on the right branch.
+            jp2 = JsonPushes(branch)
+            raw = [int(i) for i in
+                   jp2.pushlog_within_changes(oldest, youngest, raw=True)]
+            data = jp2._request(jp2.json_pushes_url(
+                startID=str(min(raw) - 2),
+                endID=str(max(raw)),
+            ))
+            datakeys = [int(i) for i in data]
+            oldest = data[str(min(datakeys))]["changesets"][0]
+            youngest = data[str(max(datakeys))]["changesets"][-1]
+
+            # we are ready to bisect further
+            self._logger.info("************* Switching to %s" % branch)
+            gr, br = self._reverse_if_find_fix(oldest, youngest)
+            result = (branch, gr, br)
+        except MozRegressionError:
+            self._logger.debug("Got exception", exc_info=True)
+            raise MozRegressionError(
+                "Unable to exploit the merge commit. Origin branch is {}, and"
+                " the commit message for {} was:\n{}".format(
+                    most_recent_push.repo_name,
+                    most_recent_push.short_changeset,
+                    msg
+                )
+            )
+        self._logger.debug('End merge handling')
+        return result
 
 
 class Bisection(object):

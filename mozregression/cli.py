@@ -201,14 +201,9 @@ def create_parser(defaults):
                         help="application name. Default: %(default)s.")
 
     parser.add_argument("--repo",
-                        metavar="[mozilla-aurora|mozilla-beta|...]",
+                        metavar="[mozilla-aurora|mozilla-inbound|fx-team...]",
                         default=defaults["repo"],
-                        help="repository name used for nightly hunting.")
-
-    parser.add_argument("--inbound-branch",
-                        metavar="[b2g-inbound|fx-team|...]",
-                        default=defaults["inbound-branch"],
-                        help="inbound branch name on archive.mozilla.org.")
+                        help="repository name used for the bisection.")
 
     parser.add_argument("--bits",
                         choices=("32", "64"),
@@ -375,14 +370,10 @@ def check_inbounds(options, fetch_config, logger):
 
 
 def check_taskcluster(options, fetch_config, logger):
-    if options.repo and options.inbound_branch:
-        raise MozRegressionError('unable to define both --repo and'
-                                 ' --inbound-branch for b2g-device')
     if options.repo:
         # if repo is defined, use that to bisect using taskcluster,
         # ie the "inbound way" for now. Just remove the "integration"
         # branch path.
-        fetch_config.set_branch_path(None)
         fetch_config.set_inbound_branch(options.repo)
 
     if options.last_good_revision and options.first_bad_revision:
@@ -398,8 +389,7 @@ def check_taskcluster(options, fetch_config, logger):
         check_nightlies(options, fetch_config, logger)
 
         from mozregression.json_pushes import JsonPushes
-        jpushes = JsonPushes(branch=fetch_config.inbound_branch,
-                             path=fetch_config.branch_path)
+        jpushes = JsonPushes(branch=fetch_config.inbound_branch)
         options.last_good_revision = jpushes.revision_for_date(
             options.good_date
         )
@@ -490,27 +480,24 @@ class Configuration(object):
             self.logger.info("only 64-bit builds available for mac, using "
                              "64-bit builds")
 
-        if fetch_config.is_inbound():
-            # this can be useful for both inbound and nightly, because we
-            # can go to inbound from nightly.
-            fetch_config.set_inbound_branch(options.inbound_branch)
-
-            if fetch_config.tk_needs_auth():
-                # re-read configuration to get taskcluster options
-                # TODO: address this to avoid re-reading the conf file
-                defaults = get_defaults(DEFAULT_CONF_FNAME)
-                client_id = defaults.get('taskcluster-clientid')
-                access_token = defaults.get('taskcluster-accesstoken')
-                if not (client_id and access_token):
-                    raise MozRegressionError(
-                        "taskcluster-clientid and taskcluster-accesstoken are"
-                        " required in the configuration file (%s) for %s"
-                        % (DEFAULT_CONF_FNAME, fetch_config.app_name)
-                    )
-                fetch_config.set_tk_credentials(client_id, access_token)
+        if fetch_config.is_inbound() and fetch_config.tk_needs_auth():
+            # re-read configuration to get taskcluster options
+            # TODO: address this to avoid re-reading the conf file
+            defaults = get_defaults(DEFAULT_CONF_FNAME)
+            client_id = defaults.get('taskcluster-clientid')
+            access_token = defaults.get('taskcluster-accesstoken')
+            if not (client_id and access_token):
+                raise MozRegressionError(
+                    "taskcluster-clientid and taskcluster-accesstoken are"
+                    " required in the configuration file (%s) for %s"
+                    % (DEFAULT_CONF_FNAME, fetch_config.app_name)
+                )
+            fetch_config.set_tk_credentials(client_id, access_token)
 
         # set action for just use changset or data to bisect
         if options.launch:
+            if fetch_config.is_inbound():
+                fetch_config.set_inbound_branch(options.repo)
             try:
                 options.launch = parse_date(options.launch)
                 self.action = "launch_nightlies"
@@ -530,6 +517,7 @@ class Configuration(object):
             # set
             self.action = "bisect_inbounds"
             check_inbounds(options, fetch_config, self.logger)
+            fetch_config.set_inbound_branch(options.repo)
         else:
             self.action = "bisect_nightlies"
             check_nightlies(options, fetch_config, self.logger)

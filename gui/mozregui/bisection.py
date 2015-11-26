@@ -102,6 +102,7 @@ class GuiBisector(QObject, Bisector):
     step_build_found = Signal(object, object)
     step_testing = Signal(object, object)
     step_finished = Signal(object, str)
+    handle_merge = Signal(object, str, str, str)
 
     def __init__(self, fetch_config, download_dir, persist_limit):
         QObject.__init__(self)
@@ -132,20 +133,30 @@ class GuiBisector(QObject, Bisector):
             self._finish_on_exception(None)
 
     @Slot()
-    def nightlies_to_inbound(self):
-        """
-        Call this when going from nightlies to inbound.
-        """
+    def bisect_further(self):
         assert self.bisection
         self.started.emit()
+        handler = self.bisection.handler
         try:
-            # first we need to find the changesets
-            first, last = self.bisection.handler.find_inbound_changesets()
-            # create the inbound handler, and go with that
-            handler = InboundHandler(find_fix=self.bisection.handler.find_fix)
-            Bisector.bisect(self, handler, first, last)
+            nhandler = InboundHandler(find_fix=self.bisection.handler.find_fix)
+            Bisector.bisect(self, nhandler, handler.good_revision,
+                            handler.bad_revision)
         except MozRegressionError:
             self._finish_on_exception(None)
+
+    @Slot()
+    def check_merge(self):
+        handler = self.bisection.handler
+        try:
+            result = handler.handle_merge()
+        except MozRegressionError:
+            self._finish_on_exception(None)
+            return
+        if result is None:
+            self.bisection.no_more_merge = True
+            self.finished.emit(self.bisection, Bisection.FINISHED)
+        else:
+            self.handle_merge.emit(self.bisection, *result)
 
     def _bisect(self, handler, build_range):
         self.bisection = Bisection(handler, build_range,
@@ -269,6 +280,7 @@ class BisectRunner(QObject):
         self.bisector.test_runner.evaluate_started.connect(
             self.evaluate)
         self.bisector.finished.connect(self.bisection_finished)
+        self.bisector.handle_merge.connect(self.handle_merge)
         self.bisector.choose_next_build.connect(self.choose_next_build)
         self.bisector_created.emit(self.bisector)
         if options['bisect_type'] == 'nightlies':
@@ -360,24 +372,38 @@ class BisectRunner(QObject):
             msg = "Error: %s" % self.bisector.error[1]
             dialog = QMessageBox.critical
         else:
-            if self.bisector.fetch_config.can_go_inbound() and \
-                    isinstance(bisection.handler, NightlyHandler):
-                # we can go on inbound, let's ask the user
-                if QMessageBox.question(
-                    self.mainwindow,
-                    "End of the bisection",
-                    "Nightly bisection is done, but you can continue the"
-                    " bisection on inbound builds. Continue with inbounds ?",
-                    QMessageBox.Yes | QMessageBox.No,
-                    QMessageBox.Yes
-                ) == QMessageBox.Yes:
-                    # let's go on inbound
-                    QTimer.singleShot(0, self.bisector.nightlies_to_inbound)
+            fetch_config = self.bisector.fetch_config
+            if fetch_config.can_go_inbound() and not \
+                    getattr(bisection, 'no_more_merge', False):
+                if isinstance(bisection.handler, NightlyHandler):
+                    handler = bisection.handler
+                    fetch_config.set_inbound_branch(
+                        fetch_config.get_nightly_repo(handler.bad_date))
+                    QTimer.singleShot(0, self.bisector.bisect_further)
                 else:
-                    # no inbound, bisection is done.
-                    self.stop()
+                    # check merge, try to bisect further
+                    QTimer.singleShot(0, self.bisector.check_merge)
                 return
+            else:
+                # no inbound, bisection is done.
+                self.stop()
             msg = "The bisection is done."
             dialog = QMessageBox.information
         dialog(self.mainwindow, "End of the bisection", msg)
         self.stop()
+
+    @Slot(object, str, str, str)
+    def handle_merge(self, bisection, branch, good_rev, bad_rev):
+        if QMessageBox.question(
+                self.mainwindow,
+                "Merge found",
+                "Found a merge from %s. Do you want to bisect further ?"
+                % branch,
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes):
+            self.bisector.fetch_config.set_inbound_branch(str(branch))
+            bisection.handler.good_revision = str(good_rev)
+            bisection.handler.bad_revision = str(bad_rev)
+            QTimer.singleShot(0, self.bisector.bisect_further)
+        else:
+            self.stop()

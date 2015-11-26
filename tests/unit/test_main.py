@@ -93,10 +93,12 @@ def test_app_bisect_nightlies_finished(create_app, mocker, can_go_inbound):
     app.fetch_config.can_go_inbound = Mock(return_value=can_go_inbound)
     app.bisector.bisect = Mock(return_value=Bisection.FINISHED)
     app._bisect_inbounds = Mock(return_value=0)
-    find_inbounds = mocker.patch(
-        "mozregression.main.NightlyHandler.find_inbound_changesets"
+    NightlyHandler = mocker.patch(
+        "mozregression.main.NightlyHandler"
     )
-    find_inbounds.return_value = ('c1', 'c2')
+    nh = Mock(bad_date=date.today(), good_revision='c1',
+              bad_revision='c2')
+    NightlyHandler.return_value = nh
     assert app.bisect_nightlies() == 0
     app.bisector.bisect.assert_called_once_with(
         ANY,
@@ -108,8 +110,6 @@ def test_app_bisect_nightlies_finished(create_app, mocker, can_go_inbound):
     )
     if can_go_inbound:
         app._bisect_inbounds.assert_called_once_with('c1', 'c2')
-    else:
-        assert create_app.find_in_log("Can not bisect inbound", False)
 
 
 def test_app_bisect_nightlies_no_data(create_app):
@@ -142,7 +142,6 @@ def test_app_bisect_inbounds_finished(create_app, same_chsets):
     (['--persist', 'blah stuff'], "--persist 'blah stuff'"),
     (['--addon=a b c', '--addon=d'], "'--addon=a b c' --addon=d"),
     (['--find-fix', '--arg=a b'], "--find-fix '--arg=a b'"),
-    (['--inbound-branch=branch'], '--inbound-branch=branch'),
     (['--repo=branch'], '--repo=branch'),
     (['--profile=pro file'], "'--profile=pro file'"),
 ])

@@ -384,27 +384,10 @@ def check_taskcluster(options, fetch_config, logger):
             options.first_bad_revision,
         )
     else:
-        # If we don't have revisions, use the nightly-style date range and
-        # convert it into a good/bad rev.
+        # If we don't have revisions, pass date instead
         check_nightlies(options, fetch_config, logger)
-
-        from mozregression.json_pushes import JsonPushes
-        jpushes = JsonPushes(branch=fetch_config.inbound_branch)
-        options.last_good_revision = jpushes.revision_for_date(
-            options.good_date
-        )
-        options.first_bad_revision = jpushes.revision_for_date(
-            options.bad_date,
-            last=True
-        )
-        print "Using good rev %s for date %s" % (
-            options.last_good_revision,
-            options.good_date
-        )
-        print "Using bad rev %s for date %s" % (
-            options.first_bad_revision,
-            options.bad_date
-        )
+        options.last_good_revision = options.good_date
+        options.first_bad_revision = options.bad_date
 
 
 class Configuration(object):

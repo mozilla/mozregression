@@ -15,7 +15,7 @@ import datetime
 from threading import Thread
 from mozlog import get_default_logger
 
-from mozregression.dates import to_date
+from mozregression.dates import to_date, is_date_or_datetime
 from mozregression.errors import BuildInfoNotFound
 from mozregression.fetch_build_info import (InboundInfoFetcher,
                                             NightlyInfoFetcher)
@@ -154,8 +154,20 @@ def range_for_inbounds(fetch_config, start_rev, end_rev):
     Creates a BuildRange for inbounds builds.
     """
     info_fetcher = InboundInfoFetcher(fetch_config)
+    jpushes = info_fetcher.jpushes
 
-    pushlogs = info_fetcher.jpushes.pushlog_within_changes(start_rev, end_rev)
+    def _to_rev(obj, last=False):
+        if is_date_or_datetime(obj):
+            rev = jpushes.revision_for_date(obj, last=last)
+            info_fetcher._logger.info(
+                'Using revision {} for {}'.format(rev, obj))
+            return rev
+        return obj
+
+    start_rev = _to_rev(start_rev)
+    end_rev = _to_rev(end_rev, last=True)
+
+    pushlogs = jpushes.pushlog_within_changes(start_rev, end_rev)
 
     futures_builds = []
     for pushlog in pushlogs:

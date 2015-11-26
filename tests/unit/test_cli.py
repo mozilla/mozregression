@@ -197,6 +197,23 @@ def test_no_args(os, bits, default_good_date):
         assert config.options.bad_date == datetime.date.today()
 
 
+def test_integration_branch_with_dates():
+    config = do_cli('--good=2015-11-01', '--bad=2015-11-03', '--repo=m-i')
+
+    assert config.action == 'bisect_inbounds'  # meaning taskcluster usage
+    assert config.options.last_good_revision == datetime.date(2015, 11, 1)
+    assert config.options.first_bad_revision == datetime.date(2015, 11, 3)
+
+
+def test_b2g_devices_always_use_taskcluster():
+    config = do_cli('--good=2015-11-01', '--bad=2015-11-03', '--repo=m-c',
+                    '--app=b2g-emulator')
+
+    assert config.action == 'bisect_inbounds'  # meaning taskcluster usage
+    assert config.options.last_good_revision == datetime.date(2015, 11, 1)
+    assert config.options.first_bad_revision == datetime.date(2015, 11, 3)
+
+
 @pytest.mark.parametrize("os,bits,default_bad_date", DEFAULTS_DATE)
 def test_find_fix_reverse_default_dates(os, bits, default_bad_date):
     with patch('mozregression.cli.mozinfo') as mozinfo:
@@ -232,13 +249,17 @@ def test_with_releases():
     assert str(conf.options.bad_date) == releases_data[-1][1]
 
 
-@pytest.mark.parametrize('arg', [
-    '--launch=34'
+@pytest.mark.parametrize('args,action,value', [
+    (['--launch=34'], 'launch_nightlies', cli.parse_date(releases()[34])),
+    (['--launch=2015-11-01'], 'launch_nightlies', datetime.date(2015, 11, 1)),
+    (['--launch=abc123'], 'launch_inbound', 'abc123'),
+    (['--launch=2015-11-01', '--repo=m-i'], 'launch_inbound',
+     datetime.date(2015, 11, 1)),
 ])
-def test_launch_with_release_number(arg):
-    config = do_cli(arg)
-    assert config.action == 'launch_nightlies'
-    assert config.options.launch == cli.parse_date(releases()[34])
+def test_launch(args, action, value):
+    config = do_cli(*args)
+    assert config.action == action
+    assert config.options.launch == value
 
 
 def test_bad_date_later_than_good():

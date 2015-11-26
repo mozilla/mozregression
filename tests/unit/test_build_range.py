@@ -1,6 +1,8 @@
 import pytest
 from datetime import date, datetime
 
+from mock import call
+
 from mozregression import build_range
 from mozregression.fetch_build_info import InfoFetcher
 from mozregression.errors import BuildInfoNotFound
@@ -119,6 +121,24 @@ def test_range_for_inbounds(mocker):
     assert b_range[0] == 'b'
     assert b_range[1] == 'd'
     assert b_range[2] == 'f'
+
+
+def test_range_for_inbounds_with_dates(mocker):
+    fetch_config = create_config('firefox', 'linux', 64)
+    jpush_class = mocker.patch('mozregression.fetch_build_info.JsonPushes')
+    jpush = mocker.Mock(
+        pushlog_within_changes=mocker.Mock(return_value=[]),
+        spec=JsonPushes
+    )
+    jpush_class.return_value = jpush
+
+    start, end = date(2015, 1, 1), datetime.now()
+    build_range.range_for_inbounds(fetch_config, start, end)
+
+    jpush.revision_for_date.assert_has_calls([
+        call(start, last=False),
+        call(end, last=True)
+    ])
 
 
 def test_range_for_nightlies():

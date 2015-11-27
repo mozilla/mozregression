@@ -7,37 +7,38 @@ description: Some common command line options
 
 # Usage of mozregression
 
-Some useful command line usage.
+Some useful command line usage. See **mozregression -\-help** for a complete and up
+to date list of available options.
 
 
 ## Testing application options
 
 - Run for another application than firefox
 
-       mozregression --app thunderbird
+        mozregression --app thunderbird
 
 - Run with specific profile
 
-       mozregression --profile=/path/to/profile
+        mozregression --profile=/path/to/profile
 
 - Install addons
 
-       mozregression --addon /path/to/addon --addon /other/addon
+        mozregression --addon /path/to/addon --addon /other/addon
 
 -  Forward arguments to tested binary (note that you must use '=' for arguments beginning with '-' so that the     parser doesn't get confused)
 
-       mozregression --arg='-foreground' --arg='-P'
+        mozregression --arg='-foreground' --arg='-P'
 
 - Test a 32 bit binary on 64 bit system
 
-       mozregression --bits 32
+        mozregression --bits 32
 
   Note: On linux systems (particularly Ubuntu) if you are facing errors in running 32-bit Firefox on
   64-bit machine, the cause is often missing 32-bit libraries. Use --log-mach-level=debug along with the
   above command to figure out which library is needed. For example, if the browser is not launching and
   you get an error like:
 
-       libXt.so.6: cannot open shared object file: No such file or directory
+        libXt.so.6: cannot open shared object file: No such file or directory
 
   You will need to install the library libXt6:i386 via 'sudo apt-get install libXt6:i386'. In case,
   you don't get a library needed error and some other error (like OSError) install the library
@@ -48,19 +49,19 @@ Some useful command line usage.
 
 - Bisecting nightlies
 
-       mozregression  --good 2014-12-25 --bad 2015-01-07
+        mozregression  --good 2014-12-25 --bad 2015-01-07
 
 - Bisecting nightlies given firefox releases number
 
-       mozregression --good-release 33 --bad-release 34
+        mozregression --good-release 33 --bad-release 34
 
 - Bisecting from a specific nightly project branch
 
-       mozregression  --repo mozilla-aurora
+        mozregression  --repo mozilla-aurora
 
 - Bisecting inbound directly
 
-       mozregression --good-rev 8850aa0f --bad-rev 2a193b7f
+        mozregression --good-rev 8850aa0f --bad-rev 2a193b7f
 
 - Look for a bug fix instead of a regression (bisect the other way around)
 
@@ -68,14 +69,14 @@ Some useful command line usage.
 
 - Automate mozregression run (see [Automatic bisection]({{"/documentation/automatic-bisection.html" | prepend: site.baseurl}}))
 
-       mozregression --command 'test-command {binary}'
+        mozregression --command 'test-command {binary}'
 
 - Disable background download of next builds
 
   Downloading next builds in background (while you are testing one build) is generally good as it
   improves performance. Still you can disable this with:
 
-       mozregression --no-background-dl
+        mozregression --no-background-dl
 
 ## Network persistence
 
@@ -83,31 +84,43 @@ Some useful command line usage.
 
         mozregression --persist temp
 
-- keep downloading files in background
+- Limit the size of the persist folder:
+
+        mozregression --persist-size-limit
+
+  Note that those options should be defined in the [configuration file](configuration.html).
+
+- Keep downloading files in background
 
   When download in background is enabled (the default), the background download that
   is not used for testing is canceled. If you use the persist option and want to force
   the full download of these files (to be able to use them later), then you can keep
   these files by specifying a background download policy of keep:
 
-       mozregression --persist tmp/ --background-dl-policy keep
+        mozregression --persist tmp/ --background-dl-policy keep
 
 ## Increase verbosity
 
+- Print the tested binaries outputs
+
+        mozregression -P stdout
+
+  Use the value *none* to disable.
+
 - Useful to understand what happens under the hood
 
-       mozregression --log-mach-level debug
+        mozregression --log-mach-level debug
 
 ## Miscellaneous
 
 - List all command line options
 
-       mozregression --help
+        mozregression --help
 
 - Show the current version
 
-       mozregression --version
+        mozregression --version
 
 - List firefox releases numbers
 
-       mozregression --list-releases
+        mozregression --list-releases

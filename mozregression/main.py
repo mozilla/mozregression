@@ -177,10 +177,11 @@ class Application(object):
             raise
 
     def _print_resume_info(self, handler):
-        # copy sys.argv, remove every --good/--bad related argument,
+        # copy sys.argv, remove every --good/--bad/--repo related argument,
         # then add our own
         argv = sys.argv[:]
-        args = ('--good', '--bad', '-g', '-b', '--good-rev', '--bad-rev')
+        args = ('--good', '--bad', '-g', '-b', '--good-rev', '--bad-rev',
+                '--repo')
         indexes_to_remove = []
         for i, arg in enumerate(argv):
             if i in indexes_to_remove:
@@ -197,7 +198,9 @@ class Application(object):
         for i in reversed(indexes_to_remove):
             del argv[i]
 
-        if isinstance(handler, NightlyHandler):
+        argv.append('--repo=%s' % handler.build_range[0].repo_name)
+
+        if hasattr(handler, 'good_date'):
             argv.append('--good=%s' % handler.good_date)
             argv.append('--bad=%s' % handler.bad_date)
         else:

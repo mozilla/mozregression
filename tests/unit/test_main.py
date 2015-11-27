@@ -9,12 +9,13 @@ import unittest
 import requests
 
 from datetime import date
-from mock import patch, Mock, ANY
+from mock import patch, Mock, MagicMock, ANY
 
 from mozregression import main, errors, __version__
 from mozregression.test_runner import ManualTestRunner, CommandTestRunner
 from mozregression.download_manager import BuildDownloadManager
-from mozregression.bisector import Bisector, Bisection
+from mozregression.bisector import Bisector, Bisection, InboundHandler, \
+    NightlyHandler
 
 
 class AppCreator(object):
@@ -142,11 +143,20 @@ def test_app_bisect_inbounds_finished(create_app, same_chsets):
     (['--persist', 'blah stuff'], "--persist 'blah stuff'"),
     (['--addon=a b c', '--addon=d'], "'--addon=a b c' --addon=d"),
     (['--find-fix', '--arg=a b'], "--find-fix '--arg=a b'"),
-    (['--repo=branch'], '--repo=branch'),
     (['--profile=pro file'], "'--profile=pro file'"),
+    (['-g', '2015-11-01'], "--good=2015-11-01"),
+    (['--bad=2015-11-03'], "--bad=2015-11-03"),
 ])
 def test_app_bisect_nightlies_user_exit(create_app, argv, expected_log,
                                         mocker):
+    Handler = mocker.patch("mozregression.main.NightlyHandler")
+    Handler.return_value = Mock(
+        build_range=[Mock(repo_name="mozilla-central")],
+        good_date='2015-11-01',
+        bad_date='2015-11-03',
+        spec=NightlyHandler
+    )
+
     app = create_app(argv)
     app.bisector.bisect = Mock(return_value=Bisection.USER_EXIT)
     sys = mocker.patch('mozregression.main.sys')
@@ -154,13 +164,21 @@ def test_app_bisect_nightlies_user_exit(create_app, argv, expected_log,
     assert app.bisect_nightlies() == 0
     assert create_app.find_in_log("To resume, run:")
     assert create_app.find_in_log(expected_log, False)
+    assert create_app.find_in_log("--repo=mozilla-central", False)
 
 
-def test_app_bisect_inbounds_user_exit(create_app):
+def test_app_bisect_inbounds_user_exit(create_app, mocker):
+    Handler = mocker.patch("mozregression.main.InboundHandler")
+    Handler.return_value = Mock(build_range=[Mock(repo_name="fx-team")],
+                                good_revision='c1',
+                                bad_revision='c2',
+                                spec=InboundHandler)
+
     app = create_app(['--good-rev=c1', '--bad-rev=c2'])
     app.bisector.bisect = Mock(return_value=Bisection.USER_EXIT)
     assert app.bisect_inbounds() == 0
     assert create_app.find_in_log("To resume, run:")
+    assert create_app.find_in_log("--repo=fx-team", False)
 
 
 def test_app_bisect_inbounds_no_data(create_app):
@@ -177,7 +195,7 @@ def test_app_bisect_ctrl_c_exit(create_app, mocker):
     app = create_app([])
     app.bisector.bisect = Mock(side_effect=KeyboardInterrupt)
     at_exit = mocker.patch('atexit.register')
-    handler = Mock(good_revision='c1', bad_revision='c2')
+    handler = MagicMock(good_revision='c1', bad_revision='c2')
     Handler = mocker.patch("mozregression.main.NightlyHandler")
     Handler.return_value = handler
     with pytest.raises(KeyboardInterrupt):

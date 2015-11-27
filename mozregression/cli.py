@@ -490,8 +490,21 @@ class Configuration(object):
             check_nightlies(options, fetch_config, self.logger)
             if use_taskcluster:
                 self.action = 'bisect_inbounds'
-                options.last_good_revision = options.good_date
-                options.first_bad_revision = options.bad_date
+                last_year = \
+                    datetime.datetime.now() + datetime.timedelta(days=-365)
+
+                def _valid_date(date):
+                    if to_datetime(date) < last_year:
+                        self.logger.info(
+                            "Tasckluster only keep builds for one year."
+                            " Using %s instead of %s."
+                            % (last_year, date)
+                        )
+                        return last_year
+                    return date
+
+                options.last_good_revision = _valid_date(options.good_date)
+                options.first_bad_revision = _valid_date(options.bad_date)
                 check_inbounds(options, fetch_config, self.logger)
 
         options.preferences = preferences(options.prefs_files, options.prefs)

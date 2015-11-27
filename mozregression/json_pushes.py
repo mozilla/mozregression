@@ -92,7 +92,7 @@ class JsonPushes(object):
         enddate = date + datetime.timedelta(days=1)
         url = '%s/json-pushes?startdate=%s&enddate=%s' % (
             self.repo_url(),
-            date,
+            date.strftime('%Y-%m-%d'),
             enddate.strftime('%Y-%m-%d'),
         )
         chsets = self._request(url)

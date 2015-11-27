@@ -196,22 +196,34 @@ def test_no_args(os, bits, default_good_date):
         assert config.options.good_date == default_good_date
         assert config.options.bad_date == datetime.date.today()
 
+TODAY = datetime.date.today()
+SOME_DATE = TODAY + datetime.timedelta(days=-20)
+SOME_OLDER_DATE = TODAY + datetime.timedelta(days=-10)
 
-def test_integration_branch_with_dates():
-    config = do_cli('--good=2015-11-01', '--bad=2015-11-03', '--repo=m-i')
+
+@pytest.mark.parametrize('params,good,bad', [
+    # we can use dates with integration branches
+    (['--good=%s' % SOME_DATE, '--bad=%s' % SOME_OLDER_DATE, '--repo=m-i'],
+     SOME_DATE, SOME_OLDER_DATE),
+    # dates are adjusted to maximum one year before for taskcluster
+    # and defaults are respected (here, bad will be today)
+    (['--good=2014-11-01', '--repo=m-i'],
+     TODAY + datetime.timedelta(days=-365), TODAY),
+    # b2g devices always use taskcluster, even with releases branches
+    (['--good=%s' % SOME_DATE, '--bad=%s' % SOME_OLDER_DATE, '--repo=m-c',
+      '--app=b2g-emulator'],
+     SOME_DATE, SOME_OLDER_DATE),
+])
+def test_use_taskcluster_bisection_method(params, good, bad):
+    config = do_cli(*params)
 
     assert config.action == 'bisect_inbounds'  # meaning taskcluster usage
-    assert config.options.last_good_revision == datetime.date(2015, 11, 1)
-    assert config.options.first_bad_revision == datetime.date(2015, 11, 3)
-
-
-def test_b2g_devices_always_use_taskcluster():
-    config = do_cli('--good=2015-11-01', '--bad=2015-11-03', '--repo=m-c',
-                    '--app=b2g-emulator')
-
-    assert config.action == 'bisect_inbounds'  # meaning taskcluster usage
-    assert config.options.last_good_revision == datetime.date(2015, 11, 1)
-    assert config.options.first_bad_revision == datetime.date(2015, 11, 3)
+    # compare dates using the representation, as we may have
+    # date / datetime instances
+    assert config.options.last_good_revision.strftime('%Y-%m-%d') \
+        == good.strftime('%Y-%m-%d')
+    assert config.options.first_bad_revision.strftime('%Y-%m-%d') \
+        == bad.strftime('%Y-%m-%d')
 
 
 @pytest.mark.parametrize("os,bits,default_bad_date", DEFAULTS_DATE)

@@ -435,9 +435,11 @@ class Configuration(object):
         if fetch_config.is_inbound():
             fetch_config.set_inbound_branch(options.repo)
 
-        # we need to use taskcluser for integration branches and b2g
+        # we need to use taskcluser for integration branches and b2g,
+        # or if we are looking for a specific build flavor
         use_taskcluster = (branches.get_category(options.repo) == 'integration'
-                           or fetch_config.is_b2g_device())
+                           or fetch_config.is_b2g_device()
+                           or fetch_config.build_type != 'opt')
 
         if not user_defined_bits and \
                 options.bits == 64 and \

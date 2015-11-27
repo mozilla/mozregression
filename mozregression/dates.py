@@ -45,3 +45,7 @@ def to_date(date_time):
     if isinstance(date_time, datetime.datetime):
         return date_time.date()
     return date_time
+
+
+def is_date_or_datetime(obj):
+    return isinstance(obj, (datetime.date, datetime.datetime))

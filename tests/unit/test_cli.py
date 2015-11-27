@@ -196,6 +196,35 @@ def test_no_args(os, bits, default_good_date):
         assert config.options.good_date == default_good_date
         assert config.options.bad_date == datetime.date.today()
 
+TODAY = datetime.date.today()
+SOME_DATE = TODAY + datetime.timedelta(days=-20)
+SOME_OLDER_DATE = TODAY + datetime.timedelta(days=-10)
+
+
+@pytest.mark.parametrize('params,good,bad', [
+    # we can use dates with integration branches
+    (['--good=%s' % SOME_DATE, '--bad=%s' % SOME_OLDER_DATE, '--repo=m-i'],
+     SOME_DATE, SOME_OLDER_DATE),
+    # dates are adjusted to maximum one year before for taskcluster
+    # and defaults are respected (here, bad will be today)
+    (['--good=2014-11-01', '--repo=m-i'],
+     TODAY + datetime.timedelta(days=-365), TODAY),
+    # b2g devices always use taskcluster, even with releases branches
+    (['--good=%s' % SOME_DATE, '--bad=%s' % SOME_OLDER_DATE, '--repo=m-c',
+      '--app=b2g-emulator'],
+     SOME_DATE, SOME_OLDER_DATE),
+])
+def test_use_taskcluster_bisection_method(params, good, bad):
+    config = do_cli(*params)
+
+    assert config.action == 'bisect_inbounds'  # meaning taskcluster usage
+    # compare dates using the representation, as we may have
+    # date / datetime instances
+    assert config.options.last_good_revision.strftime('%Y-%m-%d') \
+        == good.strftime('%Y-%m-%d')
+    assert config.options.first_bad_revision.strftime('%Y-%m-%d') \
+        == bad.strftime('%Y-%m-%d')
+
 
 @pytest.mark.parametrize("os,bits,default_bad_date", DEFAULTS_DATE)
 def test_find_fix_reverse_default_dates(os, bits, default_bad_date):
@@ -232,13 +261,17 @@ def test_with_releases():
     assert str(conf.options.bad_date) == releases_data[-1][1]
 
 
-@pytest.mark.parametrize('arg', [
-    '--launch=34'
+@pytest.mark.parametrize('args,action,value', [
+    (['--launch=34'], 'launch_nightlies', cli.parse_date(releases()[34])),
+    (['--launch=2015-11-01'], 'launch_nightlies', datetime.date(2015, 11, 1)),
+    (['--launch=abc123'], 'launch_inbound', 'abc123'),
+    (['--launch=2015-11-01', '--repo=m-i'], 'launch_inbound',
+     datetime.date(2015, 11, 1)),
 ])
-def test_launch_with_release_number(arg):
-    config = do_cli(arg)
-    assert config.action == 'launch_nightlies'
-    assert config.options.launch == cli.parse_date(releases()[34])
+def test_launch(args, action, value):
+    config = do_cli(*args)
+    assert config.action == action
+    assert config.options.launch == value
 
 
 def test_bad_date_later_than_good():

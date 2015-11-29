@@ -25,6 +25,7 @@ class ReportItem(object):
 
     def update_pushlogurl(self, bisection):
         self.data['pushlog_url'] = bisection.handler.get_pushlog_url()
+        self.data['repo_name'] = bisection.build_range[0].repo_name
 
     def status_text(self):
         return "Looking for build data..."
@@ -56,8 +57,8 @@ class StartItem(ReportItem):
     def status_text(self):
         if 'pushlog_url' not in self.data:
             return ReportItem.status_text(self)
-        return 'Started %s [%s - %s]' % (self.build_type,
-                                         self.first, self.last)
+        return 'Bisecting on %s [%s - %s]' % (self.data['repo_name'],
+                                              self.first, self.last)
 
 
 class StepItem(ReportItem):
@@ -73,12 +74,13 @@ class StepItem(ReportItem):
         if not self.data:
             return ReportItem.status_text(self)
         if self.data['build_type'] == 'nightly':
-            msg = "%%s nightly build: %s" % self.data['build_date']
+            desc = self.data['build_date']
         else:
-            msg = "%%s inbound build: %s" % self.data['changeset'][:8]
+            desc = self.data['changeset'][:8]
         if self.verdict is not None:
-            msg += ' (verdict: %s)' % self.verdict
-        return msg % self.state_text
+            desc = '%s (verdict: %s)' % (desc, self.verdict)
+        return "%s %s build: %s" % (self.state_text, self.data['repo_name'],
+                                    desc)
 
 
 def _bulk_action_slots(action, slots, signal_object, slot_object):

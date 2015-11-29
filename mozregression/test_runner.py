@@ -34,17 +34,15 @@ class TestRunner(object):
         """
         if build_info.build_type == 'nightly':
             if isinstance(build_info.build_date, datetime.datetime):
-                self.logger.info("Running nightly for buildid %s"
-                                 % build_info.build_date.strftime(
-                                     "%Y%m%d%H%M%S"))
+                desc = ("for buildid %s"
+                        % build_info.build_date.strftime("%Y%m%d%H%M%S"))
             else:
-                self.logger.info("Running nightly for %s"
-                                 % build_info.build_date)
+                desc = "for %s" % build_info.build_date
         else:
-            self.logger.info("Testing inbound build built on %s,"
-                             " revision %s"
-                             % (build_info.build_date,
-                                build_info.short_changeset))
+            desc = ("built on %s, revision %s"
+                    % (build_info.build_date,
+                       build_info.short_changeset))
+        self.logger.info("Running %s build %s" % (build_info.repo_name, desc))
 
         return create_launcher(build_info)
 

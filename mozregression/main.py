@@ -136,8 +136,9 @@ class Application(object):
         return self._bisect_inbounds(self.options.good, self.options.bad)
 
     def _bisect_inbounds(self, good_rev, bad_rev):
-        self._logger.info("Getting inbound builds between %s and %s"
-                          % (good_rev, bad_rev))
+        self._logger.info("Getting %s builds between %s and %s"
+                          % (self.fetch_config.inbound_branch, good_rev,
+                             bad_rev))
         handler = InboundHandler(find_fix=self.options.find_fix)
         result = self._do_bisect(handler, good_rev, bad_rev)
         if result == Bisection.FINISHED:

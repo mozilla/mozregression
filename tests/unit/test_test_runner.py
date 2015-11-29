@@ -56,13 +56,14 @@ class TestManualTestRunner(unittest.TestCase):
             app_name="firefox",
             build_file="/path/to",
             build_date=datetime.datetime(2015, 11, 6, 5, 4, 3),
+            repo_name='mozilla-central',
         )
         self.runner.logger.info = Mock()
         result_launcher = self.runner.create_launcher(info)
         create_launcher.\
             assert_called_with(info)
         self.runner.logger.info.assert_called_with(
-            'Running nightly for buildid 20151106050403')
+            'Running mozilla-central build for buildid 20151106050403')
 
         self.assertEqual(result_launcher, launcher)
 

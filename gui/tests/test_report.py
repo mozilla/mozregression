@@ -24,13 +24,14 @@ def test_report_basic(qtbot):
     assert index.isValid()
 
     # simulate a build found
-    data = dict(build_type='nightly', build_date='date')
+    data = dict(build_type='nightly', build_date='date',
+                repo_name='mozilla-central')
     build_infos = Mock(
         spec=NightlyBuildInfo,
         to_dict=lambda: data,
         **data
     )
-    bisection = Mock()
+    bisection = Mock(build_range=[Mock(repo_name='mozilla-central')])
     bisection.handler.find_fix = False
     bisection.handler.get_range.return_value = ('1', '2')
     view.model().step_build_found(bisection, build_infos)
@@ -39,7 +40,7 @@ def test_report_basic(qtbot):
     # data is updated
     index2 = view.model().index(1, 0)
     assert '[1 - 2]' in view.model().data(index)
-    assert 'nightly' in view.model().data(index2)
+    assert 'mozilla-central' in view.model().data(index2)
 
     # simulate a build evaluation
     view.model().step_finished(None, 'g')
@@ -56,7 +57,6 @@ def test_report_basic(qtbot):
     assert slot.call_count == 1
 
     # let's simulate another bisection step
-    bisection = Mock()
     bisection.handler.get_pushlog_url.return_value = "http://pl"
     view.model().step_started(bisection)
     assert view.model().rowCount() == 3

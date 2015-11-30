@@ -24,7 +24,7 @@ from mozlog.structured import commandline, get_default_logger
 from colorama import Style
 
 from mozregression import __version__, branches
-from mozregression.dates import to_datetime, parse_date
+from mozregression.dates import to_datetime, parse_date, is_date_or_datetime
 from mozregression.config import get_defaults, DEFAULT_CONF_FNAME, write_conf
 from mozregression.fetch_configs import REGISTRY as FC_REGISTRY, create_config
 from mozregression.errors import (MozRegressionError, DateFormatError,
@@ -100,39 +100,25 @@ def create_parser(defaults):
                               " exits."))
 
     parser.add_argument("-b", "--bad",
-                        metavar="YYYY-MM-DD",
-                        dest="bad_date",
-                        help=("first known bad nightly build, default is"
-                              " today. You can also use a buildid, like"
-                              " 20151103030248."))
+                        metavar="DATE|BUILDID|RELEASE|CHANGESET",
+                        help=("first known bad build, default is today."
+                              " It can be a date (YYYY-MM-DD), a build id,"
+                              " a release number or a changeset. If it is"
+                              " a changeset, the default branch will be the"
+                              " integration branch of the application"
+                              " (e.g. mozilla-inbound for firefox), else"
+                              " the default release branch for the application"
+                              " will be used as the default (e.g"
+                              " mozilla-central for firefox)."))
 
     parser.add_argument("-g", "--good",
-                        metavar="YYYY-MM-DD",
-                        dest="good_date",
-                        help=("last known good nightly build. You can also"
-                              " use a buildid, like 20151103030248."))
+                        metavar="DATE|BUILDID|RELEASE|CHANGESET",
+                        help=("last known good build. Same possible values"
+                              " as the --bad option."))
 
     parser.add_argument("--list-releases",
                         action=ListReleasesAction,
                         help="list all known releases and exit")
-
-    parser.add_argument("--bad-release",
-                        type=int,
-                        help=("first known bad nightly build. This option"
-                              " is incompatible with --bad."))
-
-    parser.add_argument("--good-release",
-                        type=int,
-                        help=("last known good nightly build. This option is"
-                              " incompatible with --good."))
-
-    parser.add_argument("--bad-rev", dest="first_bad_revision",
-                        help=("first known bad revision (for inbound"
-                              " bisection)."))
-
-    parser.add_argument("--good-rev", dest="last_good_revision",
-                        help=("last known good revision (for inbound"
-                              " bisection)."))
 
     parser.add_argument("-B", "--build-type",
                         default=defaults["build-type"],
@@ -255,11 +241,9 @@ def create_parser(defaults):
                               ' The default is %(default)s.'))
 
     parser.add_argument('--launch',
-                        metavar="DATE_OR_BUILDID_OR_REV",
-                        help="Launch only one specific build by date (nightly)"
-                             " or changeset (inbound). You can also launch a"
-                             " release using a specific release number, and"
-                             " a nightly using a specific buildid")
+                        metavar="DATE|BUILDID|RELEASE|CHANGESET",
+                        help=("Launch only one specific build. Same possible"
+                              " values as the --bad option."))
 
     parser.add_argument('-P', '--process-output', choices=('none', 'stdout'),
                         default=defaults['process-output'],
@@ -314,59 +298,6 @@ def preferences(prefs_files, prefs_args):
     return prefs()
 
 
-def check_nightlies(options, fetch_config, logger):
-    default_bad_date = str(datetime.date.today())
-    default_good_date = "2009-01-01"
-    if mozinfo.os == 'win' and options.bits == 64:
-        # first firefox build date for win64 is 2010-05-28
-        default_good_date = "2010-05-28"
-    if options.find_fix:
-        default_bad_date, default_good_date = \
-            default_good_date, default_bad_date
-
-    if not options.bad_release and not options.bad_date:
-        options.bad_date = default_bad_date
-        logger.info("No 'bad' date specified, using %s" % options.bad_date)
-    elif options.bad_release and options.bad_date:
-        raise MozRegressionError("Options '--bad-release' and '--bad'"
-                                 " are incompatible.")
-    elif options.bad_release:
-        options.bad_date = date_of_release(options.bad_release)
-        logger.info("Using 'bad' date %s for release %s"
-                    % (options.bad_date, options.bad_release))
-    if not options.good_release and not options.good_date:
-        options.good_date = default_good_date
-        logger.info("No 'good' date specified, using %s"
-                    % options.good_date)
-    elif options.good_release and options.good_date:
-        raise MozRegressionError("Options '--good-release' and '--good'"
-                                 " are incompatible.")
-    elif options.good_release:
-        options.good_date = date_of_release(options.good_release)
-        logger.info("Using 'good' date %s for release %s"
-                    % (options.good_date, options.good_release))
-
-    options.good_date = good_date = parse_date(options.good_date)
-    options.bad_date = bad_date = parse_date(options.bad_date)
-    if not options.find_fix and to_datetime(good_date) > to_datetime(bad_date):
-        raise MozRegressionError(("Good date %s is later than bad date %s."
-                                  " Maybe you wanted to use the --find-fix"
-                                  " flag ?") % (good_date, bad_date))
-    elif options.find_fix and to_datetime(good_date) < to_datetime(bad_date):
-        raise MozRegressionError(("Bad date %s is later than good date %s."
-                                  " You should not use the --find-fix flag"
-                                  " in this case...") % (bad_date, good_date))
-
-
-def check_inbounds(options, fetch_config, logger):
-    if not fetch_config.is_inbound():
-        raise MozRegressionError('Unable to bisect inbound for `%s`'
-                                 % fetch_config.app_name)
-    if not options.last_good_revision or not options.first_bad_revision:
-        raise MozRegressionError("If bisecting inbound, both --good-rev"
-                                 " and --bad-rev must be set")
-
-
 class Configuration(object):
     """
     Holds the configuration extracted from the command line.
@@ -410,6 +341,22 @@ class Configuration(object):
 
         self.action = None
         self.fetch_config = None
+
+    def _convert_to_bisect_arg(self, value):
+        """
+        Transform a string value to a date or datetime if it looks like it.
+        """
+        try:
+            value = parse_date(value)
+        except DateFormatError:
+            try:
+                new_value = parse_date(date_of_release(value))
+                self.logger.info("Using date %s for release %s"
+                                 % (new_value, value))
+                value = new_value
+            except UnavailableRelease:
+                pass
+        return value
 
     def validate(self):
         """
@@ -468,47 +415,54 @@ class Configuration(object):
 
         # set action for just use changset or data to bisect
         if options.launch:
-            try:
-                options.launch = parse_date(options.launch)
-                if use_taskcluster:
-                    self.action = "launch_inbound"
-                else:
-                    self.action = "launch_nightlies"
-            except DateFormatError:
-                try:
-                    options.launch = parse_date(date_of_release(
-                        options.launch))
-                    self.action = "launch_nightlies"
-                except UnavailableRelease:
-                    self.action = "launch_inbound"
-
-        elif options.first_bad_revision or options.last_good_revision:
-            # bisect inbound if last good revision or first bad revision are
-            # set
-            self.action = "bisect_inbounds"
-            check_inbounds(options, fetch_config, self.logger)
+            options.launch = self._convert_to_bisect_arg(options.launch)
+            self.action = "launch_inbound"
+            if is_date_or_datetime(options.launch) and not use_taskcluster:
+                self.action = "launch_nightlies"
         else:
-            self.action = "bisect_nightlies"
-            check_nightlies(options, fetch_config, self.logger)
-            if use_taskcluster:
-                self.action = 'bisect_inbounds'
-                last_year = \
-                    datetime.datetime.now() + datetime.timedelta(days=-365)
+            # define good/bad default values if required
+            default_bad_date = datetime.date.today()
+            default_good_date = datetime.date(2009, 1, 1)
+            if mozinfo.os == 'win' and options.bits == 64:
+                # first firefox build date for win64 is 2010-05-28
+                default_good_date = datetime.date(2010, 5, 28)
+            if options.find_fix:
+                default_bad_date, default_good_date = \
+                    default_good_date, default_bad_date
+            if not options.bad:
+                options.bad = default_bad_date
+                self.logger.info("No 'bad' option specified, using %s"
+                                 % options.bad)
+            else:
+                options.bad = self._convert_to_bisect_arg(options.bad)
+            if not options.good:
+                options.good = default_good_date
+                self.logger.info("No 'good' option specified, using %s"
+                                 % options.good)
+            else:
+                options.good = self._convert_to_bisect_arg(options.good)
 
-                def _valid_date(date):
-                    if to_datetime(date) < last_year:
-                        self.logger.info(
-                            "Tasckluster only keep builds for one year."
-                            " Using %s instead of %s."
-                            % (last_year, date)
-                        )
-                        return last_year
-                    return date
-
-                options.last_good_revision = _valid_date(options.good_date)
-                options.first_bad_revision = _valid_date(options.bad_date)
-                check_inbounds(options, fetch_config, self.logger)
-
+            self.action = "bisect_inbounds"
+            if is_date_or_datetime(options.good) and \
+                    is_date_or_datetime(options.bad):
+                if not options.find_fix and \
+                        to_datetime(options.good) > to_datetime(options.bad):
+                    raise MozRegressionError(
+                        ("Good date %s is later than bad date %s."
+                         " Maybe you wanted to use the --find-fix"
+                         " flag ?") % (options.good, options.bad))
+                elif options.find_fix and \
+                        to_datetime(options.good) < to_datetime(options.bad):
+                    raise MozRegressionError(
+                        ("Bad date %s is later than good date %s."
+                         " You should not use the --find-fix flag"
+                         " in this case...") % (options.bad, options.good))
+                if not use_taskcluster:
+                    self.action = "bisect_nightlies"
+        if self.action in ('launch_inbound', 'bisect_inbounds')\
+                and not fetch_config.is_inbound():
+            raise MozRegressionError('Unable to bisect inbound for `%s`'
+                                     % fetch_config.app_name)
         options.preferences = preferences(options.prefs_files, options.prefs)
         # convert GiB to bytes.
         options.persist_size_limit = \

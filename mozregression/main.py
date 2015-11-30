@@ -110,7 +110,7 @@ class Application(object):
         return self._build_download_manager
 
     def bisect_nightlies(self):
-        good_date, bad_date = self.options.good_date, self.options.bad_date
+        good_date, bad_date = self.options.good, self.options.bad
         handler = NightlyHandler(find_fix=self.options.find_fix)
         result = self._do_bisect(handler, good_date, bad_date)
         if result == Bisection.FINISHED:
@@ -133,8 +133,7 @@ class Application(object):
         return 0
 
     def bisect_inbounds(self):
-        return self._bisect_inbounds(self.options.last_good_revision,
-                                     self.options.first_bad_revision)
+        return self._bisect_inbounds(self.options.good, self.options.bad)
 
     def _bisect_inbounds(self, good_rev, bad_rev):
         self._logger.info("Getting inbound builds between %s and %s"

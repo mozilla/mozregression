@@ -136,7 +136,7 @@ class TestCli(unittest.TestCase):
         filepath = self._create_conf_file(
             '\n'.join('%s=%s' % (k, v) for k, v in values.items())
         )
-        conf = cli.cli(['--good-rev=1', '--bad-rev=2'], conf_file=filepath)
+        conf = cli.cli(['--good=c1', '--bad=c2'], conf_file=filepath)
         conf.validate()
         self.assertEquals(conf.fetch_config.tk_options(), {
             'credentials': {
@@ -193,8 +193,8 @@ def test_no_args(os, bits, default_good_date):
         assert config.fetch_config.app_name == 'firefox'
         # nightly by default
         assert config.action == 'bisect_nightlies'
-        assert config.options.good_date == default_good_date
-        assert config.options.bad_date == datetime.date.today()
+        assert config.options.good == default_good_date
+        assert config.options.bad == datetime.date.today()
 
 TODAY = datetime.date.today()
 SOME_DATE = TODAY + datetime.timedelta(days=-20)
@@ -205,10 +205,6 @@ SOME_OLDER_DATE = TODAY + datetime.timedelta(days=-10)
     # we can use dates with integration branches
     (['--good=%s' % SOME_DATE, '--bad=%s' % SOME_OLDER_DATE, '--repo=m-i'],
      SOME_DATE, SOME_OLDER_DATE),
-    # dates are adjusted to maximum one year before for taskcluster
-    # and defaults are respected (here, bad will be today)
-    (['--good=2014-11-01', '--repo=m-i'],
-     TODAY + datetime.timedelta(days=-365), TODAY),
     # b2g devices always use taskcluster, even with releases branches
     (['--good=%s' % SOME_DATE, '--bad=%s' % SOME_OLDER_DATE, '--repo=m-c',
       '--app=b2g-emulator'],
@@ -223,9 +219,9 @@ def test_use_taskcluster_bisection_method(params, good, bad):
     assert config.action == 'bisect_inbounds'  # meaning taskcluster usage
     # compare dates using the representation, as we may have
     # date / datetime instances
-    assert config.options.last_good_revision.strftime('%Y-%m-%d') \
+    assert config.options.good.strftime('%Y-%m-%d') \
         == good.strftime('%Y-%m-%d')
-    assert config.options.first_bad_revision.strftime('%Y-%m-%d') \
+    assert config.options.bad.strftime('%Y-%m-%d') \
         == bad.strftime('%Y-%m-%d')
 
 
@@ -239,29 +235,19 @@ def test_find_fix_reverse_default_dates(os, bits, default_bad_date):
         assert config.fetch_config.app_name == 'firefox'
         # nightly by default
         assert config.action == 'bisect_nightlies'
-        assert config.options.bad_date == default_bad_date
-        assert config.options.good_date == datetime.date.today()
-
-
-@pytest.mark.parametrize('arg1,arg2', [
-    ['--bad-release=31', '--bad=2015-01-01'],
-    ['--good-release=31', '--good=2015-01-01']
-])
-def test_date_release_are_incompatible(arg1, arg2):
-    with pytest.raises(errors.MozRegressionError) as exc:
-        do_cli(arg1, arg2)
-    assert 'incompatible' in str(exc.value)
+        assert config.options.bad == default_bad_date
+        assert config.options.good == datetime.date.today()
 
 
 def test_with_releases():
     releases_data = sorted(((k, v) for k, v in releases().items()),
                            key=(lambda (k, v): k))
     conf = do_cli(
-        '--bad-release=%s' % releases_data[-1][0],
-        '--good-release=%s' % releases_data[0][0],
+        '--bad=%s' % releases_data[-1][0],
+        '--good=%s' % releases_data[0][0],
     )
-    assert str(conf.options.good_date) == releases_data[0][1]
-    assert str(conf.options.bad_date) == releases_data[-1][1]
+    assert str(conf.options.good) == releases_data[0][1]
+    assert str(conf.options.bad) == releases_data[-1][1]
 
 
 @pytest.mark.parametrize('args,action,value', [
@@ -292,24 +278,17 @@ def test_good_date_later_than_bad():
 
 
 def test_basic_inbound():
-    config = do_cli('--good-rev=1', '--bad-rev=5')
+    config = do_cli('--good=c1', '--bad=c5')
     assert config.fetch_config.app_name == 'firefox'
     assert config.action == 'bisect_inbounds'
-    assert config.options.last_good_revision == '1'
-    assert config.options.first_bad_revision == '5'
-
-
-@pytest.mark.parametrize('arg', ['--good-rev=1', '--bad-rev=5'])
-def test_both_inbound_revs_must_be_given(arg):
-    with pytest.raises(errors.MozRegressionError) as exc:
-        do_cli(arg)
-    assert '--good-rev and --bad-rev must be set' in str(exc.value)
+    assert config.options.good == 'c1'
+    assert config.options.bad == 'c5'
 
 
 def test_inbound_must_be_doable():
     # no inbounds for thunderbird
     with pytest.raises(errors.MozRegressionError) as exc:
-        do_cli('--app', 'thunderbird', '--good-rev=1', '--bad-rev=5')
+        do_cli('--app', 'thunderbird', '--good=c1', '--bad=c5')
         assert 'Unable to bissect inbound' in str(exc.value)
 
 

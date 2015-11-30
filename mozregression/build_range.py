@@ -15,7 +15,8 @@ import datetime
 from threading import Thread
 from mozlog import get_default_logger
 
-from mozregression.dates import to_date, is_date_or_datetime
+from mozregression.dates import to_date, is_date_or_datetime, \
+    to_datetime
 from mozregression.errors import BuildInfoNotFound
 from mozregression.fetch_build_info import (InboundInfoFetcher,
                                             NightlyInfoFetcher)
@@ -149,17 +150,28 @@ class BuildRange(object):
         raise ValueError("%s not in build range." % build_info)
 
 
-def range_for_inbounds(fetch_config, start_rev, end_rev):
+def range_for_inbounds(fetch_config, start_rev, end_rev, time_limit=None):
     """
     Creates a BuildRange for inbounds builds.
     """
     info_fetcher = InboundInfoFetcher(fetch_config)
     jpushes = info_fetcher.jpushes
+    logger = info_fetcher._logger
+
+    time_limit = time_limit or (datetime.datetime.now()
+                                + datetime.timedelta(days=-365))
 
     def _to_rev(obj, last=False):
         if is_date_or_datetime(obj):
+            if to_datetime(obj) < time_limit:
+                logger.info(
+                    "Tasckluster only keep builds for one year."
+                    " Using %s instead of %s."
+                    % (time_limit, obj)
+                )
+                obj = time_limit
             rev = jpushes.revision_for_date(obj, last=last)
-            info_fetcher._logger.info(
+            logger.info(
                 'Using revision {} for {}'.format(rev, obj))
             return rev
         return obj

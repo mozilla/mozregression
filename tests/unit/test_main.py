@@ -126,8 +126,8 @@ def test_app_bisect_nightlies_no_data(create_app):
 @pytest.mark.parametrize("same_chsets", [True, False])
 def test_app_bisect_inbounds_finished(create_app, same_chsets):
     argv = [
-        '--good-rev=c1',
-        '--bad-rev=%s' % ('c1' if same_chsets else 'c2')
+        '--good=c1',
+        '--bad=%s' % ('c1' if same_chsets else 'c2')
     ]
     app = create_app(argv)
     app.bisector.bisect = Mock(return_value=Bisection.FINISHED)
@@ -174,7 +174,7 @@ def test_app_bisect_inbounds_user_exit(create_app, mocker):
                                 bad_revision='c2',
                                 spec=InboundHandler)
 
-    app = create_app(['--good-rev=c1', '--bad-rev=c2'])
+    app = create_app(['--good=c1', '--bad=c2'])
     app.bisector.bisect = Mock(return_value=Bisection.USER_EXIT)
     assert app.bisect_inbounds() == 0
     assert create_app.find_in_log("To resume, run:")
@@ -182,7 +182,7 @@ def test_app_bisect_inbounds_user_exit(create_app, mocker):
 
 
 def test_app_bisect_inbounds_no_data(create_app):
-    app = create_app(['--good-rev=c1', '--bad-rev=c2'])
+    app = create_app(['--good=c1', '--bad=c2'])
     app.bisector.bisect = Mock(return_value=Bisection.NO_DATA)
     assert app.bisect_inbounds() == 1
     assert create_app.find_in_log(
@@ -281,7 +281,7 @@ class TestMain(unittest.TestCase):
 
     def test_bisect_inbounds(self):
         self.app.bisect_inbounds.return_value = 0
-        exitcode = self.do_cli(['--good-rev=1', '--bad-rev=5'])
+        exitcode = self.do_cli(['--good=a1', '--bad=b5'])
         self.assertEqual(exitcode, 0)
         self.app.bisect_inbounds.assert_called_with()
 

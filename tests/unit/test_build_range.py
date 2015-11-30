@@ -1,5 +1,5 @@
 import pytest
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from mock import call
 
@@ -123,7 +123,19 @@ def test_range_for_inbounds(mocker):
     assert b_range[2] == 'f'
 
 
-def test_range_for_inbounds_with_dates(mocker):
+DATE_NOW = datetime.now()
+DATE_BEFORE_NOW = DATE_NOW + timedelta(days=-5)
+DATE_YEAR_BEFORE = DATE_NOW + timedelta(days=-365)
+DATE_TOO_OLD = DATE_YEAR_BEFORE + timedelta(days=-5)
+
+
+@pytest.mark.parametrize('start_date,end_date,start_call,end_call', [
+    (DATE_BEFORE_NOW, DATE_NOW, DATE_BEFORE_NOW, DATE_NOW),
+    # if a date is older than last year, it won't be honored
+    (DATE_TOO_OLD, DATE_NOW, DATE_YEAR_BEFORE, DATE_NOW),
+])
+def test_range_for_inbounds_with_dates(mocker, start_date, end_date,
+                                       start_call, end_call):
     fetch_config = create_config('firefox', 'linux', 64)
     jpush_class = mocker.patch('mozregression.fetch_build_info.JsonPushes')
     jpush = mocker.Mock(
@@ -132,12 +144,12 @@ def test_range_for_inbounds_with_dates(mocker):
     )
     jpush_class.return_value = jpush
 
-    start, end = date(2015, 1, 1), datetime.now()
-    build_range.range_for_inbounds(fetch_config, start, end)
+    build_range.range_for_inbounds(fetch_config, start_date, end_date,
+                                   time_limit=DATE_YEAR_BEFORE)
 
     jpush.revision_for_date.assert_has_calls([
-        call(start, last=False),
-        call(end, last=True)
+        call(start_call, last=False),
+        call(end_call, last=True)
     ])
 
 

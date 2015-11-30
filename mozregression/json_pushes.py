@@ -90,6 +90,10 @@ class JsonPushes(object):
         return the first revision pushed on that date.
         """
         enddate = date + datetime.timedelta(days=1)
+        if last:
+            # check a range starting 4 days before - in case we are on Monday,
+            # we will be able to get changesets from the last Friday.
+            date += datetime.timedelta(days=-4)
         url = '%s/json-pushes?startdate=%s&enddate=%s' % (
             self.repo_url(),
             date.strftime('%Y-%m-%d'),

@@ -13,6 +13,7 @@ from datetime import datetime
 from taskcluster.exceptions import TaskclusterFailure
 from mozlog.structuredlog import get_default_logger
 from threading import Thread, Lock
+from requests import HTTPError
 
 from mozregression.network import url_links, retry_get
 from mozregression.errors import BuildInfoNotFound, MozRegressionError
@@ -237,7 +238,10 @@ class NightlyInfoFetcher(InfoFetcher):
 
         # to save time, we will try multiple build folders at the same
         # time in some threads. The first good one found is returned.
-        build_urls = self._get_urls(date)
+        try:
+            build_urls = self._get_urls(date)
+        except HTTPError as exc:
+            raise BuildInfoNotFound(str(exc))
         build_info = None
 
         valid_builds = []

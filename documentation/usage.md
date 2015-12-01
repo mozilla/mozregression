@@ -53,15 +53,15 @@ to date list of available options.
 
 - Bisecting nightlies given firefox releases number
 
-        mozregression --good-release 33 --bad-release 34
+        mozregression --good 33 --bad 34
 
-- Bisecting from a specific nightly project branch
+- Bisecting from a specific project branch
 
         mozregression  --repo mozilla-aurora
 
 - Bisecting inbound directly
 
-        mozregression --good-rev 8850aa0f --bad-rev 2a193b7f
+        mozregression --good 8850aa0f --bad 2a193b7f
 
 - Look for a bug fix instead of a regression (bisect the other way around)
 

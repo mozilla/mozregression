@@ -51,9 +51,10 @@ class DirectorySelectWidget(QWidget):
             self.line_edit.setPath(path)
 
 
-class NightlyInputSelection(QWidget):
+class RangeSelection(QWidget):
     """
-    Allow to select a date, a build id or a release number.
+    Allow to select a date, a build id, a release number or an arbitrary
+    changeset.
     """
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
@@ -73,12 +74,14 @@ class NightlyInputSelection(QWidget):
         self.releasew = QComboBox()
         self.releasew.addItems([str(k) for k in sorted(releases())])
         self.stacked.addWidget(self.releasew)
+        self.revw = QLineEdit()
+        self.stacked.addWidget(self.revw)
 
         self.select_combo = QComboBox()
-        self.select_combo.addItems(['date', 'buildid', 'release'])
+        self.select_combo.addItems(['date', 'buildid', 'release', 'changeset'])
         self.select_combo.activated.connect(self.stacked.setCurrentIndex)
 
-    def get_date(self):
+    def get_value(self):
         currentw = self.stacked.currentWidget()
         if currentw == self.datew:
             return self.datew.date().toPyDate()
@@ -91,3 +94,5 @@ class NightlyInputSelection(QWidget):
         elif currentw == self.releasew:
             return parse_date(
                 date_of_release(str(self.releasew.currentText())))
+        elif currentw == self.revw:
+            return unicode(self.revw.text())

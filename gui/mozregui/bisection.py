@@ -377,7 +377,7 @@ class BisectRunner(QObject):
                     getattr(bisection, 'no_more_merge', False):
                 if isinstance(bisection.handler, NightlyHandler):
                     handler = bisection.handler
-                    fetch_config.set_inbound_branch(
+                    fetch_config.set_repo(
                         fetch_config.get_nightly_repo(handler.bad_date))
                     QTimer.singleShot(0, self.bisector.bisect_further)
                 else:
@@ -401,7 +401,7 @@ class BisectRunner(QObject):
                 % branch,
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.Yes):
-            self.bisector.fetch_config.set_inbound_branch(str(branch))
+            self.bisector.fetch_config.set_repo(str(branch))
             bisection.handler.good_revision = str(good_rev)
             bisection.handler.bad_revision = str(bad_rev)
             QTimer.singleShot(0, self.bisector.bisect_further)

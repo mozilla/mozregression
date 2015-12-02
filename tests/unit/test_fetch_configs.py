@@ -55,13 +55,13 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
             datetime.datetime(2015, 11, 27, 6, 5, 58))
         self.assertEqual(repo_regex, '^2015-11-27-06-05-58-mozilla-central/$')
 
-    def test_set_nightly_repo(self):
-        self.conf.set_nightly_repo('foo-bar')
+    def test_set_repo(self):
+        self.conf.set_repo('foo-bar')
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008,
                                                                     6, 27))
         self.assertEqual(repo_regex, '^2008-06-27-[\\d-]+foo-bar/$')
         # with a value of None, default is applied
-        self.conf.set_nightly_repo(None)
+        self.conf.set_repo(None)
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008,
                                                                     6, 27))
         self.assertEqual(repo_regex, '^2008-06-27-[\\d-]+mozilla-central/$')

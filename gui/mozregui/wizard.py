@@ -258,10 +258,10 @@ class BisectionWizard(QWizard):
             nightlies_page = self.page(NightliesPage.ID)
             options['start_date'] = nightlies_page.get_start_date()
             options['end_date'] = nightlies_page.get_end_date()
-            fetch_config.set_nightly_repo(options['repository'])
+            fetch_config.set_repo(options['repository'])
         else:
             kind = "changeset"
-            fetch_config.set_inbound_branch(options['inbound_branch'])
+            fetch_config.set_repo(options['inbound_branch'])
         if options['build_type']:
             fetch_config.set_build_type(options['build_type'])
         if options['find_fix'] is False:

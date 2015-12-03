@@ -1,8 +1,6 @@
 import pytest
 from datetime import date, datetime, timedelta
 
-from mock import call
-
 from mozregression import build_range
 from mozregression.fetch_build_info import InfoFetcher
 from mozregression.errors import BuildInfoNotFound
@@ -147,10 +145,7 @@ def test_range_for_inbounds_with_dates(mocker, start_date, end_date,
     build_range.range_for_inbounds(fetch_config, start_date, end_date,
                                    time_limit=DATE_YEAR_BEFORE)
 
-    jpush.revision_for_date.assert_has_calls([
-        call(start_call, last=False),
-        call(end_call, last=True)
-    ])
+    jpush.pushlog_within_changes.assert_called_once_with(start_call, end_call)
 
 
 def test_range_for_nightlies():

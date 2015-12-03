@@ -161,7 +161,7 @@ def range_for_inbounds(fetch_config, start_rev, end_rev, time_limit=None):
     time_limit = time_limit or (datetime.datetime.now()
                                 + datetime.timedelta(days=-365))
 
-    def _to_rev(obj, last=False):
+    def _check_date(obj):
         if is_date_or_datetime(obj):
             if to_datetime(obj) < time_limit:
                 logger.info(
@@ -170,14 +170,10 @@ def range_for_inbounds(fetch_config, start_rev, end_rev, time_limit=None):
                     % (time_limit, obj)
                 )
                 obj = time_limit
-            rev = jpushes.revision_for_date(obj, last=last)
-            logger.info(
-                'Using revision {} for {}'.format(rev, obj))
-            return rev
         return obj
 
-    start_rev = _to_rev(start_rev)
-    end_rev = _to_rev(end_rev, last=True)
+    start_rev = _check_date(start_rev)
+    end_rev = _check_date(end_rev)
 
     pushlogs = jpushes.pushlog_within_changes(start_rev, end_rev)
 

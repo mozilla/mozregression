@@ -1,8 +1,9 @@
 import pytest
 
+from datetime import date
 from mock import Mock
 from mozregression.json_pushes import JsonPushes
-from mozregression.errors import MozRegressionError
+from mozregression.errors import MozRegressionError, EmptyPushlogError
 
 
 @pytest.mark.parametrize('branch,chsetskwargs,result_url', [
@@ -63,3 +64,41 @@ def test_pushlog_within_changes(mocker):
     assert jpushes.pushlog_within_changes('fromchset', "tochset") == [
         {'date': 1}, {'date': 2}, {'date': 3}
     ]
+
+    # raw should include push ids in the result
+    response = Mock(json=Mock(side_effect=[push_first, other_pushes]))
+    retry_get.return_value = response
+
+    assert jpushes.pushlog_within_changes(
+        'fromchset', "tochset", raw=True
+    ) == dict(push_first.items() + other_pushes.items())
+
+
+def test_pushlog_within_changes_using_dates():
+    p1 = {'changesets': ['abc'], 'date': 12345}
+    p2 = {'changesets': ['def'], 'date': 67891}
+    pushes = {'1': p1, '2': p2}
+
+    jpushes = JsonPushes(branch='m-i')
+
+    jpushes._request = Mock(return_value=pushes)
+
+    assert jpushes.pushlog_within_changes(
+        date(2015, 1, 1), date(2015, 2, 2)
+    ) == [p1, p2]
+
+    jpushes._request.assert_called_once_with(
+        'https://hg.mozilla.org/integration/mozilla-inbound/json-pushes?'
+        'startdate=2015-01-01&enddate=2015-02-03'
+    )
+
+
+def test_revision_for_date_raise_appropriate_error():
+    jpushes = JsonPushes(branch='inbound')
+    jpushes.pushlog_within_changes = Mock(side_effect=EmptyPushlogError)
+
+    with pytest.raises(EmptyPushlogError) as ctx:
+        jpushes.revision_for_date(date(2015, 1, 1))
+
+    assert str(ctx.value) == \
+        'No pushes available for the date 2015-01-01 on inbound.'

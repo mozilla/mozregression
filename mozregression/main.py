@@ -118,7 +118,7 @@ class Application(object):
             handler.print_range()
             if self.fetch_config.can_go_inbound():
                 self._logger.info("Switching bisection method to taskcluster")
-                self.fetch_config.set_inbound_branch(
+                self.fetch_config.set_repo(
                     self.fetch_config.get_nightly_repo(handler.bad_date))
                 return self._bisect_inbounds(handler.good_revision,
                                              handler.bad_revision)
@@ -154,7 +154,7 @@ class Application(object):
                 result = handler.handle_merge()
                 if result:
                     branch, good_rev, bad_rev = result
-                    self.fetch_config.set_inbound_branch(branch)
+                    self.fetch_config.set_repo(branch)
                     return self._bisect_inbounds(good_rev, bad_rev)
         elif result == Bisection.USER_EXIT:
             self._print_resume_info(handler)

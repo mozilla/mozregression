@@ -79,6 +79,7 @@ class CommonConfig(object):
         self.os = os
         self.bits = bits
         self.build_type = 'opt'
+        self.repo = None
 
     def build_regex(self):
         """
@@ -135,6 +136,25 @@ class CommonConfig(object):
     def is_b2g_device(self):
         return isinstance(self, B2GDeviceConfigMixin)
 
+    def set_repo(self, repo):
+        """
+        Allow to define the repo name.
+
+        If not set or set to None, default repos would be used (see
+        :meth:`get_nightly_repo` and :attr:`inbound_branch`)
+        """
+        self.repo = branches.get_name(repo) if repo else None
+
+    def should_use_taskcluster(self):
+        """
+        Returns True if taskcluster should be used as the bisection method.
+
+        Note that this method relies on the repo and build type defined.
+        """
+        return (branches.get_category(self.repo) == 'integration'
+                or self.is_b2g_device()
+                or self.build_type != 'opt')
+
 
 class NightlyConfigMixin(object):
     """
@@ -163,22 +183,13 @@ class NightlyConfigMixin(object):
                                              date.year,
                                              date.month)
 
-    def set_nightly_repo(self, repo):
-        """
-        Allow to define the repo name.
-
-        If None, :meth:`_get_nightly_repo` will be called to return a value
-        when :meth:`get_nightly_repo` is called.
-        """
-        self.nightly_repo = branches.get_name(repo) if repo else None
-
     def get_nightly_repo(self, date):
         """
         Returns the repo name for a given date.
         """
         if isinstance(date, datetime.datetime):
             date = date.date()
-        return self.nightly_repo or self._get_nightly_repo(date)
+        return self.repo or self._get_nightly_repo(date)
 
     def _get_nightly_repo(self, date):
         """
@@ -264,13 +275,13 @@ class InboundConfigMixin(object):
     """
     Define the inbound-related required configuration.
     """
-    inbound_branch = 'mozilla-inbound'
+    default_inbound_branch = 'mozilla-inbound'
     _tk_client_id = None
     _tk_access_token = None
 
-    def set_inbound_branch(self, inbound_branch):
-        if inbound_branch:
-            self.inbound_branch = branches.get_name(inbound_branch)
+    @property
+    def inbound_branch(self):
+        return self.repo or self.default_inbound_branch
 
     def tk_inbound_route(self, changeset):
         """
@@ -338,7 +349,7 @@ class FirefoxInboundConfigMixin(InboundConfigMixin):
 
 
 class B2GInboundConfigMixin(InboundConfigMixin):
-    inbound_branch = 'b2g-inbound'
+    default_inbound_branch = 'b2g-inbound'
 
     def tk_inbound_route(self, changeset):
         if self.os != 'linux':
@@ -352,7 +363,7 @@ class B2GInboundConfigMixin(InboundConfigMixin):
 
 
 class B2GDeviceConfigMixin(InboundConfigMixin):
-    inbound_branch = 'b2g-inbound'
+    default_inbound_branch = 'b2g-inbound'
     device_name = None
 
     def tk_inbound_route(self, changeset):
@@ -419,9 +430,6 @@ class B2GAriesConfig(CommonConfig,
 
     def build_regex(self):
         return self.artifact_name
-
-    def set_nightly_repo(self, repo):
-        pass
 
     def tk_needs_auth(self):
         return True

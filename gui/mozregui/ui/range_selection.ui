@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Nightlies</class>
- <widget class="QWidget" name="Nightlies">
+ <class>RangeSelectionPage</class>
+ <widget class="QWidget" name="RangeSelectionPage">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -22,42 +22,39 @@
      <item row="0" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Last known good date</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>First known bad date</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="toolTip">
-        <string>you can choose a specific repository name here</string>
-       </property>
-       <property name="text">
-        <string>Repository</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="repository">
-       <property name="toolTip">
-        <string>repository like mozilla-aurora|mozilla-beta|...</string>
-       </property>
-       <property name="placeholderText">
-        <string>you can choose a specific repository name here</string>
+        <string>Last known good build</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="NightlyInputSelection" name="start_date" native="true"/>
+      <widget class="RangeSelection" name="start" native="true"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>First known bad build</string>
+       </property>
+      </widget>
      </item>
      <item row="1" column="1">
-      <widget class="NightlyInputSelection" name="end_date" native="true"/>
+      <widget class="RangeSelection" name="end" native="true"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="toolTip">
+        <string>Search a fix instead of a regression</string>
+       </property>
+       <property name="text">
+        <string>Search fix</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QCheckBox" name="find_fix">
+       <property name="text">
+        <string>(Search for a bug fix instead of a regression)</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -65,7 +62,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NightlyInputSelection</class>
+   <class>RangeSelection</class>
    <extends>QWidget</extends>
    <header>mozregui.utils</header>
    <container>1</container>

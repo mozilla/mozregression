@@ -10,6 +10,7 @@ from mozregression.test_runner import TestRunner
 from mozregression.errors import MozRegressionError, LauncherError
 from mozregression.network import get_http_session
 from mozregression.persist_limit import PersistLimit
+from mozregression.dates import is_date_or_datetime
 
 from mozregui.ui.verdict import Ui_Verdict
 from mozregui.global_prefs import get_prefs, apply_prefs
@@ -283,14 +284,13 @@ class BisectRunner(QObject):
         self.bisector.handle_merge.connect(self.handle_merge)
         self.bisector.choose_next_build.connect(self.choose_next_build)
         self.bisector_created.emit(self.bisector)
-        if options['bisect_type'] == 'nightlies':
+
+        good, bad = options.pop('good'), options.pop('bad')
+        if is_date_or_datetime(good) and is_date_or_datetime(bad) \
+                and not fetch_config.should_use_taskcluster():
             handler = NightlyHandler(find_fix=options['find_fix'])
-            good = options['good_date']
-            bad = options['bad_date']
         else:
             handler = InboundHandler(find_fix=options['find_fix'])
-            good = options['good_changeset']
-            bad = options['bad_changeset']
 
         # options for the app launcher
         launcher_kwargs = {}
@@ -377,7 +377,7 @@ class BisectRunner(QObject):
                     getattr(bisection, 'no_more_merge', False):
                 if isinstance(bisection.handler, NightlyHandler):
                     handler = bisection.handler
-                    fetch_config.set_inbound_branch(
+                    fetch_config.set_repo(
                         fetch_config.get_nightly_repo(handler.bad_date))
                     QTimer.singleShot(0, self.bisector.bisect_further)
                 else:
@@ -401,7 +401,7 @@ class BisectRunner(QObject):
                 % branch,
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.Yes):
-            self.bisector.fetch_config.set_inbound_branch(str(branch))
+            self.bisector.fetch_config.set_repo(str(branch))
             bisection.handler.good_revision = str(good_rev)
             bisection.handler.bad_revision = str(bad_rev)
             QTimer.singleShot(0, self.bisector.bisect_further)

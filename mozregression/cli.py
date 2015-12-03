@@ -23,7 +23,7 @@ from argparse import ArgumentParser, Action, SUPPRESS
 from mozlog.structured import commandline, get_default_logger
 from colorama import Style
 
-from mozregression import __version__, branches
+from mozregression import __version__
 from mozregression.dates import to_datetime, parse_date, is_date_or_datetime
 from mozregression.config import get_defaults, DEFAULT_CONF_FNAME, write_conf
 from mozregression.fetch_configs import REGISTRY as FC_REGISTRY, create_config
@@ -376,17 +376,7 @@ class Configuration(object):
             )
         self.fetch_config = fetch_config
 
-        # TODO: get rid of the nightly/inbound branch distinction
-        if fetch_config.is_nightly():
-            fetch_config.set_nightly_repo(options.repo)
-        if fetch_config.is_inbound():
-            fetch_config.set_inbound_branch(options.repo)
-
-        # we need to use taskcluser for integration branches and b2g,
-        # or if we are looking for a specific build flavor
-        use_taskcluster = (branches.get_category(options.repo) == 'integration'
-                           or fetch_config.is_b2g_device()
-                           or fetch_config.build_type != 'opt')
+        fetch_config.set_repo(options.repo)
 
         if not user_defined_bits and \
                 options.bits == 64 and \
@@ -417,7 +407,8 @@ class Configuration(object):
         if options.launch:
             options.launch = self._convert_to_bisect_arg(options.launch)
             self.action = "launch_inbound"
-            if is_date_or_datetime(options.launch) and not use_taskcluster:
+            if is_date_or_datetime(options.launch) and \
+                    not fetch_config.should_use_taskcluster():
                 self.action = "launch_nightlies"
         else:
             # define good/bad default values if required
@@ -457,7 +448,7 @@ class Configuration(object):
                         ("Bad date %s is later than good date %s."
                          " You should not use the --find-fix flag"
                          " in this case...") % (options.bad, options.good))
-                if not use_taskcluster:
+                if not fetch_config.should_use_taskcluster():
                     self.action = "bisect_nightlies"
         if self.action in ('launch_inbound', 'bisect_inbounds')\
                 and not fetch_config.is_inbound():

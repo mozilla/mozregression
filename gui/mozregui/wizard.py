@@ -1,11 +1,10 @@
 import mozinfo
 import datetime
 from PyQt4.QtGui import QWizard, QWizardPage, QStringListModel, QMessageBox
-from PyQt4.QtCore import QString, QDateTime, QTimer
+from PyQt4.QtCore import QString, QDateTime, QTimer, pyqtSlot as Slot
 
 from ui.intro import Ui_Intro
-from ui.nightlies import Ui_Nightlies
-from ui.inbound import Ui_Inbound
+from ui.range_selection import Ui_RangeSelectionPage
 from ui.profile import Ui_Profile
 
 from mozregression.fetch_configs import create_config, REGISTRY
@@ -39,11 +38,11 @@ class WizardPage(QWizardPage):
 
 class IntroPage(WizardPage):
     UI_CLASS = Ui_Intro
-    TITLE = "Bisection start"
-    SUBTITLE = ("Please choose an application, a type of bisection"
-                " and the number of bits for the application.")
-    FIELDS = {'application': 'app_combo', 'bisect_type': 'bisect_combo',
-              'find_fix': 'find_fix', 'bits': 'bits_combo'}
+    TITLE = "Basic configuration"
+    SUBTITLE = ("Please choose an application and other options related to"
+                " the builds you want to test.")
+    FIELDS = {'application': 'app_combo', "repository": "repository",
+              'bits': 'bits_combo', "build_type": "build_type"}
     ID = 0
 
     def __init__(self):
@@ -52,8 +51,6 @@ class IntroPage(WizardPage):
         self.app_model = QStringListModel([a for a in REGISTRY.names()
                                            if not a.startswith('b2g-')])
         self.ui.app_combo.setModel(self.app_model)
-        self.bisect_model = QStringListModel()
-        self.ui.bisect_combo.setModel(self.bisect_model)
         if mozinfo.bits == 64:
             if mozinfo.os == 'mac':
                 self.bits_model = QStringListModel(['64'])
@@ -66,6 +63,7 @@ class IntroPage(WizardPage):
             bits_index = 0
         self.ui.bits_combo.setModel(self.bits_model)
         self.ui.bits_combo.setCurrentIndex(bits_index)
+        self.build_type_model = QStringListModel()
 
         self.ui.app_combo.currentIndexChanged.connect(self._set_fetch_config)
         self.ui.bits_combo.currentIndexChanged.connect(self._set_fetch_config)
@@ -73,22 +71,16 @@ class IntroPage(WizardPage):
             self.ui.app_combo.findText("firefox"))
 
     def _set_fetch_config(self, index):
-        # limit bisection type given the application
+        app_name = str(self.ui.app_combo.currentText())
         bits = int(self.ui.bits_combo.currentText())
-        old_bisect_index = self.ui.bisect_combo.currentIndex()
-        self.fetch_config = create_config(
-            str(self.ui.app_combo.currentText()),
-            mozinfo.os, bits)
-        bisect_types = ['nightlies']
-        if self.fetch_config.is_inbound():
-            bisect_types.append('inbound')
-        self.bisect_model.setStringList(bisect_types)
-        bisect_index = 0
-        if old_bisect_index == 1 and len(bisect_types) == 2:
-            bisect_index = 1
-        self.ui.bisect_combo.setCurrentIndex(bisect_index)
-        available_bits = self.fetch_config.available_bits()
-        if not available_bits:
+
+        self.fetch_config = create_config(app_name, mozinfo.os, bits)
+
+        self.build_type_model = QStringListModel(
+            [i for i in REGISTRY.get(app_name).BUILD_TYPES])
+        self.ui.build_type.setModel(self.build_type_model)
+
+        if not self.fetch_config.available_bits():
             self.ui.bits_combo.hide()
             self.ui.label_4.hide()
         else:
@@ -110,56 +102,70 @@ class IntroPage(WizardPage):
             return False
 
     def nextId(self):
-        if self.ui.bisect_combo.currentText() == 'nightlies':
-            return NightliesPage.ID
-        else:
-            return InboundPage.ID
+        return ProfilePage.ID
 
 
-class WizardSelectionRangePage(WizardPage):
-    RANGE_TYPE = 'date'
-
-    def changelabel(self, checkstatus):
-        if checkstatus is True:
-            self.ui.label.setText("Last known bad %s" % self.RANGE_TYPE)
-            self.ui.label_2.setText("First known good %s" % self.RANGE_TYPE)
-        else:
-            self.ui.label.setText("Last known good %s" % self.RANGE_TYPE)
-            self.ui.label_2.setText("First known bad %s" % self.RANGE_TYPE)
-
-    def initializePage(self):
-        checkstatus = self.wizard().field("find_fix").toBool()
-        self.changelabel(checkstatus)
-
-
-class NightliesPage(WizardSelectionRangePage):
-    UI_CLASS = Ui_Nightlies
-    TITLE = "Date range selection"
-    SUBTITLE = ("Select the nightlies date range.")
-    FIELDS = {"repository": "repository"}
+class ProfilePage(WizardPage):
+    UI_CLASS = Ui_Profile
+    TITLE = "Profile selection"
+    SUBTITLE = ("Choose a specific profile. You can choose an existing profile"
+                ", or let this blank to use a new one.")
+    FIELDS = {"profile": "profile_widget.line_edit"}
     ID = 1
+
+    def get_prefs(self):
+        return self.ui.pref_widget.get_prefs()
+
+    def get_addons(self):
+        return self.ui.addons_widget.get_addons()
+
+    def nextId(self):
+        return RangeSelectionPage.ID
+
+
+class RangeSelectionPage(WizardPage):
+    UI_CLASS = Ui_RangeSelectionPage
+    TITLE = "Bisection range selection"
+    SUBTITLE = ("Select the range to bisect.")
+    FIELDS = {'find_fix': 'find_fix'}
+    ID = 2
 
     def __init__(self):
         WizardPage.__init__(self)
         now = QDateTime.currentDateTime()
-        self.ui.start_date.datew.setDateTime(now.addYears(-1))
-        self.ui.end_date.datew.setDateTime(now)
+        self.ui.start.datew.setDateTime(now.addYears(-1))
+        self.ui.end.datew.setDateTime(now)
+        self.ui.find_fix.stateChanged.connect(self.change_labels)
+
+    @Slot()
+    def change_labels(self):
+        find_fix = self.ui.find_fix.isChecked()
+        if find_fix:
+            self.ui.label.setText("Last known bad build")
+            self.ui.label_2.setText("First known good build")
+        else:
+            self.ui.label.setText("Last known good build")
+            self.ui.label_2.setText("First known bad build")
 
     def initializePage(self):
-        WizardSelectionRangePage.initializePage(self)
+        # set the focus on the first entry
         QTimer.singleShot(0,
-                          self.ui.start_date.stacked.currentWidget().setFocus)
+                          self.ui.start.stacked.currentWidget().setFocus)
 
-    def get_start_date(self):
-        return self.ui.start_date.get_date()
+    def get_start(self):
+        return self.ui.start.get_value()
 
-    def get_end_date(self):
-        return self.ui.end_date.get_date()
+    def get_end(self):
+        return self.ui.end.get_value()
 
     def validatePage(self):
+        start, end = self.get_start(), self.get_end()
+        if isinstance(start, basestring) or isinstance(end, basestring):
+            # do not check revisions
+            return True
         try:
-            start_date = to_datetime(self.get_start_date())
-            end_date = to_datetime(self.get_end_date())
+            start_date = to_datetime(start)
+            end_date = to_datetime(end)
         except DateFormatError as exc:
             QMessageBox.critical(self, "Error", unicode(exc))
             return False
@@ -181,51 +187,7 @@ class NightliesPage(WizardSelectionRangePage):
         return False
 
     def nextId(self):
-        return ProfilePage.ID
-
-
-class InboundPage(WizardSelectionRangePage):
-    RANGE_TYPE = "revision"
-    UI_CLASS = Ui_Inbound
-    TITLE = "Changesets range selection"
-    SUBTITLE = "Select the inbound changesets range."
-    FIELDS = {"start_changeset": "start_changeset",
-              "end_changeset": "end_changeset",
-              "build_type": "build_type",
-              "inbound_branch": "inbound_branch"}
-    ID = 2
-
-    def __init__(self):
-        WizardPage.__init__(self)
-        self.build_type_model = QStringListModel()
-
-    def initializePage(self):
-        WizardSelectionRangePage.initializePage(self)
-        application_name = self.field('application').toPyObject()
-        self.build_type_model = QStringListModel(
-            [i for i in REGISTRY.get(str(application_name)).BUILD_TYPES])
-        self.ui.build_type.setModel(self.build_type_model)
-
-    def nextId(self):
-        return ProfilePage.ID
-
-
-class ProfilePage(WizardPage):
-    UI_CLASS = Ui_Profile
-    TITLE = "Profile selection"
-    SUBTITLE = ("Choose a specific profile. You can choose an existing profile"
-                ", or let this blank to use a new one.")
-    FIELDS = {"profile": "profile_widget.line_edit"}
-    ID = 3
-
-    def nextId(self):
         return -1
-
-    def get_prefs(self):
-        return self.ui.pref_widget.get_prefs()
-
-    def get_addons(self):
-        return self.ui.addons_widget.get_addons()
 
 
 class BisectionWizard(QWizard):
@@ -239,9 +201,8 @@ class BisectionWizard(QWizard):
                                 "currentIndexChanged")
 
         self.addPage(IntroPage())
-        self.addPage(NightliesPage())
-        self.addPage(InboundPage())
         self.addPage(ProfilePage())
+        self.addPage(RangeSelectionPage())
 
     def options(self):
         options = {}
@@ -252,24 +213,16 @@ class BisectionWizard(QWizard):
                 if isinstance(value, QString):
                     value = unicode(value)
                 options[fieldname] = value
+
         fetch_config = self.page(IntroPage.ID).fetch_config
-        if options['bisect_type'] == 'nightlies':
-            kind = "date"
-            nightlies_page = self.page(NightliesPage.ID)
-            options['start_date'] = nightlies_page.get_start_date()
-            options['end_date'] = nightlies_page.get_end_date()
-            fetch_config.set_nightly_repo(options['repository'])
-        else:
-            kind = "changeset"
-            fetch_config.set_inbound_branch(options['inbound_branch'])
-        if options['build_type']:
-            fetch_config.set_build_type(options['build_type'])
-        if options['find_fix'] is False:
-            options['good_' + kind] = options.pop('start_' + kind)
-            options['bad_' + kind] = options.pop('end_' + kind)
-        else:
-            options['good_' + kind] = options.pop('end_' + kind)
-            options['bad_' + kind] = options.pop('start_' + kind)
+        fetch_config.set_repo(options['repository'])
+        fetch_config.set_build_type(options['build_type'])
+
+        range_page = self.page(RangeSelectionPage.ID)
+        options['good'] = range_page.get_start()
+        options['bad'] = range_page.get_end()
+        if options['find_fix']:
+            options['good'], options['bad'] = options['bad'], options['good']
 
         # get the prefs
         options['preferences'] = self.page(ProfilePage.ID).get_prefs()

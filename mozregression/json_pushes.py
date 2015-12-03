@@ -2,7 +2,7 @@ import datetime
 
 from mozlog import get_default_logger
 
-from mozregression.errors import MozRegressionError
+from mozregression.errors import MozRegressionError, EmptyPushlogError
 from mozregression.network import retry_get
 from mozregression import branches
 from mozregression.dates import is_date_or_datetime
@@ -36,7 +36,7 @@ class JsonPushes(object):
         response.raise_for_status()
         pushlog = response.json()
         if not pushlog:
-            raise MozRegressionError(
+            raise EmptyPushlogError(
                 "The url %r contains no pushlog. Maybe use another range ?"
                 % url
             )
@@ -52,7 +52,8 @@ class JsonPushes(object):
             self.json_pushes_url(changeset=changeset, **kwargs)
         ).itervalues())
 
-    def pushlog_within_changes(self, fromchange, tochange, raw=False):
+    def pushlog_within_changes(self, fromchange, tochange, raw=False,
+                               verbose=True):
         """
         Returns pushlog json objects (python dicts).
 
@@ -87,16 +88,17 @@ class JsonPushes(object):
 
         ordered = sorted(chsets)
 
+        log = self.logger.info if verbose else self.logger.debug
         if from_is_date:
             first = chsets[ordered[0]]
-            self.logger.info("Using {} (pushed on {}) for date {}".format(
+            log("Using {} (pushed on {}) for date {}".format(
                 first['changesets'][-1],
                 datetime.datetime.utcfromtimestamp(first['date']),
                 fromchange,
             ))
         if to_is_date:
             last = chsets[ordered[-1]]
-            self.logger.info("Using {} (pushed on {}) for date {}".format(
+            log("Using {} (pushed on {}) for date {}".format(
                 last['changesets'][-1],
                 datetime.datetime.utcfromtimestamp(last['date']),
                 tochange,
@@ -107,27 +109,18 @@ class JsonPushes(object):
         # sort pushlogs by push id
         return [chsets[k] for k in ordered]
 
-    def revision_for_date(self, date, last=False):
+    def revision_for_date(self, date):
         """
-        Returns the revision that matches the given date.
+        Returns the last revision that matches the given date.
 
-        This will return a single revision for the date. If 'last' is True, it
-        will use the last revision pushed on that date, otherwise it will
-        return the first revision pushed on that date.
+        Raise an explicit EmptyPushlogError if no pushes are available.
         """
-        enddate = date + datetime.timedelta(days=1)
-        if last:
-            # check a range starting 4 days before - in case we are on Monday,
-            # we will be able to get changesets from the last Friday.
-            date += datetime.timedelta(days=-4)
-        url = '%s/json-pushes?startdate=%s&enddate=%s' % (
-            self.repo_url(),
-            date.strftime('%Y-%m-%d'),
-            enddate.strftime('%Y-%m-%d'),
-        )
-        chsets = self._request(url)
-        sorted_pushids = sorted(chsets)
-        idx = -1 if last else 0
-        pushlog = chsets[sorted_pushids[idx]]
-        # The last changeset in the push is the head rev used for the build
-        return pushlog['changesets'][-1]
+        try:
+            return self.pushlog_within_changes(
+                date, date, verbose=False
+            )[-1]['changesets'][-1]
+        except EmptyPushlogError:
+            raise EmptyPushlogError(
+                "No pushes available for the date %s on %s."
+                % (date, self.branch)
+            )

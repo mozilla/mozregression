@@ -17,16 +17,8 @@ install:
     - pip install coverage coveralls
     - cd gui && pip install -r test-requirements.txt && cd ..
 
-before_script:
-    flake8 mozregression tests setup.py
-
 script:
-    - coverage run setup.py test
-    - cd gui && coverage run build.py test && cd ..
-    # now combine the coverage data
-    - mv .coverage .coverage.core
-    - mv gui/.coverage .coverage.gui
-    - coverage combine
+    - ./check.py --with-coverage --with-gui
 
 after_success:
     coveralls

@@ -19,10 +19,7 @@ install:
   - "cd gui & pip install -r test-requirements.txt"
   - "cd .."
 test_script:
-  - "python setup.py test"
-  - "cd gui"
-  - "python build.py test"
-  - "cd .."
+  - "python check.py --with-gui"
   # bundle the application
   - cinst nsis -y -installArgs /D=%NSIS_ROOT%
   - "pip install cx_Freeze"

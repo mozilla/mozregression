@@ -5,10 +5,10 @@ This directory contains the code for mozregression-gui. It is a graphical
 Qt application with the `PyQt4 bindings`_.
 
 It is intended to be delivered as an executable (or a set of libs/binaries)
-with pyinstaller_.
+with cx_Freeze_.
 
 .. _PyQt4 bindings: http://www.riverbankcomputing.com/software/pyqt/intro
-.. _pyinstaller: https://github.com/pyinstaller/pyinstaller
+.. _cx_Freeze: http://cx-freeze.readthedocs.org/en/latest/index.html
 
 
 How to develop on mozregression-gui

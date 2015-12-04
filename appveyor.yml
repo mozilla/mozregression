@@ -16,13 +16,11 @@ install:
   - ps: Start-Process -FilePath C:\install-PyQt4.exe -ArgumentList "/S" -Wait -Passthru
   - "python -c \"from PyQt4 import QtGui\""
   # install mozregression code and test dependencies
-  - "cd gui & pip install -r test-requirements.txt"
-  - "cd .."
+  - "pip install -r requirements-gui-dev.txt"
 test_script:
   - "python check.py --with-gui"
   # bundle the application
   - cinst nsis -y -installArgs /D=%NSIS_ROOT%
-  - "pip install cx_Freeze"
   - "python gui\\build.py bundle"
 
 # section required for deploy

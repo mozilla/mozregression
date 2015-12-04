@@ -71,14 +71,14 @@ about python virtualenvs. You should also consider using virtualenvwrapper
 
 Install with virtualenvwrapper: ::
 
-   mkvirtualenv --system-site-package mozregression
-   cd gui && pip install -r test-requirements.txt
+   mkvirtualenv --system-site-package -p /usr/bin/python2 mozregression
+   pip install -r requirements-gui-dev.txt
 
 Or with virtualenv: ::
 
-   virtualenv --system-site-package venv
+   virtualenv --system-site-package -p /usr/bin/python2 venv
    source venv/bin/activate
-   cd gui && pip install -r test-requirements.txt
+   pip install -r requirements-gui-dev.txt
 
 
 Launching the application
@@ -91,7 +91,7 @@ Activate your virtualenv. On Linux or OSX: ::
 
 Then simply run: ::
 
-  python build.py run
+  python gui/build.py run
 
 
 Running unit tests
@@ -99,13 +99,11 @@ Running unit tests
 
 Be sure to be in you virtualenv, then: ::
 
-  python build.py test
+  python check.py -G
 
 You can run them with coverage: ::
 
-  pip install coverage
-  coverage run build.py test
-  coverage html
+  python check.py -GCH
   firefox htmlcov/index.html
 
 
@@ -114,7 +112,7 @@ Freeze the application
 
 To generate one big file that contains everything int it: ::
 
-  python build.py bundle
+  python gui/build.py bundle
 
 The resulting file is in dist/. This file can be distributed to users
 that have the same OS and arch as you (python is included in the file).

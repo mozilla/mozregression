@@ -1,5 +1,0 @@
--r requirements.txt
-flake8
-pytest-qt
-pytest-mock
-mock

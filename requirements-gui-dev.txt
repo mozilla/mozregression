@@ -1,0 +1,11 @@
+-r requirements-dev.txt
+
+# requests 2.5.1 or 2.5.3 have an issue when the system is frozen
+requests==2.5.1
+
+# for testing
+pytest-qt
+pytest-mock
+
+# for bundling standalone executable
+cx_Freeze

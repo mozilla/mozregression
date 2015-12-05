@@ -14,7 +14,7 @@ from PyQt4.QtCore import pyqtSlot as Slot, QSettings
 from mozlog.structuredlog import set_default_logger, StructuredLogger
 
 from mozregui.ui.mainwindow import Ui_MainWindow
-from mozregui.wizard import BisectionWizard
+from mozregui.wizard import BisectionWizard, SingleRunWizard
 from mozregui.bisection import BisectRunner
 from mozregui.global_prefs import change_prefs_dialog
 from mozregui.log_report import LogModel
@@ -67,6 +67,8 @@ class MainWindow(QMainWindow):
             self.ui.actionStart_a_new_bisection.setDisabled)
         self.bisect_runner.running_state_changed.connect(
             self.ui.actionStop_the_bisection.setEnabled)
+        self.bisect_runner.running_state_changed.connect(
+            self.ui.actionRun_a_single_build.setDisabled)
 
         self.persist = mkdtemp()
 
@@ -106,6 +108,12 @@ class MainWindow(QMainWindow):
         self.ui.build_info_browser.clear()
 
     @Slot()
+    def single_run(self):
+        wizard = SingleRunWizard(self)
+        if wizard.exec_() == wizard.Accepted:
+            pass
+
+    @Slot()
     def show_about(self):
         QMessageBox.about(self, "About", ABOUT_TEXT)
 
@@ -135,7 +143,6 @@ def main():
     release_checker.check()
     log_model.log.connect(win.ui.log_view.on_log_received)
     win.show()
-    win.start_bisection_wizard()
     # Enter Qt application main loop
     sys.exit(app.exec_())
 

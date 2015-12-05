@@ -6,6 +6,7 @@ from PyQt4.QtCore import QString, QDateTime, QTimer, pyqtSlot as Slot
 from ui.intro import Ui_Intro
 from ui.range_selection import Ui_RangeSelectionPage
 from ui.profile import Ui_Profile
+from ui.single_build_selection import Ui_SingleBuildSelectionPage
 
 from mozregression.fetch_configs import create_config, REGISTRY
 from mozregression.launchers import REGISTRY as LAUNCHER_REGISTRY
@@ -35,15 +36,27 @@ class WizardPage(QWizardPage):
         for name, widget_name in self.FIELDS.iteritems():
             self.registerField(name, resolve_obj_name(self.ui, widget_name))
 
+    def set_options(self, options):
+        """
+        Fill the options dict argument with the page information.
+
+        By default, take every field value present in the FIELDS class
+        attribute.
+        """
+        for fieldname in self.FIELDS:
+            value = self.field(fieldname).toPyObject()
+            if isinstance(value, QString):
+                value = unicode(value)
+            options[fieldname] = value
+
 
 class IntroPage(WizardPage):
     UI_CLASS = Ui_Intro
     TITLE = "Basic configuration"
-    SUBTITLE = ("Please choose an application and other options related to"
-                " the builds you want to test.")
+    SUBTITLE = ("Please choose an application and other options to specify"
+                " what you want to test.")
     FIELDS = {'application': 'app_combo', "repository": "repository",
               'bits': 'bits_combo', "build_type": "build_type"}
-    ID = 0
 
     def __init__(self):
         WizardPage.__init__(self)
@@ -101,9 +114,6 @@ class IntroPage(WizardPage):
             )
             return False
 
-    def nextId(self):
-        return ProfilePage.ID
-
 
 class ProfilePage(WizardPage):
     UI_CLASS = Ui_Profile
@@ -111,7 +121,13 @@ class ProfilePage(WizardPage):
     SUBTITLE = ("Choose a specific profile. You can choose an existing profile"
                 ", or let this blank to use a new one.")
     FIELDS = {"profile": "profile_widget.line_edit"}
-    ID = 1
+
+    def set_options(self, options):
+        WizardPage.set_options(self, options)
+        # get the prefs
+        options['preferences'] = self.get_prefs()
+        # get the addons
+        options['addons'] = self.get_addons()
 
     def get_prefs(self):
         return self.ui.pref_widget.get_prefs()
@@ -119,16 +135,12 @@ class ProfilePage(WizardPage):
     def get_addons(self):
         return self.ui.addons_widget.get_addons()
 
-    def nextId(self):
-        return RangeSelectionPage.ID
-
 
 class RangeSelectionPage(WizardPage):
     UI_CLASS = Ui_RangeSelectionPage
     TITLE = "Bisection range selection"
     SUBTITLE = ("Select the range to bisect.")
     FIELDS = {'find_fix': 'find_fix'}
-    ID = 2
 
     def __init__(self):
         WizardPage.__init__(self)
@@ -136,6 +148,13 @@ class RangeSelectionPage(WizardPage):
         self.ui.start.datew.setDateTime(now.addYears(-1))
         self.ui.end.datew.setDateTime(now)
         self.ui.find_fix.stateChanged.connect(self.change_labels)
+
+    def set_options(self, options):
+        WizardPage.set_options(self, options)
+        options['good'] = self.get_start()
+        options['bad'] = self.get_end()
+        if options['find_fix']:
+            options['good'], options['bad'] = options['bad'], options['good']
 
     @Slot()
     def change_labels(self):
@@ -186,47 +205,61 @@ class RangeSelectionPage(WizardPage):
 
         return False
 
-    def nextId(self):
-        return -1
 
-
-class BisectionWizard(QWizard):
-    def __init__(self, parent=None):
+class Wizard(QWizard):
+    def __init__(self, title, class_pages, parent=None):
         QWizard.__init__(self, parent)
-        self.setWindowTitle("Bisection wizard")
+        self.setWindowTitle(title)
         self.resize(800, 600)
 
         # associate current text to comboboxes fields instead of current index
         self.setDefaultProperty("QComboBox", "currentText",
                                 "currentIndexChanged")
 
-        self.addPage(IntroPage())
-        self.addPage(ProfilePage())
-        self.addPage(RangeSelectionPage())
+        for klass in class_pages:
+            self.addPage(klass())
 
     def options(self):
         options = {}
         for page_id in self.pageIds():
-            wizard_class = self.page(page_id).__class__
-            for fieldname in wizard_class.FIELDS:
-                value = self.field(fieldname).toPyObject()
-                if isinstance(value, QString):
-                    value = unicode(value)
-                options[fieldname] = value
+            self.page(page_id).set_options(options)
 
-        fetch_config = self.page(IntroPage.ID).fetch_config
+        fetch_config = self.page(self.pageIds()[0]).fetch_config
         fetch_config.set_repo(options['repository'])
         fetch_config.set_build_type(options['build_type'])
 
-        range_page = self.page(RangeSelectionPage.ID)
-        options['good'] = range_page.get_start()
-        options['bad'] = range_page.get_end()
-        if options['find_fix']:
-            options['good'], options['bad'] = options['bad'], options['good']
-
-        # get the prefs
-        options['preferences'] = self.page(ProfilePage.ID).get_prefs()
-        # get the addons
-        options['addons'] = self.page(ProfilePage.ID).get_addons()
-
         return fetch_config, options
+
+
+class BisectionWizard(Wizard):
+    def __init__(self, parent=None):
+        Wizard.__init__(self, "Bisection wizard",
+                        (IntroPage, ProfilePage, RangeSelectionPage),
+                        parent=parent)
+
+
+class SingleBuildSelectionPage(WizardPage):
+    UI_CLASS = Ui_SingleBuildSelectionPage
+    TITLE = "Build selection"
+    SUBTITLE = ("Select the build you want to run.")
+
+    def __init__(self):
+        WizardPage.__init__(self)
+        now = QDateTime.currentDateTime()
+        self.ui.build.datew.setDateTime(now.addDays(-3))
+
+    def set_options(self, options):
+        WizardPage.set_options(self, options)
+        options['launch'] = self.ui.build.get_value()
+
+    def initializePage(self):
+        # set the focus on the field
+        QTimer.singleShot(0,
+                          self.ui.build.stacked.currentWidget().setFocus)
+
+
+class SingleRunWizard(Wizard):
+    def __init__(self, parent=None):
+        Wizard.__init__(self, "Single run wizard",
+                        (IntroPage, ProfilePage, SingleBuildSelectionPage),
+                        parent=parent)

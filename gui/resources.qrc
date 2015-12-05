@@ -2,5 +2,7 @@
   <qresource>
     <file alias="app_icon.png">icons/app_icon.png</file>
     <file alias="stop.png">icons/cross106.png</file>
+    <file alias="cutting.png">icons/cutting10.png</file>
+    <file alias="s.png">icons/letter52.png</file>
   </qresource>
 </RCC>

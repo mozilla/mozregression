@@ -3,11 +3,15 @@ import time
 import tempfile
 import shutil
 import os
+
 from mock import Mock, patch
 from . import wait_signal
+from PyQt4.QtCore import QObject, QThread, pyqtSignal as Signal, \
+    pyqtSlot as Slot
 
 from mozregui import build_runner
 from mozregression.persist_limit import PersistLimit
+from mozregression.fetch_configs import create_config
 
 
 def mock_session():
@@ -99,3 +103,46 @@ class TestGuiTestRunner(unittest.TestCase):
         self.assertEquals(self.evaluate_finished.call_count, 1)
         # verdict is defined, launcher is None
         self.assertEquals(self.test_runner.verdict, 'g')
+
+
+def test_abstract_build_runner(qtbot):
+    main_thread = QThread.currentThread()
+
+    class Worker(QObject):
+        call_started = Signal()
+
+        def __init__(self, *args):
+            QObject.__init__(self)
+
+        @Slot()
+        def my_slot(self):
+            assert main_thread != self.thread()
+            self.call_started.emit()
+
+    class BuildRunner(build_runner.AbstractBuildRunner):
+        call_started = Signal()
+        thread_finished = Signal()
+        worker_class = Worker
+
+        def init_worker(self, fetch_config, options):
+            build_runner.AbstractBuildRunner.init_worker(self, fetch_config,
+                                                         options)
+            self.thread.finished.connect(self.thread_finished)
+            self.worker.call_started.connect(self.call_started)
+            return self.worker.my_slot
+
+    # instantiate the runner
+    runner = BuildRunner(Mock(persist='.'))
+
+    assert not runner.thread
+
+    with qtbot.waitSignal(runner.thread_finished, raising=True):
+        with qtbot.waitSignal(runner.call_started, raising=True):
+            runner.start(
+                create_config('firefox', 'linux', 64),
+                {'addons': (), 'profile': '/path/to/profile'},
+            )
+
+        runner.stop(True)
+
+    assert not runner.pending_threads

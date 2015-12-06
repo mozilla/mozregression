@@ -19,6 +19,7 @@ from mozregression.network import url_links, retry_get
 from mozregression.errors import BuildInfoNotFound, MozRegressionError
 from mozregression.build_info import NightlyBuildInfo, InboundBuildInfo
 from mozregression.json_pushes import JsonPushes
+from mozregression.dates import is_date_or_datetime
 
 # Fix intermittent bug due to strptime first call not being thread safe
 # see https://bugzilla.mozilla.org/show_bug.cgi?id=1200270
@@ -91,13 +92,17 @@ class InboundInfoFetcher(InfoFetcher):
     def find_build_info(self, changeset, fetch_txt_info=True,
                         check_changeset=False):
         """
-        Find build info for an inbound build, given a changeset.
+        Find build info for an inbound build, given a changeset or a date.
 
         if `check_changeset` is True, the given changeset might be partial
         (< 40 chars) because it will be verified and updated using json pushes.
 
         Return a :class:`InboundBuildInfo` instance.
         """
+        if is_date_or_datetime(changeset):
+            changeset = self.jpushes.revision_for_date(changeset)
+            check_changeset = False
+
         # find a task id
         if check_changeset:
             try:

@@ -20,7 +20,7 @@ import colorama
 from mozlog.structuredlog import get_default_logger
 from requests.exceptions import RequestException
 
-from mozregression import __version__, dates
+from mozregression import __version__
 from mozregression.cli import cli
 from mozregression.errors import MozRegressionError
 from mozregression.bisector import (Bisector, NightlyHandler, InboundHandler,
@@ -214,22 +214,18 @@ class Application(object):
         handler.print_range()
         self._print_resume_info(handler)
 
-    def launch_nightlies(self):
-        fetch_build_info = NightlyInfoFetcher(self.fetch_config)
-        build_info = fetch_build_info.find_build_info(self.options.launch)
+    def _launch(self, fetcher_class, **fetch_kwargs):
+        fetcher = fetcher_class(self.fetch_config)
+        build_info = fetcher.find_build_info(self.options.launch,
+                                             **fetch_kwargs)
         self.build_download_manager.focus_download(build_info)
         self.test_runner.run_once(build_info)
 
+    def launch_nightlies(self):
+        self._launch(NightlyInfoFetcher)
+
     def launch_inbound(self):
-        fetch_build_info = InboundInfoFetcher(self.fetch_config)
-        rev, check = self.options.launch, True
-        if dates.is_date_or_datetime(rev):
-            rev = fetch_build_info.jpushes.revision_for_date(rev)
-            check = False
-        build_info = fetch_build_info.find_build_info(rev,
-                                                      check_changeset=check)
-        self.build_download_manager.focus_download(build_info)
-        self.test_runner.run_once(build_info)
+        self._launch(InboundInfoFetcher, check_changeset=True)
 
 
 def pypi_latest_version():

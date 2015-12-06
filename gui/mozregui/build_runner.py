@@ -82,7 +82,8 @@ class GuiTestRunner(QObject, TestRunner):
                 pass  # silently pass stop process error
             self.launcher.cleanup()
         self.verdict = verdict
-        self.evaluate_finished.emit()
+        if verdict is not None:
+            self.evaluate_finished.emit()
 
 
 class AbstractBuildRunner(QObject):
@@ -102,7 +103,7 @@ class AbstractBuildRunner(QObject):
         self.thread = None
         self.worker = None
         self.pending_threads = []
-        self.test_runner = GuiTestRunner()
+        self.test_runner = None
         self.download_manager = None
 
     def init_worker(self, fetch_config, options):
@@ -126,6 +127,7 @@ class AbstractBuildRunner(QObject):
                             * 1073741824)
         self.download_manager = GuiBuildDownloadManager(download_dir,
                                                         persist_limit)
+        self.test_runner = GuiTestRunner()
         self.thread = QThread()
 
         # options for the app launcher
@@ -158,7 +160,8 @@ class AbstractBuildRunner(QObject):
 
     @Slot()
     def stop(self, wait=True):
-        self.test_runner.finish(None)
+        if self.test_runner:
+            self.test_runner.finish(None)
         if self.download_manager:
             self.download_manager.cancel()
         if self.thread:

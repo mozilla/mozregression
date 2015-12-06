@@ -186,12 +186,6 @@ class BisectRunner(AbstractBuildRunner):
         self.worker._bisect_args = (handler, good, bad)
         return self.worker.bisect
 
-    @Slot()
-    def stop(self, wait=True):
-        if self.worker:
-            self.worker.finished.disconnect(self.bisection_finished)
-        AbstractBuildRunner.stop(self, wait=wait)
-
     @Slot(str)
     def evaluate(self, err_message):
         if not err_message:

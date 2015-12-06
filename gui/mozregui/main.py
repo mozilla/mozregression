@@ -16,6 +16,7 @@ from mozlog.structuredlog import set_default_logger, StructuredLogger
 from mozregui.ui.mainwindow import Ui_MainWindow
 from mozregui.wizard import BisectionWizard, SingleRunWizard
 from mozregui.bisection import BisectRunner
+from mozregui.single_runner import SingleBuildRunner
 from mozregui.global_prefs import change_prefs_dialog
 from mozregui.log_report import LogModel
 from mozregui.report_delegate import ReportItemDelegate
@@ -54,6 +55,8 @@ class MainWindow(QMainWindow):
         self.ui.actionToolBar.setChecked(self.ui.toolBar.isVisible())
 
         self.bisect_runner = BisectRunner(self)
+        self.single_runner = SingleBuildRunner(self)
+        self.current_runner = None
 
         self.bisect_runner.worker_created.connect(
             self.ui.report_view.model().attach_bisector)
@@ -63,12 +66,13 @@ class MainWindow(QMainWindow):
         self.report_delegate = ReportItemDelegate()
         self.ui.report_view.setItemDelegateForColumn(0, self.report_delegate)
 
-        self.bisect_runner.running_state_changed.connect(
-            self.ui.actionStart_a_new_bisection.setDisabled)
-        self.bisect_runner.running_state_changed.connect(
-            self.ui.actionStop_the_bisection.setEnabled)
-        self.bisect_runner.running_state_changed.connect(
-            self.ui.actionRun_a_single_build.setDisabled)
+        for runner in (self.bisect_runner, self.single_runner):
+            runner.running_state_changed.connect(
+                self.ui.actionStart_a_new_bisection.setDisabled)
+            runner.running_state_changed.connect(
+                self.ui.actionStop_the_bisection.setEnabled)
+            runner.running_state_changed.connect(
+                self.ui.actionRun_a_single_build.setDisabled)
 
         self.persist = mkdtemp()
 
@@ -93,15 +97,16 @@ class MainWindow(QMainWindow):
     def start_bisection_wizard(self):
         wizard = BisectionWizard(self)
         if wizard.exec_() == wizard.Accepted:
+            self.current_runner = self.bisect_runner
             self.ui.report_view.model().clear()
             self.bisect_runner.start(*wizard.options())
 
     @Slot()
     def stop_bisection(self):
-        # stop the bisection without blocking
+        # stop the bisection or the single runner without blocking
         model = self.ui.report_view.model()
         model.attach_bisector(None)
-        self.bisect_runner.stop(False)
+        self.current_runner.stop(False)
         # clear the report model
         model.clear()
         # clear the build info main panel
@@ -111,7 +116,8 @@ class MainWindow(QMainWindow):
     def single_run(self):
         wizard = SingleRunWizard(self)
         if wizard.exec_() == wizard.Accepted:
-            pass
+            self.current_runner = self.single_runner
+            self.single_runner.start(*wizard.options())
 
     @Slot()
     def show_about(self):
@@ -138,6 +144,7 @@ def main():
     # Create the main window and show it
     win = MainWindow()
     app.aboutToQuit.connect(win.bisect_runner.stop)
+    app.aboutToQuit.connect(win.single_runner.stop)
     app.aboutToQuit.connect(win.clear)
     release_checker = CheckRelease(win)
     release_checker.check()

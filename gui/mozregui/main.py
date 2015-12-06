@@ -55,7 +55,7 @@ class MainWindow(QMainWindow):
 
         self.bisect_runner = BisectRunner(self)
 
-        self.bisect_runner.bisector_created.connect(
+        self.bisect_runner.worker_created.connect(
             self.ui.report_view.model().attach_bisector)
 
         self.ui.report_view.step_report_changed.connect(
@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
         wizard = BisectionWizard(self)
         if wizard.exec_() == wizard.Accepted:
             self.ui.report_view.model().clear()
-            self.bisect_runner.bisect(*wizard.options())
+            self.bisect_runner.start(*wizard.options())
 
     @Slot()
     def stop_bisection(self):

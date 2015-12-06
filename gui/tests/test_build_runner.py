@@ -6,7 +6,7 @@ import os
 from mock import Mock, patch
 from . import wait_signal
 
-from mozregui import bisection
+from mozregui import build_runner
 from mozregression.persist_limit import PersistLimit
 
 
@@ -36,7 +36,7 @@ class TestGuiBuildDownloadManager(unittest.TestCase):
         tpersist_size = PersistLimit(10 * 1073741824)
         self.addCleanup(shutil.rmtree, tmpdir)
         self.dl_manager = \
-            bisection.GuiBuildDownloadManager(tmpdir, tpersist_size)
+            build_runner.GuiBuildDownloadManager(tmpdir, tpersist_size)
         self.dl_manager.session = self.session
         self.signals = {}
         for sig in ('download_progress', 'download_started',
@@ -44,7 +44,8 @@ class TestGuiBuildDownloadManager(unittest.TestCase):
             self.signals[sig] = Mock()
             getattr(self.dl_manager, sig).connect(self.signals[sig])
 
-    @patch('mozregui.bisection.GuiBuildDownloadManager._extract_download_info')
+    @patch(
+        'mozregui.build_runner.GuiBuildDownloadManager._extract_download_info')
     def test_focus_download(self, extract_info):
         extract_info.return_value = ('http://foo', 'foo')
         mock_response(self.session_response, 'this is some data' * 10000, 0.01)
@@ -70,11 +71,11 @@ class TestGuiTestRunner(unittest.TestCase):
     def setUp(self):
         self.evaluate_started = Mock()
         self.evaluate_finished = Mock()
-        self.test_runner = bisection.GuiTestRunner()
+        self.test_runner = build_runner.GuiTestRunner()
         self.test_runner.evaluate_started.connect(self.evaluate_started)
         self.test_runner.evaluate_finished.connect(self.evaluate_finished)
 
-    @patch('mozregui.bisection.GuiTestRunner.create_launcher')
+    @patch('mozregui.build_runner.GuiTestRunner.create_launcher')
     def test_basic(self, create_launcher):
         launcher = Mock(get_app_info=lambda: 'app_info')
         create_launcher.return_value = launcher

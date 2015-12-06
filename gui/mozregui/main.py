@@ -60,6 +60,8 @@ class MainWindow(QMainWindow):
 
         self.bisect_runner.worker_created.connect(
             self.ui.report_view.model().attach_bisector)
+        self.single_runner.worker_created.connect(
+            self.ui.report_view.model().attach_single_runner)
 
         self.ui.report_view.step_report_changed.connect(
             self.ui.build_info_browser.update_content)

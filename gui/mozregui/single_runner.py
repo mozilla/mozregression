@@ -1,4 +1,4 @@
-from PyQt4.QtCore import QObject, pyqtSlot as Slot
+from PyQt4.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
 
 from mozregression.dates import is_date_or_datetime
 from mozregression.fetch_build_info import (NightlyInfoFetcher,
@@ -8,6 +8,10 @@ from mozregui.build_runner import AbstractBuildRunner
 
 
 class SingleBuildWorker(QObject):
+    started = Signal()
+    step_testing = Signal(object, object)
+    step_build_found = Signal(object, object)
+
     def __init__(self, fetch_config, test_runner, download_manager):
         QObject.__init__(self)
         self.fetch_config = fetch_config
@@ -17,9 +21,11 @@ class SingleBuildWorker(QObject):
         self._build_info = None
 
     def _find_build_info(self, fetcher_class, **fetch_kwargs):
+        self.started.emit()
         fetcher = fetcher_class(self.fetch_config)
         self._build_info = fetcher.find_build_info(self.launch_arg,
                                                    **fetch_kwargs)
+        self.step_build_found.emit(self, self._build_info)
         self.download_manager.focus_download(self._build_info)
 
     @Slot()
@@ -37,6 +43,7 @@ class SingleBuildWorker(QObject):
         if dl is not None and (dl.is_canceled() or dl.error()):
             # todo handle this
             return
+        self.step_testing.emit(self, self._build_info)
         self.test_runner.evaluate(self._build_info)
 
 

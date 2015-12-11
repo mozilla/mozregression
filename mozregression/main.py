@@ -66,6 +66,13 @@ class Application(object):
             # cancel all possible downloads
             self._build_download_manager.cancel()
         if self._rm_download_dir:
+            if self._build_download_manager:
+                # we need to wait explicitly for downloading threads completion
+                # here because it may remove a file in the download dir - and
+                # in that case we could end up with a race condition when
+                # we will remove the download dir. See
+                # https://bugzilla.mozilla.org/show_bug.cgi?id=1231745
+                self._build_download_manager.wait(raise_if_error=False)
             mozfile.remove(self._download_dir)
         if self._global_profile \
            and self.options.profile_persistence == 'clone-first':

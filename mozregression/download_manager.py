@@ -250,6 +250,13 @@ class DownloadManager(object):
                     if download.is_running():
                         download.cancel()
 
+    def wait(self, raise_if_error=True):
+        """
+        Wait for all downloads to be finished.
+        """
+        for download in self._downloads.values():
+            download.wait(raise_if_error=raise_if_error)
+
     def download(self, url, fname):
         """
         Returns a started download instance, or None if fname is already

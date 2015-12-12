@@ -1,0 +1,6 @@
+coverage
+mock
+flake8
+
+# install mozregression
+-e .

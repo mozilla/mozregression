@@ -78,3 +78,9 @@ class BuildInfoNotFound(MozRegressionError):
     """
     Raised when we can't find information about a build.
     """
+
+
+class EmptyPushlogError(MozRegressionError):
+    """
+    Raised when there is no pushes in a given range
+    """

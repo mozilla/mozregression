@@ -227,6 +227,10 @@ class DownloadManager(object):
         self.persist_limit = persist_limit or PersistLimit(0)
         self.persist_limit.register_dir_content(self.destdir)
 
+        # if persist folder does not exist, create it
+        if not os.path.isdir(destdir):
+            os.makedirs(destdir)
+
     def get_dest(self, fname):
         return os.path.join(self.destdir, fname)
 

@@ -110,14 +110,28 @@ class ProfilePage(WizardPage):
     TITLE = "Profile selection"
     SUBTITLE = ("Choose a specific profile. You can choose an existing profile"
                 ", or let this blank to use a new one.")
-    FIELDS = {"profile": "profile_widget.line_edit"}
+    FIELDS = {"profile": "profile_widget.line_edit",
+	          "profile_persistence": "profile_persistence_combo" }
     ID = 1
+
+    def __init__(self):
+	WizardPage.__init__(self)
+	profile_persistence_options = [ "clone",
+					"clone-first",
+					"reuse"
+				      ]
+	self.profile_persistence_model = QStringListModel(profile_persistence_options)
+	self.ui.profile_persistence_combo.setModel(self.profile_persistence_model)
+	self.ui.profile_persistence_combo.setCurrentIndex(0)
 
     def get_prefs(self):
         return self.ui.pref_widget.get_prefs()
 
     def get_addons(self):
         return self.ui.addons_widget.get_addons()
+
+    def get_profile_persistence(self):
+        return str(self.ui.profile_persistence_combo.currentText())
 
     def nextId(self):
         return RangeSelectionPage.ID
@@ -228,5 +242,17 @@ class BisectionWizard(QWizard):
         options['preferences'] = self.page(ProfilePage.ID).get_prefs()
         # get the addons
         options['addons'] = self.page(ProfilePage.ID).get_addons()
+        # get profile persistence
+        options['profile-persistence'] = self.page(ProfilePage.ID).get_profile_persistence()
+        # create a profile if required
+        launcher_class = LAUNCHER_REGISTRY.get(fetch_config.app_name)
+        launcher_class.check_is_runnable()
+        if options['profile-persistence'] in ('clone-first', 'reuse'):
+            options['profile'] = launcher_class.create_profile(
+                    profile=options['profile'],
+                    addons=options['addons'],
+                    preferences=options['preferences'],
+                    clone=options['profile_persistence'] == 'clone-first'
+                )
 
         return fetch_config, options

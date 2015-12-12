@@ -256,8 +256,10 @@ class BisectRunner(QObject):
         self.bisector = None
         self.thread = None
         self.pending_threads = []
+        self.options = None
 
     def bisect(self, fetch_config, options):
+        self.options = options
         self.stop()
 
         # global preferences
@@ -285,23 +287,23 @@ class BisectRunner(QObject):
         self.bisector.choose_next_build.connect(self.choose_next_build)
         self.bisector_created.emit(self.bisector)
 
-        good, bad = options.pop('good'), options.pop('bad')
+        good, bad = self.options.pop('good'), self.options.pop('bad')
         if is_date_or_datetime(good) and is_date_or_datetime(bad) \
                 and not fetch_config.should_use_taskcluster():
-            handler = NightlyHandler(find_fix=options['find_fix'])
+            handler = NightlyHandler(find_fix=self.options['find_fix'])
         else:
-            handler = InboundHandler(find_fix=options['find_fix'])
+            handler = InboundHandler(find_fix=self.options['find_fix'])
 
         # options for the app launcher
         launcher_kwargs = {}
-        for name in ('profile', 'preferences'):
-            if name in options:
-                value = options[name]
+        for name in ('profile', 'preferences', 'profile-persistence'):
+            if name in self.options:
+                value = self.options[name]
                 if value:
                     launcher_kwargs[name] = value
 
         # add add-ons paths to the app launcher
-        launcher_kwargs['addons'] = options['addons']
+        launcher_kwargs['addons'] = self.options['addons']
         self.bisector.test_runner.launcher_kwargs = launcher_kwargs
 
         self.thread.start()
@@ -332,6 +334,9 @@ class BisectRunner(QObject):
                 self.thread.finished.connect(self._remove_pending_thread)
             self.thread = None
         self.running_state_changed.emit(False)
+        if self.options['profile'] \
+           and self.options['profile-persistence'] == 'clone-first':
+            self.options['profile'].cleanup()
 
     @Slot()
     def _remove_pending_thread(self):

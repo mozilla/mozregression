@@ -487,3 +487,26 @@ class Fennec23Config(FennecConfig):
             else:
                 repo = "mozilla-central-android-api-9"
         return self._get_nightly_repo_regex(date, repo)
+
+
+@REGISTRY.register('jsshell')
+class JsShellConfig(FirefoxConfig):
+    def build_info_regex(self):
+        # the info file is the one for firefox
+        return get_build_regex('firefox', self.os, self.bits,
+                               with_ext=False) + r'\.txt$'
+
+    def build_regex(self):
+        if self.os == 'linux':
+            if self.bits == 64:
+                part = 'linux-x86_64'
+            else:
+                part = 'linux-i686'
+        elif self.os == 'win':
+            if self.bits == 64:
+                part = 'win64.*'
+            else:
+                part = 'win32'
+        else:
+            part = 'mac'
+        return r'jsshell-%s\.zip$' % part

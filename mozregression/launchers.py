@@ -18,6 +18,10 @@ from mozdevice import ADBAndroid, ADBHost, ADBError
 import mozversion
 import mozinstall
 import tempfile
+import zipfile
+import mozinfo
+import stat
+from subprocess import call
 
 from mozregression.class_registry import ClassRegistry
 from mozregression.errors import LauncherNotRunnable, LauncherError
@@ -330,3 +334,46 @@ class FennecLauncher(Launcher):
 
     def get_app_info(self):
         return self.app_info
+
+
+@REGISTRY.register('jsshell')
+class JsShellLauncher(Launcher):
+    temp_dir = None
+
+    def _install(self, dest):
+        self.tempdir = tempfile.mkdtemp()
+        try:
+            with zipfile.ZipFile(dest, "r") as z:
+                z.extractall(self.tempdir)
+            self.binary = os.path.join(
+                self.tempdir,
+                'js' if mozinfo.os != 'win' else 'js.exe'
+            )
+            # set the file executable
+            os.chmod(self.binary, os.stat(self.binary).st_mode | stat.S_IEXEC)
+        except:
+            rmtree(self.tempdir)
+            raise
+
+    def _start(self, **kwargs):
+        self._logger.info("Launching %s" % self.binary)
+        res = call([self.binary], cwd=self.tempdir)
+        if res != 0:
+            self._logger.warning('jsshell exited with code %d.' % res)
+
+    def _wait(self):
+        pass
+
+    def _stop(self, **kwargs):
+        pass
+
+    def get_app_info(self):
+        return {}
+
+    def cleanup(self):
+        try:
+            Launcher.cleanup(self)
+        finally:
+            # always remove tempdir
+            if self.tempdir is not None:
+                rmtree(self.tempdir)

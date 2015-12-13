@@ -300,5 +300,24 @@ def test_cant_set_debug_build_type_for_b2g():
     with pytest.raises(errors.MozRegressionError):
         conf.set_build_type("debug")
 
+
+def test_jsshell_build_info_regex():
+    conf = create_config('jsshell', 'linux', 64)
+    assert re.match(conf.build_info_regex(),
+                    'firefox-38.0a1.en-US.linux-x86_64.txt')
+
+
+@pytest.mark.parametrize('os,bits,name', [
+    ('linux', 32, 'jsshell-linux-i686.zip'),
+    ('linux', 64, 'jsshell-linux-x86_64.zip'),
+    ('mac', 64, 'jsshell-mac.zip'),
+    ('win', 32, 'jsshell-win32.zip'),
+    ('win', 64, 'jsshell-win64.zip'),
+])
+def test_jsshell_build_regex(os, bits, name):
+    conf = create_config('jsshell', os, bits)
+    assert re.match(conf.build_regex(), name)
+
+
 if __name__ == '__main__':
     unittest.main()

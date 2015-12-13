@@ -1,6 +1,8 @@
 from mozregression import launchers
 import unittest
 import os
+import pytest
+
 from mock import patch, Mock, ANY
 from mozprofile import Profile
 from mozregression.errors import LauncherNotRunnable, LauncherError
@@ -261,3 +263,63 @@ class TestFennecLauncher(unittest.TestCase):
         launcher.start()
         launcher.wait()
         self.adb.process_exist.assert_called_with()
+
+
+class Zipfile(object):
+    def __init__(self, *a):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        pass
+
+    def extractall(self, dirname):
+        fname = 'js' if launchers.mozinfo.os != 'win' else 'js.exe'
+        with open(os.path.join(dirname, fname), 'w') as f:
+            f.write('1')
+
+
+@pytest.mark.parametrize("mos,binary_name", [
+    ('win', 'js.exe'),
+    ('linux', 'js'),
+    ('mac', 'js'),
+])
+def test_jsshell_install(mocker, mos, binary_name):
+    zipfile = mocker.patch('mozregression.launchers.zipfile')
+    zipfile.ZipFile = Zipfile
+
+    mocker.patch('mozregression.launchers.mozinfo').os = mos
+
+    with launchers.JsShellLauncher('/path/to') as js:
+        assert os.path.isdir(js.tempdir)
+        assert os.path.basename(js.binary) == binary_name
+    assert not os.path.isdir(js.tempdir)
+
+
+def test_jsshell_install_except(mocker):
+    mocker.patch('mozregression.launchers.zipfile').ZipFile.side_effect \
+        = Exception
+
+    with pytest.raises(Exception):
+        launchers.JsShellLauncher('/path/to')
+
+
+@pytest.mark.parametrize("return_code", [0, 1])
+def test_jsshell_start(mocker, return_code):
+    zipfile = mocker.patch('mozregression.launchers.zipfile')
+    zipfile.ZipFile = Zipfile
+
+    call = mocker.patch('mozregression.launchers.call')
+    call.return_code = return_code
+
+    logger = Mock()
+
+    with launchers.JsShellLauncher('/path/to') as js:
+        js._logger = logger
+        js.start()
+        assert js.get_app_info() == {}
+
+    call.assert_called_once_with([js.binary], cwd=js.tempdir)
+    logger.warning.calls == 0 if return_code else 1

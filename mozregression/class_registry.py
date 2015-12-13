@@ -14,19 +14,22 @@ class ClassRegistry(object):
         self._classes = {}
         self.attr_name = attr_name
 
-    def register(self, name, attr_value=None):
+    def register(self, name, attr_value=None, **kwargs):
         """
         Register a class with a given name.
 
         :param name: name to identify the class
         :param attr_value: If given, it will be used to define the value of
                            the class attribute. If not given, *name* is used.
+        :param kwargs: key and values to add to the class object
         """
         assert name not in self._classes
 
         def wrapper(klass):
             self._classes[name] = klass
             setattr(klass, self.attr_name, attr_value or name)
+            for key, value in kwargs.iteritems():
+                setattr(klass, key, value)
             return klass
         return wrapper
 
@@ -36,8 +39,17 @@ class ClassRegistry(object):
         """
         return self._classes[name]
 
-    def names(self):
+    def names(self, predicate=None):
         """
         Returns a list of registered class names.
+
+        :param predicate: if provided, should be a function to filter
+                          classes. Only the names of the classes where
+                          predicate returns True will be included.
         """
-        return sorted(self._classes)
+        names = sorted(self._classes)
+        if predicate:
+            for name, klass in self._classes.iteritems():
+                if not predicate(klass):
+                    names.remove(name)
+        return names

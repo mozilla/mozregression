@@ -8,7 +8,7 @@ The public entry point in there is :func:`create_config`, which
 creates an returns a fetch configuration. the configuration will
 be an instance of :class:`CommonConfig`, possibly using the mixins
 :class:`NightlyConfigMixin` and/or :class:`InboundConfigMixin`.
-
+<
 Example to create a configuration for firefox on linux 64: ::
 
   fetch_config = create_config('firefox', 'linux', 64)
@@ -421,7 +421,8 @@ class B2GConfig(CommonConfig,
     pass
 
 
-@REGISTRY.register('b2g-aries', attr_value='b2g-device')
+@REGISTRY.register('b2g-aries', attr_value='b2g-device',
+                   disable_in_gui=True)
 class B2GAriesConfig(CommonConfig,
                      B2GDeviceConfigMixin):
     BUILD_TYPES = ('opt', 'debug', 'eng-opt')
@@ -489,7 +490,7 @@ class Fennec23Config(FennecConfig):
         return self._get_nightly_repo_regex(date, repo)
 
 
-@REGISTRY.register('jsshell')
+@REGISTRY.register('jsshell', disable_in_gui=True)
 class JsShellConfig(FirefoxConfig):
     def build_info_regex(self):
         # the info file is the one for firefox

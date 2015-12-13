@@ -61,8 +61,9 @@ class IntroPage(WizardPage):
     def __init__(self):
         WizardPage.__init__(self)
         self.fetch_config = None
-        self.app_model = QStringListModel([a for a in REGISTRY.names()
-                                           if not a.startswith('b2g-')])
+        self.app_model = QStringListModel(
+            REGISTRY.names(
+                lambda klass: not getattr(klass, 'disable_in_gui', None)))
         self.ui.app_combo.setModel(self.app_model)
         if mozinfo.bits == 64:
             if mozinfo.os == 'mac':

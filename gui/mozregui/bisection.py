@@ -74,7 +74,6 @@ class GuiBisector(QObject, Bisector):
             return
         if result is None:
             self.bisection.no_more_merge = True
-            self.finished.emit(self.bisection, Bisection.FINISHED)
         else:
             self.handle_merge.emit(self.bisection, *result)
 
@@ -231,9 +230,6 @@ class BisectRunner(AbstractBuildRunner):
                     # check merge, try to bisect further
                     QTimer.singleShot(0, self.worker.check_merge)
                 return
-            else:
-                # no inbound, bisection is done.
-                self.stop()
             msg = "The bisection is done."
             dialog = QMessageBox.information
         dialog(self.mainwindow, "End of the bisection", msg)

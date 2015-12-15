@@ -5,6 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import math
+import threading
 from mozlog.structured import get_default_logger
 
 from mozregression.build_range import range_for_inbounds, range_for_nightlies
@@ -288,6 +289,28 @@ class InboundHandler(BisectorHandler):
         return result
 
 
+class IndexPromise(object):
+    """
+    A promise to get a build index.
+
+    Provide a callable object that gives the next index when called.
+    """
+    def __init__(self, index, callback=None):
+        self.thread = None
+        self.index = index
+        if callback:
+            self.thread = threading.Thread(target=self._run, args=(callback,))
+            self.thread.start()
+
+    def _run(self, callback):
+        self.index = callback(self.index)
+
+    def __call__(self):
+        if self.thread:
+            self.thread.join()
+        return self.index
+
+
 class Bisection(object):
     RUNNING = 0
     NO_DATA = 1
@@ -330,7 +353,7 @@ class Bisection(object):
         dl_in_background evaluates to True). Note that the mid point may
         change in this case.
 
-        Returns a couple (new_mid_point, build_infos) where build_infos
+        Returns a couple (index_promise, build_infos) where build_infos
         is the dict of build infos for the build.
         """
         build_infos = self.handler.build_range[mid_point]
@@ -339,9 +362,10 @@ class Bisection(object):
 
     def _download_build(self, mid_point, build_infos, allow_bg_download=True):
         self.download_manager.focus_download(build_infos)
+        callback = None
         if self.dl_in_background and allow_bg_download:
-            mid_point = self._download_next_builds(mid_point)
-        return mid_point, build_infos
+            callback = self._download_next_builds
+        return IndexPromise(mid_point, callback), build_infos
 
     def _download_next_builds(self, mid_point):
         # start downloading the next builds.
@@ -464,30 +488,37 @@ class Bisector(object):
                     bisection.build_range
                 )
 
+            index_promise = None
             build_info = bisection.build_range[index]
-            if previous_verdict != 'r' and build_info:
-                # if the last verdict was retry, do not download
-                # the build. Futhermore trying to download if we are
-                # in background download mode would stop the next builds
-                # downloads.
-                index, build_info = bisection.download_build(
-                    index,
-                    allow_bg_download=allow_bg_download
-                )
+            try:
+                if previous_verdict != 'r' and build_info:
+                    # if the last verdict was retry, do not download
+                    # the build. Futhermore trying to download if we are
+                    # in background download mode would stop the next builds
+                    # from downloading.
+                    index_promise, build_info = bisection.download_build(
+                        index,
+                        allow_bg_download=allow_bg_download
+                    )
 
-            if not build_info:
-                logger.info(
-                    "Unable to find build info. Skipping this build...")
-                verdict = 's'
-            else:
-                try:
-                    verdict = bisection.evaluate(build_info)
-                except LauncherError, exc:
-                    # we got an unrecoverable error while trying
-                    # to run the tested app. We can just fallback
-                    # to skip the build.
-                    logger.info("Error: %s. Skipping this build..." % exc)
+                if not build_info:
+                    logger.info(
+                        "Unable to find build info. Skipping this build...")
                     verdict = 's'
+                else:
+                    try:
+                        verdict = bisection.evaluate(build_info)
+                    except LauncherError, exc:
+                        # we got an unrecoverable error while trying
+                        # to run the tested app. We can just fallback
+                        # to skip the build.
+                        logger.info("Error: %s. Skipping this build..." % exc)
+                        verdict = 's'
+            finally:
+                # be sure to terminate the index_promise thread in all
+                # circumstances.
+                if index_promise:
+                    index = index_promise()
             previous_verdict = verdict
             result = bisection.handle_verdict(index, verdict)
             if result != bisection.RUNNING:

@@ -1,98 +1,18 @@
 import sys
 from PyQt4.QtCore import QObject, pyqtSignal as Signal, pyqtSlot as Slot, \
-    QThread, QTimer
+    QTimer
 from PyQt4.QtGui import QMessageBox, QDialog, QRadioButton
 
 from mozregression.bisector import Bisector, Bisection, NightlyHandler, \
     InboundHandler
-from mozregression.download_manager import BuildDownloadManager
-from mozregression.test_runner import TestRunner
-from mozregression.errors import MozRegressionError, LauncherError
-from mozregression.network import get_http_session
-from mozregression.persist_limit import PersistLimit
+from mozregression.errors import MozRegressionError
 from mozregression.dates import is_date_or_datetime
 
+from mozregui.build_runner import AbstractBuildRunner
 from mozregui.ui.verdict import Ui_Verdict
-from mozregui.global_prefs import get_prefs, apply_prefs
 from mozregui.skip_chooser import SkipDialog
 
 Bisection.EXCEPTION = -1  # new possible value of bisection end
-
-
-class GuiBuildDownloadManager(QObject, BuildDownloadManager):
-    download_progress = Signal(object, int, int)
-    download_started = Signal(object)
-    download_finished = Signal(object, str)
-
-    def __init__(self, destdir, persist_limit, **kwargs):
-        QObject.__init__(self)
-        persist_limit = PersistLimit(persist_limit)
-        BuildDownloadManager.__init__(self, destdir,
-                                      session=get_http_session(),
-                                      persist_limit=persist_limit,
-                                      **kwargs)
-
-    def _download_started(self, task):
-        self.download_started.emit(task)
-        BuildDownloadManager._download_started(self, task)
-
-    def _download_finished(self, task):
-        try:
-            self.download_finished.emit(task, task.get_dest())
-        except RuntimeError:
-            # in some cases, closing the application may destroy the
-            # underlying c++ QObject, causing this signal to fail.
-            # Skip this silently.
-            pass
-        BuildDownloadManager._download_finished(self, task)
-
-    def focus_download(self, build_info):
-        build_url, fname = self._extract_download_info(build_info)
-        dest = self.get_dest(fname)
-        build_info.build_file = dest
-        # first, stop all downloads in background (except the one for this
-        # build if any)
-        self.cancel(cancel_if=lambda dl: dest != dl.get_dest())
-
-        dl = self.download(build_url, fname)
-        if dl:
-            dl.set_progress(self.download_progress.emit)
-        else:
-            # file already downloaded.
-            # emit the finished signal so bisection goes on
-            self.download_finished.emit(None, dest)
-
-
-class GuiTestRunner(QObject, TestRunner):
-    evaluate_started = Signal(str)
-    evaluate_finished = Signal()
-
-    def __init__(self):
-        QObject.__init__(self)
-        TestRunner.__init__(self)
-        self.verdict = None
-        self.launcher = None
-        self.launcher_kwargs = {}
-
-    def evaluate(self, build_info, allow_back=False):
-        try:
-            self.launcher = self.create_launcher(build_info)
-            self.launcher.start(**self.launcher_kwargs)
-            build_info.update_from_app_info(self.launcher.get_app_info())
-        except LauncherError, exc:
-            self.evaluate_started.emit(str(exc))
-        else:
-            self.evaluate_started.emit('')
-
-    def finish(self, verdict):
-        if self.launcher:
-            try:
-                self.launcher.stop()
-            except LauncherError:
-                pass  # silently pass stop process error
-            self.launcher.cleanup()
-        self.verdict = verdict
-        self.evaluate_finished.emit()
 
 
 class GuiBisector(QObject, Bisector):
@@ -105,10 +25,9 @@ class GuiBisector(QObject, Bisector):
     step_finished = Signal(object, str)
     handle_merge = Signal(object, str, str, str)
 
-    def __init__(self, fetch_config, download_dir, persist_limit):
+    def __init__(self, fetch_config, test_runner, download_manager):
         QObject.__init__(self)
-        Bisector.__init__(self, fetch_config, GuiTestRunner(),
-                          GuiBuildDownloadManager(download_dir, persist_limit))
+        Bisector.__init__(self, fetch_config, test_runner, download_manager)
         self.bisection = None
         self.mid = None
         self.build_infos = None
@@ -246,46 +165,16 @@ def get_verdict(parent=None):
             return radiobox.objectName()
 
 
-class BisectRunner(QObject):
-    bisector_created = Signal(object)
-    running_state_changed = Signal(bool)
+class BisectRunner(AbstractBuildRunner):
+    worker_class = GuiBisector
 
-    def __init__(self, mainwindow):
-        QObject.__init__(self)
-        self.mainwindow = mainwindow
-        self.bisector = None
-        self.thread = None
-        self.pending_threads = []
-        self.options = None
+    def init_worker(self, fetch_config, options):
+        AbstractBuildRunner.init_worker(self, fetch_config, options)
 
-    def bisect(self, fetch_config, options):
-        self.options = options
-        self.stop()
-
-        # global preferences
-        global_prefs = get_prefs()
-        # apply the global prefs now
-        apply_prefs(global_prefs)
-
-        download_dir = global_prefs['persist']
-        persist_limit = int(abs(global_prefs['persist_size_limit'])
-                            * 1073741824)
-        if not download_dir:
-            download_dir = self.mainwindow.persist
-
-        self.bisector = GuiBisector(fetch_config,
-                                    download_dir, persist_limit)
-        # create a QThread, and move self.bisector in it. This will
-        # allow to the self.bisector slots (connected after the move)
-        # to be automatically called in the thread.
-        self.thread = QThread()
-        self.bisector.moveToThread(self.thread)
-        self.bisector.test_runner.evaluate_started.connect(
-            self.evaluate)
-        self.bisector.finished.connect(self.bisection_finished)
-        self.bisector.handle_merge.connect(self.handle_merge)
-        self.bisector.choose_next_build.connect(self.choose_next_build)
-        self.bisector_created.emit(self.bisector)
+        self.worker.test_runner.evaluate_started.connect(self.evaluate)
+        self.worker.finished.connect(self.bisection_finished)
+        self.worker.handle_merge.connect(self.handle_merge)
+        self.worker.choose_next_build.connect(self.choose_next_build)
 
         good, bad = self.options.pop('good'), self.options.pop('bad')
         if is_date_or_datetime(good) and is_date_or_datetime(bad) \
@@ -294,55 +183,8 @@ class BisectRunner(QObject):
         else:
             handler = InboundHandler(find_fix=self.options['find_fix'])
 
-        # options for the app launcher
-        launcher_kwargs = {}
-        for name in ('profile', 'preferences'):
-            if name in self.options:
-                value = self.options[name]
-                if value:
-                    launcher_kwargs[name] = value
-
-        # add add-ons paths to the app launcher
-        launcher_kwargs['addons'] = self.options['addons']
-        self.bisector.test_runner.launcher_kwargs = launcher_kwargs
-
-        self.thread.start()
-        self.bisector._bisect_args = (handler, good, bad)
-        # this will be called in the worker thread.
-        QTimer.singleShot(0, self.bisector.bisect)
-
-        self.running_state_changed.emit(True)
-
-    @Slot()
-    def stop(self, wait=True):
-        if self.bisector:
-            self.bisector.finished.disconnect(self.bisection_finished)
-            self.bisector.download_manager.cancel()
-            self.bisector = None
-        if self.thread:
-            self.thread.quit()
-            if wait:
-                # wait for thread(s) completion - this is the case when
-                # user close the application
-                self.thread.wait()
-                for thread in self.pending_threads:
-                    thread.wait()
-            else:
-                # do not block, just keep track of the thread - we got here
-                # when user cancel the bisection with the button.
-                self.pending_threads.append(self.thread)
-                self.thread.finished.connect(self._remove_pending_thread)
-            self.thread = None
-        self.running_state_changed.emit(False)
-        if self.options['profile'] \
-           and self.options['profile-persistence'] == 'clone-first':
-            self.options['profile'].cleanup()
-
-    @Slot()
-    def _remove_pending_thread(self):
-        for thread in self.pending_threads[:]:
-            if thread.isFinished():
-                self.pending_threads.remove(thread)
+        self.worker._bisect_args = (handler, good, bad)
+        return self.worker.bisect
 
     @Slot(str)
     def evaluate(self, err_message):
@@ -357,13 +199,13 @@ class BisectRunner(QObject):
                  % err_message)
             )
             verdict = 's'
-        self.bisector.test_runner.finish(verdict)
+        self.worker.test_runner.finish(verdict)
 
     @Slot()
     def choose_next_build(self):
-        dlg = SkipDialog(self.bisector.bisection.build_range)
-        self.bisector._next_build_index = dlg.choose_next_build()
-        QTimer.singleShot(0, self.bisector._bisect_next)
+        dlg = SkipDialog(self.worker.bisection.build_range)
+        self.worker._next_build_index = dlg.choose_next_build()
+        QTimer.singleShot(0, self.worker._bisect_next)
 
     @Slot(object, int)
     def bisection_finished(self, bisection, resultcode):
@@ -374,20 +216,20 @@ class BisectRunner(QObject):
             msg = "Unable to find enough data to bisect."
             dialog = QMessageBox.warning
         elif resultcode == Bisection.EXCEPTION:
-            msg = "Error: %s" % self.bisector.error[1]
+            msg = "Error: %s" % self.worker.error[1]
             dialog = QMessageBox.critical
         else:
-            fetch_config = self.bisector.fetch_config
+            fetch_config = self.worker.fetch_config
             if fetch_config.can_go_inbound() and not \
                     getattr(bisection, 'no_more_merge', False):
                 if isinstance(bisection.handler, NightlyHandler):
                     handler = bisection.handler
                     fetch_config.set_repo(
                         fetch_config.get_nightly_repo(handler.bad_date))
-                    QTimer.singleShot(0, self.bisector.bisect_further)
+                    QTimer.singleShot(0, self.worker.bisect_further)
                 else:
                     # check merge, try to bisect further
-                    QTimer.singleShot(0, self.bisector.check_merge)
+                    QTimer.singleShot(0, self.worker.check_merge)
                 return
             else:
                 # no inbound, bisection is done.
@@ -406,9 +248,9 @@ class BisectRunner(QObject):
                 % branch,
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.Yes):
-            self.bisector.fetch_config.set_repo(str(branch))
+            self.worker.fetch_config.set_repo(str(branch))
             bisection.handler.good_revision = str(good_rev)
             bisection.handler.bad_revision = str(bad_rev)
-            QTimer.singleShot(0, self.bisector.bisect_further)
+            QTimer.singleShot(0, self.worker.bisect_further)
         else:
             self.stop()

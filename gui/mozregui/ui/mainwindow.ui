@@ -25,7 +25,16 @@
     <property name="spacing">
      <number>6</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>9</number>
+    </property>
+    <property name="topMargin">
+     <number>9</number>
+    </property>
+    <property name="rightMargin">
+     <number>9</number>
+    </property>
+    <property name="bottomMargin">
      <number>9</number>
     </property>
     <item>
@@ -89,7 +98,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>27</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -97,6 +106,9 @@
      <string>File</string>
     </property>
     <addaction name="actionStart_a_new_bisection"/>
+    <addaction name="separator"/>
+    <addaction name="actionRun_a_single_build"/>
+    <addaction name="separator"/>
     <addaction name="actionStop_the_bisection"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
@@ -139,6 +151,9 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionStart_a_new_bisection"/>
+   <addaction name="separator"/>
+   <addaction name="actionRun_a_single_build"/>
+   <addaction name="separator"/>
    <addaction name="actionStop_the_bisection"/>
   </widget>
   <widget class="QDockWidget" name="logDockWidget">
@@ -170,10 +185,10 @@
    </property>
    <property name="icon">
     <iconset resource="../../resources.qrc">
-     <normaloff>:/app_icon.png</normaloff>:/app_icon.png</iconset>
+     <normaloff>:/cutting.png</normaloff>:/cutting.png</iconset>
    </property>
    <property name="text">
-    <string>Start a new bisection</string>
+    <string>Run a new bisection</string>
    </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
@@ -198,7 +213,10 @@
      <normaloff>:/stop.png</normaloff>:/stop.png</iconset>
    </property>
    <property name="text">
-    <string>Stop the bisection</string>
+    <string>Stop</string>
+   </property>
+   <property name="toolTip">
+    <string>Stop bisection or single build run</string>
    </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
@@ -229,6 +247,21 @@
    </property>
    <property name="text">
     <string>Log view</string>
+   </property>
+  </action>
+  <action name="actionRun_a_single_build">
+   <property name="icon">
+    <iconset resource="../../resources.qrc">
+     <normaloff>:/s.png</normaloff>:/s.png</iconset>
+   </property>
+   <property name="text">
+    <string>Run a single build</string>
+   </property>
+   <property name="toolTip">
+    <string>Run a single build</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
    </property>
   </action>
  </widget>
@@ -397,11 +430,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionRun_a_single_build</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>single_run()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>511</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>start_bisection_wizard()</slot>
   <slot>show_about()</slot>
   <slot>stop_bisection()</slot>
   <slot>edit_global_prefs()</slot>
+  <slot>single_run()</slot>
  </slots>
 </ui>

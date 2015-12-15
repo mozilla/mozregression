@@ -95,6 +95,7 @@ class ReportModel(QAbstractTableModel):
         QAbstractTableModel.__init__(self)
         self.items = []
         self.bisector = None
+        self.single_runner = None
 
     def clear(self):
         self.beginResetModel()
@@ -122,6 +123,7 @@ class ReportModel(QAbstractTableModel):
                                self)
 
         if bisector:
+            self.attach_single_runner(None)
             _bulk_action_slots('connect',
                                bisector_slots,
                                bisector,
@@ -132,6 +134,25 @@ class ReportModel(QAbstractTableModel):
                                self)
 
         self.bisector = bisector
+
+    @Slot(object)
+    def attach_single_runner(self, single_runner):
+        sr_slots = ('started', 'step_build_found', 'step_testing')
+        downloader_slots = ('download_progress', )
+
+        if self.single_runner:
+            _bulk_action_slots('disconnect', sr_slots, self.single_runner,
+                               self)
+            _bulk_action_slots('disconnect', downloader_slots,
+                               self.single_runner.download_manager, self)
+
+        if single_runner:
+            self.attach_bisector(None)
+            _bulk_action_slots('connect', sr_slots, single_runner, self)
+            _bulk_action_slots('connect', downloader_slots,
+                               single_runner.download_manager, self)
+
+        self.single_runner = single_runner
 
     @Slot(object, int, int)
     def download_progress(self, dl, current, total):
@@ -195,8 +216,13 @@ class ReportModel(QAbstractTableModel):
 
         if isinstance(last_item, StartItem):
             # update the pushlog for the start step
-            last_item.update_pushlogurl(bisection)
-            self.update_item(last_item)
+            if hasattr(bisection, 'handler'):
+                last_item.update_pushlogurl(bisection)
+                self.update_item(last_item)
+            else:
+                # single runner case
+                # TODO: rework report.py implementation...
+                self.finished(None, None)  # remove last item
 
             # and add the new step with build_infos
             item = StepItem()

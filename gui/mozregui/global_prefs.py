@@ -17,6 +17,8 @@ def get_prefs():
     options['persist'] = settings['persist']
     options['http_timeout'] = float(settings['http-timeout'])
     options['persist_size_limit'] = float(settings['persist-size-limit'])
+    options['background_downloads'] = \
+        False if settings.get('background_downloads') == 'no' else True
     return options
 
 
@@ -25,7 +27,9 @@ def save_prefs(options):
     settings.update({
         'persist': options['persist'] or '',
         'http-timeout': options['http_timeout'],
-        'persist-size-limit': options['persist_size_limit']
+        'persist-size-limit': options['persist_size_limit'],
+        'background_downloads':
+            'yes' if options['background_downloads'] else 'no',
     })
     settings.write()
 
@@ -49,6 +53,7 @@ class ChangePrefsDialog(QDialog):
         self.ui.persist.line_edit.setText(options['persist'] or '')
         self.ui.http_timeout.setValue(options['http_timeout'])
         self.ui.persist_size_limit.setValue(options['persist_size_limit'])
+        self.ui.bg_downloads.setChecked(options['background_downloads'])
 
     def save_prefs(self):
         options = get_prefs()
@@ -57,6 +62,7 @@ class ChangePrefsDialog(QDialog):
         options['persist'] = str(ui.persist.line_edit.text()) or None
         options['http_timeout'] = ui.http_timeout.value()
         options['persist_size_limit'] = ui.persist_size_limit.value()
+        options['background_downloads'] = ui.bg_downloads.isChecked()
         save_prefs(options)
 
 

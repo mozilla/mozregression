@@ -63,16 +63,19 @@ class GuiTestRunner(QObject, TestRunner):
         self.verdict = None
         self.launcher = None
         self.launcher_kwargs = {}
+        self.run_error = False
 
     def evaluate(self, build_info, allow_back=False):
         try:
             self.launcher = self.create_launcher(build_info)
             self.launcher.start(**self.launcher_kwargs)
             build_info.update_from_app_info(self.launcher.get_app_info())
-        except LauncherError, exc:
+        except Exception, exc:
+            self.run_error = True
             self.evaluate_started.emit(str(exc))
         else:
             self.evaluate_started.emit('')
+            self.run_error = False
 
     def finish(self, verdict):
         if self.launcher:
@@ -119,6 +122,7 @@ class AbstractBuildRunner(QObject):
 
         # global preferences
         global_prefs = get_prefs()
+        self.global_prefs = global_prefs
         # apply the global prefs now
         apply_prefs(global_prefs)
 

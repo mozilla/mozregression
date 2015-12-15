@@ -4,7 +4,7 @@ from PyQt4.QtCore import QObject, pyqtSignal as Signal, pyqtSlot as Slot, \
 from PyQt4.QtGui import QMessageBox, QDialog, QRadioButton
 
 from mozregression.bisector import Bisector, Bisection, NightlyHandler, \
-    InboundHandler
+    InboundHandler, IndexPromise
 from mozregression.errors import MozRegressionError
 from mozregression.dates import is_date_or_datetime
 
@@ -25,7 +25,8 @@ class GuiBisector(QObject, Bisector):
     step_finished = Signal(object, str)
     handle_merge = Signal(object, str, str, str)
 
-    def __init__(self, fetch_config, test_runner, download_manager):
+    def __init__(self, fetch_config, test_runner, download_manager,
+                 download_in_background=True):
         QObject.__init__(self)
         Bisector.__init__(self, fetch_config, test_runner, download_manager)
         self.bisection = None
@@ -34,6 +35,8 @@ class GuiBisector(QObject, Bisector):
         self._bisect_args = None
         self.error = None
         self._next_build_index = None
+        self.download_in_background = download_in_background
+        self.index_promise = None
 
         self.download_manager.download_finished.connect(
             self._build_dl_finished)
@@ -124,7 +127,23 @@ class GuiBisector(QObject, Bisector):
     def _evaluate(self):
         # this is called in the working thread, so installation does not
         # block the ui.
+
+        # download in background, if desired and that last verdict was not
+        # a skip.
+        if self.download_in_background and self.test_runner.verdict != 's':
+            self.index_promise = IndexPromise(
+                self.mid,
+                self.bisection._download_next_builds
+            )
+        # run the build evaluation
         self.bisection.evaluate(self.build_infos)
+        # wait for the next index in the thread if any
+        if self.index_promise:
+            self.index_promise()
+            # if there was an error, stop the possible downloads
+            if self.test_runner.run_error:
+                self.download_manager.cancel()
+                self.download_manager.wait(raise_if_error=False)
 
     @Slot(object, str)
     def _build_dl_finished(self, dl, dest):
@@ -143,6 +162,10 @@ class GuiBisector(QObject, Bisector):
     def _evaluate_finished(self):
         # here we are not in the working thread, since the connection was
         # done in the constructor
+        if self.index_promise:
+            self.mid = self.index_promise()
+            self.index_promise = None
+
         self.step_finished.emit(self.bisection, self.test_runner.verdict)
         result = self.bisection.handle_verdict(self.mid,
                                                self.test_runner.verdict)
@@ -183,6 +206,8 @@ class BisectRunner(AbstractBuildRunner):
             handler = InboundHandler(find_fix=options['find_fix'])
 
         self.worker._bisect_args = (handler, good, bad)
+        self.worker.download_in_background = \
+            self.global_prefs['background_downloads']
         return self.worker.bisect
 
     @Slot(str)

@@ -296,7 +296,7 @@ class BisectRunner(QObject):
 
         # options for the app launcher
         launcher_kwargs = {}
-        for name in ('profile', 'preferences', 'profile-persistence'):
+        for name in ('profile', 'preferences'):
             if name in self.options:
                 value = self.options[name]
                 if value:

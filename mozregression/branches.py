@@ -60,7 +60,7 @@ def create_branches():
 
     # release branches
     for name in ("comm-aurora", "comm-beta", "comm-release", "mozilla-aurora",
-                 "mozilla-beta", "mozilla-release"):
+                 "mozilla-beta", "mozilla-release", "b2g-ota"):
         branches.set_branch(name, "releases/%s" % name)
 
     # aliases
@@ -70,7 +70,8 @@ def create_branches():
             ("mozilla-aurora", ("aurora",)),
             ("mozilla-beta", ("beta",)),
             ("fx-team", ("f-t",)),
-            ("b2g-inbound", ("b2ginbound", "b2g-i", "b-i"))):
+            ("b2g-inbound", ("b2ginbound", "b2g-i", "b-i")),
+            ("b2g-ota", ("b2g-o", "b-o"))):
         for alias in aliases:
             branches.set_alias(alias, name)
     return branches

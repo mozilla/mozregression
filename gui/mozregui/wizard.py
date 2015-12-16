@@ -140,7 +140,7 @@ class ProfilePage(WizardPage):
         # get the addons
         options['addons'] = self.get_addons()
         # get the profile-persistence
-        options['profile-persistence'] = self.get_profile_persistence()
+        options['profile_persistence'] = self.get_profile_persistence()
 
     def get_prefs(self):
         return self.ui.pref_widget.get_prefs()
@@ -239,7 +239,6 @@ class Wizard(QWizard):
         options = {}
         for page_id in self.pageIds():
             self.page(page_id).set_options(options)
-        print "Options =", options.keys()
 
         fetch_config = self.page(self.pageIds()[0]).fetch_config
         fetch_config.set_repo(options['repository'])
@@ -248,7 +247,7 @@ class Wizard(QWizard):
         # create a profile if required
         launcher_class = LAUNCHER_REGISTRY.get(fetch_config.app_name)
         launcher_class.check_is_runnable()
-        if options['profile-persistence'] in ('clone-first', 'reuse'):
+        if options['profile_persistence'] in ('clone-first', 'reuse'):
             options['profile'] = launcher_class.create_profile(
                     profile=options['profile'],
                     addons=options['addons'],

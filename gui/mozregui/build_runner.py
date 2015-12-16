@@ -74,7 +74,9 @@ class GuiTestRunner(QObject, TestRunner):
         else:
             self.evaluate_started.emit('')
 
-    def finish(self, verdict):
+    def finish(self, verdict, options):
+        if options['profile'] and options['profile_persistence'] == 'clone-first':
+            options['profile'].cleanup()
         if self.launcher:
             try:
                 self.launcher.stop()
@@ -163,7 +165,7 @@ class AbstractBuildRunner(QObject):
     @Slot()
     def stop(self, wait=True):
         if self.test_runner:
-            self.test_runner.finish(None)
+            self.test_runner.finish(None, self.options)
         if self.download_manager:
             self.download_manager.cancel()
         if self.thread:
@@ -181,9 +183,6 @@ class AbstractBuildRunner(QObject):
                 self.thread.finished.connect(self._remove_pending_thread)
             self.thread = None
         self.running_state_changed.emit(False)
-        if self.options['profile'] \
-           and self.options['profile-persistence'] == 'clone-first':
-            self.options['profile'].cleanup()
 
     @Slot()
     def _remove_pending_thread(self):

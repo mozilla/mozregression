@@ -176,12 +176,12 @@ class BisectRunner(AbstractBuildRunner):
         self.worker.handle_merge.connect(self.handle_merge)
         self.worker.choose_next_build.connect(self.choose_next_build)
 
-        good, bad = self.options.pop('good'), self.options.pop('bad')
+        good, bad = options.pop('good'), options.pop('bad')
         if is_date_or_datetime(good) and is_date_or_datetime(bad) \
                 and not fetch_config.should_use_taskcluster():
-            handler = NightlyHandler(find_fix=self.options['find_fix'])
+            handler = NightlyHandler(find_fix=options['find_fix'])
         else:
-            handler = InboundHandler(find_fix=self.options['find_fix'])
+            handler = InboundHandler(find_fix=options['find_fix'])
 
         self.worker._bisect_args = (handler, good, bad)
         return self.worker.bisect

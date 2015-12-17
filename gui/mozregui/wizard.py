@@ -121,17 +121,18 @@ class ProfilePage(WizardPage):
     SUBTITLE = ("Choose a specific profile. You can choose an existing profile"
                 ", or let this blank to use a new one.")
     FIELDS = {"profile": "profile_widget.line_edit",
-	          "profile_persistence": "profile_persistence_combo" }
+              "profile_persistence": "profile_persistence_combo"}
 
     def __init__(self):
-	WizardPage.__init__(self)
-	profile_persistence_options = [ "clone",
-					"clone-first",
-					"reuse"
-				      ]
-	self.profile_persistence_model = QStringListModel(profile_persistence_options)
-	self.ui.profile_persistence_combo.setModel(self.profile_persistence_model)
-	self.ui.profile_persistence_combo.setCurrentIndex(0)
+        WizardPage.__init__(self)
+        profile_persistence_options = ["clone",
+                                       "clone-first",
+                                       "reuse"]
+        self.profile_persistence_model = \
+            QStringListModel(profile_persistence_options)
+        self.ui.profile_persistence_combo.setModel(
+            self.profile_persistence_model)
+        self.ui.profile_persistence_combo.setCurrentIndex(0)
 
     def set_options(self, options):
         WizardPage.set_options(self, options)
@@ -246,14 +247,12 @@ class Wizard(QWizard):
 
         # create a profile if required
         launcher_class = LAUNCHER_REGISTRY.get(fetch_config.app_name)
-        launcher_class.check_is_runnable()
         if options['profile_persistence'] in ('clone-first', 'reuse'):
             options['profile'] = launcher_class.create_profile(
-                    profile=options['profile'],
-                    addons=options['addons'],
-                    preferences=options['preferences'],
-                    clone=options['profile_persistence'] == 'clone-first'
-                )
+                profile=options['profile'],
+                addons=options['addons'],
+                preferences=options['preferences'],
+                clone=options['profile_persistence'] == 'clone-first')
 
         return fetch_config, options
 

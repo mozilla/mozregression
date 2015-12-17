@@ -50,7 +50,7 @@ def test_add_empty_pref_then_fill_it(qtbot, pref_editor):
     # check prefs
     assert pref_editor.pref_model.rowCount() == 1
     assert len(pref_editor.get_prefs()) == 1
-    if not os.getenv("TRAVIS") or mozinfo.os == "mac":
+    if not os.getenv("TRAVIS") and mozinfo.os != "mac":
         # under TRAVIS and mac, the edition fail somewhere. not sure
         # why, since on my ubuntu it works well even with Xvfb.
         # TODO: look at this later

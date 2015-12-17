@@ -163,7 +163,6 @@ class AbstractBuildRunner(QObject):
     @Slot()
     def stop(self, wait=True):
         if self.options:
-            print "Options =", self.options.keys()
             if self.options['profile'] and self.options['profile_persistence'] == \
                     'clone-first':
                 self.options['profile'].cleanup()

@@ -171,18 +171,23 @@ class AbstractBuildRunner(QObject):
             self.download_manager.cancel()
         if self.thread:
             self.thread.quit()
-            if wait:
+
+        if wait:
+            if self.download_manager:
+                self.download_manager.wait(raise_if_error=False)
+            if self.thread:
                 # wait for thread(s) completion - this is the case when
                 # user close the application
                 self.thread.wait()
                 for thread in self.pending_threads:
                     thread.wait()
-            else:
-                # do not block, just keep track of the thread - we got here
-                # when user uses the stop button.
-                self.pending_threads.append(self.thread)
-                self.thread.finished.connect(self._remove_pending_thread)
             self.thread = None
+        elif self.thread:
+            # do not block, just keep track of the thread - we got here
+            # when user uses the stop button.
+            self.pending_threads.append(self.thread)
+            self.thread.finished.connect(self._remove_pending_thread)
+
         if self.test_runner:
             self.test_runner.finish(None)
         self.running_state_changed.emit(False)

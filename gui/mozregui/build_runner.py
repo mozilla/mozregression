@@ -106,6 +106,7 @@ class AbstractBuildRunner(QObject):
         self.test_runner = None
         self.download_manager = None
         self.options = None
+        self.stopped = False
 
     def init_worker(self, fetch_config, options):
         """
@@ -115,7 +116,6 @@ class AbstractBuildRunner(QObject):
         worker method that should start the work.
         """
         self.options = options
-        self.stop()
 
         # global preferences
         global_prefs = get_prefs()
@@ -162,12 +162,11 @@ class AbstractBuildRunner(QObject):
 
     @Slot()
     def stop(self, wait=True):
+        self.stopped = True
         if self.options:
             if self.options['profile'] and self.options['profile_persistence'] == \
                     'clone-first':
                 self.options['profile'].cleanup()
-        if self.test_runner:
-            self.test_runner.finish(None)
         if self.download_manager:
             self.download_manager.cancel()
         if self.thread:
@@ -184,6 +183,8 @@ class AbstractBuildRunner(QObject):
                 self.pending_threads.append(self.thread)
                 self.thread.finished.connect(self._remove_pending_thread)
             self.thread = None
+        if self.test_runner:
+            self.test_runner.finish(None)
         self.running_state_changed.emit(False)
 
     @Slot()

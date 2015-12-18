@@ -187,6 +187,9 @@ class BisectRunner(AbstractBuildRunner):
 
     @Slot(str)
     def evaluate(self, err_message):
+        if self.stopped:
+            self.test_runner.finish(None)
+            return
         if not err_message:
             verdict = get_verdict(self.mainwindow)
         else:

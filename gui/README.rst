@@ -62,7 +62,7 @@ is not installable via pip).
   the qt4 / python 2.7 version for your architecture.
 
 
-Next thing to do is to install the others dependencies. It is highly suggested to use
+Next thing to do is to install the other dependencies. It is highly suggested to use
 a virtualenv here, just be sure to pass the *-\-system-site-packages* flag
 when you create it to be able to use the system-wide pyqt4. See this link
 (http://docs.python-guide.org/en/latest/dev/virtualenvs/) to learn more

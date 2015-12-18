@@ -140,7 +140,8 @@ def test_abstract_build_runner(qtbot):
         with qtbot.waitSignal(runner.call_started, raising=True):
             runner.start(
                 create_config('firefox', 'linux', 64),
-                {'addons': (), 'profile': '/path/to/profile'},
+                {'addons': (), 'profile': '/path/to/profile',
+                    'profile_persistence': 'clone'},
             )
 
         runner.stop(True)

@@ -299,7 +299,6 @@ class BuildInfoTextBrowser(QTextBrowser):
             return
 
         html = ""
-        self.setStyleSheet("background-color:%s;" % GRAY_WHITE.name())
         for k in sorted(item.data):
             v = item.data[k]
             html += '<strong>%s</strong>: ' % k

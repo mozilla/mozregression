@@ -1,11 +1,11 @@
 from PyQt4.QtCore import QDir
 from PyQt4.QtGui import QLineEdit, QPushButton, QWidget, QHBoxLayout, \
-    QFileDialog, QFileSystemModel, QCompleter, QComboBox, QDateEdit, \
-    QStackedWidget
+    QFileDialog, QFileSystemModel, QCompleter
 
 from mozregression.releases import date_of_release, releases
 from mozregression.dates import parse_date
 from mozregression.errors import DateFormatError
+from mozregui.ui.build_selection_helper import Ui_BuildSelectionHelper
 
 
 class FSLineEdit(QLineEdit):
@@ -51,48 +51,31 @@ class DirectorySelectWidget(QWidget):
             self.line_edit.setPath(path)
 
 
-class RangeSelection(QWidget):
+class BuildSelection(QWidget):
     """
     Allow to select a date, a build id, a release number or an arbitrary
     changeset.
     """
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
-        layout = QHBoxLayout(self)
-        self._create_widgets()
-        layout.addWidget(self.stacked)
-        layout.addWidget(self.select_combo)
-        self.setLayout(layout)
-
-    def _create_widgets(self):
-        self.stacked = QStackedWidget()
-        self.datew = QDateEdit()
-        self.datew.setDisplayFormat("yyyy-MM-dd")
-        self.stacked.addWidget(self.datew)
-        self.buildidw = QLineEdit()
-        self.stacked.addWidget(self.buildidw)
-        self.releasew = QComboBox()
-        self.releasew.addItems([str(k) for k in sorted(releases())])
-        self.stacked.addWidget(self.releasew)
-        self.revw = QLineEdit()
-        self.stacked.addWidget(self.revw)
-
-        self.select_combo = QComboBox()
-        self.select_combo.addItems(['date', 'buildid', 'release', 'changeset'])
-        self.select_combo.activated.connect(self.stacked.setCurrentIndex)
+        self.ui = Ui_BuildSelectionHelper()
+        self.ui.setupUi(self)
+        self.ui.release.addItems([str(k) for k in sorted(releases())])
+        self.ui.combo_helper.activated.connect(
+            self.ui.stackedWidget.setCurrentIndex)
 
     def get_value(self):
-        currentw = self.stacked.currentWidget()
-        if currentw == self.datew:
-            return self.datew.date().toPyDate()
-        elif currentw == self.buildidw:
-            buildid = unicode(self.buildidw.text())
+        currentw = self.ui.stackedWidget.currentWidget()
+        if currentw == self.ui.calendar:
+            return self.ui.date.selectedDate().toPyDate()
+        elif currentw == self.ui.combo:
+            return parse_date(
+                date_of_release(str(self.ui.release.currentText())))
+        elif currentw == self.ui.lineEdit1:
+            buildid = unicode(self.ui.buildid.text())
             try:
                 return parse_date(buildid)
             except DateFormatError:
                 raise DateFormatError(buildid, "Not a valid build id: `%s`")
-        elif currentw == self.releasew:
-            return parse_date(
-                date_of_release(str(self.releasew.currentText())))
-        elif currentw == self.revw:
-            return unicode(self.revw.text())
+        elif currentw == self.ui.lineEdit2:
+            return unicode(self.ui.changeset.text())

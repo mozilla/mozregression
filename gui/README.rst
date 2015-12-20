@@ -71,12 +71,12 @@ about python virtualenvs. You should also consider using virtualenvwrapper
 
 Install with virtualenvwrapper: ::
 
-   mkvirtualenv --system-site-package -p /usr/bin/python2 mozregression
+   mkvirtualenv --system-site-packages -p /usr/bin/python2 mozregression
    pip install -r requirements-gui-dev.txt
 
 Or with virtualenv: ::
 
-   virtualenv --system-site-package -p /usr/bin/python2 venv
+   virtualenv --system-site-packages -p /usr/bin/python2 venv
    source venv/bin/activate
    pip install -r requirements-gui-dev.txt
 

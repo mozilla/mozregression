@@ -52,7 +52,7 @@ def test_log_report_sets_correct_user_data(log_view):
         for log_level in log_report.log_levels.keys():
             if log_level in current_block.text():
                 assert current_block.userData().log_lvl == \
-                       log_report.log_levels[log_level]
+                    log_report.log_levels[log_level]
 
 
 def test_log_report_filters_data_below_current_log_level(log_view):

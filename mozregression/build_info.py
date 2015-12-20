@@ -163,8 +163,8 @@ class BuildInfo(object):
             full_prefix = re.escape(full_prefix)
             appname = self._fetch_config.build_regex()
         else:
-            appname = urlparse(self.build_url) \
-                      .path.replace('%2F', '/').split('/')[-1]
+            appname = urlparse(self.build_url). \
+                path.replace('%2F', '/').split('/')[-1]
         return '{}{}'.format(full_prefix, appname)
 
     @property

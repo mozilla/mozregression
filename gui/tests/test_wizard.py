@@ -5,10 +5,10 @@ from PyQt4.QtCore import QDate
 from mozregression.fetch_configs import CommonConfig
 
 from mozregui.wizard import BisectionWizard, IntroPage, ProfilePage, \
-    RangeSelectionPage, SingleBuildSelectionPage, SingleRunWizard
+    BuildSelectionPage, SingleBuildSelectionPage, SingleRunWizard
 
 
-PAGES_BISECTION_WIZARD = (IntroPage, ProfilePage, RangeSelectionPage)
+PAGES_BISECTION_WIZARD = (IntroPage, ProfilePage, BuildSelectionPage)
 PAGES_SINGLE_RUN_WIZARD = (IntroPage, ProfilePage, SingleBuildSelectionPage)
 
 

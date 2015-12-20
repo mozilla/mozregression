@@ -319,5 +319,32 @@ def test_jsshell_build_regex(os, bits, name):
     assert re.match(conf.build_regex(), name)
 
 
+@pytest.mark.parametrize('appname,build_type,persist_part', [
+    ('firefox', 'opt', ''),
+    ('firefox', 'debug', 'debug'),
+    ('jsshell', 'opt', ''),
+    ('jsshell', 'debug', 'debug'),
+    ('fennec', 'opt', ''),
+])
+def test_nightly_handle_build_type(appname, build_type, persist_part):
+    conf = create_config(appname, 'linux', 64)
+    conf.set_build_type(build_type)
+    assert conf.nightly_persist_part() == persist_part
+    assert conf.nightly_handle_build_type()
+
+
+@pytest.mark.parametrize('appname,build_type,date,branch,match_sample', [
+    ('firefox', 'debug', datetime.date(2014, 8, 1), 'mozilla-central',
+     '2014-08-01-mozilla-central-debug/'),
+    ('firefox', 'debug', datetime.date(2014, 8, 1), 'aurora',
+     '2014-08-01-mozilla-aurora-debug/'),
+])
+def test_get_nightly_repo_regex_with_build_type(appname, build_type, date,
+                                                branch, match_sample):
+    conf = create_config(appname, 'linux', 64)
+    conf.set_build_type(build_type)
+    conf.set_repo(branch)
+    assert re.match(conf.get_nightly_repo_regex(date), match_sample)
+
 if __name__ == '__main__':
     unittest.main()

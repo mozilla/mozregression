@@ -292,10 +292,10 @@ class InboundConfigMixin(object):
     def inbound_persist_part(self):
         """
         Allow to add a part in the generated persist file name to distinguish
-        builds. Returns an empty string by default, or 'debug' if build type
-        is debug.
+        builds. Returns an empty string if build type is 'opt', else the
+        build type.
         """
-        return 'debug' if self.build_type == 'debug' else ''
+        return '' if self.build_type == 'opt' else self.build_type
 
     def tk_needs_auth(self):
         """
@@ -342,9 +342,9 @@ def _common_tk_part(inbound_conf):
 
 class FirefoxInboundConfigMixin(InboundConfigMixin):
     def tk_inbound_route(self, changeset):
-        debug = '-debug' if self.build_type == 'debug' else ''
-        return 'buildbot.revisions.{}.{}.{}{}'.format(
-            changeset, self.inbound_branch, _common_tk_part(self), debug
+        return 'gecko.v2.{}.revision.{}.firefox.{}-{}'.format(
+            self.inbound_branch, changeset, _common_tk_part(self),
+            self.build_type
         )
 
 
@@ -379,9 +379,8 @@ class FennecInboundConfigMixin(InboundConfigMixin):
     tk_name = 'android-api-11'
 
     def tk_inbound_route(self, changeset):
-        debug = '-debug' if self.build_type == 'debug' else ''
-        return 'buildbot.revisions.{}.{}.{}{}'.format(
-            changeset, self.inbound_branch, self.tk_name, debug
+        return 'gecko.v2.{}.revision.{}.mobile.{}-{}'.format(
+            self.inbound_branch, changeset, self.tk_name, self.build_type
         )
 
 # ------------ full config implementations ------------

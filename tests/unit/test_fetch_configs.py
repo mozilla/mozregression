@@ -227,20 +227,20 @@ CHSET12 = "47856a214918"
 @pytest.mark.parametrize("app,os,bits,expected", [
     # firefox
     ("firefox", 'linux', 32,
-     'buildbot.revisions.%s.mozilla-inbound.linux' % CHSET),
+     'gecko.v2.mozilla-inbound.revision.%s.firefox.linux-opt' % CHSET),
     ("firefox", 'linux', 64,
-     'buildbot.revisions.%s.mozilla-inbound.linux64' % CHSET),
+     'gecko.v2.mozilla-inbound.revision.%s.firefox.linux64-opt' % CHSET),
     ("firefox", 'win', 32,
-     'buildbot.revisions.%s.mozilla-inbound.win32' % CHSET),
+     'gecko.v2.mozilla-inbound.revision.%s.firefox.win32-opt' % CHSET),
     ("firefox", 'win', 64,
-     'buildbot.revisions.%s.mozilla-inbound.win64' % CHSET),
+     'gecko.v2.mozilla-inbound.revision.%s.firefox.win64-opt' % CHSET),
     ("firefox", 'mac', 64,
-     'buildbot.revisions.%s.mozilla-inbound.macosx64' % CHSET),
+     'gecko.v2.mozilla-inbound.revision.%s.firefox.macosx64-opt' % CHSET),
     # fennec
     ("fennec", None, None,
-     'buildbot.revisions.%s.mozilla-inbound.android-api-11' % CHSET),
+     'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-11-opt' % CHSET),
     ("fennec-2.3", None, None,
-     'buildbot.revisions.%s.mozilla-inbound.android-api-9' % CHSET),
+     'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-9-opt' % CHSET),
     # b2g
     ("b2g", 'linux', 32,
      'buildbot.revisions.%s.b2g-inbound.linux_gecko' % CHSET),
@@ -262,7 +262,7 @@ def test_tk_inbound_route(app, os, bits, expected):
 @pytest.mark.parametrize("app,os,bits,build_type,expected", [
     # firefox
     ("firefox", 'linux', 32, "debug",
-     'buildbot.revisions.%s.mozilla-inbound.linux-debug' % CHSET),
+     'gecko.v2.mozilla-inbound.revision.%s.firefox.linux-debug' % CHSET),
     # b2g-aries
     ("b2g-aries", None, None, "opt,eng",
      'gecko.v2.b2g-inbound.revision.%s.b2g.aries-eng-opt' % CHSET),

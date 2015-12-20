@@ -114,24 +114,8 @@ class InboundInfoFetcher(InfoFetcher):
         try:
             task_id = self.index.findTask(tk_route)['taskId']
         except TaskclusterFailure:
-            # HACK because of
-            # https://bugzilla.mozilla.org/show_bug.cgi?id=1199618
-            # and https://bugzilla.mozilla.org/show_bug.cgi?id=1211251
-            # TODO remove the if statement once these tasks no longer exists
-            # (just raise BuildInfoNotFound)
-            err = True
-            if self.fetch_config.app_name in ('firefox',
-                                              'fennec',
-                                              'fennec-2.3'):
-                err = False
-                try:
-                    tk_route = tk_route.replace(changeset, changeset[:12])
-                    task_id = self.index.findTask(tk_route)['taskId']
-                except TaskclusterFailure:
-                    err = True
-            if err:
-                raise BuildInfoNotFound("Unable to find build info using the"
-                                        " taskcluster route %r" % tk_route)
+            raise BuildInfoNotFound("Unable to find build info using the"
+                                    " taskcluster route %r" % tk_route)
 
         # find a completed run for that task
         run_id, build_date = None, None

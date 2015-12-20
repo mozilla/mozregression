@@ -173,9 +173,6 @@ SOME_OLDER_DATE = TODAY + datetime.timedelta(days=-10)
 @pytest.mark.parametrize('params,good,bad', [
     # we can use dates with integration branches
     (['--good=%s' % SOME_DATE, '--bad=%s' % SOME_OLDER_DATE, '--repo=m-i'],
-     SOME_DATE, SOME_OLDER_DATE),
-    # non opt build flavors are also found using taskcluster
-    (['--good=%s' % SOME_DATE, '--bad=%s' % SOME_OLDER_DATE, '-B', 'debug'],
      SOME_DATE, SOME_OLDER_DATE)
 ])
 def test_use_taskcluster_bisection_method(params, good, bad):

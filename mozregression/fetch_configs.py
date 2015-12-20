@@ -19,6 +19,7 @@ an instance of :class:`ClassRegistry`. Example: ::
 
   print REGISTRY.names()
 """
+import re
 import datetime
 
 from mozregression.class_registry import ClassRegistry
@@ -114,6 +115,20 @@ class CommonConfig(object):
         """
         return (32, 64)
 
+    def available_build_types(self):
+        res = []
+        for available in self.BUILD_TYPES:
+            match = re.match("(.+)\[(.+)\]", available)
+            if match:
+                available = match.group(1)
+                platforms = match.group(2)
+                if '{}{}'.format(self.os,
+                                 self.bits) not in platforms.split(','):
+                    available = None
+            if available:
+                res.append(available)
+        return res
+
     def set_build_type(self, build_type):
         """
         Define the build types (opt, debug, eng, jb, asan...).
@@ -125,7 +140,7 @@ class CommonConfig(object):
         :raises: MozRegressionError on error.
         """
         flavors = set(_extract_build_type(build_type))
-        for available in self.BUILD_TYPES:
+        for available in self.available_build_types():
             if flavors == set(available.split('-')):
                 self.build_type = available
                 return
@@ -404,7 +419,7 @@ def create_config(name, os, bits):
 class FirefoxConfig(CommonConfig,
                     FireFoxNightlyConfigMixin,
                     FirefoxInboundConfigMixin):
-    BUILD_TYPES = ('opt', 'debug')
+    BUILD_TYPES = ('opt', 'debug', 'pgo[linux32,linux64,win32,win64]')
 
 
 @REGISTRY.register('thunderbird')

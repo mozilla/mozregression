@@ -319,5 +319,21 @@ def test_jsshell_build_regex(os, bits, name):
     assert re.match(conf.build_regex(), name)
 
 
+@pytest.mark.parametrize('os,bits,tc_suffix', [
+    ('linux', 32, 'linux-pgo'),
+    ('linux', 64, 'linux64-pgo'),
+    ('mac', 64, errors.MozRegressionError),
+    ('win', 32, 'win32-pgo'),
+    ('win', 64, 'win64-pgo'),
+])
+def test_set_firefox_build_type_pgo(os, bits, tc_suffix):
+    conf = create_config('firefox', os, bits)
+    if type(tc_suffix) is not str:
+        with pytest.raises(tc_suffix):
+            conf.set_build_type('pgo')
+    else:
+        conf.set_build_type('pgo')
+        assert conf.tk_inbound_route(CHSET).endswith('.' + tc_suffix)
+
 if __name__ == '__main__':
     unittest.main()

@@ -278,6 +278,7 @@ class InboundConfigMixin(object):
     default_inbound_branch = 'mozilla-inbound'
     _tk_client_id = None
     _tk_access_token = None
+    _tk_certificate = None
 
     @property
     def inbound_branch(self):
@@ -303,13 +304,14 @@ class InboundConfigMixin(object):
         """
         return False
 
-    def set_tk_credentials(self, client_id, access_token):
+    def set_tk_credentials(self, client_id, access_token, certificate):
         """
         Define the clientId and accessToken taskcluster credentials required
         to download private builds.
         """
         self._tk_client_id = client_id
         self._tk_access_token = access_token
+        self._tk_certificate = certificate
 
     def tk_options(self):
         """
@@ -322,6 +324,7 @@ class InboundConfigMixin(object):
             'credentials': {
                 'clientId': self._tk_client_id,
                 'accessToken': self._tk_access_token,
+                'certificate': self._tk_certificate
             }
         }
 

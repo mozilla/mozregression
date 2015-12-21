@@ -165,7 +165,7 @@ def range_for_inbounds(fetch_config, start_rev, end_rev, time_limit=None):
         if is_date_or_datetime(obj):
             if to_datetime(obj) < time_limit:
                 logger.info(
-                    "Tasckluster only keep builds for one year."
+                    "TaskCluster only keeps builds for one year."
                     " Using %s instead of %s."
                     % (time_limit, obj)
                 )

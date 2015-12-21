@@ -119,7 +119,10 @@ class Application(object):
 
     def bisect_nightlies(self):
         good_date, bad_date = self.options.good, self.options.bad
-        handler = NightlyHandler(find_fix=self.options.find_fix)
+        handler = NightlyHandler(
+            find_fix=self.options.find_fix,
+            ensure_good_and_bad=self.options.mode != 'no-first-check',
+        )
         result = self._do_bisect(handler, good_date, bad_date)
         if result == Bisection.FINISHED:
             self._logger.info("Got as far as we can go bisecting nightlies...")
@@ -141,13 +144,18 @@ class Application(object):
         return 0
 
     def bisect_inbounds(self):
-        return self._bisect_inbounds(self.options.good, self.options.bad)
+        return self._bisect_inbounds(
+            self.options.good,
+            self.options.bad,
+            ensure_good_and_bad=self.options.mode != 'no-first-check',
+        )
 
-    def _bisect_inbounds(self, good_rev, bad_rev):
+    def _bisect_inbounds(self, good_rev, bad_rev, ensure_good_and_bad=False):
         self._logger.info("Getting %s builds between %s and %s"
                           % (self.fetch_config.inbound_branch, good_rev,
                              bad_rev))
-        handler = InboundHandler(find_fix=self.options.find_fix)
+        handler = InboundHandler(find_fix=self.options.find_fix,
+                                 ensure_good_and_bad=ensure_good_and_bad)
         result = self._do_bisect(handler, good_rev, bad_rev)
         if result == Bisection.FINISHED:
             self._logger.info("Oh noes, no (more) inbound revisions :(")

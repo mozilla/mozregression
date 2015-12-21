@@ -11,7 +11,7 @@ import datetime
 from mozregression.bisector import (NightlyHandler, InboundHandler, Bisector,
                                     Bisection, BisectorHandler)
 from mozregression import build_range
-from mozregression.errors import LauncherError
+from mozregression.errors import LauncherError, MozRegressionError
 
 
 class TestBisectorHandler(unittest.TestCase):
@@ -211,7 +211,7 @@ class MyBuildData(build_range.BuildRange):
 
 class TestBisector(unittest.TestCase):
     def setUp(self):
-        self.handler = MagicMock(find_fix=False)
+        self.handler = MagicMock(find_fix=False, ensure_good_and_bad=False)
         self.test_runner = Mock()
         self.bisector = Bisector(Mock(), self.test_runner,
                                  Mock(),
@@ -249,6 +249,59 @@ class TestBisector(unittest.TestCase):
         return {
             'result': result,
         }
+
+    def test_ensure_good_bad_invalid(self):
+        self.handler.ensure_good_and_bad = True
+        with self.assertRaisesRegexp(MozRegressionError,
+                                     "expected to be good"):
+            self.do__bisect(MyBuildData([1, 2, 3, 4, 5]), ['b'])
+
+        with self.assertRaisesRegexp(MozRegressionError,
+                                     "expected to be bad"):
+            self.do__bisect(MyBuildData([1, 2, 3, 4, 5]), ['g', 'g'])
+
+    def test_ensure_good_bad(self):
+        self.handler.ensure_good_and_bad = True
+        data = MyBuildData([1, 2, 3, 4, 5])
+        self.do__bisect(data,
+                        ['s', 'r', 'g', 'b', 'e'])
+        self.test_runner.evaluate.assert_has_calls([
+            call(data[0]),  # tested good (then skip)
+            call(data[0]),  # tested good (then retry)
+            call(data[0]),  # tested good
+            call(data[-1]),  # tested bad
+        ])
+        self.assertEqual(
+            self.bisector.download_manager.download_in_background.call_count,
+            0
+        )
+
+    def test_ensure_good_bad_with_bg_dl(self):
+        self.handler.ensure_good_and_bad = True
+        self.bisector.dl_in_background = True
+        data = MyBuildData([1, 2, 3, 4, 5])
+        self.do__bisect(data,
+                        ['s', 'r', 'g', 'e'])
+        self.test_runner.evaluate.assert_has_calls([
+            call(data[0]),  # tested good (then skip)
+            call(data[0]),  # tested good (then retry)
+            call(data[0]),  # tested good
+            call(data[-1]),  # tested bad
+        ])
+        self.bisector.download_manager.download_in_background.assert_has_calls(
+            [call(data[-1]),  # bad in backgound
+             call(data[data.mid_point()])]  # and mid build
+        )
+
+    def test_ensure_good_bad_with_find_fix(self):
+        self.handler.ensure_good_and_bad = True
+        self.handler.find_fix = True
+        data = MyBuildData([1, 2, 3, 4, 5])
+        self.do__bisect(data, ['g', 'e'])
+        self.test_runner.evaluate.assert_has_calls([
+            call(data[-1]),  # tested good (then skip)
+            call(data[0]),  # tested bad
+        ])
 
     def test__bisect_case1(self):
         test_result = self.do__bisect(MyBuildData([1, 2, 3, 4, 5]), ['g', 'b'])

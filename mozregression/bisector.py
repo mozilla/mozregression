@@ -28,8 +28,9 @@ class BisectorHandler(object):
     A BisectorHandler keep the state of the current bisection process.
     """
 
-    def __init__(self, find_fix=False):
+    def __init__(self, find_fix=False, ensure_good_and_bad=False):
         self.find_fix = find_fix
+        self.ensure_good_and_bad = ensure_good_and_bad
         self.found_repo = None
         self.build_range = None
         self.good_revision = None
@@ -395,6 +396,43 @@ class Bisection(object):
         return self.test_runner.evaluate(build_infos,
                                          allow_back=bool(self.history))
 
+    def ensure_good_and_bad(self):
+        good, bad = self.build_range[0], self.build_range[-1]
+        if self.handler.find_fix:
+            good, bad = bad, good
+        logger = self.handler._logger
+
+        logger.info("Testing good and bad builds to ensure that they are"
+                    " really good and bad...")
+        self.download_manager.focus_download(good)
+        if self.dl_in_background:
+            self.download_manager.download_in_background(bad)
+
+        def _evaluate(build_info, expected):
+            while 1:
+                res = self.test_runner.evaluate(build_info)
+                if res == expected[0]:
+                    return True
+                elif res == 's':
+                    logger.info("You can not skip this build.")
+                elif res == 'e':
+                    return
+                elif res == 'r':
+                    pass
+                else:
+                    raise MozRegressionError(
+                        "Build was expected to be %s! The initial good/bad"
+                        " range seems incorrect." % expected
+                    )
+        if _evaluate(good, 'good'):
+            self.download_manager.focus_download(bad)
+            if self.dl_in_background:
+                # download next build (mid) in background
+                self.download_manager.download_in_background(
+                    self.build_range[self.build_range.mid_point()]
+                )
+            return _evaluate(bad, 'bad')
+
     def handle_verdict(self, mid_point, verdict):
         if verdict == 'g':
             # if build is good and we are looking for a regression, we
@@ -474,6 +512,12 @@ class Bisector(object):
             result = bisection.init_handler(index)
             if result != bisection.RUNNING:
                 return result
+            if previous_verdict is None and handler.ensure_good_and_bad:
+                if bisection.ensure_good_and_bad():
+                    logger.info("Good and bad builds are correct. Let's"
+                                " continue the bisection.")
+                else:
+                    return 'e'  # user exit
             bisection.handler.print_range(full=False)
 
             if previous_verdict == 'back':

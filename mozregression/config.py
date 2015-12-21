@@ -44,6 +44,7 @@ DEFAULTS = {
     'taskcluster-clientid': None,
     'taskcluster-accesstoken': None,
     'process-output': None,
+    'mode': 'classic',
 }
 
 

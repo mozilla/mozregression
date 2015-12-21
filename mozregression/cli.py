@@ -248,6 +248,13 @@ def create_parser(defaults):
                         help=("Manage process output logging. Set to stdout by"
                               " default when the build type is not 'opt'."))
 
+    parser.add_argument('-M', '--mode', choices=('classic', 'no-first-check'),
+                        default=defaults['mode'],
+                        help=("bisection mode. 'classic' will check for the"
+                              " first good and bad builds to really be good"
+                              " and bad, and 'no-first-check' won't. Defaults"
+                              " to %(default)s."))
+
     parser.add_argument('--write-config',
                         action=WriteConfigAction,
                         help="Helps to write the configuration file.")

@@ -212,8 +212,8 @@ class Application(object):
             argv.append('--good=%s' % handler.good_date)
             argv.append('--bad=%s' % handler.bad_date)
         else:
-            argv.append('--good-rev=%s' % handler.good_revision)
-            argv.append('--bad-rev=%s' % handler.bad_revision)
+            argv.append('--good=%s' % handler.good_revision)
+            argv.append('--bad=%s' % handler.bad_revision)
 
         self._logger.info('To resume, run:')
         self._logger.info(' '.join([pipes.quote(arg) for arg in argv]))

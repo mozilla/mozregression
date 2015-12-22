@@ -152,7 +152,7 @@ class BuildInfo(object):
             prefix,
             persist_part,
             self.repo_name,
-            urlparse(self.build_url).path.split('/')[-1]
+            urlparse(self.build_url).path.replace('%2F', '/').split('/')[-1]
         )
 
     def to_dict(self):

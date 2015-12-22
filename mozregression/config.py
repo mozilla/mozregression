@@ -21,6 +21,10 @@ CONFIG_FILE_HELP_URL = (
 DEFAULT_CONF_FNAME = os.path.expanduser(
     os.path.join("~", ".mozilla", "mozregression", "mozregression.cfg")
 )
+TC_CREDENTIALS_FNAME = os.path.expanduser(
+    os.path.join("~", ".mozilla", "mozregression",
+                 "taskcluster-credentials.json")
+)
 
 # default values when not defined in config file.
 # Note that this is also the list of options that can be used in config file

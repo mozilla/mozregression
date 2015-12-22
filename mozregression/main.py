@@ -18,9 +18,10 @@ import mozfile
 import colorama
 
 from mozlog.structuredlog import get_default_logger
-from requests.exceptions import RequestException
+from requests.exceptions import RequestException, HTTPError
 
 from mozregression import __version__
+from mozregression.config import TC_CREDENTIALS_FNAME
 from mozregression.cli import cli
 from mozregression.errors import MozRegressionError
 from mozregression.bisector import (Bisector, NightlyHandler, InboundHandler,
@@ -290,6 +291,10 @@ def main(argv=None, namespace=None, check_new_version=True):
         print formatted_valid_release_dates()
         sys.exit(1)
     except (MozRegressionError, RequestException) as exc:
+        if isinstance(exc, HTTPError) and exc.response.status_code == 401:
+            # remove the taskcluster credential file - looks like it's wrong
+            # anyway. This will force mozregression to ask again next time.
+            mozfile.remove(TC_CREDENTIALS_FNAME)
         config.logger.error(str(exc)) if config else sys.exit(str(exc))
         sys.exit(1)
     finally:

@@ -26,6 +26,7 @@ from colorama import Style
 from mozregression import __version__
 from mozregression.dates import to_datetime, parse_date, is_date_or_datetime
 from mozregression.config import get_defaults, DEFAULT_CONF_FNAME, write_conf
+from mozregression.tc_authenticate import tc_authenticate
 from mozregression.fetch_configs import REGISTRY as FC_REGISTRY, create_config
 from mozregression.errors import (MozRegressionError, DateFormatError,
                                   UnavailableRelease)
@@ -387,18 +388,8 @@ class Configuration(object):
                              "64-bit builds")
 
         if fetch_config.is_inbound() and fetch_config.tk_needs_auth():
-            # re-read configuration to get taskcluster options
-            # TODO: address this to avoid re-reading the conf file
-            defaults = get_defaults(DEFAULT_CONF_FNAME)
-            client_id = defaults.get('taskcluster-clientid')
-            access_token = defaults.get('taskcluster-accesstoken')
-            if not (client_id and access_token):
-                raise MozRegressionError(
-                    "taskcluster-clientid and taskcluster-accesstoken are"
-                    " required in the configuration file (%s) for %s"
-                    % (DEFAULT_CONF_FNAME, fetch_config.app_name)
-                )
-            fetch_config.set_tk_credentials(client_id, access_token)
+            creds = tc_authenticate(self.logger)
+            fetch_config.set_tk_credentials(creds)
 
         # set action for just use changset or data to bisect
         if options.launch:

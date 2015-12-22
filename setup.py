@@ -42,7 +42,7 @@ DEPENDENCIES = [
     'requests>=2.4.3,<3',
     'redo',
     'mozdevice >= 0.47',
-    'taskcluster>=0.0.29',
+    'taskcluster>=0.0.32',
     'colorama',
     'configobj',
 ]

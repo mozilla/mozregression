@@ -392,13 +392,15 @@ class Configuration(object):
             defaults = get_defaults(DEFAULT_CONF_FNAME)
             client_id = defaults.get('taskcluster-clientid')
             access_token = defaults.get('taskcluster-accesstoken')
+            certificate = defaults.get('taskcluster-certificate')
             if not (client_id and access_token):
                 raise MozRegressionError(
                     "taskcluster-clientid and taskcluster-accesstoken are"
                     " required in the configuration file (%s) for %s"
                     % (DEFAULT_CONF_FNAME, fetch_config.app_name)
                 )
-            fetch_config.set_tk_credentials(client_id, access_token)
+            fetch_config.set_tk_credentials(client_id, access_token, \
+                certificate)
 
         # set action for just use changset or data to bisect
         if options.launch:

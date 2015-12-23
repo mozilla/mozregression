@@ -54,6 +54,23 @@ class ChangePrefsDialog(QDialog):
         self.ui.http_timeout.setValue(options['http_timeout'])
         self.ui.persist_size_limit.setValue(options['persist_size_limit'])
         self.ui.bg_downloads.setChecked(options['background_downloads'])
+        self.ui.advanced_options.setText("Show Advanced Options")
+        self.toggle_visibility(False)
+        self.ui.advanced_options.clicked.connect(self.toggle_adv_options)
+
+    def toggle_adv_options(self):
+        if self.ui.advanced_options.text() == "Show Advanced Options":
+            self.ui.advanced_options.setText("Hide Advanced Options")
+            self.toggle_visibility(True)
+        else:
+            self.ui.advanced_options.setText("Show Advanced Options")
+            self.toggle_visibility(False)
+
+    def toggle_visibility(self, visible):
+        self.ui.http_timeout.setVisible(visible)
+        self.ui.label_3.setVisible(visible)
+        self.ui.bg_downloads.setVisible(visible)
+        self.ui.label_2.setVisible(visible)
 
     def save_prefs(self):
         options = get_prefs()

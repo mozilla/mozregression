@@ -20,7 +20,7 @@ install:
 test_script:
   - "python check.py --with-gui"
   # bundle the application
-  - cinst nsis -y -installArgs /D=%NSIS_ROOT%
+  - cinst nsis --version 2.47 -y -installArgs /D=%NSIS_ROOT%
   - "python gui\\build.py bundle"
 
 # section required for deploy

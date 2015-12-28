@@ -253,7 +253,7 @@ class TestFennecLauncher(unittest.TestCase):
 
         passed = []
 
-        def proc_exists():
+        def proc_exists(name):
             # return True one time, then False
             result = not bool(passed)
             passed.append(1)
@@ -262,7 +262,7 @@ class TestFennecLauncher(unittest.TestCase):
         self.adb.process_exist = Mock(side_effect=proc_exists)
         launcher.start()
         launcher.wait()
-        self.adb.process_exist.assert_called_with()
+        self.adb.process_exist.assert_called_with('org.mozilla.fennec')
 
 
 class Zipfile(object):

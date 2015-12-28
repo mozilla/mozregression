@@ -324,7 +324,7 @@ class FennecLauncher(Launcher):
                                extra_args=["-profile", self.remote_profile])
 
     def _wait(self):
-        while self.adb.process_exist():
+        while self.adb.process_exist(self.package_name):
             time.sleep(0.1)
 
     def _stop(self):

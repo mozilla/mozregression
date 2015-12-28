@@ -1,7 +1,7 @@
 import sys
 from PyQt4.QtCore import QObject, pyqtSignal as Signal, pyqtSlot as Slot, \
     QTimer
-from PyQt4.QtGui import QMessageBox, QDialog, QRadioButton
+from PyQt4.QtGui import QMessageBox
 
 from mozregression.bisector import Bisector, Bisection, NightlyHandler, \
     InboundHandler, IndexPromise
@@ -9,7 +9,6 @@ from mozregression.errors import MozRegressionError
 from mozregression.dates import is_date_or_datetime
 
 from mozregui.build_runner import AbstractBuildRunner
-from mozregui.ui.verdict import Ui_Verdict
 from mozregui.skip_chooser import SkipDialog
 
 Bisection.EXCEPTION = -1  # new possible value of bisection end
@@ -144,6 +143,8 @@ class GuiBisector(QObject, Bisector):
             if self.test_runner.run_error:
                 self.download_manager.cancel()
                 self.download_manager.wait(raise_if_error=False)
+        if not self.test_runner.run_error:
+            self.step_testing.emit(self.bisection, self.build_infos)
 
     @Slot(object, str)
     def _build_dl_finished(self, dl, dest):
@@ -154,7 +155,6 @@ class GuiBisector(QObject, Bisector):
         if dl is not None and (dl.is_canceled() or dl.error()):
             # todo handle this
             return
-        self.step_testing.emit(self.bisection, self.build_infos)
         # call this in the thread
         QTimer.singleShot(0, self._evaluate)
 
@@ -174,17 +174,6 @@ class GuiBisector(QObject, Bisector):
         else:
             # call this in the thread
             QTimer.singleShot(0, self._bisect_next)
-
-
-def get_verdict(parent=None):
-    dlg = QDialog(parent)
-    ui = Ui_Verdict()
-    ui.setupUi(dlg)
-    if dlg.exec_() != QDialog.Accepted:
-        return 'e'  # exit bisection
-    for radiobox in dlg.findChildren(QRadioButton):
-        if radiobox.isChecked():
-            return radiobox.objectName()
 
 
 class BisectRunner(AbstractBuildRunner):
@@ -215,9 +204,7 @@ class BisectRunner(AbstractBuildRunner):
         if self.stopped:
             self.test_runner.finish(None)
             return
-        if not err_message:
-            verdict = get_verdict(self.mainwindow)
-        else:
+        if err_message:
             QMessageBox.warning(
                 self.mainwindow,
                 "Launcher Error",
@@ -225,8 +212,17 @@ class BisectRunner(AbstractBuildRunner):
                  " will be skipped. Error message:<br><strong>%s</strong>"
                  % err_message)
             )
-            verdict = 's'
+            self.worker.test_runner.finish('s')
+
+    @Slot(str)
+    def set_verdict(self, verdict):
         self.worker.test_runner.finish(verdict)
+
+    def open_evaluate_editor(self, open, index):
+        if open:
+            self.mainwindow.ui.report_view.openPersistentEditor(index)
+        else:
+            self.mainwindow.ui.report_view.closePersistentEditor(index)
 
     @Slot()
     def choose_next_build(self):

@@ -94,31 +94,30 @@ class MainWindow(QMainWindow):
         settings.setValue("mainWin/windowState", self.saveState())
         QMainWindow.closeEvent(self, evt)
 
+    def _start_runner(self, wizard_class, runner):
+        wizard = wizard_class(self)
+        if wizard.exec_() == wizard.Accepted:
+            self.current_runner = runner
+            # clear the report model
+            self.ui.report_view.model().clear()
+            # clear the build info main panel
+            self.ui.build_info_browser.clear()
+
+            runner.start(*wizard.options())
+
     @Slot()
     def start_bisection_wizard(self):
-        wizard = BisectionWizard(self)
-        if wizard.exec_() == wizard.Accepted:
-            self.current_runner = self.bisect_runner
-            self.ui.report_view.model().clear()
-            self.bisect_runner.start(*wizard.options())
+        self._start_runner(BisectionWizard, self.bisect_runner)
 
     @Slot()
     def stop_bisection(self):
         # stop the bisection or the single runner without blocking
-        model = self.ui.report_view.model()
-        model.attach_bisector(None)
+        self.ui.report_view.model().attach_bisector(None)
         self.current_runner.stop(False)
-        # clear the report model
-        model.clear()
-        # clear the build info main panel
-        self.ui.build_info_browser.clear()
 
     @Slot()
     def single_run(self):
-        wizard = SingleRunWizard(self)
-        if wizard.exec_() == wizard.Accepted:
-            self.current_runner = self.single_runner
-            self.single_runner.start(*wizard.options())
+        self._start_runner(SingleRunWizard, self.single_runner)
 
     @Slot()
     def show_about(self):

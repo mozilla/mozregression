@@ -2,6 +2,7 @@ from PyQt4.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
 from PyQt4.QtGui import QPlainTextEdit, QTextCursor, QColor, \
     QTextCharFormat
 from datetime import datetime
+from mozlog import get_default_logger
 
 COLORS = {
     'DEBUG': QColor(6, 146, 6),         # green
@@ -41,3 +42,15 @@ class LogModel(QObject):
 
     def __call__(self, data):
         self.log.emit(data)
+
+
+def log(text, log=True, status_bar=True, status_bar_timeout=2.0):
+    if log:
+        logger = get_default_logger('mozregui')
+        if logger:
+            logger.info(text)
+    if status_bar:
+        from mozregui.mainwindow import MainWindow
+        mw = MainWindow.INSTANCE
+        if mw:
+            mw.ui.status_bar.showMessage(text, int(status_bar_timeout * 1000))

@@ -35,8 +35,11 @@ and licensed under <a href="http://creativecommons.org/licenses/by/3.0/"
 
 
 class MainWindow(QMainWindow):
+    INSTANCE = None
+
     def __init__(self):
         QMainWindow.__init__(self)
+        MainWindow.INSTANCE = self
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 

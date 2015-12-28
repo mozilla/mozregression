@@ -10,6 +10,7 @@ from mozregression.dates import is_date_or_datetime
 
 from mozregui.build_runner import AbstractBuildRunner
 from mozregui.skip_chooser import SkipDialog
+from mozregui.log_report import log
 
 Bisection.EXCEPTION = -1  # new possible value of bisection end
 
@@ -232,9 +233,9 @@ class BisectRunner(AbstractBuildRunner):
 
     @Slot(object, int)
     def bisection_finished(self, bisection, resultcode):
+        dialog = None
         if resultcode == Bisection.USER_EXIT:
             msg = "Bisection stopped."
-            dialog = QMessageBox.information
         elif resultcode == Bisection.NO_DATA:
             msg = "Unable to find enough data to bisect."
             dialog = QMessageBox.warning
@@ -255,8 +256,10 @@ class BisectRunner(AbstractBuildRunner):
                     QTimer.singleShot(0, self.worker.check_merge)
                 return
             msg = "The bisection is done."
-            dialog = QMessageBox.information
-        dialog(self.mainwindow, "End of the bisection", msg)
+        if dialog:
+            dialog(self.mainwindow, "End of the bisection", msg)
+        else:
+            log(msg)
         self.stop()
 
     @Slot(object, str, str, str)

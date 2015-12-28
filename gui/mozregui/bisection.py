@@ -264,16 +264,7 @@ class BisectRunner(AbstractBuildRunner):
 
     @Slot(object, str, str, str)
     def handle_merge(self, bisection, branch, good_rev, bad_rev):
-        if QMessageBox.question(
-                self.mainwindow,
-                "Merge found",
-                "Found a merge from %s. Do you want to bisect further ?"
-                % branch,
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.Yes):
-            self.worker.fetch_config.set_repo(str(branch))
-            bisection.handler.good_revision = str(good_rev)
-            bisection.handler.bad_revision = str(bad_rev)
-            QTimer.singleShot(0, self.worker.bisect_further)
-        else:
-            self.stop()
+        self.worker.fetch_config.set_repo(str(branch))
+        bisection.handler.good_revision = str(good_rev)
+        bisection.handler.bad_revision = str(bad_rev)
+        QTimer.singleShot(0, self.worker.bisect_further)

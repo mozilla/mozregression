@@ -25,16 +25,7 @@
     <property name="spacing">
      <number>6</number>
     </property>
-    <property name="leftMargin">
-     <number>9</number>
-    </property>
-    <property name="topMargin">
-     <number>9</number>
-    </property>
-    <property name="rightMargin">
-     <number>9</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>9</number>
     </property>
     <item>
@@ -98,7 +89,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -384,7 +375,7 @@
   </connection>
   <connection>
    <sender>actionLogView</sender>
-   <signal>toggled(bool)</signal>
+   <signal>triggered(bool)</signal>
    <receiver>logDockWidget</receiver>
    <slot>setVisible(bool)</slot>
    <hints>

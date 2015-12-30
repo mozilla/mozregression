@@ -8,6 +8,8 @@ from mozregression.network import get_http_session
 from mozregression.persist_limit import PersistLimit
 from mozregression.errors import LauncherError
 
+from mozregui.log_report import log
+
 
 class GuiBuildDownloadManager(QObject, BuildDownloadManager):
     download_progress = Signal(object, int, int)
@@ -195,6 +197,7 @@ class AbstractBuildRunner(QObject):
         if self.test_runner:
             self.test_runner.finish(None)
         self.running_state_changed.emit(False)
+        log('Stopped')
 
     @Slot()
     def _remove_pending_thread(self):

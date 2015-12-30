@@ -21,6 +21,7 @@ class ReportItem(object):
     def __init__(self):
         self.data = {}
         self.downloading = False
+        self.waiting_evaluation = False
         self.progress = 0
 
     def update_pushlogurl(self, bisection):
@@ -91,6 +92,8 @@ def _bulk_action_slots(action, slots, signal_object, slot_object):
 
 
 class ReportModel(QAbstractTableModel):
+    need_evaluate_editor = Signal(bool, QModelIndex)
+
     def __init__(self):
         QAbstractTableModel.__init__(self)
         self.items = []
@@ -237,16 +240,26 @@ class ReportModel(QAbstractTableModel):
     def step_testing(self, bisection, build_infos):
         last_item = self.items[-1]
         last_item.downloading = False
+        last_item.waiting_evaluation = True
         last_item.state_text = 'Testing'
         self.update_item(last_item)
+        if hasattr(bisection, 'handler'):
+            # not a single runner
+            index = self.createIndex(self.rowCount() - 1, 0)
+            self.need_evaluate_editor.emit(True, index)
 
     @Slot(object, int, str)
     def step_finished(self, bisection, verdict):
         # step finished, just store the verdict
         item = self.items[-1]
+        item.waiting_evaluation = False
         item.state_text = 'Tested'
         item.verdict = verdict
         self.update_item(item)
+        if hasattr(bisection, 'handler'):
+            # not a single runner
+            index = self.createIndex(self.rowCount() - 1, 0)
+            self.need_evaluate_editor.emit(False, index)
 
     @Slot(object, int)
     def finished(self, bisection, result):

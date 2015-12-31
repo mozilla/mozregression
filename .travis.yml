@@ -1,37 +1,60 @@
-language: python
-
-python:
-    - "2.7"
-virtualenv:
-    # required because we install the python-qt4 ubuntu package
-    system_site_packages: true
+os:
+  - linux
+  - osx
 
 install:
-    # gui tests requirements
-    # start xvfb to emulate a graphical session
-    - export DISPLAY=:99.0
-    - sh -e /etc/init.d/xvfb start
-    # install PyQt4
-    - sudo apt-get update -qq
-    - sudo apt-get install python-qt4 pyqt4-dev-tools
-    # install mozregression code and test dependencies
-    - pip install -r requirements-gui-dev.txt
+    - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+          export DISPLAY=:99.0;
+          sh -e /etc/init.d/xvfb start;
+          sudo apt-get update -qq;
+          sudo apt-get install python-qt4 pyqt4-dev-tools;
+      fi
+    - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+          brew update; brew outdated xctool || brew upgrade xctool;
+          pip install virtualenv;
+          brew install pyqt;
+          brew linkapps qt;
+          MOZPATH="$PWD";
+          mkdir -p /Users/travis/Library/Python/2.7/lib/python/site-packages;
+          echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> /Users/travis/Library/Python/2.7/lib/python/site-packages/homebrew.pth;
+          export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH;
+          cd /usr/local/opt/pyqt/lib/python2.7/site-packages/PyQt4;
+          sudo install_name_tool -id $PWD/QtCore.so QtCore.so;
+          sudo install_name_tool -id $PWD/QtGui.so QtGui.so;
+          cd $MOZPATH;
+      fi
+    - virtualenv --system-site-packages venv
+    - source venv/bin/activate
+    - pip install -r  requirements-gui-dev.txt
 
 script:
-    - ./check.py --with-coverage --with-gui
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ./check.py --with-coverage --with-gui; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ./check.py --with-gui; fi
 
 after_success:
-    - pip install coveralls
-    - coveralls
+    - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install coveralls; coveralls; fi
+
 
 before_deploy:
     - python gui/build.py bundle
 
 deploy:
-    provider: releases
-    api_key:
-        secure: GKlGCKzsjPyUVmtYZhOU0ggQH5RN5UgC+aEckfdguPLSnSeKxe3FLOV25zoe0+CLiYOHbsxvbTxB1fNh2KVxcrV7zroKzijhzFMAgfBP/yuCBeNWYR0tf/5qLk/xd26JQ+2Om6eyPnT+jc3JjmU7g8nYfEBrNDmtQ5Kmm0N4Crk=
+  - provider: releases
+    api-key:
+       secure: GKlGCKzsjPyUVmtYZhOU0ggQH5RN5UgC+aEckfdguPLSnSeKxe3FLOV25zoe0+CLiYOHbsxvbTxB1fNh2KVxcrV7zroKzijhzFMAgfBP/yuCBeNWYR0tf/5qLk/xd26JQ+2Om6eyPnT+jc3JjmU7g8nYfEBrNDmtQ5Kmm0N4Crk=
+    file: gui/dist/mozregression-gui.dmg
+    skip_cleanup: true
+    on:
+      tags: true
+      condition:
+        - $TRAVIS_OS_NAME == osx
+
+  - provider: releases
+    api-key:
+       secure: GKlGCKzsjPyUVmtYZhOU0ggQH5RN5UgC+aEckfdguPLSnSeKxe3FLOV25zoe0+CLiYOHbsxvbTxB1fNh2KVxcrV7zroKzijhzFMAgfBP/yuCBeNWYR0tf/5qLk/xd26JQ+2Om6eyPnT+jc3JjmU7g8nYfEBrNDmtQ5Kmm0N4Crk=
     file: gui/mozregression-gui.tar.gz
     skip_cleanup: true
     on:
-        tags: true
+      tags: true
+      condition:
+        - $TRAVIS_OS_NAME == linux

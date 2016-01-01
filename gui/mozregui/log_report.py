@@ -1,6 +1,6 @@
 from PyQt4.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
 from PyQt4.QtGui import QPlainTextEdit, QTextCursor, QColor, \
-    QTextCharFormat
+    QTextCharFormat, QMenu
 from datetime import datetime
 from mozlog import get_default_logger
 
@@ -17,6 +17,14 @@ class LogView(QPlainTextEdit):
     def __init__(self, parent=None):
         QPlainTextEdit.__init__(self, parent)
         self.setMaximumBlockCount(1000)
+
+        self.contextMenu = QMenu(parent=self)
+        self.contextMenu.addAction("Debug")
+        self.contextMenu.addAction("Info")
+        self.contextMenu.addAction("Warning")
+        self.contextMenu.addAction("Critical")
+        self.contextMenu.addAction("Error")
+        self.customContextMenuRequested.connect(self.on_custom_context_menu_requested)
 
     @Slot(dict)
     def on_log_received(self, data):
@@ -36,6 +44,11 @@ class LogView(QPlainTextEdit):
             cursor_to_add_fmt.mergeCharFormat(fmt)
         self.ensureCursorVisible()
 
+    @Slot(dict)
+    def on_custom_context_menu_requested(self, pos):
+        self.contextMenu.move(self.cursor().pos())
+        self.contextMenu.show()
+
 
 class LogModel(QObject):
     log = Signal(dict)
@@ -54,3 +67,4 @@ def log(text, log=True, status_bar=True, status_bar_timeout=2.0):
         mw = MainWindow.INSTANCE
         if mw:
             mw.ui.status_bar.showMessage(text, int(status_bar_timeout * 1000))
+

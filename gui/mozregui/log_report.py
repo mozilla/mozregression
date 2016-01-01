@@ -1,6 +1,6 @@
 from PyQt4.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
 from PyQt4.QtGui import QPlainTextEdit, QTextCursor, QColor, \
-    QTextCharFormat, QMenu
+    QTextCharFormat, QMenu, QAction, QTextBlock
 from datetime import datetime
 from mozlog import get_default_logger
 
@@ -19,12 +19,25 @@ class LogView(QPlainTextEdit):
         self.setMaximumBlockCount(1000)
 
         self.contextMenu = QMenu(parent=self)
-        self.contextMenu.addAction("Debug")
-        self.contextMenu.addAction("Info")
-        self.contextMenu.addAction("Warning")
-        self.contextMenu.addAction("Critical")
-        self.contextMenu.addAction("Error")
+
+        debugFilterAction = QAction("Debug", self.contextMenu)
+        infoFilterAction = QAction("Info", self.contextMenu)
+        warningFilterAction = QAction("Warning", self.contextMenu)
+        criticalFilterAction = QAction("Critical", self.contextMenu)
+        errorFilterAction = QAction("Error", self.contextMenu)
+
+        self.contextMenu.addAction(debugFilterAction)
+        self.contextMenu.addAction(infoFilterAction)
+        self.contextMenu.addAction(warningFilterAction)
+        self.contextMenu.addAction(criticalFilterAction)
+        self.contextMenu.addAction(errorFilterAction)
+
         self.customContextMenuRequested.connect(self.on_custom_context_menu_requested)
+        debugFilterAction.triggered.connect(self.on_debug_filter)
+        infoFilterAction.triggered.connect(self.on_info_filter)
+        warningFilterAction.triggered.connect(self.on_warning_filter)
+        criticalFilterAction.triggered.connect(self.on_critical_filter)
+        errorFilterAction.triggered.connect(self.on_error_filter)
 
     @Slot(dict)
     def on_log_received(self, data):
@@ -44,10 +57,97 @@ class LogView(QPlainTextEdit):
             cursor_to_add_fmt.mergeCharFormat(fmt)
         self.ensureCursorVisible()
 
-    @Slot(dict)
-    def on_custom_context_menu_requested(self, pos):
+    @Slot()
+    def on_custom_context_menu_requested(self):
         self.contextMenu.move(self.cursor().pos())
         self.contextMenu.show()
+
+    @Slot()
+    def on_debug_filter(self):
+        cursor = QTextCursor(self.document())
+        current_block = cursor.block()
+        while True:
+            text = current_block.text()
+            if text:
+                print(current_block.text())
+                if current_block.text().contains("DEBUG"):
+                    current_block.setVisible(True)
+                else:
+                    current_block.setVisible(False)
+                current_block = current_block.next()
+            else:
+                break
+        self.viewport().update()
+
+    @Slot()
+    def on_info_filter(self):
+        cursor = QTextCursor(self.document())
+        current_block = cursor.block()
+        while True:
+            text = current_block.text()
+            if text:
+                print(current_block.text())
+                if current_block.text().contains("INFO"):
+                    current_block.setVisible(True)
+                else:
+                    current_block.setVisible(False)
+                current_block = current_block.next()
+            else:
+                break
+        self.viewport().update()
+
+    @Slot()
+    def on_warning_filter(self):
+        cursor = QTextCursor(self.document())
+        current_block = cursor.block()
+        while True:
+            text = current_block.text()
+            if text:
+                print(current_block.text())
+                if current_block.text().contains("WARNING"):
+                    current_block.setVisible(True)
+                else:
+                    current_block.setVisible(False)
+                current_block = current_block.next()
+            else:
+                break
+        self.viewport().update()
+
+    @Slot()
+    def on_critical_filter(self):
+        cursor = QTextCursor(self.document())
+        current_block = cursor.block()
+        while True:
+            text = current_block.text()
+            if text:
+                print(current_block.text())
+                if current_block.text().contains("CRITICAL"):
+                    current_block.setVisible(True)
+                else:
+                    current_block.setVisible(False)
+                current_block = current_block.next()
+            else:
+                break
+        self.viewport().update()
+
+
+    @Slot()
+    def on_error_filter(self):
+        cursor = QTextCursor(self.document())
+        current_block = cursor.block()
+        while True:
+            text = current_block.text()
+            if text:
+                print(current_block.text())
+                if current_block.text().contains("ERROR"):
+                    current_block.setVisible(True)
+                else:
+                    current_block.setVisible(False)
+                current_block = current_block.next()
+            else:
+                break
+        self.viewport().update()
+
 
 
 class LogModel(QObject):

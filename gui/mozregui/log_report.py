@@ -69,7 +69,6 @@ class LogView(QPlainTextEdit):
         while True:
             text = current_block.text()
             if text:
-                print(current_block.text())
                 if current_block.text().contains("DEBUG"):
                     current_block.setVisible(True)
                 else:
@@ -86,7 +85,6 @@ class LogView(QPlainTextEdit):
         while True:
             text = current_block.text()
             if text:
-                print(current_block.text())
                 if current_block.text().contains("INFO"):
                     current_block.setVisible(True)
                 else:
@@ -103,7 +101,6 @@ class LogView(QPlainTextEdit):
         while True:
             text = current_block.text()
             if text:
-                print(current_block.text())
                 if current_block.text().contains("WARNING"):
                     current_block.setVisible(True)
                 else:
@@ -120,7 +117,6 @@ class LogView(QPlainTextEdit):
         while True:
             text = current_block.text()
             if text:
-                print(current_block.text())
                 if current_block.text().contains("CRITICAL"):
                     current_block.setVisible(True)
                 else:
@@ -138,7 +134,6 @@ class LogView(QPlainTextEdit):
         while True:
             text = current_block.text()
             if text:
-                print(current_block.text())
                 if current_block.text().contains("ERROR"):
                     current_block.setVisible(True)
                 else:

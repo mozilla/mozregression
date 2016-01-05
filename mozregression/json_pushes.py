@@ -1,11 +1,13 @@
 import datetime
 
-from mozlog import get_default_logger
+from mozlog import get_proxy_logger
 
 from mozregression.errors import MozRegressionError, EmptyPushlogError
 from mozregression.network import retry_get
 from mozregression import branches
 from mozregression.dates import is_date_or_datetime
+
+LOG = get_proxy_logger("JsonPushes")
 
 
 class JsonPushes(object):
@@ -15,7 +17,6 @@ class JsonPushes(object):
     def __init__(self, branch='mozilla-inbound'):
         self.branch = branch
         self._repo_url = branches.get_url(branch)
-        self.logger = get_default_logger("JsonPushes")
 
     def repo_url(self):
         return self._repo_url
@@ -23,7 +24,7 @@ class JsonPushes(object):
     def json_pushes_url(self, **kwargs):
         base_url = '%s/json-pushes?' % self.repo_url()
         url = base_url + '&'.join("%s=%s" % kv for kv in kwargs.iteritems())
-        self.logger.debug("Using url: %s" % url)
+        LOG.debug("Using url: %s" % url)
         return url
 
     def _request(self, url):
@@ -88,7 +89,7 @@ class JsonPushes(object):
 
         ordered = sorted(chsets)
 
-        log = self.logger.info if verbose else self.logger.debug
+        log = LOG.info if verbose else LOG.debug
         if from_is_date:
             first = chsets[ordered[0]]
             log("Using {} (pushed on {}) for date {}".format(

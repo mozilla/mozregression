@@ -19,16 +19,16 @@ from mozregression.bisector import Bisector, Bisection, InboundHandler, \
 
 
 class AppCreator(object):
-    def __init__(self):
+    def __init__(self, logger):
         self.app = None
         self.logs = []
+        logger.info = self.logs.append
+        logger.warning = self.logs.append
 
     def __call__(self, argv):
         config = main.cli(argv, conf_file=None)
         config.validate()
         self.app = main.Application(config.fetch_config, config.options)
-        self.app._logger.info = self.logs.append
-        self.app._logger.warning = self.logs.append
         return self.app
 
     def find_in_log(self, msg, exact=True):
@@ -44,9 +44,9 @@ class AppCreator(object):
 
 
 @pytest.yield_fixture
-def create_app():
+def create_app(mocker):
     """allow to create an Application and ensure that clear() is called"""
-    creator = AppCreator()
+    creator = AppCreator(mocker.patch('mozregression.main.LOG'))
     yield creator
     creator.clear()
 
@@ -209,29 +209,28 @@ def test_app_bisect_ctrl_c_exit(create_app, mocker):
 
 
 class TestCheckMozregresionVersion(unittest.TestCase):
+    @patch('mozregression.main.LOG')
     @patch('requests.get')
-    def test_version_is_upto_date(self, get):
-        logger = Mock()
+    def test_version_is_upto_date(self, get, log):
         response = Mock(json=lambda: {'info': {'version':  __version__}})
         get.return_value = response
-        main.check_mozregression_version(logger)
-        self.assertFalse(logger.critical.called)
+        main.check_mozregression_version()
+        self.assertFalse(log.critical.called)
 
     @patch('requests.get')
     def test_Exception_error(self, get):
-        logger = Mock()
         get.side_effect = requests.RequestException
         # exception is handled inside main.check_mozregression_version
-        main.check_mozregression_version(logger)
+        main.check_mozregression_version()
         self.assertRaises(requests.RequestException, get)
 
+    @patch('mozregression.main.LOG')
     @patch('requests.get')
-    def test_warn_if_version_is_not_up_to_date(self, get):
-        logger = Mock()
+    def test_warn_if_version_is_not_up_to_date(self, get, log):
         response = Mock(json=lambda: {'info': {'version': 0}})
         get.return_value = response
-        main.check_mozregression_version(logger)
-        self.assertEqual(logger.warning.call_count, 2)
+        main.check_mozregression_version()
+        self.assertEqual(log.warning.call_count, 2)
 
 
 class TestMain(unittest.TestCase):
@@ -239,13 +238,14 @@ class TestMain(unittest.TestCase):
         self.app = Mock()
         self.logger = Mock()
 
+    @patch('mozregression.main.LOG')
     @patch('mozregression.main.check_mozregression_version')
     @patch('mozlog.structured.commandline.setup_logging')
     @patch('mozregression.main.set_http_session')
     @patch('mozregression.main.Application')
     def do_cli(self, argv, Application, set_http_session,
-               setup_logging, check_mozregression_version):
-        setup_logging.return_value = self.logger
+               setup_logging, check_mozregression_version, log):
+        self.logger = log
 
         def create_app(fetch_config, options):
             self.app.fetch_config = fetch_config

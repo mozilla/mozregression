@@ -13,7 +13,7 @@ import copy
 import datetime
 
 from threading import Thread
-from mozlog import get_default_logger
+from mozlog import get_proxy_logger
 
 from mozregression.dates import to_date, is_date_or_datetime, \
     to_datetime
@@ -21,13 +21,14 @@ from mozregression.errors import BuildInfoNotFound
 from mozregression.fetch_build_info import (InboundInfoFetcher,
                                             NightlyInfoFetcher)
 
+LOG = get_proxy_logger("Bisector")
+
 
 class FutureBuildInfo(object):
     def __init__(self, build_info_fetcher, data):
         self.build_info_fetcher = build_info_fetcher
         self.data = data
         self._build_info = None
-        self._logger = get_default_logger('Bisector')
 
     def _fetch(self):
         return self.build_info_fetcher.find_build_info(self.data)
@@ -38,8 +39,7 @@ class FutureBuildInfo(object):
             try:
                 self._build_info = self._fetch()
             except BuildInfoNotFound, exc:
-                self._logger.warning("Skipping build %s: %s"
-                                     % (self.data, exc))
+                LOG.warning("Skipping build %s: %s" % (self.data, exc))
                 self._build_info = False
         return self._build_info
 
@@ -156,7 +156,6 @@ def range_for_inbounds(fetch_config, start_rev, end_rev, time_limit=None):
     """
     info_fetcher = InboundInfoFetcher(fetch_config)
     jpushes = info_fetcher.jpushes
-    logger = info_fetcher._logger
 
     time_limit = time_limit or (datetime.datetime.now()
                                 + datetime.timedelta(days=-365))
@@ -164,7 +163,7 @@ def range_for_inbounds(fetch_config, start_rev, end_rev, time_limit=None):
     def _check_date(obj):
         if is_date_or_datetime(obj):
             if to_datetime(obj) < time_limit:
-                logger.info(
+                LOG.info(
                     "TaskCluster only keeps builds for one year."
                     " Using %s instead of %s."
                     % (time_limit, obj)

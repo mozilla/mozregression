@@ -48,7 +48,8 @@ class TestManualTestRunner(unittest.TestCase):
         self.assertEqual(result_launcher, launcher)
 
     @patch('mozregression.test_runner.create_launcher')
-    def test_nightly_create_launcher_buildid(self, create_launcher):
+    @patch('mozregression.test_runner.LOG')
+    def test_nightly_create_launcher_buildid(self, log, create_launcher):
         launcher = Mock()
         create_launcher.return_value = launcher
         info = mockinfo(
@@ -58,11 +59,10 @@ class TestManualTestRunner(unittest.TestCase):
             build_date=datetime.datetime(2015, 11, 6, 5, 4, 3),
             repo_name='mozilla-central',
         )
-        self.runner.logger.info = Mock()
         result_launcher = self.runner.create_launcher(info)
         create_launcher.\
             assert_called_with(info)
-        self.runner.logger.info.assert_called_with(
+        log.info.assert_called_with(
             'Running mozilla-central build for buildid 20151106050403')
 
         self.assertEqual(result_launcher, launcher)

@@ -6,13 +6,15 @@
 
 import math
 import threading
-from mozlog.structured import get_default_logger
+from mozlog import get_proxy_logger
 
 from mozregression.build_range import range_for_inbounds, range_for_nightlies
 from mozregression.errors import LauncherError, MozRegressionError
 from mozregression.history import BisectionHistory
 from mozregression.branches import find_branch_in_merge_commit
 from mozregression.json_pushes import JsonPushes
+
+LOG = get_proxy_logger('Bisector')
 
 
 def compute_steps_left(steps):
@@ -35,7 +37,6 @@ class BisectorHandler(object):
         self.build_range = None
         self.good_revision = None
         self.bad_revision = None
-        self._logger = get_default_logger('Bisector')
 
     def set_build_range(self, build_range):
         """
@@ -95,11 +96,11 @@ class BisectorHandler(object):
                 good_date = ' (%s)' % good_date
                 bad_date = ' (%s)' % bad_date
             words = self._reverse_if_find_fix('Last', 'First')
-            self._logger.info("%s good revision: %s%s" % (
+            LOG.info("%s good revision: %s%s" % (
                 words[0], self.good_revision, good_date if good_date else ''))
-            self._logger.info("%s bad revision: %s%s" % (
+            LOG.info("%s bad revision: %s%s" % (
                 words[1], self.bad_revision, bad_date if bad_date else ''))
-        self._logger.info("Pushlog:\n%s\n" % self.get_pushlog_url())
+        LOG.info("Pushlog:\n%s\n" % self.get_pushlog_url())
 
     def build_good(self, mid, new_data):
         """
@@ -151,23 +152,23 @@ class NightlyHandler(BisectorHandler):
         next_good_date = new_data[0].build_date
         next_bad_date = new_data[-1].build_date
         next_days_range = abs((next_bad_date - next_good_date).days)
-        self._logger.info("Narrowed nightly regression window from"
-                          " [%s, %s] (%d days) to [%s, %s] (%d days)"
-                          " (~%d steps left)"
-                          % (self.good_date,
-                             self.bad_date,
-                             abs((self.bad_date - self.good_date).days),
-                             next_good_date,
-                             next_bad_date,
-                             next_days_range,
-                             compute_steps_left(next_days_range)))
+        LOG.info("Narrowed nightly regression window from"
+                 " [%s, %s] (%d days) to [%s, %s] (%d days)"
+                 " (~%d steps left)"
+                 % (self.good_date,
+                    self.bad_date,
+                    abs((self.bad_date - self.good_date).days),
+                    next_good_date,
+                    next_bad_date,
+                    next_days_range,
+                    compute_steps_left(next_days_range)))
 
     def _print_date_range(self):
         words = self._reverse_if_find_fix('Newest', 'Oldest')
-        self._logger.info('%s known good nightly: %s' % (words[0],
-                                                         self.good_date))
-        self._logger.info('%s known bad nightly: %s' % (words[1],
-                                                        self.bad_date))
+        LOG.info('%s known good nightly: %s' % (words[0],
+                                                self.good_date))
+        LOG.info('%s known bad nightly: %s' % (words[1],
+                                               self.bad_date))
 
     def user_exit(self, mid):
         self._print_date_range()
@@ -182,8 +183,8 @@ class NightlyHandler(BisectorHandler):
         if self.found_repo is None:
             # this may happen if we are bisecting old builds without
             # enough tests of the builds.
-            self._logger.error("Sorry, but mozregression was unable to get"
-                               " a repository - no pushlog url available.")
+            LOG.error("Sorry, but mozregression was unable to get"
+                      " a repository - no pushlog url available.")
             # still we can print date range
             if full:
                 self._print_date_range()
@@ -193,7 +194,7 @@ class NightlyHandler(BisectorHandler):
         else:
             if full:
                 self._print_date_range()
-            self._logger.info("Pushlog:\n%s\n" % self.get_pushlog_url())
+            LOG.info("Pushlog:\n%s\n" % self.get_pushlog_url())
 
     def get_pushlog_url(self):
         assert self.found_repo
@@ -212,36 +213,36 @@ class InboundHandler(BisectorHandler):
     create_range = staticmethod(range_for_inbounds)
 
     def _print_progress(self, new_data):
-        self._logger.info("Narrowed inbound regression window from [%s, %s]"
-                          " (%d revisions) to [%s, %s] (%d revisions)"
-                          " (~%d steps left)"
-                          % (self.build_range[0].short_changeset,
-                             self.build_range[-1].short_changeset,
-                             len(self.build_range),
-                             new_data[0].short_changeset,
-                             new_data[-1].short_changeset,
-                             len(new_data),
-                             compute_steps_left(len(new_data))))
+        LOG.info("Narrowed inbound regression window from [%s, %s]"
+                 " (%d revisions) to [%s, %s] (%d revisions)"
+                 " (~%d steps left)"
+                 % (self.build_range[0].short_changeset,
+                    self.build_range[-1].short_changeset,
+                    len(self.build_range),
+                    new_data[0].short_changeset,
+                    new_data[-1].short_changeset,
+                    len(new_data),
+                    compute_steps_left(len(new_data))))
 
     def user_exit(self, mid):
         words = self._reverse_if_find_fix('Newest', 'Oldest')
-        self._logger.info('%s known good inbound revision: %s'
-                          % (words[0], self.good_revision))
-        self._logger.info('%s known bad inbound revision: %s'
-                          % (words[1], self.bad_revision))
+        LOG.info('%s known good inbound revision: %s'
+                 % (words[0], self.good_revision))
+        LOG.info('%s known bad inbound revision: %s'
+                 % (words[1], self.bad_revision))
 
     def handle_merge(self):
         # let's check if we are facing a merge, and in that case,
         # continue the bisection from the merged branch.
         result = None
 
-        self._logger.debug("Starting merge handling...")
+        LOG.debug("Starting merge handling...")
         # we have to check the commit of the most recent push
         most_recent_push = self.build_range[1]
         jp = JsonPushes(most_recent_push.repo_name)
         push = jp.pushlog_for_change(most_recent_push.changeset, full='1')
         msg = push['changesets'][-1]['desc']
-        self._logger.debug("Found commit message:\n%s\n" % msg)
+        LOG.debug("Found commit message:\n%s\n" % msg)
         branch = find_branch_in_merge_commit(msg)
         if not (branch and len(push['changesets']) >= 2):
             return
@@ -251,7 +252,7 @@ class InboundHandler(BisectorHandler):
             oldest = push['changesets'][0]['node']
             # exclude the merge commit
             youngest = push['changesets'][-2]['node']
-            self._logger.debug("This is a merge from %s" % branch)
+            LOG.debug("This is a merge from %s" % branch)
 
             # we can't use directly the youngest changeset because we
             # don't know yet if it is good.
@@ -273,11 +274,11 @@ class InboundHandler(BisectorHandler):
             youngest = data[str(max(datakeys))]["changesets"][-1]
 
             # we are ready to bisect further
-            self._logger.info("************* Switching to %s" % branch)
+            LOG.info("************* Switching to %s" % branch)
             gr, br = self._reverse_if_find_fix(oldest, youngest)
             result = (branch, gr, br)
         except MozRegressionError:
-            self._logger.debug("Got exception", exc_info=True)
+            LOG.debug("Got exception", exc_info=True)
             raise MozRegressionError(
                 "Unable to exploit the merge commit. Origin branch is {}, and"
                 " the commit message for {} was:\n{}".format(
@@ -286,7 +287,7 @@ class InboundHandler(BisectorHandler):
                     msg
                 )
             )
-        self._logger.debug('End merge handling')
+        LOG.debug('End merge handling')
         return result
 
 
@@ -400,10 +401,9 @@ class Bisection(object):
         good, bad = self.build_range[0], self.build_range[-1]
         if self.handler.find_fix:
             good, bad = bad, good
-        logger = self.handler._logger
 
-        logger.info("Testing good and bad builds to ensure that they are"
-                    " really good and bad...")
+        LOG.info("Testing good and bad builds to ensure that they are"
+                 " really good and bad...")
         self.download_manager.focus_download(good)
         if self.dl_in_background:
             self.download_manager.download_in_background(bad)
@@ -414,7 +414,7 @@ class Bisection(object):
                 if res == expected[0]:
                     return True
                 elif res == 's':
-                    logger.info("You can not skip this build.")
+                    LOG.info("You can not skip this build.")
                 elif res == 'e':
                     return
                 elif res == 'r':
@@ -499,7 +499,6 @@ class Bisector(object):
         """
         Starts a bisection for a :class:`mozregression.build_range.BuildData`.
         """
-        logger = handler._logger
 
         bisection = Bisection(handler, build_range, self.download_manager,
                               self.test_runner,
@@ -514,8 +513,8 @@ class Bisector(object):
                 return result
             if previous_verdict is None and handler.ensure_good_and_bad:
                 if bisection.ensure_good_and_bad():
-                    logger.info("Good and bad builds are correct. Let's"
-                                " continue the bisection.")
+                    LOG.info("Good and bad builds are correct. Let's"
+                             " continue the bisection.")
                 else:
                     return 'e'  # user exit
             bisection.handler.print_range(full=False)
@@ -546,7 +545,7 @@ class Bisector(object):
                     )
 
                 if not build_info:
-                    logger.info(
+                    LOG.info(
                         "Unable to find build info. Skipping this build...")
                     verdict = 's'
                 else:
@@ -556,7 +555,7 @@ class Bisector(object):
                         # we got an unrecoverable error while trying
                         # to run the tested app. We can just fallback
                         # to skip the build.
-                        logger.info("Error: %s. Skipping this build..." % exc)
+                        LOG.info("Error: %s. Skipping this build..." % exc)
                         verdict = 's'
             finally:
                 # be sure to terminate the index_promise thread in all

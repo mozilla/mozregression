@@ -47,12 +47,13 @@ class TestBisectorHandler(unittest.TestCase):
             self.handler.get_pushlog_url(),
             "https://hg.mozilla.repo/pushloghtml?changeset=2")
 
-    def test_print_range(self):
+    @patch('mozregression.bisector.LOG')
+    def test_print_range(self, logger):
         self.handler.found_repo = 'https://hg.mozilla.repo'
         self.handler.good_revision = '2'
         self.handler.bad_revision = '6'
         log = []
-        self.handler._logger = Mock(info=log.append)
+        logger.info = log.append
 
         self.handler.print_range()
         self.assertEqual(log[0], "Last good revision: 2")
@@ -91,9 +92,10 @@ class TestNightlyHandler(unittest.TestCase):
 
         initialize.assert_called_with(self.handler)
 
-    def test_print_progress(self):
+    @patch('mozregression.bisector.LOG')
+    def test_print_progress(self, logger):
         log = []
-        self.handler._logger = Mock(info=log.append)
+        logger.info = log.append
         self.handler.good_date = datetime.date(2014, 11, 10)
         self.handler.bad_date = datetime.date(2014, 11, 20)
 
@@ -107,18 +109,21 @@ class TestNightlyHandler(unittest.TestCase):
         self.assertIn('to [2014-11-15, 2014-11-20] (5 days)', log[0])
         self.assertIn('2 steps left', log[0])
 
-    def test_user_exit(self):
+    @patch('mozregression.bisector.LOG')
+    def test_user_exit(self, logger):
         log = []
-        self.handler._logger = Mock(info=log.append)
+        logger.info = log.append
         self.handler.good_date = datetime.date(2014, 11, 10)
         self.handler.bad_date = datetime.date(2014, 11, 20)
         self.handler.user_exit(0)
         self.assertEqual('Newest known good nightly: 2014-11-10', log[0])
         self.assertEqual('Oldest known bad nightly: 2014-11-20', log[1])
 
-    def test_print_range_without_repo(self):
+    @patch('mozregression.bisector.LOG')
+    def test_print_range_without_repo(self, logger):
         log = []
-        self.handler._logger = Mock(info=log.append, error=log.append)
+        logger.info = log.append
+        logger.error = log.append
         self.handler.good_date = datetime.date(2014, 11, 10)
         self.handler.bad_date = datetime.date(2014, 11, 20)
         self.handler.print_range()
@@ -126,26 +131,28 @@ class TestNightlyHandler(unittest.TestCase):
         self.assertEqual('Newest known good nightly: 2014-11-10', log[1])
         self.assertEqual('Oldest known bad nightly: 2014-11-20', log[2])
 
-    def test_print_range_rev_availables(self):
+    @patch('mozregression.bisector.LOG')
+    def test_print_range_rev_availables(self, logger):
         self.handler.found_repo = 'https://hg.mozilla.repo'
         self.handler.good_revision = '2'
         self.handler.bad_revision = '6'
         self.handler.good_date = datetime.date(2015, 1, 1)
         self.handler.bad_date = datetime.date(2015, 1, 2)
         log = []
-        self.handler._logger = Mock(info=log.append)
+        logger.info = log.append
 
         self.handler.print_range()
         self.assertEqual(log[0], "Last good revision: 2 (2015-01-01)")
         self.assertEqual(log[1], "First bad revision: 6 (2015-01-02)")
         self.assertIn(self.handler.get_pushlog_url(), log[2])
 
-    def test_print_range_no_rev_availables(self):
+    @patch('mozregression.bisector.LOG')
+    def test_print_range_no_rev_availables(self, logger):
         self.handler.found_repo = 'https://hg.mozilla.repo'
         self.handler.good_date = datetime.date(2014, 11, 10)
         self.handler.bad_date = datetime.date(2014, 11, 20)
         log = []
-        self.handler._logger = Mock(info=log.append)
+        logger.info = log.append
 
         self.handler.print_range()
         self.assertEqual('Newest known good nightly: 2014-11-10', log[0])
@@ -158,9 +165,10 @@ class TestInboundHandler(unittest.TestCase):
     def setUp(self):
         self.handler = InboundHandler()
 
-    def test_print_progress(self):
+    @patch('mozregression.bisector.LOG')
+    def test_print_progress(self, logger):
         log = []
-        self.handler._logger = Mock(info=log.append)
+        logger.info = log.append
         self.handler.set_build_range([
             Mock(short_changeset='12'),
             Mock(short_changeset='123'),
@@ -177,9 +185,10 @@ class TestInboundHandler(unittest.TestCase):
         self.assertIn('to [1234, 12345] (2 revisions)', log[0])
         self.assertIn('1 steps left', log[0])
 
-    def test_user_exit(self):
+    @patch('mozregression.bisector.LOG')
+    def test_user_exit(self, logger):
         log = []
-        self.handler._logger = Mock(info=log.append)
+        logger.info = log.append
         self.handler.good_revision = '3'
         self.handler.bad_revision = '1'
         self.handler.user_exit(0)

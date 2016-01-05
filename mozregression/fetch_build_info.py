@@ -11,7 +11,7 @@ import re
 import taskcluster
 from datetime import datetime
 from taskcluster.exceptions import TaskclusterFailure
-from mozlog.structuredlog import get_default_logger
+from mozlog import get_proxy_logger
 from threading import Thread, Lock
 from requests import HTTPError
 
@@ -21,6 +21,7 @@ from mozregression.build_info import NightlyBuildInfo, InboundBuildInfo
 from mozregression.json_pushes import JsonPushes
 from mozregression.dates import is_date_or_datetime
 
+LOG = get_proxy_logger(__name__)
 # Fix intermittent bug due to strptime first call not being thread safe
 # see https://bugzilla.mozilla.org/show_bug.cgi?id=1200270
 # and http://bugs.python.org/issue7980
@@ -29,7 +30,6 @@ import _strptime  # noqa
 
 class InfoFetcher(object):
     def __init__(self, fetch_config):
-        self._logger = get_default_logger(__name__)
         self.fetch_config = fetch_config
         self.build_regex = re.compile(fetch_config.build_regex())
         self.build_info_regex = re.compile(fetch_config.build_info_regex())
@@ -110,7 +110,7 @@ class InboundInfoFetcher(InfoFetcher):
             except MozRegressionError, exc:
                 raise BuildInfoNotFound(str(exc))
         tk_route = self.fetch_config.tk_inbound_route(changeset)
-        self._logger.debug('using taskcluster route %r' % tk_route)
+        LOG.debug('using taskcluster route %r' % tk_route)
         try:
             task_id = self.index.findTask(tk_route)['taskId']
         except TaskclusterFailure:

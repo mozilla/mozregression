@@ -9,7 +9,7 @@ This module implements a :class:`TestRunner` interface for testing builds
 and a default implementation :class:`ManualTestRunner`.
 """
 
-from mozlog.structured import get_default_logger
+from mozlog import get_proxy_logger
 import subprocess
 import shlex
 import os
@@ -18,6 +18,8 @@ import datetime
 from mozregression.launchers import create_launcher
 from mozregression.errors import TestCommandError, LauncherError
 
+LOG = get_proxy_logger("Test Runner")
+
 
 class TestRunner(object):
     """
@@ -25,8 +27,6 @@ class TestRunner(object):
 
     :meth:`evaluate` must be implemented by subclasses.
     """
-    def __init__(self):
-        self.logger = get_default_logger('Test Runner')
 
     def create_launcher(self, build_info):
         """
@@ -42,7 +42,7 @@ class TestRunner(object):
             desc = ("built on %s, revision %s"
                     % (build_info.build_date,
                        build_info.short_changeset))
-        self.logger.info("Running %s build %s" % (build_info.repo_name, desc))
+        LOG.info("Running %s build %s" % (build_info.repo_name, desc))
 
         return create_launcher(build_info)
 
@@ -198,7 +198,7 @@ class CommandTestRunner(TestRunner):
                 command = self.command.format(**variables)
             except KeyError as exc:
                 _raise_command_error(exc, ' (formatting error)')
-            self.logger.info('Running test command: `%s`' % command)
+            LOG.info('Running test command: `%s`' % command)
             cmdlist = shlex.split(command)
             try:
                 retcode = subprocess.call(cmdlist, env=env)
@@ -208,8 +208,8 @@ class CommandTestRunner(TestRunner):
                 _raise_command_error(exc,
                                      " (%s not found or not executable)"
                                      % cmdlist[0])
-        self.logger.info('Test command result: %d (build is %s)'
-                         % (retcode, 'good' if retcode == 0 else 'bad'))
+        LOG.info('Test command result: %d (build is %s)'
+                 % (retcode, 'good' if retcode == 0 else 'bad'))
         return 'g' if retcode == 0 else 'b'
 
     def run_once(self, build_info):

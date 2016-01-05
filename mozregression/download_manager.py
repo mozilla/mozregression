@@ -6,9 +6,11 @@ import sys
 import mozfile
 
 from contextlib import closing
-from mozlog.structuredlog import get_default_logger
+from mozlog import get_proxy_logger
 
 from mozregression.persist_limit import PersistLimit
+
+LOG = get_proxy_logger('Download')
 
 
 class DownloadInterrupt(Exception):
@@ -311,7 +313,6 @@ class BuildDownloadManager(DownloadManager):
                  persist_limit=None):
         DownloadManager.__init__(self, destdir, session=session,
                                  persist_limit=persist_limit)
-        self.logger = get_default_logger('download')
         self._downloads_bg = set()
         assert background_dl_policy in ('cancel', 'keep')
         self.background_dl_policy = background_dl_policy
@@ -359,7 +360,7 @@ class BuildDownloadManager(DownloadManager):
 
         dl = self.download(build_url, fname)
         if dl:
-            self.logger.info("Downloading build from: %s" % build_url)
+            LOG.info("Downloading build from: %s" % build_url)
             dl.set_progress(download_progress)
             try:
                 dl.wait()
@@ -370,5 +371,5 @@ class BuildDownloadManager(DownloadManager):
             msg = "Using local file: %s" % dest
             if fname in self._downloads_bg:
                 msg += " (downloaded in background)"
-            self.logger.info(msg)
+            LOG.info(msg)
         return dest

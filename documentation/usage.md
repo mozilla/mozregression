@@ -21,6 +21,10 @@ to date list of available options.
 
         mozregression --profile=/path/to/profile
 
+ - Reuse a profile across tested builds
+
+        mozregression --profile /path/to/profile --profile-persistence clone-first
+
 - Install addons
 
         mozregression --addon /path/to/addon --addon /other/addon
@@ -70,13 +74,6 @@ to date list of available options.
 - Automate mozregression run (see [Automatic bisection]({{"/documentation/automatic-bisection.html" | prepend: site.baseurl}}))
 
         mozregression --command 'test-command {binary}'
-
-- Disable background download of next builds
-
-  Downloading next builds in background (while you are testing one build) is generally good as it
-  improves performance. Still you can disable this with:
-
-        mozregression --no-background-dl
 
 ## Network persistence
 

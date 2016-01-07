@@ -286,7 +286,7 @@ class FennecLauncher(Launcher):
         # installed and in PATH. TODO: maybe fix this in mozdevice.
         try:
             devices = ADBHost().devices()
-        except OSError:
+        except ADBError:
             raise LauncherNotRunnable("adb (Android Debug Bridge) is not"
                                       " installed or not in the PATH.")
         if not devices:

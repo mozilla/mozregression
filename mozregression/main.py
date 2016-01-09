@@ -31,8 +31,6 @@ from mozregression.network import set_http_session
 from mozregression.test_runner import ManualTestRunner, CommandTestRunner
 from mozregression.download_manager import BuildDownloadManager
 from mozregression.persist_limit import PersistLimit
-from mozregression.releases import (UnavailableRelease,
-                                    formatted_valid_release_dates)
 from mozregression.fetch_build_info import (NightlyInfoFetcher,
                                             InboundInfoFetcher)
 
@@ -294,10 +292,6 @@ def main(argv=None, namespace=None, check_new_version=True):
 
     except KeyboardInterrupt:
         sys.exit("\nInterrupted.")
-    except UnavailableRelease, exc:
-        LOG.error(str(exc)) if config else sys.exit(str(exc))
-        print formatted_valid_release_dates()
-        sys.exit(1)
     except (MozRegressionError, RequestException) as exc:
         if isinstance(exc, HTTPError) and exc.response.status_code == 401:
             # remove the taskcluster credential file - looks like it's wrong

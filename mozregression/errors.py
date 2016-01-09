@@ -11,16 +11,6 @@ class MozRegressionError(Exception):
     """Base class for mozregression errors."""
 
 
-class Win64NoAvailableBuildError(MozRegressionError):
-    """
-    Raised when a build is not available for windows 64 because it is too old.
-    """
-    def __init__(self):
-        MozRegressionError.__init__(self,
-                                    "No builds available for 64 bit Windows"
-                                    " (try specifying --bits=32)")
-
-
 class WinTooOldBuildError(MozRegressionError):
     """
     Raised when a windows build is too old.
@@ -37,12 +27,6 @@ class DateFormatError(MozRegressionError):
     """
     def __init__(self, date_string, format="Incorrect date format: `%s`"):
         MozRegressionError.__init__(self, format % date_string)
-
-
-class DownloadError(MozRegressionError):
-    """
-    Raised when a build can not be downloaded.
-    """
 
 
 class LauncherNotRunnable(MozRegressionError):

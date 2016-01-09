@@ -9,7 +9,8 @@ import threading
 from mozlog import get_proxy_logger
 
 from mozregression.build_range import range_for_inbounds, range_for_nightlies
-from mozregression.errors import LauncherError, MozRegressionError
+from mozregression.errors import LauncherError, MozRegressionError, \
+    GoodBadExpectationError
 from mozregression.history import BisectionHistory
 from mozregression.branches import find_branch_in_merge_commit
 from mozregression.json_pushes import JsonPushes
@@ -420,7 +421,7 @@ class Bisection(object):
                 elif res == 'r':
                     pass
                 else:
-                    raise MozRegressionError(
+                    raise GoodBadExpectationError(
                         "Build was expected to be %s! The initial good/bad"
                         " range seems incorrect." % expected
                     )

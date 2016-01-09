@@ -23,7 +23,7 @@ from requests.exceptions import RequestException, HTTPError
 from mozregression import __version__
 from mozregression.config import TC_CREDENTIALS_FNAME
 from mozregression.cli import cli
-from mozregression.errors import MozRegressionError
+from mozregression.errors import MozRegressionError, GoodBadExpectationError
 from mozregression.bisector import (Bisector, NightlyHandler, InboundHandler,
                                     Bisection)
 from mozregression.launchers import REGISTRY as APP_REGISTRY
@@ -184,9 +184,11 @@ class Application(object):
     def _do_bisect(self, handler, good, bad):
         try:
             return self.bisector.bisect(handler, good, bad)
-        except (KeyboardInterrupt, MozRegressionError, RequestException):
+        except (KeyboardInterrupt, MozRegressionError,
+                RequestException) as exc:
             if handler.good_revision is not None and \
-                    handler.bad_revision is not None:
+                    handler.bad_revision is not None and \
+                    not isinstance(exc, GoodBadExpectationError):
                 atexit.register(self._on_exit_print_resume_info, handler)
             raise
 

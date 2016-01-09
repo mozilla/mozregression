@@ -68,3 +68,10 @@ class EmptyPushlogError(MozRegressionError):
     """
     Raised when there is no pushes in a given range
     """
+
+
+class GoodBadExpectationError(MozRegressionError):
+    """
+    Raised when a build status is not what we expected at the beginning of a
+    bisection.
+    """

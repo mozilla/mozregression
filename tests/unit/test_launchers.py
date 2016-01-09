@@ -2,6 +2,8 @@ from mozregression import launchers
 import unittest
 import os
 import pytest
+import tempfile
+import mozfile
 
 from mock import patch, Mock, ANY
 from mozprofile import Profile
@@ -128,11 +130,14 @@ profile_class', spec=Profile)
 
     @patch('mozregression.launchers.Runner')
     def test_start_with_profile_and_addons(self, Runner):
+        temp_dir_profile = tempfile.mkdtemp()
+        self.addCleanup(mozfile.remove, temp_dir_profile)
+
         with self.launcher:
-            self.launcher_start(profile='my-profile', addons=['my-addon'],
+            self.launcher_start(profile=temp_dir_profile, addons=['my-addon'],
                                 preferences='my-prefs')
             self.profile_class.clone.assert_called_once_with(
-                'my-profile', addons=['my-addon'], preferences='my-prefs')
+                temp_dir_profile, addons=['my-addon'], preferences='my-prefs')
             # runner is started
             self.launcher.runner.start.assert_called_once_with()
             self.launcher.stop()

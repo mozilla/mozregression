@@ -133,7 +133,14 @@ class Launcher(object):
                        clone=True):
         if profile:
             if not os.path.exists(profile):
+                LOG.warning(
+                    "Creating directory '%s' to put the profile in there"
+                    % profile
+                )
                 os.makedirs(profile)
+                # since the user gave an empty dir for the profile,
+                # let's keep it on the disk in any case.
+                clone = False
             if clone:
                 # mozprofile makes some changes in the profile that can not
                 # be undone. Let's clone the profile to not have side effect

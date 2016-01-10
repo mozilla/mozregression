@@ -153,7 +153,8 @@ class CommonConfig(object):
         """
         return (branches.get_category(self.repo) == 'integration'
                 or self.is_b2g_device()
-                or self.build_type != 'opt')
+                or (self.is_nightly()
+                    and not self.nightly_handle_build_type()))
 
 
 class NightlyConfigMixin(object):
@@ -212,6 +213,12 @@ class NightlyConfigMixin(object):
         return (r'^%04d-%02d-%02d-[\d-]+%s/$'
                 % (date.year, date.month, date.day, repo))
 
+    def nightly_persist_part(self):
+        return ''
+
+    def nightly_handle_build_type(self):
+        return self.build_type == 'opt'
+
     def can_go_inbound(self):
         """
         Indicate if we can bisect inbound from this nightly config.
@@ -225,6 +232,18 @@ class FireFoxNightlyConfigMixin(NightlyConfigMixin):
             return "trunk"
         else:
             return "mozilla-central"
+
+    def _get_nightly_repo_regex(self, date, repo):
+        if 'debug' in self.build_type:
+            return (r'^%04d-%02d-%02d-%s-debug/$'
+                    % (date.year, date.month, date.day, repo))
+        return NightlyConfigMixin._get_nightly_repo_regex(self, date, repo)
+
+    def nightly_persist_part(self):
+        return 'debug' if 'debug' in self.build_type else ''
+
+    def nightly_handle_build_type(self):
+        return self.build_type in ('opt', 'debug')
 
 
 class ThunderbirdNightlyConfigMixin(NightlyConfigMixin):

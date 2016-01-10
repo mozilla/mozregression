@@ -200,9 +200,6 @@ SOME_OLDER_DATE = TODAY + datetime.timedelta(days=-10)
     (['--good=%s' % SOME_DATE, '--bad=%s' % SOME_OLDER_DATE, '--repo=m-c',
       '--app=b2g-emulator'],
      SOME_DATE, SOME_OLDER_DATE),
-    # non opt build flavors are also found using taskcluster
-    (['--good=%s' % SOME_DATE, '--bad=%s' % SOME_OLDER_DATE, '-B', 'debug'],
-     SOME_DATE, SOME_OLDER_DATE)
 ])
 def test_use_taskcluster_bisection_method(params, good, bad):
     config = do_cli(*params)

@@ -227,20 +227,20 @@ CHSET12 = "47856a214918"
 @pytest.mark.parametrize("app,os,bits,expected", [
     # firefox
     ("firefox", 'linux', 32,
-     'buildbot.revisions.%s.mozilla-inbound.linux' % CHSET),
+     'gecko.v2.mozilla-inbound.revision.%s.firefox.linux-opt' % CHSET),
     ("firefox", 'linux', 64,
-     'buildbot.revisions.%s.mozilla-inbound.linux64' % CHSET),
+     'gecko.v2.mozilla-inbound.revision.%s.firefox.linux64-opt' % CHSET),
     ("firefox", 'win', 32,
-     'buildbot.revisions.%s.mozilla-inbound.win32' % CHSET),
+     'gecko.v2.mozilla-inbound.revision.%s.firefox.win32-opt' % CHSET),
     ("firefox", 'win', 64,
-     'buildbot.revisions.%s.mozilla-inbound.win64' % CHSET),
+     'gecko.v2.mozilla-inbound.revision.%s.firefox.win64-opt' % CHSET),
     ("firefox", 'mac', 64,
-     'buildbot.revisions.%s.mozilla-inbound.macosx64' % CHSET),
+     'gecko.v2.mozilla-inbound.revision.%s.firefox.macosx64-opt' % CHSET),
     # fennec
     ("fennec", None, None,
-     'buildbot.revisions.%s.mozilla-inbound.android-api-11' % CHSET),
+     'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-11-opt' % CHSET),
     ("fennec-2.3", None, None,
-     'buildbot.revisions.%s.mozilla-inbound.android-api-9' % CHSET),
+     'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-9-opt' % CHSET),
     # b2g
     ("b2g", 'linux', 32,
      'buildbot.revisions.%s.b2g-inbound.linux_gecko' % CHSET),
@@ -262,7 +262,7 @@ def test_tk_inbound_route(app, os, bits, expected):
 @pytest.mark.parametrize("app,os,bits,build_type,expected", [
     # firefox
     ("firefox", 'linux', 32, "debug",
-     'buildbot.revisions.%s.mozilla-inbound.linux-debug' % CHSET),
+     'gecko.v2.mozilla-inbound.revision.%s.firefox.linux-debug' % CHSET),
     # b2g-aries
     ("b2g-aries", None, None, "opt,eng",
      'gecko.v2.b2g-inbound.revision.%s.b2g.aries-eng-opt' % CHSET),
@@ -318,6 +318,22 @@ def test_jsshell_build_regex(os, bits, name):
     conf = create_config('jsshell', os, bits)
     assert re.match(conf.build_regex(), name)
 
+
+@pytest.mark.parametrize('os,bits,tc_suffix', [
+    ('linux', 32, 'linux-pgo'),
+    ('linux', 64, 'linux64-pgo'),
+    ('mac', 64, errors.MozRegressionError),
+    ('win', 32, 'win32-pgo'),
+    ('win', 64, 'win64-pgo'),
+])
+def test_set_firefox_build_type_pgo(os, bits, tc_suffix):
+    conf = create_config('firefox', os, bits)
+    if type(tc_suffix) is not str:
+        with pytest.raises(tc_suffix):
+            conf.set_build_type('pgo')
+    else:
+        conf.set_build_type('pgo')
+        assert conf.tk_inbound_route(CHSET).endswith('.' + tc_suffix)
 
 if __name__ == '__main__':
     unittest.main()

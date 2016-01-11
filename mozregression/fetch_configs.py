@@ -19,6 +19,7 @@ an instance of :class:`ClassRegistry`. Example: ::
 
   print REGISTRY.names()
 """
+import re
 import datetime
 
 from mozregression.class_registry import ClassRegistry
@@ -28,13 +29,14 @@ from mozregression import errors, branches
 NIGHTLY_BASE_URL = "https://archive.mozilla.org/pub"
 
 
-def get_build_regex(name, os, bits, with_ext=True):
+def get_build_regex(name, os, bits, psuffix='', with_ext=True):
     """
     Returns a string regexp that can match a build filename.
 
     :param name: must be the beginning of the filename to match
     :param os: the os, as returned by mozinfo.os
     :param bits: the bits information of the build. Either 32 or 64.
+    :param psuffix: optional suffix before the extension
     :param with_ext: if True, the build extension will be appended (either
                      .zip, .tar.bz2 or .dmg depending on the os).
     """
@@ -56,7 +58,7 @@ def get_build_regex(name, os, bits, with_ext=True):
             " os is reported as '%s'." % os
         )
 
-    regex = '%s%s' % (name, suffix)
+    regex = '%s%s%s' % (name, suffix, psuffix)
     if with_ext:
         return '%s%s' % (regex, ext)
     else:
@@ -114,6 +116,20 @@ class CommonConfig(object):
         """
         return (32, 64)
 
+    def available_build_types(self):
+        res = []
+        for available in self.BUILD_TYPES:
+            match = re.match("(.+)\[(.+)\]", available)
+            if match:
+                available = match.group(1)
+                platforms = match.group(2)
+                if '{}{}'.format(self.os,
+                                 self.bits) not in platforms.split(','):
+                    available = None
+            if available:
+                res.append(available)
+        return res
+
     def set_build_type(self, build_type):
         """
         Define the build types (opt, debug, eng, jb, asan...).
@@ -125,7 +141,7 @@ class CommonConfig(object):
         :raises: MozRegressionError on error.
         """
         flavors = set(_extract_build_type(build_type))
-        for available in self.BUILD_TYPES:
+        for available in self.available_build_types():
             if flavors == set(available.split('-')):
                 self.build_type = available
                 return
@@ -291,10 +307,10 @@ class InboundConfigMixin(object):
     def inbound_persist_part(self):
         """
         Allow to add a part in the generated persist file name to distinguish
-        builds. Returns an empty string by default, or 'debug' if build type
-        is debug.
+        builds. Returns an empty string if build type is 'opt', else the
+        build type.
         """
-        return 'debug' if self.build_type == 'debug' else ''
+        return '' if self.build_type == 'opt' else self.build_type
 
     def tk_needs_auth(self):
         """
@@ -335,9 +351,9 @@ def _common_tk_part(inbound_conf):
 
 class FirefoxInboundConfigMixin(InboundConfigMixin):
     def tk_inbound_route(self, changeset):
-        debug = '-debug' if self.build_type == 'debug' else ''
-        return 'buildbot.revisions.{}.{}.{}{}'.format(
-            changeset, self.inbound_branch, _common_tk_part(self), debug
+        return 'gecko.v2.{}.revision.{}.firefox.{}-{}'.format(
+            self.inbound_branch, changeset, _common_tk_part(self),
+            self.build_type
         )
 
 
@@ -372,9 +388,8 @@ class FennecInboundConfigMixin(InboundConfigMixin):
     tk_name = 'android-api-11'
 
     def tk_inbound_route(self, changeset):
-        debug = '-debug' if self.build_type == 'debug' else ''
-        return 'buildbot.revisions.{}.{}.{}{}'.format(
-            changeset, self.inbound_branch, self.tk_name, debug
+        return 'gecko.v2.{}.revision.{}.mobile.{}-{}'.format(
+            self.inbound_branch, changeset, self.tk_name, self.build_type
         )
 
 # ------------ full config implementations ------------
@@ -398,7 +413,14 @@ def create_config(name, os, bits):
 class FirefoxConfig(CommonConfig,
                     FireFoxNightlyConfigMixin,
                     FirefoxInboundConfigMixin):
-    BUILD_TYPES = ('opt', 'debug')
+    BUILD_TYPES = ('opt', 'debug', 'pgo[linux32,linux64,win32,win64]',
+                   'asan[linux64]', 'asan-debug[linux64]')
+
+    def build_regex(self):
+        return get_build_regex(
+            self.app_name, self.os, self.bits,
+            psuffix='-asan' if 'asan' in self.build_type else ''
+        ) + '$'
 
 
 @REGISTRY.register('thunderbird')
@@ -503,4 +525,5 @@ class JsShellConfig(FirefoxConfig):
                 part = 'win32'
         else:
             part = 'mac'
-        return r'jsshell-%s\.zip$' % part
+        psuffix = '-asan' if 'asan' in self.build_type else ''
+        return r'jsshell-%s%s\.zip$' % (part, psuffix)

@@ -48,7 +48,8 @@ class TestNightlyInfoFetcher(unittest.TestCase):
         ]
         expected = {
             'build_txt_url': 'http://foo/firefox01linux-x86_64.txt',
-            'build_url': 'http://foo/firefox01linux-x86_64.tar.bz2',
+            'build_urls': {
+                'default': 'http://foo/firefox01linux-x86_64.tar.bz2'},
         }
         builds = []
         self.info_fetcher._fetch_build_info_from_url('http://foo', 0, builds)
@@ -90,7 +91,7 @@ bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/',
                 return
             lst.append((index, {
                 'build_txt_url': url,
-                'build_url': url,
+                'build_urls': {'default': url},
             }))
         self.info_fetcher._fetch_build_info_from_url = Mock(
             side_effect=my_find_build_info

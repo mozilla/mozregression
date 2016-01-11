@@ -29,7 +29,7 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
 
     def test_build_regex(self):
         for example in self.build_examples:
-            res = re.match(self.conf.build_regex(), example)
+            res = re.match(self.conf.build_regexes()['default'], example)
             self.assertIsNotNone(res)
 
     def test_build_info_regex(self):
@@ -154,7 +154,7 @@ class TestFennecConfig(unittest.TestCase):
         self.assertIn("mozilla-central-android-api-11", regex)
 
     def test_build_regex(self):
-        regex = re.compile(self.conf.build_regex())
+        regex = re.compile(self.conf.build_regexes()['default'])
         self.assertTrue(regex.match('fennec-36.0a1.multi.android-arm.apk'))
 
     def test_build_info_regex(self):
@@ -316,7 +316,7 @@ def test_jsshell_build_info_regex():
 ])
 def test_jsshell_build_regex(os, bits, name):
     conf = create_config('jsshell', os, bits)
-    assert re.match(conf.build_regex(), name)
+    assert re.match(conf.build_regexes()['default'], name)
 
 
 if __name__ == '__main__':

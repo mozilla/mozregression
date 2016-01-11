@@ -81,11 +81,15 @@ class CommonConfig(object):
         self.build_type = 'opt'
         self.repo = None
 
-    def build_regex(self):
+    def build_regexes(self):
         """
-        Returns a string regex that can match a build file on the servers.
+        Returns a dict of string regexes to match multiple build files. The
+        main file should be under the key 'default'.
         """
-        return get_build_regex(self.app_name, self.os, self.bits) + '$'
+        return {
+            'default': get_build_regex(self.app_name,
+                                       self.os, self.bits) + '$'
+        }
 
     def build_info_regex(self):
         """
@@ -427,8 +431,8 @@ class B2GAriesConfig(CommonConfig,
     artifact_name = 'aries.zip'
     device_name = 'aries'
 
-    def build_regex(self):
-        return self.artifact_name
+    def build_regexes(self):
+        return {'default': self.artifact_name}
 
     def tk_needs_auth(self):
         return True
@@ -464,8 +468,8 @@ class FennecConfig(CommonConfig,
                    FennecNightlyConfigMixin,
                    FennecInboundConfigMixin):
 
-    def build_regex(self):
-        return r'fennec-.*\.apk'
+    def build_regexes(self):
+        return {'default': r'fennec-.*\.apk'}
 
     def build_info_regex(self):
         return r'fennec-.*\.txt'
@@ -495,7 +499,7 @@ class JsShellConfig(FirefoxConfig):
         return get_build_regex('firefox', self.os, self.bits,
                                with_ext=False) + r'\.txt$'
 
-    def build_regex(self):
+    def build_regexes(self):
         if self.os == 'linux':
             if self.bits == 64:
                 part = 'linux-x86_64'
@@ -508,4 +512,4 @@ class JsShellConfig(FirefoxConfig):
                 part = 'win32'
         else:
             part = 'mac'
-        return r'jsshell-%s\.zip$' % part
+        return {'default': r'jsshell-%s\.zip$' % part}

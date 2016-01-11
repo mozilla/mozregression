@@ -266,10 +266,11 @@ class TestBuildDownloadManager(unittest.TestCase):
         self.dl_manager.logger = Mock()
 
     def test__extract_download_info(self):
-        url, fname = self.dl_manager._extract_download_info(Mock(**{
-            'build_url': 'http://some/thing',
-            'persist_filename': '2015-01-03--my-repo--thing'
-        }))
+        buildinfo = Mock()
+        buildinfo.build_url_for.return_value = 'http://some/thing'
+        buildinfo.persist_filename_for.return_value = \
+            '2015-01-03--my-repo--thing'
+        url, fname = self.dl_manager._extract_download_info(buildinfo)
         self.assertEquals(url, 'http://some/thing')
         self.assertEquals(fname, '2015-01-03--my-repo--thing')
 
@@ -282,7 +283,7 @@ class TestBuildDownloadManager(unittest.TestCase):
 
         result = self.dl_manager.download_in_background({'build': 'info'})
 
-        extract.assert_called_with({'build': 'info'})
+        extract.assert_called_with({'build': 'info'}, 'default')
         download.assert_called_with('http://foo/bar', 'myfile')
         self.assertIn('myfile', self.dl_manager._downloads_bg)
         self.assertEquals(result, ANY)

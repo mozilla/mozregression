@@ -25,11 +25,11 @@ class BuildInfo(object):
     a BuildInfo is built by calling
     :meth:`mozregression.fetch_build_info.FetchBuildInfo.find_build_info`.
     """
-    def __init__(self, fetch_config, build_type, build_url, build_date,
+    def __init__(self, fetch_config, build_type, build_urls, build_date,
                  changeset, repo_url, repo_name, task_id=None):
         self._fetch_config = fetch_config
         self._build_type = build_type
-        self._build_url = build_url
+        self._build_urls = build_urls
         self._build_date = build_date
         self._changeset = changeset
         self._repo_url = repo_url
@@ -53,13 +53,17 @@ class BuildInfo(object):
         """
         return self._fetch_config.app_name
 
+    def build_url_for(self, build_key='default'):
+        """
+        The url to download a build
+        """
+        return self._build_urls[build_key or 'default']
+
     @property
     @export
     def build_url(self):
-        """
-        The url to download the build
-        """
-        return self._build_url
+        """Default url for the current build key"""
+        return self.build_url_for()
 
     @property
     @export
@@ -133,7 +137,8 @@ class BuildInfo(object):
         if self._repo_url is None:
             self._repo_url = app_info.get('application_repository')
 
-    def persist_filename_for(self, data, regex=True):
+    def persist_filename_for(self, data=None, regex=False,
+                             build_key='default'):
         """
         Returns the persistent filename for the given data.
 
@@ -147,6 +152,11 @@ class BuildInfo(object):
 
         '2015-01-11--mozilla-central--firefox.*linux-x86_64\.tar.bz2$'
         """
+        if data is None:
+            if self.build_type == 'nightly':
+                data = self.build_date
+            else:
+                data = self.changeset
         if self.build_type == 'nightly':
             if isinstance(data, datetime.datetime):
                 prefix = data.strftime("%Y-%m-%d-%H-%M-%S")
@@ -161,9 +171,10 @@ class BuildInfo(object):
         full_prefix = '{}{}--{}--'.format(prefix, persist_part, self.repo_name)
         if regex:
             full_prefix = re.escape(full_prefix)
-            appname = self._fetch_config.build_regex()
+            appname = \
+                self._fetch_config.build_regexes()[build_key]
         else:
-            appname = urlparse(self.build_url) \
+            appname = urlparse(self.build_url_for(build_key)) \
                       .path.replace('%2F', '/').split('/')[-1]
         return '{}{}'.format(full_prefix, appname)
 
@@ -172,11 +183,7 @@ class BuildInfo(object):
         """
         Compute and return the persist filename to use to store this build.
         """
-        if self.build_type == 'nightly':
-            data = self.build_date
-        else:
-            data = self.changeset
-        return self.persist_filename_for(data, regex=False)
+        return self.persist_filename_for()
 
     def to_dict(self):
         """
@@ -186,17 +193,17 @@ class BuildInfo(object):
 
 
 class NightlyBuildInfo(BuildInfo):
-    def __init__(self, fetch_config, build_url, build_date, changeset,
+    def __init__(self, fetch_config, build_urls, build_date, changeset,
                  repo_url):
-        BuildInfo.__init__(self, fetch_config, 'nightly', build_url,
+        BuildInfo.__init__(self, fetch_config, 'nightly', build_urls,
                            build_date, changeset, repo_url,
                            fetch_config.get_nightly_repo(build_date))
 
 
 class InboundBuildInfo(BuildInfo):
-    def __init__(self, fetch_config, build_url, build_date, changeset,
+    def __init__(self, fetch_config, build_urls, build_date, changeset,
                  repo_url, task_id=None):
-        BuildInfo.__init__(self, fetch_config, 'inbound', build_url,
+        BuildInfo.__init__(self, fetch_config, 'inbound', build_urls,
                            build_date, changeset, repo_url,
                            fetch_config.inbound_branch,
                            task_id=task_id)

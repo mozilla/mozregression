@@ -317,22 +317,23 @@ class BuildDownloadManager(DownloadManager):
         assert background_dl_policy in ('cancel', 'keep')
         self.background_dl_policy = background_dl_policy
 
-    def _extract_download_info(self, build_info):
-        return build_info.build_url, build_info.persist_filename
+    def _extract_download_info(self, build_info, build_key='default'):
+        return (build_info.build_url_for(build_key=build_key),
+                build_info.persist_filename_for(build_key=build_key))
 
-    def download_in_background(self, build_info):
+    def download_in_background(self, build_info, build_key='default'):
         """
         Start a build download in background.
 
         Don nothing is a build is already downloading/downloaded.
         """
-        build_url, fname = self._extract_download_info(build_info)
+        build_url, fname = self._extract_download_info(build_info, build_key)
         result = self.download(build_url, fname)
         if result is not None:
             self._downloads_bg.add(fname)
         return result
 
-    def focus_download(self, build_info):
+    def focus_download(self, build_info, build_key='default'):
         """
         Start a download for a build and focus on it.
 
@@ -350,7 +351,7 @@ class BuildDownloadManager(DownloadManager):
         Returns the complete path of the downloaded build. Also this path
         is set for the `build_info.build_file` property.
         """
-        build_url, fname = self._extract_download_info(build_info)
+        build_url, fname = self._extract_download_info(build_info, build_key)
         dest = self.get_dest(fname)
         build_info.build_file = dest
         # first, stop all downloads in background (except the one for this

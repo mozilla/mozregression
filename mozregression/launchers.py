@@ -289,13 +289,10 @@ class FennecLauncher(Launcher):
 
     @classmethod
     def check_is_runnable(cls):
-        # ADBHost().devices() seems to raise OSError when adb is not
-        # installed and in PATH. TODO: maybe fix this in mozdevice.
         try:
             devices = ADBHost().devices()
-        except OSError:
-            raise LauncherNotRunnable("adb (Android Debug Bridge) is not"
-                                      " installed or not in the PATH.")
+        except ADBError as adb_error:
+            raise LauncherNotRunnable(str(adb_error))
         if not devices:
             raise LauncherNotRunnable("No android device connected."
                                       " Connect a device and try again.")

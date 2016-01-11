@@ -8,6 +8,7 @@ import mozfile
 from mock import patch, Mock, ANY
 from mozprofile import Profile
 from mozregression.errors import LauncherNotRunnable, LauncherError
+from mozdevice import ADBError
 
 
 class MyLauncher(launchers.Launcher):
@@ -243,7 +244,7 @@ class TestFennecLauncher(unittest.TestCase):
                           launchers.FennecLauncher.check_is_runnable)
 
         # or if ADBHost().devices() raise an unexpected IOError
-        devices.side_effect = OSError()
+        devices.side_effect = ADBError()
         self.assertRaises(LauncherNotRunnable,
                           launchers.FennecLauncher.check_is_runnable)
 

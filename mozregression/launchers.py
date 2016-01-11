@@ -291,9 +291,8 @@ class FennecLauncher(Launcher):
     def check_is_runnable(cls):
         try:
             devices = ADBHost().devices()
-        except ADBError:
-            raise LauncherNotRunnable("mozdevice.adb.ADBError: [Errno 2] No"
-                                      " such file or directory: adb is not executable.")
+        except ADBError as adb_error:
+            raise LauncherNotRunnable(str(adb_error))
         if not devices:
             raise LauncherNotRunnable("No android device connected."
                                       " Connect a device and try again.")

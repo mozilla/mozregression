@@ -21,10 +21,17 @@ class Branches(object):
         self._branches[name] = self.DEFAULT_REPO_URL + path
         self._categories[category].append(name)
 
-    def get_branches(self, category=None):
+    def get_branches(self, category=None, include_aliases=False):
         if category is None:
-            return self._branches.keys()
-        return self._categories[category]
+            return_branches = self._branches.keys()
+        else:
+            return_branches = self._categories[category]
+
+        if include_aliases:
+            for alias, branch in self._aliases.iteritems():
+                if branch in return_branches:
+                    return_branches.append(alias)
+        return return_branches
 
     def set_alias(self, alias, branch_name):
         assert alias not in self._aliases, "alias %s already defined" % alias

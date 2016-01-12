@@ -89,7 +89,7 @@ class IntroPage(WizardPage):
 
         completer = QCompleter()
         completer.setModel(QStringListModel(branches.get_branches(
-                                                             include_aliases=True), self))
+                                                include_aliases=True), self))
         completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.ui.repository.setCompleter(completer)
 

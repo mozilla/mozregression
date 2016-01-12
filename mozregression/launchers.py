@@ -279,6 +279,9 @@ class B2GDeviceLauncher(Launcher):
     def get_app_info(self):
         return {}
 
+    def _wait(self):
+        pass
+
 
 @REGISTRY.register('fennec')
 class FennecLauncher(Launcher):

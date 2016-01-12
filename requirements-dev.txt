@@ -1,6 +1,7 @@
 coverage
 mock
 flake8
+pytest
 
 # install mozregression
 -e .

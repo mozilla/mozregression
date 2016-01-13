@@ -155,8 +155,8 @@ def range_for_inbounds(fetch_config, start_rev, end_rev, time_limit=None):
     info_fetcher = InboundInfoFetcher(fetch_config)
     jpushes = info_fetcher.jpushes
 
-    time_limit = time_limit or (datetime.datetime.now()
-                                + datetime.timedelta(days=-365))
+    time_limit = time_limit or (datetime.datetime.now() +
+                                datetime.timedelta(days=-365))
 
     def _check_date(obj):
         if is_date_or_datetime(obj):

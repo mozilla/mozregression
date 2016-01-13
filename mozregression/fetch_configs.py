@@ -151,9 +151,9 @@ class CommonConfig(object):
 
         Note that this method relies on the repo and build type defined.
         """
-        return (branches.get_category(self.repo) == 'integration'
-                or self.is_b2g_device()
-                or self.build_type != 'opt')
+        return (branches.get_category(self.repo) == 'integration' or
+                self.is_b2g_device() or
+                self.build_type != 'opt')
 
 
 class NightlyConfigMixin(object):

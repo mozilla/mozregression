@@ -3,15 +3,15 @@ from mozregui import patch_requests
 patch_requests.patch()
 
 # Import PyQt4 classes
-import sys
-from PyQt4.QtGui import QApplication
+import sys  # noqa
+from PyQt4.QtGui import QApplication  # noqa
 
-from mozlog.structuredlog import set_default_logger, StructuredLogger
+from mozlog.structuredlog import set_default_logger, StructuredLogger  # noqa
 
-from mozregui.log_report import LogModel
-from mozregui.check_release import CheckRelease
-from mozregui.crash_reporter import CrashReporter
-from mozregui.mainwindow import MainWindow
+from mozregui.log_report import LogModel  # noqa
+from mozregui.check_release import CheckRelease  # noqa
+from mozregui.crash_reporter import CrashReporter  # noqa
+from mozregui.mainwindow import MainWindow  # noqa
 
 
 def main():

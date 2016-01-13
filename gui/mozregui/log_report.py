@@ -1,6 +1,6 @@
 from PyQt4.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
 from PyQt4.QtGui import QPlainTextEdit, QTextCursor, QColor, \
-    QTextCharFormat, QMenu, QAction, QTextBlock
+    QTextCharFormat, QMenu, QAction, QTextBlock, QTextBlockUserData
 from datetime import datetime
 from mozlog import get_default_logger
 
@@ -11,6 +11,11 @@ COLORS = {
     'CRITICAL': QColor(255, 0, 0, 127),
     'ERROR': QColor(255, 0, 0, 127),
     }
+
+class TextBlockData(QTextBlockUserData):
+    def __init__(self, log_lvl):
+        QTextBlockUserData.__init__(self)
+        self.log_lvl = log_lvl
 
 
 class LogView(QPlainTextEdit):

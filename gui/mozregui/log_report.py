@@ -2,6 +2,8 @@ from PyQt4.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
 from PyQt4.QtGui import QPlainTextEdit, QTextCursor, QColor, \
     QTextCharFormat, QMenu, QAction, QTextBlock, QTextBlockUserData
 from datetime import datetime
+from mozlog.structuredlog import log_levels
+
 from mozlog import get_default_logger
 
 COLORS = {
@@ -12,7 +14,7 @@ COLORS = {
     'ERROR': QColor(255, 0, 0, 127),
     }
 
-class TextBlockData(QTextBlockUserData):
+class LogLevelData(QTextBlockUserData):
     def __init__(self, log_lvl):
         QTextBlockUserData.__init__(self)
         self.log_lvl = log_lvl
@@ -53,6 +55,10 @@ class LogView(QPlainTextEdit):
         cursor_to_add = QTextCursor(message_document)
         cursor_to_add.movePosition(cursor_to_add.End)
         cursor_to_add.insertText(log_message + '\n')
+
+        log_lvl_data = LogLevelData(log_levels[data['level'].upper()])
+        cursor_to_add.block().setUserData(log_lvl_data)
+
         if data['level'] in COLORS:
             fmt = QTextCharFormat()
             fmt.setForeground(COLORS[data['level']])

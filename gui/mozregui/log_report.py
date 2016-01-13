@@ -14,6 +14,8 @@ COLORS = {
     'ERROR': QColor(255, 0, 0, 127),
     }
 
+log_names_to_levels = {v:k for k,v in log_levels.iteritems()}
+
 class LogLevelData(QTextBlockUserData):
     def __init__(self, log_lvl):
         QTextBlockUserData.__init__(self)
@@ -40,11 +42,11 @@ class LogView(QPlainTextEdit):
         self.contextMenu.addAction(errorFilterAction)
 
         self.customContextMenuRequested.connect(self.on_custom_context_menu_requested)
-        debugFilterAction.triggered.connect(self.on_debug_filter)
-        infoFilterAction.triggered.connect(self.on_info_filter)
-        warningFilterAction.triggered.connect(self.on_warning_filter)
-        criticalFilterAction.triggered.connect(self.on_critical_filter)
-        errorFilterAction.triggered.connect(self.on_error_filter)
+        debugFilterAction.triggered.connect(self.on_log_filter)
+        infoFilterAction.triggered.connect(self.on_log_filter)
+        warningFilterAction.triggered.connect(self.on_log_filter)
+        criticalFilterAction.triggered.connect(self.on_log_filter)
+        errorFilterAction.triggered.connect(self.on_log_filter)
 
     @Slot(dict)
     def on_log_received(self, data):
@@ -73,13 +75,15 @@ class LogView(QPlainTextEdit):
         self.contextMenu.show()
 
     @Slot()
-    def on_debug_filter(self):
+    def on_log_filter(self):
+        log_lvl_name = str(self.sender().iconText()).upper()
+        log_lvl = log_levels[log_lvl_name]
         cursor = QTextCursor(self.document())
         current_block = cursor.block()
         while True:
             if current_block.userData():
-                log_lvl = current_block.userData().log_lvl
-                if log_lvl <= 4:
+                block_log_lvl = current_block.userData().log_lvl
+                if block_log_lvl <= log_lvl:
                     current_block.setVisible(True)
                 else:
                     current_block.setVisible(False)
@@ -87,74 +91,6 @@ class LogView(QPlainTextEdit):
             else:
                 break
         self.viewport().update()
-
-    @Slot()
-    def on_info_filter(self):
-        cursor = QTextCursor(self.document())
-        current_block = cursor.block()
-        while True:
-            if current_block.userData():
-                log_lvl = current_block.userData().log_lvl
-                if log_lvl <= 3:
-                    current_block.setVisible(True)
-                else:
-                    current_block.setVisible(False)
-                current_block = current_block.next()
-            else:
-                break
-        self.viewport().update()
-
-    @Slot()
-    def on_warning_filter(self):
-        cursor = QTextCursor(self.document())
-        current_block = cursor.block()
-        while True:
-            if current_block.userData():
-                log_lvl = current_block.userData().log_lvl
-                if log_lvl <= 2:
-                    current_block.setVisible(True)
-                else:
-                    current_block.setVisible(False)
-                current_block = current_block.next()
-            else:
-                break
-        self.viewport().update()
-
-    @Slot()
-    def on_error_filter(self):
-        cursor = QTextCursor(self.document())
-        current_block = cursor.block()
-        while True:
-            if current_block.userData():
-                log_lvl = current_block.userData().log_lvl
-                if log_lvl <= 1:
-                    current_block.setVisible(True)
-                else:
-                    current_block.setVisible(False)
-                current_block = current_block.next()
-            else:
-                break
-        self.viewport().update()
-
-    @Slot()
-    def on_critical_filter(self):
-        cursor = QTextCursor(self.document())
-        current_block = cursor.block()
-        while True:
-            if current_block.userData():
-                log_lvl = current_block.userData().log_lvl
-                if log_lvl <= 0:
-                    current_block.setVisible(True)
-                else:
-                    current_block.setVisible(False)
-                current_block = current_block.next()
-            else:
-                break
-        self.viewport().update()
-
-
-
-
 
 
 class LogModel(QObject):

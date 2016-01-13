@@ -56,13 +56,12 @@ class LogView(QPlainTextEdit):
         cursor_to_add.movePosition(cursor_to_add.End)
         cursor_to_add.insertText(log_message + '\n')
 
-        log_lvl_data = LogLevelData(log_levels[data['level'].upper()])
-        cursor_to_add.block().setUserData(log_lvl_data)
-
         if data['level'] in COLORS:
             fmt = QTextCharFormat()
             fmt.setForeground(COLORS[data['level']])
             cursor_to_add.movePosition(cursor_to_add.PreviousBlock)
+            log_lvl_data = LogLevelData(log_levels[data['level'].upper()])
+            cursor_to_add.block().setUserData(log_lvl_data)
             cursor_to_add_fmt = message_document.find(data['level'],
                                                       cursor_to_add.position())
             cursor_to_add_fmt.mergeCharFormat(fmt)
@@ -78,9 +77,9 @@ class LogView(QPlainTextEdit):
         cursor = QTextCursor(self.document())
         current_block = cursor.block()
         while True:
-            text = current_block.text()
-            if text:
-                if current_block.text().contains("DEBUG"):
+            if current_block.userData():
+                log_lvl = current_block.userData().log_lvl
+                if log_lvl <= 4:
                     current_block.setVisible(True)
                 else:
                     current_block.setVisible(False)
@@ -94,9 +93,9 @@ class LogView(QPlainTextEdit):
         cursor = QTextCursor(self.document())
         current_block = cursor.block()
         while True:
-            text = current_block.text()
-            if text:
-                if current_block.text().contains("INFO"):
+            if current_block.userData():
+                log_lvl = current_block.userData().log_lvl
+                if log_lvl <= 3:
                     current_block.setVisible(True)
                 else:
                     current_block.setVisible(False)
@@ -110,9 +109,25 @@ class LogView(QPlainTextEdit):
         cursor = QTextCursor(self.document())
         current_block = cursor.block()
         while True:
-            text = current_block.text()
-            if text:
-                if current_block.text().contains("WARNING"):
+            if current_block.userData():
+                log_lvl = current_block.userData().log_lvl
+                if log_lvl <= 2:
+                    current_block.setVisible(True)
+                else:
+                    current_block.setVisible(False)
+                current_block = current_block.next()
+            else:
+                break
+        self.viewport().update()
+
+    @Slot()
+    def on_error_filter(self):
+        cursor = QTextCursor(self.document())
+        current_block = cursor.block()
+        while True:
+            if current_block.userData():
+                log_lvl = current_block.userData().log_lvl
+                if log_lvl <= 1:
                     current_block.setVisible(True)
                 else:
                     current_block.setVisible(False)
@@ -126,9 +141,9 @@ class LogView(QPlainTextEdit):
         cursor = QTextCursor(self.document())
         current_block = cursor.block()
         while True:
-            text = current_block.text()
-            if text:
-                if current_block.text().contains("CRITICAL"):
+            if current_block.userData():
+                log_lvl = current_block.userData().log_lvl
+                if log_lvl <= 0:
                     current_block.setVisible(True)
                 else:
                     current_block.setVisible(False)
@@ -138,21 +153,7 @@ class LogView(QPlainTextEdit):
         self.viewport().update()
 
 
-    @Slot()
-    def on_error_filter(self):
-        cursor = QTextCursor(self.document())
-        current_block = cursor.block()
-        while True:
-            text = current_block.text()
-            if text:
-                if current_block.text().contains("ERROR"):
-                    current_block.setVisible(True)
-                else:
-                    current_block.setVisible(False)
-                current_block = current_block.next()
-            else:
-                break
-        self.viewport().update()
+
 
 
 

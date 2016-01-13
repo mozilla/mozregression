@@ -14,7 +14,6 @@ COLORS = {
     'ERROR': QColor(255, 0, 0, 127),
     }
 
-log_names_to_levels = {v:k for k,v in log_levels.iteritems()}
 
 class LogLevelData(QTextBlockUserData):
     def __init__(self, log_lvl):

@@ -131,8 +131,8 @@ class AbstractBuildRunner(QObject):
         download_dir = global_prefs['persist']
         if not download_dir:
             download_dir = self.mainwindow.persist
-        persist_limit = int(abs(global_prefs['persist_size_limit'])
-                            * 1073741824)
+        persist_limit = int(abs(global_prefs['persist_size_limit']) *
+                            1073741824)
         self.download_manager = GuiBuildDownloadManager(download_dir,
                                                         persist_limit)
         self.test_runner = GuiTestRunner()
@@ -170,8 +170,8 @@ class AbstractBuildRunner(QObject):
     def stop(self, wait=True):
         self.stopped = True
         if self.options:
-            if self.options['profile'] and self.options['profile_persistence'] == \
-                    'clone-first':
+            if self.options['profile'] and \
+               self.options['profile_persistence'] == 'clone-first':
                 self.options['profile'].cleanup()
         if self.download_manager:
             self.download_manager.cancel()

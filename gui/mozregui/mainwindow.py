@@ -2,6 +2,7 @@
 import mozregression
 import mozregui
 import mozfile
+
 from tempfile import mkdtemp
 from PyQt4.QtGui import QMainWindow, QMessageBox
 from PyQt4.QtCore import pyqtSlot as Slot, QSettings

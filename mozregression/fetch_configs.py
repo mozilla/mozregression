@@ -151,7 +151,7 @@ class CommonConfig(object):
 
         Note that this method relies on the repo and build type defined.
         """
-        return (branches.get_category(self.repo) == 'integration' or
+        return (branches.get_category(self.repo) in ('integration', 'try') or
                 self.is_b2g_device() or
                 self.build_type != 'opt')
 
@@ -335,6 +335,11 @@ def _common_tk_part(inbound_conf):
 
 class FirefoxInboundConfigMixin(InboundConfigMixin):
     def tk_inbound_route(self, changeset):
+        if self.inbound_branch == 'try':
+            # try only support gecko.v2 routes
+            return 'gecko.v2.try.revision.{}.firefox.{}-{}'.format(
+                changeset, _common_tk_part(self), self.build_type
+            )
         debug = '-debug' if self.build_type == 'debug' else ''
         return 'buildbot.revisions.{}.{}.{}{}'.format(
             changeset, self.inbound_branch, _common_tk_part(self), debug

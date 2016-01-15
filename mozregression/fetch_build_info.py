@@ -125,8 +125,8 @@ class InboundInfoFetcher(InfoFetcher):
                                               'fennec-2.3'):
                 err = False
                 try:
-                    tk_route = tk_route.replace(changeset, changeset[:12])
-                    task_id = self.index.findTask(tk_route)['taskId']
+                    old_route = tk_route.replace(changeset, changeset[:12])
+                    task_id = self.index.findTask(old_route)['taskId']
                 except TaskclusterFailure:
                     err = True
             if err:

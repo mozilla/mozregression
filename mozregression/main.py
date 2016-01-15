@@ -31,6 +31,7 @@ from mozregression.download_manager import BuildDownloadManager
 from mozregression.persist_limit import PersistLimit
 from mozregression.fetch_build_info import (NightlyInfoFetcher,
                                             InboundInfoFetcher)
+from mozregression.bugzilla import find_bugids_in_push, bug_url
 
 LOG = get_proxy_logger("main")
 
@@ -168,6 +169,17 @@ class Application(object):
                     branch, good_rev, bad_rev = result
                     self.fetch_config.set_repo(branch)
                     return self._bisect_inbounds(good_rev, bad_rev)
+                else:
+                    bugids = find_bugids_in_push(
+                        handler.build_range[1].repo_name,
+                        handler.build_range[1].changeset
+                    )
+                    if len(bugids) == 1:
+                        word = 'fix' if handler.find_fix else 'regression'
+                        LOG.info("Looks like the following bug has the changes"
+                                 " which introduced the {}:\n{}".format(
+                                     word,
+                                     bug_url(bugids[0])))
         elif result == Bisection.USER_EXIT:
             self._print_resume_info(handler)
         else:

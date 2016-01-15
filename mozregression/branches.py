@@ -63,6 +63,8 @@ def create_branches():
                  "mozilla-beta", "mozilla-release", "b2g-ota"):
         branches.set_branch(name, "releases/%s" % name)
 
+    branches.set_branch('try', 'try', category='try')
+
     # aliases
     for name, aliases in (
             ("mozilla-central", ("m-c", "central")),

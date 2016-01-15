@@ -200,9 +200,6 @@ class NightlyHandler(BisectorHandler):
         if self.are_revisions_available():
             return BisectorHandler.get_pushlog_url(self)
         else:
-            # this must never happen, as we must have changesets
-            # if we have the repo. But let's be paranoid, and this is a good
-            # fallback
             start, end = self.get_date_range()
             return ("%s/pushloghtml?startdate=%s&enddate=%s\n"
                     % (self.found_repo, start, end))
@@ -393,8 +390,13 @@ class Bisection(object):
         return self.build_range.index(bdata)
 
     def evaluate(self, build_infos):
-        return self.test_runner.evaluate(build_infos,
-                                         allow_back=bool(self.history))
+        verdict = self.test_runner.evaluate(build_infos,
+                                            allow_back=bool(self.history))
+        # old builds do not have metadata about the repo. But once
+        # the build is installed, we may have it
+        if self.handler.found_repo is None:
+            self.handler.found_repo = build_infos.repo_url
+        return verdict
 
     def ensure_good_and_bad(self):
         good, bad = self.build_range[0], self.build_range[-1]

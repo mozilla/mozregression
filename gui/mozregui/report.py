@@ -25,7 +25,10 @@ class ReportItem(object):
         self.progress = 0
 
     def update_pushlogurl(self, bisection):
-        self.data['pushlog_url'] = bisection.handler.get_pushlog_url()
+        if bisection.handler.found_repo:
+            self.data['pushlog_url'] = bisection.handler.get_pushlog_url()
+        else:
+            self.data['pushlog_url'] = 'Not available'
         self.data['repo_name'] = bisection.build_range[0].repo_name
 
     def status_text(self):
@@ -242,6 +245,10 @@ class ReportModel(QAbstractTableModel):
         last_item.downloading = False
         last_item.waiting_evaluation = True
         last_item.state_text = 'Testing'
+        # we may have more build data now that the build has been installed
+        last_item.data.update(build_infos.to_dict())
+        last_item.update_pushlogurl(bisection)
+
         self.update_item(last_item)
         if hasattr(bisection, 'handler'):
             # not a single runner

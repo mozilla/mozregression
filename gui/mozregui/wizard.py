@@ -1,7 +1,9 @@
 import mozinfo
 import datetime
 from PyQt4.QtGui import QWizard, QWizardPage, QStringListModel, QMessageBox
+from PyQt4.QtGui import QCompleter
 from PyQt4.QtCore import QString, QDateTime, QTimer, pyqtSlot as Slot
+from PyQt4.QtCore import Qt
 
 from ui.intro import Ui_Intro
 from ui.range_selection import Ui_RangeSelectionPage
@@ -12,6 +14,7 @@ from mozregression.fetch_configs import create_config, REGISTRY
 from mozregression.launchers import REGISTRY as LAUNCHER_REGISTRY
 from mozregression.errors import LauncherNotRunnable, DateFormatError
 from mozregression.dates import to_datetime
+from mozregression import branches
 
 
 def resolve_obj_name(obj, name):
@@ -83,6 +86,12 @@ class IntroPage(WizardPage):
         self.ui.bits_combo.currentIndexChanged.connect(self._set_fetch_config)
         self.ui.app_combo.setCurrentIndex(
             self.ui.app_combo.findText("firefox"))
+
+        completer = QCompleter()
+        completer.setModel(QStringListModel(branches.get_branches(
+                                              include_aliases=True), self))
+        completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.ui.repository.setCompleter(completer)
 
     def _set_fetch_config(self, index):
         app_name = str(self.ui.app_combo.currentText())

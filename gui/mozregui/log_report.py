@@ -1,6 +1,6 @@
 from PyQt4.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
 from PyQt4.QtGui import QPlainTextEdit, QTextCursor, QColor, \
-    QTextCharFormat, QMenu, QAction, QTextBlock, QTextBlockUserData
+    QTextCharFormat, QMenu, QAction, QTextBlock, QTextBlockUserData, QActionGroup
 from datetime import datetime
 from mozlog.structuredlog import log_levels
 
@@ -26,26 +26,16 @@ class LogView(QPlainTextEdit):
         QPlainTextEdit.__init__(self, parent)
         self.setMaximumBlockCount(1000)
 
-        self.contextMenu = QMenu(parent=self)
+        self.group = QActionGroup(self)
+        self.actions = [QAction(log_lvl , self.group)
+                            for log_lvl in ["Debug", "Info", "Warning", "Error", "Critical"]]
 
-        debugFilterAction = QAction("Debug", self.contextMenu)
-        infoFilterAction = QAction("Info", self.contextMenu)
-        warningFilterAction = QAction("Warning", self.contextMenu)
-        criticalFilterAction = QAction("Critical", self.contextMenu)
-        errorFilterAction = QAction("Error", self.contextMenu)
-
-        self.contextMenu.addAction(debugFilterAction)
-        self.contextMenu.addAction(infoFilterAction)
-        self.contextMenu.addAction(warningFilterAction)
-        self.contextMenu.addAction(criticalFilterAction)
-        self.contextMenu.addAction(errorFilterAction)
+        for action in self.actions:
+            action.setCheckable(True)
+            action.triggered.connect(self.on_log_filter)
+        self.actions[0].setChecked(True)
 
         self.customContextMenuRequested.connect(self.on_custom_context_menu_requested)
-        debugFilterAction.triggered.connect(self.on_log_filter)
-        infoFilterAction.triggered.connect(self.on_log_filter)
-        warningFilterAction.triggered.connect(self.on_log_filter)
-        criticalFilterAction.triggered.connect(self.on_log_filter)
-        errorFilterAction.triggered.connect(self.on_log_filter)
 
     @Slot(dict)
     def on_log_received(self, data):
@@ -70,8 +60,11 @@ class LogView(QPlainTextEdit):
 
     @Slot()
     def on_custom_context_menu_requested(self):
-        self.contextMenu.move(self.cursor().pos())
-        self.contextMenu.show()
+        menu = QMenu(self)
+        for action in self.actions:
+            menu.addAction(action)
+        #self.contextMenu.move(self.cursor().pos())
+        menu.popup(self.cursor().pos())
 
     @Slot()
     def on_log_filter(self):

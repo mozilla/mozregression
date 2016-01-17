@@ -164,6 +164,7 @@ class AbstractBuildRunner(QObject):
         self.thread.start()
         # this will be called in the worker thread.
         QTimer.singleShot(0, action)
+        self.stopped = False
         self.running_state_changed.emit(True)
 
     @Slot()

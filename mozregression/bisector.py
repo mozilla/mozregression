@@ -517,7 +517,7 @@ class Bisector(object):
                     LOG.info("Good and bad builds are correct. Let's"
                              " continue the bisection.")
                 else:
-                    return 'e'  # user exit
+                    return bisection.USER_EXIT
             bisection.handler.print_range(full=False)
 
             if previous_verdict == 'back':

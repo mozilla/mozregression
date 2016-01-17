@@ -147,3 +147,32 @@ def test_abstract_build_runner(qtbot):
         runner.stop(True)
 
     assert not runner.pending_threads
+
+
+def test_runner_started_multiple_times():
+    class Worker(QObject):
+        def __init__(self, *args):
+            QObject.__init__(self)
+
+    class BuildRunner(build_runner.AbstractBuildRunner):
+        worker_class = Worker
+
+        def init_worker(self, fetch_config, options):
+            build_runner.AbstractBuildRunner.init_worker(self, fetch_config,
+                                                         options)
+            return lambda: 1
+
+    fetch_config = create_config('firefox', 'linux', 64)
+    options = {'addons': (), 'profile': '/path/to/profile',
+               'profile_persistence': 'clone'}
+
+    runner = BuildRunner(Mock(persist='.'))
+    assert not runner.stopped
+    runner.start(fetch_config, options)
+    assert not runner.stopped
+    runner.stop()
+    assert runner.stopped
+    runner.start(fetch_config, options)
+    assert not runner.stopped
+    runner.stop()
+    assert runner.stopped

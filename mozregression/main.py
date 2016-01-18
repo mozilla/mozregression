@@ -32,6 +32,7 @@ from mozregression.persist_limit import PersistLimit
 from mozregression.fetch_build_info import (NightlyInfoFetcher,
                                             InboundInfoFetcher)
 from mozregression.bugzilla import find_bugids_in_push, bug_url
+from mozregression.approx_persist import ApproxPersistChooser
 
 LOG = get_proxy_logger("main")
 
@@ -97,7 +98,9 @@ class Application(object):
             self._bisector = Bisector(
                 self.fetch_config, self.test_runner,
                 self.build_download_manager,
-                dl_in_background=self.options.background_dl
+                dl_in_background=self.options.background_dl,
+                approx_chooser=(None if self.options.approx_policy != 'auto'
+                                else ApproxPersistChooser(7)),
             )
         return self._bisector
 

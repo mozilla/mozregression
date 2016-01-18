@@ -19,6 +19,7 @@ def get_prefs():
     options['persist_size_limit'] = float(settings['persist-size-limit'])
     options['background_downloads'] = \
         False if settings.get('background_downloads') == 'no' else True
+    options['approx_policy'] = settings['approx-policy'] == 'auto'
     return options
 
 
@@ -30,6 +31,7 @@ def save_prefs(options):
         'persist-size-limit': options['persist_size_limit'],
         'background_downloads':
             'yes' if options['background_downloads'] else 'no',
+        'approx-policy': 'auto' if options['approx_policy'] else 'none',
     })
     settings.write()
 
@@ -54,6 +56,7 @@ class ChangePrefsDialog(QDialog):
         self.ui.http_timeout.setValue(options['http_timeout'])
         self.ui.persist_size_limit.setValue(options['persist_size_limit'])
         self.ui.bg_downloads.setChecked(options['background_downloads'])
+        self.ui.approx.setChecked(options['approx_policy'])
         self.ui.advanced_options.setText("Show Advanced Options")
         self.toggle_visibility(False)
         self.ui.advanced_options.clicked.connect(self.toggle_adv_options)
@@ -80,6 +83,7 @@ class ChangePrefsDialog(QDialog):
         options['http_timeout'] = ui.http_timeout.value()
         options['persist_size_limit'] = ui.persist_size_limit.value()
         options['background_downloads'] = ui.bg_downloads.isChecked()
+        options['approx_policy'] = ui.approx.isChecked()
         save_prefs(options)
 
 

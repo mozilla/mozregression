@@ -210,9 +210,10 @@ class ReportModel(QAbstractTableModel):
     def step_started(self, bisection):
         last_item = self.items[-1]
         if isinstance(last_item, StepItem):
-            # update the pushlog for the last step
-            last_item.update_pushlogurl(bisection)
-            self.update_item(last_item)
+            # update the pushlog for the start step
+            if hasattr(bisection, 'handler'):
+                last_item.update_pushlogurl(bisection)
+                self.update_item(last_item)
             # and add a new step
             self.append_item(StepItem())
 
@@ -247,7 +248,8 @@ class ReportModel(QAbstractTableModel):
         last_item.state_text = 'Testing'
         # we may have more build data now that the build has been installed
         last_item.data.update(build_infos.to_dict())
-        last_item.update_pushlogurl(bisection)
+        if hasattr(bisection, 'handler'):
+            last_item.update_pushlogurl(bisection)
 
         self.update_item(last_item)
         if hasattr(bisection, 'handler'):

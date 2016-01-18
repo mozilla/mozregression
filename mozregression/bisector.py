@@ -363,7 +363,7 @@ class Bisection(object):
         return self._download_build(mid_point, build_infos,
                                     allow_bg_download=allow_bg_download)
 
-    def _download_build(self, mid_point, build_infos, allow_bg_download=True):
+    def _find_approx_build(self, mid_point, build_infos):
         approx_index, persist_files = None, ()
         if self.approx_chooser:
             # try to find an approx build
@@ -388,7 +388,14 @@ class Bisection(object):
                      " build file instead of downloading %s"
                      % (fname, old_url))
             build_infos.build_file = fname
-        else:
+        return (approx_index is not None, mid_point, build_infos,
+                persist_files)
+
+    def _download_build(self, mid_point, build_infos, allow_bg_download=True):
+        found, mid_point, build_infos, persist_files = self._find_approx_build(
+            mid_point, build_infos
+        )
+        if not found:
             # else, do the download. Note that nothing will
             # be downloaded if the exact build file is already present.
             self.download_manager.focus_download(build_infos)

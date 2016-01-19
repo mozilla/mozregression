@@ -368,11 +368,14 @@ class Bisection(object):
         if self.approx_chooser:
             # try to find an approx build
             persist_files = os.listdir(self.download_manager.destdir)
-            approx_index = self.approx_chooser.index(
-                self.build_range,
-                build_infos,
-                persist_files
-            )
+            # first test if we have the exact file - if we do,
+            # just act as usual, the downloader will take care of it.
+            if build_infos.persist_filename not in persist_files:
+                approx_index = self.approx_chooser.index(
+                    self.build_range,
+                    build_infos,
+                    persist_files
+                )
         if approx_index is not None:
             # we found an approx build. First, stop possible background
             # downloads, then update the mid point and build info.

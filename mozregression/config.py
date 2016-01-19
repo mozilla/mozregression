@@ -45,6 +45,7 @@ DEFAULTS = {
     'taskcluster-accesstoken': None,
     'process-output': None,
     'mode': 'classic',
+    'approx-policy': 'auto',
 }
 
 

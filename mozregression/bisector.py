@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import os
 import math
 import threading
 from mozlog import get_proxy_logger
@@ -293,15 +294,18 @@ class IndexPromise(object):
 
     Provide a callable object that gives the next index when called.
     """
-    def __init__(self, index, callback=None):
+    def __init__(self, index, callback=None, args=()):
         self.thread = None
         self.index = index
         if callback:
-            self.thread = threading.Thread(target=self._run, args=(callback,))
+            self.thread = threading.Thread(
+                target=self._run,
+                args=(callback,) + args
+            )
             self.thread.start()
 
-    def _run(self, callback):
-        self.index = callback(self.index)
+    def _run(self, callback, *args):
+        self.index = callback(self.index, *args)
 
     def __call__(self):
         if self.thread:
@@ -316,13 +320,14 @@ class Bisection(object):
     USER_EXIT = 3
 
     def __init__(self, handler, build_range, download_manager, test_runner,
-                 dl_in_background=True):
+                 dl_in_background=True, approx_chooser=None):
         self.handler = handler
         self.build_range = build_range
         self.download_manager = download_manager
         self.test_runner = test_runner
         self.dl_in_background = dl_in_background
         self.history = BisectionHistory()
+        self.approx_chooser = approx_chooser
 
     def search_mid_point(self):
         self.handler.set_build_range(self.build_range)
@@ -358,14 +363,52 @@ class Bisection(object):
         return self._download_build(mid_point, build_infos,
                                     allow_bg_download=allow_bg_download)
 
+    def _find_approx_build(self, mid_point, build_infos):
+        approx_index, persist_files = None, ()
+        if self.approx_chooser:
+            # try to find an approx build
+            persist_files = os.listdir(self.download_manager.destdir)
+            # first test if we have the exact file - if we do,
+            # just act as usual, the downloader will take care of it.
+            if build_infos.persist_filename not in persist_files:
+                approx_index = self.approx_chooser.index(
+                    self.build_range,
+                    build_infos,
+                    persist_files
+                )
+        if approx_index is not None:
+            # we found an approx build. First, stop possible background
+            # downloads, then update the mid point and build info.
+            if self.download_manager.background_dl_policy == 'cancel':
+                self.download_manager.cancel()
+
+            old_url = build_infos.build_url
+            mid_point = approx_index
+            build_infos = self.build_range[approx_index]
+            fname = self.download_manager.get_dest(
+                build_infos.persist_filename)
+            LOG.info("Using `%s` as an acceptable approximated"
+                     " build file instead of downloading %s"
+                     % (fname, old_url))
+            build_infos.build_file = fname
+        return (approx_index is not None, mid_point, build_infos,
+                persist_files)
+
     def _download_build(self, mid_point, build_infos, allow_bg_download=True):
-        self.download_manager.focus_download(build_infos)
+        found, mid_point, build_infos, persist_files = self._find_approx_build(
+            mid_point, build_infos
+        )
+        if not found:
+            # else, do the download. Note that nothing will
+            # be downloaded if the exact build file is already present.
+            self.download_manager.focus_download(build_infos)
         callback = None
         if self.dl_in_background and allow_bg_download:
             callback = self._download_next_builds
-        return IndexPromise(mid_point, callback), build_infos
+        return (IndexPromise(mid_point, callback, args=(persist_files,)),
+                build_infos)
 
-    def _download_next_builds(self, mid_point):
+    def _download_next_builds(self, mid_point, persist_files=()):
         # start downloading the next builds.
         # note that we don't have to worry if builds are already
         # downloaded, or if our build infos are the same because
@@ -377,7 +420,11 @@ class Bisection(object):
             m = r.mid_point()
             if len(r) != 0:
                 # non-blocking download of the build
-                self.download_manager.download_in_background(r[m])
+                if self.approx_chooser and self.approx_chooser.index(
+                        r, r[m], persist_files) is not None:
+                    pass  # nothing to download, we have an approx build
+                else:
+                    self.download_manager.download_in_background(r[m])
         bdata = self.build_range[mid_point]
         # download next left mid point
         start_dl(self.build_range[mid_point:])
@@ -480,11 +527,12 @@ class Bisector(object):
     :class:`BisectorHandler`.
     """
     def __init__(self, fetch_config, test_runner, download_manager,
-                 dl_in_background=True):
+                 dl_in_background=True, approx_chooser=None):
         self.fetch_config = fetch_config
         self.test_runner = test_runner
         self.download_manager = download_manager
         self.dl_in_background = dl_in_background
+        self.approx_chooser = approx_chooser
 
     def bisect(self, handler, good, bad, **kwargs):
         if handler.find_fix:
@@ -503,7 +551,8 @@ class Bisector(object):
 
         bisection = Bisection(handler, build_range, self.download_manager,
                               self.test_runner,
-                              dl_in_background=self.dl_in_background)
+                              dl_in_background=self.dl_in_background,
+                              approx_chooser=self.approx_chooser)
 
         previous_verdict = None
 

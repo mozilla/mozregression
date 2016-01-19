@@ -7,6 +7,7 @@ from mozregression.bisector import Bisector, Bisection, NightlyHandler, \
     InboundHandler, IndexPromise
 from mozregression.errors import MozRegressionError
 from mozregression.dates import is_date_or_datetime
+from mozregression.approx_persist import ApproxPersistChooser
 
 from mozregui.build_runner import AbstractBuildRunner
 from mozregui.skip_chooser import SkipDialog
@@ -37,6 +38,7 @@ class GuiBisector(QObject, Bisector):
         self._next_build_index = None
         self.download_in_background = download_in_background
         self.index_promise = None
+        self._persist_files = ()
 
         self.download_manager.download_finished.connect(
             self._build_dl_finished)
@@ -84,7 +86,8 @@ class GuiBisector(QObject, Bisector):
         self.bisection = Bisection(handler, build_range,
                                    self.download_manager,
                                    self.test_runner,
-                                   dl_in_background=False)
+                                   dl_in_background=False,
+                                   approx_chooser=self.approx_chooser)
         self._bisect_next()
 
     @Slot()
@@ -120,8 +123,14 @@ class GuiBisector(QObject, Bisector):
             self.finished.emit(self.bisection, result)
         else:
             self.build_infos = self.bisection.handler.build_range[mid]
-            self.download_manager.focus_download(self.build_infos)
+            found, self.mid, self.build_infos, self._persist_files = \
+                self.bisection._find_approx_build(self.mid, self.build_infos)
+            if not found:
+                self.download_manager.focus_download(self.build_infos)
             self.step_build_found.emit(self.bisection, self.build_infos)
+            if found:
+                # to continue the bisection, act as if it was downloaded
+                self._build_dl_finished(None, self.build_infos.build_file)
 
     @Slot()
     def _evaluate(self):
@@ -133,7 +142,8 @@ class GuiBisector(QObject, Bisector):
         if self.download_in_background and self.test_runner.verdict != 's':
             self.index_promise = IndexPromise(
                 self.mid,
-                self.bisection._download_next_builds
+                self.bisection._download_next_builds,
+                args=(self._persist_files,)
             )
         # run the build evaluation
         self.bisection.evaluate(self.build_infos)
@@ -198,6 +208,8 @@ class BisectRunner(AbstractBuildRunner):
         self.worker._bisect_args = (handler, good, bad)
         self.worker.download_in_background = \
             self.global_prefs['background_downloads']
+        if self.global_prefs['approx_policy']:
+            self.worker.approx_chooser = ApproxPersistChooser(7)
         return self.worker.bisect
 
     @Slot(str)

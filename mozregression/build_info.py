@@ -5,6 +5,7 @@
 """
 The BuildInfo classes, that are used to store information a build.
 """
+import re
 import datetime
 from urlparse import urlparse
 
@@ -132,28 +133,50 @@ class BuildInfo(object):
         if self._repo_url is None:
             self._repo_url = app_info.get('application_repository')
 
+    def persist_filename_for(self, data, regex=True):
+        """
+        Returns the persistent filename for the given data.
+
+        `data` should be a date or datetime object if the build type is
+        'nightly', else a changeset.
+
+        if `regex` is True, instead of returning the persistent filename
+        it is returned a string (regex pattern) that can match a filename.
+        The pattern only allows the build name to be different, by using
+        the fetch_config.build_regex() value. For example, it can return:
+
+        '2015-01-11--mozilla-central--firefox.*linux-x86_64\.tar.bz2$'
+        """
+        if self.build_type == 'nightly':
+            if isinstance(data, datetime.datetime):
+                prefix = data.strftime("%Y-%m-%d-%H-%M-%S")
+            else:
+                prefix = str(data)
+            persist_part = ''
+        else:
+            prefix = str(data[:12])
+            persist_part = self._fetch_config.inbound_persist_part()
+        if persist_part:
+            persist_part = '-' + persist_part
+        full_prefix = '{}{}--{}--'.format(prefix, persist_part, self.repo_name)
+        if regex:
+            full_prefix = re.escape(full_prefix)
+            appname = self._fetch_config.build_regex()
+        else:
+            appname = urlparse(self.build_url) \
+                      .path.replace('%2F', '/').split('/')[-1]
+        return '{}{}'.format(full_prefix, appname)
+
     @property
     def persist_filename(self):
         """
         Compute and return the persist filename to use to store this build.
         """
         if self.build_type == 'nightly':
-            if isinstance(self.build_date, datetime.datetime):
-                prefix = self.build_date.strftime("%Y-%m-%d-%H-%M-%S")
-            else:
-                prefix = str(self.build_date)
-            persist_part = ''
+            data = self.build_date
         else:
-            prefix = str(self.changeset[:12])
-            persist_part = self._fetch_config.inbound_persist_part()
-        if persist_part:
-            persist_part = '-' + persist_part
-        return '{}{}--{}--{}'.format(
-            prefix,
-            persist_part,
-            self.repo_name,
-            urlparse(self.build_url).path.replace('%2F', '/').split('/')[-1]
-        )
+            data = self.changeset
+        return self.persist_filename_for(data, regex=False)
 
     def to_dict(self):
         """

@@ -147,6 +147,16 @@ class BuildRange(object):
                 return i
         raise ValueError("%s not in build range." % build_info)
 
+    def get_future(self, index):
+        """
+        Returns the FutureBuildInfo at the given index.
+
+        Note that the FutureBuildInfo may or may not have downloaded
+        the real BuildInfo yet, but it is ensured that its member `data` is
+        valid.
+        """
+        return self._future_build_infos[index]
+
 
 def range_for_inbounds(fetch_config, start_rev, end_rev, time_limit=None):
     """

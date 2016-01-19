@@ -45,15 +45,18 @@ class ApproxPersistChooser(object):
                 build_range.get_future(next_index).data
             )
 
+        first, last = 0, len(build_range) - 1
         for i in xrange(1, around + 1):
             try:
                 next_index = index - i
-                yield next_index, date_or_chset(next_index)
+                if next_index > first:
+                    yield next_index, date_or_chset(next_index)
             except IndexError:
                 pass
             try:
                 next_index = index + i
-                yield next_index, date_or_chset(next_index)
+                if next_index < last:
+                    yield next_index, date_or_chset(next_index)
             except IndexError:
                 pass
 

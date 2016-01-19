@@ -39,6 +39,16 @@ def build_firefox_names(chsets):
     # we never overflow
     ('0123456789', 8, 4, [], None),
     ('0123456789', 1, 4, [], None),
+    # it is possible that someone chooses '1' after a skip.
+    # in that case, we should not offer the build '0' (the first)
+    ('0123456789', 1, 7, build_firefox_names('0'), None),
+    # same thing with '8' (here, we do not provide the last)
+    ('0123456789', 8, 7, build_firefox_names('9'), None),
+    # though if it is neither the last or the first, we use it
+    ('0123456789', 1, 7, build_firefox_names('2'), 2),
+    ('0123456789', 2, 7, build_firefox_names('1'), 1),
+    ('0123456789', 8, 7, build_firefox_names('7'), 7),
+    ('0123456789', 7, 7, build_firefox_names('8'), 8),
 ])
 def test_approx_index(bdata, mid, around, fnames, result):
     # this is always a firefox 64 linux build info

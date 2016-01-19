@@ -63,7 +63,6 @@ class LogView(QPlainTextEdit):
         menu = QMenu(self)
         for action in self.actions:
             menu.addAction(action)
-        #self.contextMenu.move(self.cursor().pos())
         menu.popup(self.cursor().pos())
 
     @Slot()
@@ -102,4 +101,3 @@ def log(text, log=True, status_bar=True, status_bar_timeout=2.0):
         mw = MainWindow.INSTANCE
         if mw:
             mw.ui.status_bar.showMessage(text, int(status_bar_timeout * 1000))
-

@@ -15,6 +15,7 @@ import tarfile
 
 
 IS_WIN = os.name == 'nt'
+IS_MAC = sys.platform == 'darwin'
 
 
 def call(*args, **kwargs):
@@ -134,6 +135,9 @@ def do_bundle(options):
     if IS_WIN:
         makensis_path = os.path.join(options.nsis_path, "makensis.exe")
         call(makensis_path, 'wininst.nsi', cwd='wininst')
+    elif IS_MAC:
+        call('hdiutil', 'create', 'dist/mozregression-gui.dmg',
+             '-srcfolder', 'dist/', '-ov')
     else:
         with tarfile.open('mozregression-gui.tar.gz', 'w:gz') as tar:
             tar.add(r'dist/')

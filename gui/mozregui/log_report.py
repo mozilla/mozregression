@@ -28,9 +28,8 @@ class LogView(QPlainTextEdit):
         self.setMaximumBlockCount(1000)
 
         self.group = QActionGroup(self)
-        self.actions = [QAction(log_lvl, self.group)
-                        for log_lvl in
-                        ["Debug", "Info", "Warning", "Critical", "Error"]]
+        self.actions = [QAction(log_lvl, self.group) for log_lvl in
+                        ["Debug", "Info", "Warning", "Error", "Critical"]]
 
         for action in self.actions:
             action.setCheckable(True)
@@ -39,6 +38,8 @@ class LogView(QPlainTextEdit):
 
         self.customContextMenuRequested.connect(
                 self.on_custom_context_menu_requested)
+
+        self.log_lvl = log_levels["DEBUG"]
 
     @Slot(dict)
     def on_log_received(self, data):
@@ -59,6 +60,8 @@ class LogView(QPlainTextEdit):
             cursor_to_add_fmt = message_document.find(data['level'],
                                                       cursor_to_add.position())
             cursor_to_add_fmt.mergeCharFormat(fmt)
+            if log_levels[data['level']] >= self.log_lvl:
+                cursor_to_add.block().setVisible(False)
         self.ensureCursorVisible()
 
     @Slot()
@@ -71,19 +74,17 @@ class LogView(QPlainTextEdit):
     @Slot()
     def on_log_filter(self):
         log_lvl_name = str(self.sender().iconText()).upper()
-        log_lvl = log_levels[log_lvl_name]
+        self.log_lvl = log_levels[log_lvl_name]
         cursor = QTextCursor(self.document())
         current_block = cursor.block()
-        while True:
+        while current_block.isValid():
             if current_block.userData():
                 block_log_lvl = current_block.userData().log_lvl
-                if block_log_lvl <= log_lvl:
+                if block_log_lvl <= self.log_lvl:
                     current_block.setVisible(True)
                 else:
                     current_block.setVisible(False)
-                current_block = current_block.next()
-            else:
-                break
+            current_block = current_block.next()
         self.viewport().update()
 
 

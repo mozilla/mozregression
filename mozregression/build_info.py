@@ -157,6 +157,10 @@ class BuildInfo(object):
         if self._repo_url is None:
             self._repo_url = app_info.get('application_repository')
 
+    def has_build_url(self, build_key):
+        """Returns True if the build url under build_key is known"""
+        return build_key in self._build_urls
+
     def persist_filename_for(self, data=None, regex=False,
                              build_key='default'):
         """

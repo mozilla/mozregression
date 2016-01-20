@@ -22,6 +22,15 @@ def _evaluate_gecko_and_gaia(gecko_info, gaia_info, dest):
     return res
 
 
+def _check_can_download(build_info):
+    if not build_info.has_build_url('gaia'):
+        raise MozRegressionError("Unable to find the gaia build file in %s."
+                                 % build_info.tc_task_url)
+    if not build_info.has_build_url('gecko'):
+        raise MozRegressionError("Unable to find the gecko build file in %s."
+                                 % build_info.tc_task_url)
+
+
 def check_gecko_or_gaia_broken(build_range, download_manager, find_fix=False):
     """
     Detect if we have a gecko or a gaia regression.
@@ -33,6 +42,9 @@ def check_gecko_or_gaia_broken(build_range, download_manager, find_fix=False):
     good, bad = build_range[0], build_range[-1]
     if find_fix:
         good, bad = bad, good
+
+    _check_can_download(good)
+    _check_can_download(bad)
 
     download_manager.focus_download(good, build_key='gecko')
     download_manager.focus_download(bad, build_key='gaia')

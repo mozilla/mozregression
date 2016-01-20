@@ -309,7 +309,7 @@ class TestBuildDownloadManager(unittest.TestCase):
         curent_download.is_running = Mock(return_value=True)
         other_download.is_running = Mock(return_value=True)
 
-        build_info = Mock(build='info')
+        build_info = Mock(build='info', tc_info=None)
         result = self.dl_manager.focus_download(build_info)
 
         curent_download.set_progress.assert_called_with(

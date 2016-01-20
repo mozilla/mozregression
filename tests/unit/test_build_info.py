@@ -123,3 +123,12 @@ def test_persist_filename(klass, extra, result):
         # fake that the fetch config should return the persist_part
         binfo._fetch_config.inbound_persist_part = lambda: persist_part
     assert binfo.persist_filename == result
+
+
+def test_tc_info():
+    tc_info = build_info.TCInfo('aez', 0, {'default': 'public/some/file'})
+    binfo = create_build_info(build_info.InboundBuildInfo, tc_info=tc_info)
+
+    assert binfo.tc_task_url == \
+        'https://tools.taskcluster.net/task-inspector/#aez/0'
+    assert binfo.tc_filename == 'public/some/file'

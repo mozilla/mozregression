@@ -8,7 +8,9 @@ The BuildInfo classes, that are used to store information a build.
 import re
 import datetime
 from urlparse import urlparse
+from collections import namedtuple
 
+TCInfo = namedtuple('TCInfo', ('task_id', 'run_id', 'files'))
 
 FIELDS = []
 
@@ -26,7 +28,7 @@ class BuildInfo(object):
     :meth:`mozregression.fetch_build_info.FetchBuildInfo.find_build_info`.
     """
     def __init__(self, fetch_config, build_type, build_urls, build_date,
-                 changeset, repo_url, repo_name, task_id=None):
+                 changeset, repo_url, repo_name, tc_info=None):
         self._fetch_config = fetch_config
         self._build_type = build_type
         self._build_urls = build_urls
@@ -35,7 +37,7 @@ class BuildInfo(object):
         self._repo_url = repo_url
         self._repo_name = repo_name
         self._build_file = None
-        self._task_id = task_id
+        self._tc_info = tc_info
 
     @property
     @export
@@ -107,12 +109,30 @@ class BuildInfo(object):
         return self._build_file
 
     @property
+    def tc_info(self):
+        """
+        The taskcluster information, for Taskcluster builds.
+        """
+        return self._tc_info
+
+    @property
     @export
-    def task_id(self):
-        """
-        The task ID, for Taskcluster builds.
-        """
-        return self._task_id
+    def tc_task_url(self):
+        """Returns the url for the task inspector of the task"""
+        if self._tc_info:
+            return 'https://tools.taskcluster.net/task-inspector/#%s/%s' % (
+                self._tc_info.task_id, self._tc_info.run_id
+            )
+
+    def tc_filename_for(self, build_key='default'):
+        if self._tc_info:
+            return self._tc_info.files[build_key]
+
+    @property
+    @export
+    def tc_filename(self):
+        """Returns the internal taskcluster filename used"""
+        return self.tc_filename_for()
 
     @build_file.setter
     def build_file(self, build_file):
@@ -202,8 +222,8 @@ class NightlyBuildInfo(BuildInfo):
 
 class InboundBuildInfo(BuildInfo):
     def __init__(self, fetch_config, build_urls, build_date, changeset,
-                 repo_url, task_id=None):
+                 repo_url, tc_info=None):
         BuildInfo.__init__(self, fetch_config, 'inbound', build_urls,
                            build_date, changeset, repo_url,
                            fetch_config.inbound_branch,
-                           task_id=task_id)
+                           tc_info=tc_info)

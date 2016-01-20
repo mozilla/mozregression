@@ -361,7 +361,13 @@ class BuildDownloadManager(DownloadManager):
 
         dl = self.download(build_url, fname)
         if dl:
-            LOG.info("Downloading build from: %s" % build_url)
+            if build_info.tc_info:
+                LOG.info("Downloading build from {}, using file {}".format(
+                    build_info.tc_task_url,
+                    build_info.tc_filename_for(build_key)
+                ))
+            else:
+                LOG.info("Downloading build from: %s" % build_url)
             dl.set_progress(download_progress)
             try:
                 dl.wait()

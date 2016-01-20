@@ -17,7 +17,7 @@ from requests import HTTPError
 
 from mozregression.network import url_links, retry_get
 from mozregression.errors import BuildInfoNotFound, MozRegressionError
-from mozregression.build_info import NightlyBuildInfo, InboundBuildInfo
+from mozregression.build_info import NightlyBuildInfo, InboundBuildInfo, TCInfo
 from mozregression.json_pushes import JsonPushes
 from mozregression.dates import is_date_or_datetime
 
@@ -156,6 +156,8 @@ class InboundInfoFetcher(InfoFetcher):
                                     % task_id)
         artifacts = self.queue.listArtifacts(task_id, run_id)['artifacts']
 
+        tc_info = TCInfo(task_id=task_id, run_id=run_id, files={})
+
         # look over the artifacts of that run
         build_urls = {}
         for a in artifacts:
@@ -172,6 +174,7 @@ class InboundInfoFetcher(InfoFetcher):
                     a['name']
                 )
                 build_urls[build_key] = build_url
+                tc_info.files[build_key] = a['name']
                 if len(build_urls) == len(self.build_regexes):
                     break
         if 'default' not in build_urls:
@@ -183,7 +186,7 @@ class InboundInfoFetcher(InfoFetcher):
             build_date=build_date,
             changeset=changeset,
             repo_url=self.jpushes.repo_url(),
-            task_id=task_id,
+            tc_info=tc_info,
         )
 
 

@@ -148,6 +148,13 @@ class TestInboundInfoFetcher(unittest.TestCase):
         self.assertEqual(result.changeset, '123456789')
         self.assertEqual(result.build_type, "inbound")
 
+        self.assertIsNotNone(result.tc_info)
+        self.assertEqual(result.tc_info.task_id, 'task1')
+        self.assertEqual(result.tc_info.run_id, 0)
+        self.assertEqual(result.tc_info.files, {
+            'default': 'firefox-42.0a1.en-US.linux-x86_64.tar.bz2'
+        })
+
     def test_find_build_info_no_task(self):
         self.info_fetcher.index.findTask = Mock(
             side_effect=fetch_build_info.TaskclusterFailure

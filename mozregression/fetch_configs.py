@@ -429,10 +429,16 @@ class B2GAriesConfig(CommonConfig,
                      B2GDeviceConfigMixin):
     BUILD_TYPES = ('opt', 'debug', 'eng-opt')
     artifact_name = 'aries.zip'
+    gaia_name = 'gaia.zip'
+    gecko_name = 'b2g-android-arm.tar.gz'
     device_name = 'aries'
 
     def build_regexes(self):
-        return {'default': self.artifact_name}
+        return {
+            'default': self.artifact_name,
+            'gaia': self.gaia_name,
+            'gecko': self.gecko_name,
+        }
 
     def tk_needs_auth(self):
         return True

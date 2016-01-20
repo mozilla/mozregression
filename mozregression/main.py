@@ -33,6 +33,7 @@ from mozregression.fetch_build_info import (NightlyInfoFetcher,
                                             InboundInfoFetcher)
 from mozregression.bugzilla import find_bugids_in_push, bug_url
 from mozregression.approx_persist import ApproxPersistChooser
+from mozregression.b2g import check_gecko_or_gaia_broken
 
 LOG = get_proxy_logger("main")
 
@@ -183,6 +184,12 @@ class Application(object):
                                  " which introduced the {}:\n{}".format(
                                      word,
                                      bug_url(bugids[0])))
+                    if self.fetch_config.is_b2g_device():
+                        check_gecko_or_gaia_broken(
+                            handler.build_range,
+                            self.build_download_manager,
+                            handler.find_fix,
+                        )
         elif result == Bisection.USER_EXIT:
             self._print_resume_info(handler)
         else:

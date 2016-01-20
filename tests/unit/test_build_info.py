@@ -8,7 +8,7 @@ from mozregression import build_info
 def create_build_info(klass, **attrs):
     defaults = dict(
         fetch_config=create_config('firefox', 'linux', 64),
-        build_url='http://build/url',
+        build_urls={'default': 'http://build/url'},
         build_date=date(2015, 9, 1),
         changeset='12ab' * 10,
         repo_url='http://repo:url',
@@ -111,8 +111,9 @@ def test_to_dict(klass):
     # for b2g device builds (private build from taskcluster)
     (build_info.InboundBuildInfo,
      {'persist_part': 'opt.aries',
-      'build_url': ("https://queue.taskcluster.net/...build/aries.zip"
-                    "?bewit=bW9pXDE...ZTMwPQ==")},
+      'build_urls': {
+          'default': ("https://queue.taskcluster.net/...build/aries.zip"
+                      "?bewit=bW9pXDE...ZTMwPQ==")}},
      '12ab12ab12ab-opt.aries--mozilla-inbound--aries.zip'),
 ])
 def test_persist_filename(klass, extra, result):
@@ -122,3 +123,12 @@ def test_persist_filename(klass, extra, result):
         # fake that the fetch config should return the persist_part
         binfo._fetch_config.inbound_persist_part = lambda: persist_part
     assert binfo.persist_filename == result
+
+
+def test_tc_info():
+    tc_info = build_info.TCInfo('aez', 0, {'default': 'public/some/file'})
+    binfo = create_build_info(build_info.InboundBuildInfo, tc_info=tc_info)
+
+    assert binfo.tc_task_url == \
+        'https://tools.taskcluster.net/task-inspector/#aez/0'
+    assert binfo.tc_filename == 'public/some/file'

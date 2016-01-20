@@ -243,7 +243,6 @@ def create_launcher(buildinfo):
     """
     return REGISTRY.get(buildinfo.app_name)(
         buildinfo.build_file,
-        task_id=buildinfo.task_id
     )
 
 

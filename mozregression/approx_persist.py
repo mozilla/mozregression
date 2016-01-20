@@ -42,7 +42,8 @@ class ApproxPersistChooser(object):
             # given index.
             return build_info.persist_filename_for(
                 # get_future can raise IndexError if we are out of bounds
-                build_range.get_future(next_index).data
+                data=build_range.get_future(next_index).data,
+                regex=True,
             )
 
         for i in xrange(1, around + 1):

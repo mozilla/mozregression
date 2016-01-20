@@ -17,7 +17,7 @@ from requests import HTTPError
 
 from mozregression.network import url_links, retry_get
 from mozregression.errors import BuildInfoNotFound, MozRegressionError
-from mozregression.build_info import NightlyBuildInfo, InboundBuildInfo
+from mozregression.build_info import NightlyBuildInfo, InboundBuildInfo, TCInfo
 from mozregression.json_pushes import JsonPushes
 from mozregression.dates import is_date_or_datetime
 
@@ -31,8 +31,16 @@ import _strptime  # noqa
 class InfoFetcher(object):
     def __init__(self, fetch_config):
         self.fetch_config = fetch_config
-        self.build_regex = re.compile(fetch_config.build_regex())
+        self.build_regexes = dict(
+            (k, re.compile(v))
+            for k, v in fetch_config.build_regexes().iteritems()
+        )
         self.build_info_regex = re.compile(fetch_config.build_info_regex())
+
+    def _search_build_name(self, build_name):
+        for k, v in self.build_regexes.iteritems():
+            if v.search(build_name):
+                return k
 
     def _update_build_info_from_txt(self, build_info):
         if 'build_txt_url' in build_info:
@@ -148,11 +156,14 @@ class InboundInfoFetcher(InfoFetcher):
                                     % task_id)
         artifacts = self.queue.listArtifacts(task_id, run_id)['artifacts']
 
+        tc_info = TCInfo(task_id=task_id, run_id=run_id, files={})
+
         # look over the artifacts of that run
-        build_url = None
+        build_urls = {}
         for a in artifacts:
             name = os.path.basename(a['name'])
-            if self.build_regex.search(name):
+            build_key = self._search_build_name(name)
+            if build_key:
                 meth = self.queue.buildUrl
                 if self.fetch_config.tk_needs_auth():
                     meth = self.queue.buildSignedUrl
@@ -162,17 +173,20 @@ class InboundInfoFetcher(InfoFetcher):
                     run_id,
                     a['name']
                 )
-                break
-        if build_url is None:
+                build_urls[build_key] = build_url
+                tc_info.files[build_key] = a['name']
+                if len(build_urls) == len(self.build_regexes):
+                    break
+        if 'default' not in build_urls:
             raise BuildInfoNotFound("unable to find a build url for the"
                                     " changeset %r" % changeset)
         return InboundBuildInfo(
             self.fetch_config,
-            build_url=build_url,
+            build_urls=build_urls,
             build_date=build_date,
             changeset=changeset,
             repo_url=self.jpushes.repo_url(),
-            task_id=task_id,
+            tc_info=tc_info,
         )
 
 
@@ -188,19 +202,21 @@ class NightlyInfoFetcher(InfoFetcher):
         Retrieve information from a build folder url.
 
         Stores in a list the url index and a dict instance with keys
-        build_url and build_txt_url if respectively a build file and a
+        build_urls and build_txt_url if respectively build files and a
         build info file are found for the url.
         """
-        data = {}
+        build_urls = {}
+        data = {'build_urls': build_urls}
         if not url.endswith('/'):
             url += '/'
         for link in url_links(url):
-            if 'build_url' not in data and self.build_regex.match(link):
-                data['build_url'] = url + link
+            build_key = self._search_build_name(link)
+            if build_key:
+                build_urls[build_key] = url + link
             elif 'build_txt_url' not in data  \
                     and self.build_info_regex.match(link):
                 data['build_txt_url'] = url + link
-        if data:
+        if 'default' in build_urls:
             with self._fetch_lock:
                 lst.append((index, data))
 
@@ -268,7 +284,7 @@ class NightlyInfoFetcher(InfoFetcher):
 
                 build_info = NightlyBuildInfo(
                     self.fetch_config,
-                    build_url=infos['build_url'],
+                    build_urls=infos['build_urls'],
                     build_date=date,
                     changeset=infos.get('changeset'),
                     repo_url=infos.get('repository')

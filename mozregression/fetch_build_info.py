@@ -20,6 +20,7 @@ from mozregression.errors import BuildInfoNotFound, MozRegressionError
 from mozregression.build_info import NightlyBuildInfo, InboundBuildInfo
 from mozregression.json_pushes import JsonPushes
 from mozregression.dates import is_date_or_datetime
+from mozregression.fetch_configs import TIMESTAMP_GECKO_V2
 
 LOG = get_proxy_logger(__name__)
 # Fix intermittent bug due to strptime first call not being thread safe
@@ -86,30 +87,31 @@ class InboundInfoFetcher(InfoFetcher):
         self.jpushes = JsonPushes(branch=fetch_config.inbound_branch)
 
     def _check_changeset(self, changeset):
-        # return the full changeset
-        return self.jpushes.pushlog_for_change(changeset)['changesets'][-1]
+        # return the full changeset and the date
+        push = self.jpushes.pushlog_for_change(changeset)
+        return push['changesets'][-1], push['date']
 
-    def find_build_info(self, changeset, fetch_txt_info=True,
-                        check_changeset=False):
+    def find_build_info(self, changeset, push_date=None):
         """
         Find build info for an inbound build, given a changeset or a date.
 
-        if `check_changeset` is True, the given changeset might be partial
-        (< 40 chars) because it will be verified and updated using json pushes.
+        `push_date` should be the date of the changeset, as provided by json
+        pushes query result.
+
+        if `push_date` is None or if `changeset` is a date, a query to json
+        pushes will be done.
 
         Return a :class:`InboundBuildInfo` instance.
         """
         if is_date_or_datetime(changeset):
-            changeset = self.jpushes.revision_for_date(changeset)
-            check_changeset = False
-
-        # find a task id
-        if check_changeset:
+            changeset, push_date = self.jpushes.revision_for_date(changeset)
+        elif push_date is None:
             try:
-                changeset = self._check_changeset(changeset)
+                changeset, push_date = self._check_changeset(changeset)
             except MozRegressionError, exc:
                 raise BuildInfoNotFound(str(exc))
-        tk_route = self.fetch_config.tk_inbound_route(changeset)
+
+        tk_route = self.fetch_config.tk_inbound_route(changeset, push_date)
         LOG.debug('using taskcluster route %r' % tk_route)
         try:
             task_id = self.index.findTask(tk_route)['taskId']
@@ -122,7 +124,8 @@ class InboundInfoFetcher(InfoFetcher):
             err = True
             if self.fetch_config.app_name in ('firefox',
                                               'fennec',
-                                              'fennec-2.3'):
+                                              'fennec-2.3') \
+                    and push_date < TIMESTAMP_GECKO_V2:
                 err = False
                 try:
                     old_route = tk_route.replace(changeset, changeset[:12])

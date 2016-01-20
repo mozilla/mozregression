@@ -4,6 +4,7 @@ Date utilities functions.
 
 import re
 import datetime
+import calendar
 
 from mozregression.errors import DateFormatError
 
@@ -49,3 +50,7 @@ def to_date(date_time):
 
 def is_date_or_datetime(obj):
     return isinstance(obj, (datetime.date, datetime.datetime))
+
+
+def to_utc_timestamp(date_time):
+    return calendar.timegm(date_time.timetuple())

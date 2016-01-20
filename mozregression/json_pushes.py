@@ -112,16 +112,16 @@ class JsonPushes(object):
 
     def revision_for_date(self, date):
         """
-        Returns the last revision that matches the given date.
+        Returns the last couple (revision, push_date) that matches the given
+        date.
 
         Raise an explicit EmptyPushlogError if no pushes are available.
         """
         try:
-            return self.pushlog_within_changes(
-                date, date, verbose=False
-            )[-1]['changesets'][-1]
+            push = self.pushlog_within_changes(date, date, verbose=False)[-1]
         except EmptyPushlogError:
             raise EmptyPushlogError(
                 "No pushes available for the date %s on %s."
                 % (date, self.branch)
             )
+        return push['changesets'][-1], push['date']

@@ -141,7 +141,7 @@ class TestInboundInfoFetcher(unittest.TestCase):
         self.info_fetcher._fetch_txt_info = \
             Mock(return_value={'changeset': '123456789'})
 
-        result = self.info_fetcher.find_build_info('123456789')
+        result = self.info_fetcher.find_build_info('123456789', 1)
         self.assertEqual(result.build_url,
                          'http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2')
         self.assertEqual(result.changeset, '123456789')
@@ -152,7 +152,7 @@ class TestInboundInfoFetcher(unittest.TestCase):
             side_effect=fetch_build_info.TaskclusterFailure
         )
         with self.assertRaises(errors.BuildInfoNotFound):
-            self.info_fetcher.find_build_info('123456789')
+            self.info_fetcher.find_build_info('123456789', 1)
 
     def test_get_valid_build_no_artifacts(self):
         def find_task(route):
@@ -173,12 +173,12 @@ class TestInboundInfoFetcher(unittest.TestCase):
         self.info_fetcher.queue.listArtifacts = list_artifacts
 
         with self.assertRaises(errors.BuildInfoNotFound):
-            self.info_fetcher.find_build_info('123456789')
+            self.info_fetcher.find_build_info('123456789', 1)
 
     @patch('mozregression.json_pushes.JsonPushes.pushlog_for_change')
     def test_find_build_info_check_changeset_error(self, pushlog_for_change):
         pushlog_for_change.side_effect = errors.MozRegressionError
         with self.assertRaises(errors.BuildInfoNotFound):
             self.info_fetcher.find_build_info('123456789',
-                                              check_changeset=True)
+                                              push_date=None)
         pushlog_for_change.assert_called_with('123456789')

@@ -48,6 +48,16 @@ class FutureBuildInfo(object):
         return self._build_info is not False
 
 
+class TCFutureBuildInfo(FutureBuildInfo):
+    def __init__(self, build_info_fetcher, data, push_date):
+        FutureBuildInfo.__init__(self, build_info_fetcher, data)
+        self.push_date = push_date
+
+    def _fetch(self):
+        return self.build_info_fetcher.find_build_info(self.data,
+                                                       self.push_date)
+
+
 class BuildRange(object):
     """
     Range of build infos used in bisection.
@@ -187,7 +197,8 @@ def range_for_inbounds(fetch_config, start_rev, end_rev, time_limit=None):
     futures_builds = []
     for pushlog in pushlogs:
         changeset = pushlog['changesets'][-1]
-        futures_builds.append(FutureBuildInfo(info_fetcher, changeset))
+        futures_builds.append(TCFutureBuildInfo(info_fetcher, changeset,
+                                                pushlog['date']))
     return BuildRange(info_fetcher, futures_builds)
 
 

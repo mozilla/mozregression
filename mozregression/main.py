@@ -243,10 +243,9 @@ class Application(object):
         handler.print_range()
         self._print_resume_info(handler)
 
-    def _launch(self, fetcher_class, **fetch_kwargs):
+    def _launch(self, fetcher_class):
         fetcher = fetcher_class(self.fetch_config)
-        build_info = fetcher.find_build_info(self.options.launch,
-                                             **fetch_kwargs)
+        build_info = fetcher.find_build_info(self.options.launch)
         self.build_download_manager.focus_download(build_info)
         self.test_runner.run_once(build_info)
 
@@ -254,7 +253,7 @@ class Application(object):
         self._launch(NightlyInfoFetcher)
 
     def launch_inbound(self):
-        self._launch(InboundInfoFetcher, check_changeset=True)
+        self._launch(InboundInfoFetcher)
 
 
 def pypi_latest_version():

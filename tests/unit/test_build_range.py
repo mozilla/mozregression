@@ -100,9 +100,9 @@ def test_range_for_inbounds(mocker):
     jpush_class = mocker.patch('mozregression.fetch_build_info.JsonPushes')
     jpush = mocker.Mock(
         pushlog_within_changes=mocker.Mock(
-            return_value=[{'changesets': ['a', 'b']},
-                          {'changesets': ['c', 'd']},
-                          {'changesets': ['e', 'f']}]
+            return_value=[{'changesets': ['a', 'b'], 'date': 1},
+                          {'changesets': ['c', 'd'], 'date': 2},
+                          {'changesets': ['e', 'f'], 'date': 3}]
         ),
         spec=JsonPushes
     )
@@ -115,10 +115,10 @@ def test_range_for_inbounds(mocker):
     assert isinstance(b_range, build_range.BuildRange)
     assert len(b_range) == 3
 
-    b_range.build_info_fetcher.find_build_info = lambda v: v
-    assert b_range[0] == 'b'
-    assert b_range[1] == 'd'
-    assert b_range[2] == 'f'
+    b_range.build_info_fetcher.find_build_info = lambda v, d: (v, d)
+    assert b_range[0] == ('b', 1)
+    assert b_range[1] == ('d', 2)
+    assert b_range[2] == ('f', 3)
 
 
 DATE_NOW = datetime.now()

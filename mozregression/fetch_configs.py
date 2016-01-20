@@ -23,9 +23,14 @@ import datetime
 
 from mozregression.class_registry import ClassRegistry
 from mozregression import errors, branches
+from mozregression.dates import to_utc_timestamp
 
 
 NIGHTLY_BASE_URL = "https://archive.mozilla.org/pub"
+# after this date, the gecko v2 routes are safe
+# TODO: Once we are far away of this date (one year), we should
+# make gecko v2 routes used everywhere, and remove any other case.
+TIMESTAMP_GECKO_V2 = to_utc_timestamp(datetime.datetime(2015, 10, 1, 1, 1, 1))
 
 
 def get_build_regex(name, os, bits, with_ext=True):
@@ -282,7 +287,7 @@ class InboundConfigMixin(object):
     def inbound_branch(self):
         return self.repo or self.default_inbound_branch
 
-    def tk_inbound_route(self, changeset):
+    def tk_inbound_route(self, changeset, push_date):
         """
         Returns a taskcluster route for a specific changeset.
         """
@@ -334,11 +339,11 @@ def _common_tk_part(inbound_conf):
 
 
 class FirefoxInboundConfigMixin(InboundConfigMixin):
-    def tk_inbound_route(self, changeset):
-        if self.inbound_branch == 'try':
-            # try only support gecko.v2 routes
-            return 'gecko.v2.try.revision.{}.firefox.{}-{}'.format(
-                changeset, _common_tk_part(self), self.build_type
+    def tk_inbound_route(self, changeset, push_date):
+        if self.inbound_branch == 'try' or push_date >= TIMESTAMP_GECKO_V2:
+            return 'gecko.v2.{}.revision.{}.firefox.{}-{}'.format(
+                self.inbound_branch, changeset, _common_tk_part(self),
+                self.build_type
             )
         debug = '-debug' if self.build_type == 'debug' else ''
         return 'buildbot.revisions.{}.{}.{}{}'.format(
@@ -349,7 +354,7 @@ class FirefoxInboundConfigMixin(InboundConfigMixin):
 class B2GInboundConfigMixin(InboundConfigMixin):
     default_inbound_branch = 'b2g-inbound'
 
-    def tk_inbound_route(self, changeset):
+    def tk_inbound_route(self, changeset, _):
         if self.os != 'linux':
             # this is quite strange, but sometimes we have to limit the
             # changeset size, and sometimes not. see
@@ -364,7 +369,7 @@ class B2GDeviceConfigMixin(InboundConfigMixin):
     default_inbound_branch = 'b2g-inbound'
     device_name = None
 
-    def tk_inbound_route(self, changeset):
+    def tk_inbound_route(self, changeset, _):
         return 'gecko.v2.{}.revision.{}.b2g.{}-{}'.format(
             self.inbound_branch, changeset, self.device_name, self.build_type
         )
@@ -376,7 +381,11 @@ class B2GDeviceConfigMixin(InboundConfigMixin):
 class FennecInboundConfigMixin(InboundConfigMixin):
     tk_name = 'android-api-11'
 
-    def tk_inbound_route(self, changeset):
+    def tk_inbound_route(self, changeset, push_date):
+        if push_date >= TIMESTAMP_GECKO_V2:
+            return 'gecko.v2.{}.revision.{}.mobile.{}-{}'.format(
+                self.inbound_branch, changeset, self.tk_name, self.build_type
+            )
         debug = '-debug' if self.build_type == 'debug' else ''
         return 'buildbot.revisions.{}.{}.{}{}'.format(
             changeset, self.inbound_branch, self.tk_name, debug

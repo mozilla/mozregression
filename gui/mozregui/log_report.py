@@ -1,18 +1,19 @@
 from PyQt4.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
-from PyQt4.QtGui import QPlainTextEdit, QTextCursor, QColor, \
-    QTextCharFormat, QMenu, QAction, QTextBlock, QTextBlockUserData, QActionGroup
+from PyQt4.QtGui import QPlainTextEdit, QTextCursor, QColor
+from PyQt4.QtGui import QTextCharFormat, QMenu, QAction
+from PyQt4.QtGui import QTextBlockUserData, QActionGroup
 from datetime import datetime
 from mozlog.structuredlog import log_levels
 
 from mozlog import get_default_logger
 
 COLORS = {
-    'DEBUG': QColor(6, 146, 6),         # green
-    'INFO': QColor(250, 184, 4),        # deep yellow
+    'DEBUG': QColor(6, 146, 6),  # green
+    'INFO': QColor(250, 184, 4),  # deep yellow
     'WARNING': QColor(255, 0, 0, 127),  # red
     'CRITICAL': QColor(255, 0, 0, 127),
     'ERROR': QColor(255, 0, 0, 127),
-    }
+}
 
 
 class LogLevelData(QTextBlockUserData):
@@ -27,19 +28,21 @@ class LogView(QPlainTextEdit):
         self.setMaximumBlockCount(1000)
 
         self.group = QActionGroup(self)
-        self.actions = [QAction(log_lvl , self.group)
-                            for log_lvl in ["Debug", "Info", "Warning", "Error", "Critical"]]
+        self.actions = [QAction(log_lvl, self.group)
+                        for log_lvl in
+                        ["Debug", "Info", "Warning", "Critical", "Error"]]
 
         for action in self.actions:
             action.setCheckable(True)
             action.triggered.connect(self.on_log_filter)
         self.actions[0].setChecked(True)
 
-        self.customContextMenuRequested.connect(self.on_custom_context_menu_requested)
+        self.customContextMenuRequested.connect(
+                self.on_custom_context_menu_requested)
 
     @Slot(dict)
     def on_log_received(self, data):
-        time_info = datetime.fromtimestamp((data['time']/1000)).isoformat()
+        time_info = datetime.fromtimestamp((data['time'] / 1000)).isoformat()
         log_message = '%s: %s : %s' % (
             time_info, data['level'], data['message'])
         message_document = self.document()

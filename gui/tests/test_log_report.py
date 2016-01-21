@@ -2,6 +2,7 @@ import pytest
 import time
 
 from mozregui import log_report
+from PyQt4.QtGui import QTextCursor
 
 
 @pytest.fixture
@@ -38,3 +39,38 @@ def test_log_report_report_no_more_than_1000_lines(log_view):
     assert len(lines) == 999
     assert 'INFO : 1000' in lines[-1]
     assert 'INFO : 2' in lines[0]  # 2 first lines were dropped
+
+def test_log_report_sets_correct_user_data(log_view):
+    """Assumes that only the correct log levels are entered"""
+
+    # Inserts a log message for each log user level
+    for log_level in log_report.log_levels.keys():
+        log_view.log_model({'message': "%s message" %log_level,
+                            'level': '%s' % log_level, 'time': time.time()})
+
+    # Checks each log level message to make sure the correct
+    # user data is entered
+    for current_block in log_view.text_blocks():
+        for log_level in log_report.log_levels.keys():
+            if log_level in current_block.text():
+                assert current_block.userData().log_lvl == \
+                       log_report.log_levels[log_level]
+
+def test_log_report_filters_data_below_current_log_level(log_view):
+    # Hardcoded for 1 log level
+    log_view.log_lvl = 2
+    current_log_level = log_view.log_lvl
+    # Inserts a log message for each log user level
+    for log_level in log_report.log_levels.keys():
+        log_view.log_model({'message': "%s message" %log_level,
+                            'level': '%s' % log_level, 'time': time.time()})
+    # Check that log messages above the current log level are visible
+    # and log messages below the log level are invisible
+    print()
+    for current_block in log_view.text_blocks():
+        current_block_log_level = current_block.userData().log_lvl
+        if current_log_level < current_block_log_level:
+            assert current_block.isVisible() == False
+        else:
+            assert current_block.isVisible() == True
+

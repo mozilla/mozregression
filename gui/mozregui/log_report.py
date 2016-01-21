@@ -47,7 +47,6 @@ class LogView(QPlainTextEdit):
             yield current_block
             current_block = current_block.next()
 
-
     @Slot(dict)
     def on_log_received(self, data):
         time_info = datetime.fromtimestamp((data['time'] / 1000)).isoformat()

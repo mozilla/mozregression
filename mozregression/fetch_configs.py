@@ -497,6 +497,7 @@ class B2GEmulatorConfig(B2GAriesConfig):
 class FennecConfig(CommonConfig,
                    FennecNightlyConfigMixin,
                    FennecInboundConfigMixin):
+    BUILD_TYPES = ('opt', 'debug')
 
     def build_regex(self):
         return r'fennec-.*\.apk'

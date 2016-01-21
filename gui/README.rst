@@ -67,7 +67,7 @@ a virtualenv here, just be sure to pass the *-\-system-site-packages* flag
 when you create it to be able to use the system-wide pyqt4. See this link
 (http://docs.python-guide.org/en/latest/dev/virtualenvs/) to learn more
 about python virtualenvs. You should also consider using virtualenvwrapper
-(https://virtualenvwrapper.readthedocs.org/en/latest/).ls
+(https://virtualenvwrapper.readthedocs.org/en/latest/).
 
 
 Install with virtualenvwrapper: ::

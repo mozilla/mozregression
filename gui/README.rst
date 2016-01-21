@@ -69,6 +69,7 @@ when you create it to be able to use the system-wide pyqt4. See this link
 about python virtualenvs. You should also consider using virtualenvwrapper
 (https://virtualenvwrapper.readthedocs.org/en/latest/).
 
+
 Install with virtualenvwrapper: ::
 
    mkvirtualenv --system-site-package -p /usr/bin/python2 mozregression

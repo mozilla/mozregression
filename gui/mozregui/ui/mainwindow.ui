@@ -158,6 +158,9 @@
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
       <widget class="LogView" name="log_view">
+       <property name="contextMenuPolicy">
+        <enum>Qt::CustomContextMenu</enum>
+       </property>
        <property name="readOnly">
         <bool>true</bool>
        </property>

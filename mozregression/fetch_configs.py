@@ -317,7 +317,7 @@ class InboundConfigMixin(object):
         builds. Returns an empty string by default, or 'debug' if build type
         is debug.
         """
-        return 'debug' if self.build_type == 'debug' else ''
+        return self.build_type if self.build_type != 'opt' else ''
 
     def tk_needs_auth(self):
         """

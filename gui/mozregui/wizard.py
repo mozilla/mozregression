@@ -91,7 +91,7 @@ class IntroPage(WizardPage):
         self.fetch_config = create_config(app_name, mozinfo.os, bits)
 
         self.build_type_model = QStringListModel(
-            [i for i in REGISTRY.get(app_name).BUILD_TYPES])
+            self.fetch_config.available_build_types())
         self.ui.build_type.setModel(self.build_type_model)
 
         if not self.fetch_config.available_bits():

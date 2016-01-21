@@ -305,7 +305,7 @@ class InboundConfigMixin(object):
     def inbound_branch(self):
         return self.repo or self.default_inbound_branch
 
-    def tk_inbound_route(self, changeset, push_date):
+    def tk_inbound_route(self, push):
         """
         Returns a taskcluster route for a specific changeset.
         """
@@ -357,22 +357,24 @@ def _common_tk_part(inbound_conf):
 
 
 class FirefoxInboundConfigMixin(InboundConfigMixin):
-    def tk_inbound_route(self, changeset, push_date):
-        if self.inbound_branch == 'try' or push_date >= TIMESTAMP_GECKO_V2:
+    def tk_inbound_route(self, push):
+        if self.inbound_branch == 'try' or \
+           push.timestamp >= TIMESTAMP_GECKO_V2:
             return 'gecko.v2.{}.revision.{}.firefox.{}-{}'.format(
-                self.inbound_branch, changeset, _common_tk_part(self),
+                self.inbound_branch, push.changeset, _common_tk_part(self),
                 self.build_type
             )
         debug = '-debug' if self.build_type == 'debug' else ''
         return 'buildbot.revisions.{}.{}.{}{}'.format(
-            changeset, self.inbound_branch, _common_tk_part(self), debug
+            push.changeset, self.inbound_branch, _common_tk_part(self), debug
         )
 
 
 class B2GInboundConfigMixin(InboundConfigMixin):
     default_inbound_branch = 'b2g-inbound'
 
-    def tk_inbound_route(self, changeset, _):
+    def tk_inbound_route(self, push):
+        changeset = push.changeset
         if self.os != 'linux':
             # this is quite strange, but sometimes we have to limit the
             # changeset size, and sometimes not. see
@@ -387,9 +389,10 @@ class B2GDeviceConfigMixin(InboundConfigMixin):
     default_inbound_branch = 'b2g-inbound'
     device_name = None
 
-    def tk_inbound_route(self, changeset, _):
+    def tk_inbound_route(self, push):
         return 'gecko.v2.{}.revision.{}.b2g.{}-{}'.format(
-            self.inbound_branch, changeset, self.device_name, self.build_type
+            self.inbound_branch, push.changeset, self.device_name,
+            self.build_type
         )
 
     def inbound_persist_part(self):
@@ -399,14 +402,15 @@ class B2GDeviceConfigMixin(InboundConfigMixin):
 class FennecInboundConfigMixin(InboundConfigMixin):
     tk_name = 'android-api-11'
 
-    def tk_inbound_route(self, changeset, push_date):
-        if push_date >= TIMESTAMP_GECKO_V2:
+    def tk_inbound_route(self, push):
+        if push.timestamp >= TIMESTAMP_GECKO_V2:
             return 'gecko.v2.{}.revision.{}.mobile.{}-{}'.format(
-                self.inbound_branch, changeset, self.tk_name, self.build_type
+                self.inbound_branch, push.changeset, self.tk_name,
+                self.build_type
             )
         debug = '-debug' if self.build_type == 'debug' else ''
         return 'buildbot.revisions.{}.{}.{}{}'.format(
-            changeset, self.inbound_branch, self.tk_name, debug
+            push.changeset, self.inbound_branch, self.tk_name, debug
         )
 
 # ------------ full config implementations ------------

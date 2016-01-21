@@ -237,18 +237,18 @@ class InboundHandler(BisectorHandler):
         # we have to check the commit of the most recent push
         most_recent_push = self.build_range[1]
         jp = JsonPushes(most_recent_push.repo_name)
-        push = jp.pushlog_for_change(most_recent_push.changeset, full='1')
-        msg = push['changesets'][-1]['desc']
+        push = jp.push(most_recent_push.changeset, full='1')
+        msg = push.changeset['desc']
         LOG.debug("Found commit message:\n%s\n" % msg)
         branch = find_branch_in_merge_commit(msg)
-        if not (branch and len(push['changesets']) >= 2):
+        if not (branch and len(push.changesets) >= 2):
             return
         try:
             # so, this is a merge. We can find the oldest and youngest
             # changesets, and the branch where the merge comes from.
-            oldest = push['changesets'][0]['node']
+            oldest = push.changesets[0]['node']
             # exclude the merge commit
-            youngest = push['changesets'][-2]['node']
+            youngest = push.changesets[-2]['node']
             LOG.debug("This is a merge from %s" % branch)
 
             # we can't use directly the youngest changeset because we
@@ -260,15 +260,15 @@ class InboundHandler(BisectorHandler):
             #
             # so first, grab it. This needs to be done on the right branch.
             jp2 = JsonPushes(branch)
-            raw = [int(i) for i in
-                   jp2.pushlog_within_changes(oldest, youngest, raw=True)]
-            data = jp2._request(jp2.json_pushes_url(
+            raw = [int(p.push_id) for p in
+                   jp2.pushes_within_changes(oldest, youngest)]
+            data = jp2.pushes(
                 startID=str(min(raw) - 2),
                 endID=str(max(raw)),
-            ))
-            datakeys = [int(i) for i in data]
-            oldest = data[str(min(datakeys))]["changesets"][0]
-            youngest = data[str(max(datakeys))]["changesets"][-1]
+            )
+
+            oldest = data[0].changesets[0]
+            youngest = data[-1].changesets[-1]
 
             # we are ready to bisect further
             LOG.info("************* Switching to %s" % branch)

@@ -6,6 +6,7 @@ from mozregression.fetch_build_info import InfoFetcher
 from mozregression.errors import BuildInfoNotFound
 from mozregression.fetch_configs import create_config
 from mozregression.json_pushes import JsonPushes
+from test_fetch_configs import create_push
 
 
 class RangeCreator(object):
@@ -98,12 +99,9 @@ def test_index(range_creator):
 def test_range_for_inbounds(mocker):
     fetch_config = create_config('firefox', 'linux', 64)
     jpush_class = mocker.patch('mozregression.fetch_build_info.JsonPushes')
+    pushes = [create_push('b', 1), create_push('d', 2), create_push('f', 3)]
     jpush = mocker.Mock(
-        pushlog_within_changes=mocker.Mock(
-            return_value=[{'changesets': ['a', 'b'], 'date': 1},
-                          {'changesets': ['c', 'd'], 'date': 2},
-                          {'changesets': ['e', 'f'], 'date': 3}]
-        ),
+        pushes_within_changes=mocker.Mock(return_value=pushes),
         spec=JsonPushes
     )
     jpush_class.return_value = jpush
@@ -111,14 +109,16 @@ def test_range_for_inbounds(mocker):
     b_range = build_range.range_for_inbounds(fetch_config, 'a', 'e')
 
     jpush_class.assert_called_once_with(branch='mozilla-inbound')
-    jpush.pushlog_within_changes.assert_called_once_with('a', 'e')
+    jpush.pushes_within_changes.assert_called_once_with('a', 'e')
     assert isinstance(b_range, build_range.BuildRange)
     assert len(b_range) == 3
 
-    b_range.build_info_fetcher.find_build_info = lambda v, d: (v, d)
-    assert b_range[0] == ('b', 1)
-    assert b_range[1] == ('d', 2)
-    assert b_range[2] == ('f', 3)
+    b_range.build_info_fetcher.find_build_info = lambda v: v
+    assert b_range[0] == pushes[0]
+    assert b_range[1] == pushes[1]
+    assert b_range[2] == pushes[2]
+
+    b_range.future_build_infos[0].date_or_changeset() == 'b'
 
 
 DATE_NOW = datetime.now()
@@ -137,7 +137,7 @@ def test_range_for_inbounds_with_dates(mocker, start_date, end_date,
     fetch_config = create_config('firefox', 'linux', 64)
     jpush_class = mocker.patch('mozregression.fetch_build_info.JsonPushes')
     jpush = mocker.Mock(
-        pushlog_within_changes=mocker.Mock(return_value=[]),
+        pushes_within_changes=mocker.Mock(return_value=[]),
         spec=JsonPushes
     )
     jpush_class.return_value = jpush
@@ -145,7 +145,7 @@ def test_range_for_inbounds_with_dates(mocker, start_date, end_date,
     build_range.range_for_inbounds(fetch_config, start_date, end_date,
                                    time_limit=DATE_YEAR_BEFORE)
 
-    jpush.pushlog_within_changes.assert_called_once_with(start_call, end_call)
+    jpush.pushes_within_changes.assert_called_once_with(start_call, end_call)
 
 
 def test_range_for_nightlies():

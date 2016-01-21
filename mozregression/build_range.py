@@ -28,6 +28,9 @@ class FutureBuildInfo(object):
         self.data = data
         self._build_info = None
 
+    def date_or_changeset(self):
+        return self.data
+
     def _fetch(self):
         return self.build_info_fetcher.find_build_info(self.data)
 
@@ -49,13 +52,8 @@ class FutureBuildInfo(object):
 
 
 class TCFutureBuildInfo(FutureBuildInfo):
-    def __init__(self, build_info_fetcher, data, push_date):
-        FutureBuildInfo.__init__(self, build_info_fetcher, data)
-        self.push_date = push_date
-
-    def _fetch(self):
-        return self.build_info_fetcher.find_build_info(self.data,
-                                                       self.push_date)
+    def date_or_changeset(self):
+        return self.data.changeset
 
 
 class BuildRange(object):
@@ -192,13 +190,9 @@ def range_for_inbounds(fetch_config, start_rev, end_rev, time_limit=None):
     start_rev = _check_date(start_rev)
     end_rev = _check_date(end_rev)
 
-    pushlogs = jpushes.pushlog_within_changes(start_rev, end_rev)
-
-    futures_builds = []
-    for pushlog in pushlogs:
-        changeset = pushlog['changesets'][-1]
-        futures_builds.append(TCFutureBuildInfo(info_fetcher, changeset,
-                                                pushlog['date']))
+    futures_builds = [TCFutureBuildInfo(info_fetcher, push)
+                      for push in jpushes.pushes_within_changes(start_rev,
+                                                                end_rev)]
     return BuildRange(info_fetcher, futures_builds)
 
 

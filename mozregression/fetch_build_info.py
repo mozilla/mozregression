@@ -18,8 +18,7 @@ from requests import HTTPError
 from mozregression.network import url_links, retry_get
 from mozregression.errors import BuildInfoNotFound, MozRegressionError
 from mozregression.build_info import NightlyBuildInfo, InboundBuildInfo
-from mozregression.json_pushes import JsonPushes
-from mozregression.dates import is_date_or_datetime
+from mozregression.json_pushes import JsonPushes, Push
 from mozregression.fetch_configs import TIMESTAMP_GECKO_V2
 
 LOG = get_proxy_logger(__name__)
@@ -86,32 +85,26 @@ class InboundInfoFetcher(InfoFetcher):
         self.queue = taskcluster.Queue(options)
         self.jpushes = JsonPushes(branch=fetch_config.inbound_branch)
 
-    def _check_changeset(self, changeset):
-        # return the full changeset and the date
-        push = self.jpushes.pushlog_for_change(changeset)
-        return push['changesets'][-1], push['date']
-
-    def find_build_info(self, changeset, push_date=None):
+    def find_build_info(self, push):
         """
-        Find build info for an inbound build, given a changeset or a date.
+        Find build info for an inbound build, given a Push, a changeset or a
+        date/datetime.
 
-        `push_date` should be the date of the changeset, as provided by json
-        pushes query result.
-
-        if `push_date` is None or if `changeset` is a date, a query to json
-        pushes will be done.
+        if `push` is not an instance of Push (e.g. it is a date, datetime, or
+        string representing the changeset), a query to json pushes will be
+        done.
 
         Return a :class:`InboundBuildInfo` instance.
         """
-        if is_date_or_datetime(changeset):
-            changeset, push_date = self.jpushes.revision_for_date(changeset)
-        elif push_date is None:
+        if not isinstance(push, Push):
             try:
-                changeset, push_date = self._check_changeset(changeset)
+                push = self.jpushes.push(push)
             except MozRegressionError, exc:
                 raise BuildInfoNotFound(str(exc))
 
-        tk_route = self.fetch_config.tk_inbound_route(changeset, push_date)
+        changeset = push.changeset
+
+        tk_route = self.fetch_config.tk_inbound_route(push)
         LOG.debug('using taskcluster route %r' % tk_route)
         try:
             task_id = self.index.findTask(tk_route)['taskId']
@@ -125,7 +118,7 @@ class InboundInfoFetcher(InfoFetcher):
             if self.fetch_config.app_name in ('firefox',
                                               'fennec',
                                               'fennec-2.3') \
-                    and push_date < TIMESTAMP_GECKO_V2:
+                    and push.timestamp < TIMESTAMP_GECKO_V2:
                 err = False
                 try:
                     old_route = tk_route.replace(changeset, changeset[:12])
@@ -174,7 +167,7 @@ class InboundInfoFetcher(InfoFetcher):
             build_url=build_url,
             build_date=build_date,
             changeset=changeset,
-            repo_url=self.jpushes.repo_url(),
+            repo_url=self.jpushes.repo_url,
             task_id=task_id,
         )
 

@@ -2,10 +2,16 @@ import unittest
 import datetime
 import re
 import pytest
+from mock import Mock
 
+from mozregression.json_pushes import Push
 from mozregression.fetch_configs import (FirefoxConfig, create_config, errors,
                                          get_build_regex, NIGHTLY_BASE_URL,
                                          TIMESTAMP_GECKO_V2)
+
+
+def create_push(chset, timestamp):
+    return Mock(changeset=chset, timestamp=timestamp, spec=Push)
 
 
 class TestFirefoxConfigLinux64(unittest.TestCase):
@@ -267,7 +273,7 @@ CHSET12 = "47856a214918"
 def test_tk_inbound_route(app, os, bits, repo, push_date, expected):
     conf = create_config(app, os, bits)
     conf.set_repo(repo)
-    result = conf.tk_inbound_route(CHSET, push_date)
+    result = conf.tk_inbound_route(create_push(CHSET, push_date))
     assert result == expected
 
 
@@ -290,7 +296,8 @@ def test_tk_inbound_route(app, os, bits, repo, push_date, expected):
 def test_tk_inbound_route_with_build_type(app, os, bits, build_type, expected):
     conf = create_config(app, os, bits)
     conf.set_build_type(build_type)
-    result = conf.tk_inbound_route(CHSET, TIMESTAMP_GECKO_V2-1)
+    result = conf.tk_inbound_route(
+        create_push(CHSET, TIMESTAMP_GECKO_V2-1))
     assert result == expected
 
 
@@ -345,8 +352,9 @@ def test_set_firefox_build_type_pgo(os, bits, tc_suffix):
             conf.set_build_type('pgo')
     else:
         conf.set_build_type('pgo')
-        assert conf.tk_inbound_route(CHSET, TIMESTAMP_GECKO_V2) \
-                   .endswith('.' + tc_suffix)
+        assert conf.tk_inbound_route(
+            create_push(CHSET, TIMESTAMP_GECKO_V2)) \
+            .endswith('.' + tc_suffix)
 
 if __name__ == '__main__':
     unittest.main()

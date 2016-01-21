@@ -56,8 +56,8 @@ def test_log_report_sets_correct_user_data(log_view):
 
 
 def test_log_report_filters_data_below_current_log_level(log_view):
-    # Hardcoded for 1 log level
-    log_view.log_lvl = 2
+    # Using the WARNING log level
+    log_view.log_lvl = log_report.log_levels["WARNING"]
     current_log_level = log_view.log_lvl
     # Inserts a log message for each log user level
     for log_level in log_report.log_levels.keys():

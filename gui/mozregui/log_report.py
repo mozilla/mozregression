@@ -41,6 +41,13 @@ class LogView(QPlainTextEdit):
 
         self.log_lvl = log_levels["DEBUG"]
 
+    def text_blocks(self):
+        current_block = QTextCursor(self.document()).block()
+        while current_block.isValid and current_block.text():
+            yield current_block
+            current_block = current_block.next()
+
+
     @Slot(dict)
     def on_log_received(self, data):
         time_info = datetime.fromtimestamp((data['time'] / 1000)).isoformat()
@@ -60,7 +67,7 @@ class LogView(QPlainTextEdit):
             cursor_to_add_fmt = message_document.find(data['level'],
                                                       cursor_to_add.position())
             cursor_to_add_fmt.mergeCharFormat(fmt)
-            if log_levels[data['level']] >= self.log_lvl:
+            if log_levels[data['level']] > self.log_lvl:
                 cursor_to_add.block().setVisible(False)
         self.ensureCursorVisible()
 

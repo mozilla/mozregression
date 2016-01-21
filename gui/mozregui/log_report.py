@@ -1,6 +1,6 @@
 from PyQt4.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
-from PyQt4.QtGui import QPlainTextEdit, QTextCursor, QColor
-from PyQt4.QtGui import QTextCharFormat, QMenu, QAction
+from PyQt4.QtGui import (QPlainTextEdit, QTextCursor, QColor,
+                         QTextCharFormat, QMenu, QAction)
 from PyQt4.QtGui import QTextBlockUserData, QActionGroup
 from datetime import datetime
 from mozlog.structuredlog import log_levels

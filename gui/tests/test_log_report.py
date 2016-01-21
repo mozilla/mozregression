@@ -65,7 +65,6 @@ def test_log_report_filters_data_below_current_log_level(log_view):
                             'level': '%s' % log_level, 'time': time.time()})
     # Check that log messages above the current log level are visible
     # and log messages below the log level are invisible
-    print()
     for current_block in log_view.text_blocks():
         current_block_log_level = current_block.userData().log_lvl
         if current_log_level < current_block_log_level:

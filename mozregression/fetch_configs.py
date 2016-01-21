@@ -34,13 +34,14 @@ NIGHTLY_BASE_URL = "https://archive.mozilla.org/pub"
 TIMESTAMP_GECKO_V2 = to_utc_timestamp(datetime.datetime(2015, 10, 1, 1, 1, 1))
 
 
-def get_build_regex(name, os, bits, with_ext=True):
+def get_build_regex(name, os, bits, psuffix='', with_ext=True):
     """
     Returns a string regexp that can match a build filename.
 
     :param name: must be the beginning of the filename to match
     :param os: the os, as returned by mozinfo.os
     :param bits: the bits information of the build. Either 32 or 64.
+    :param psuffix: optional suffix before the extension
     :param with_ext: if True, the build extension will be appended (either
                      .zip, .tar.bz2 or .dmg depending on the os).
     """
@@ -62,7 +63,7 @@ def get_build_regex(name, os, bits, with_ext=True):
             " os is reported as '%s'." % os
         )
 
-    regex = '%s%s' % (name, suffix)
+    regex = '%s%s%s' % (name, suffix, psuffix)
     if with_ext:
         return '%s%s' % (regex, ext)
     else:
@@ -173,7 +174,9 @@ class CommonConfig(object):
         """
         return (branches.get_category(self.repo) in ('integration', 'try') or
                 self.is_b2g_device() or
-                self.build_type != 'opt')
+                # we can find the asan builds (firefox and jsshell) in
+                # archives.m.o
+                self.build_type not in ('opt', 'asan'))
 
 
 class NightlyConfigMixin(object):
@@ -427,7 +430,14 @@ def create_config(name, os, bits):
 class FirefoxConfig(CommonConfig,
                     FireFoxNightlyConfigMixin,
                     FirefoxInboundConfigMixin):
-    BUILD_TYPES = ('opt', 'debug', 'pgo[linux32,linux64,win32,win64]')
+    BUILD_TYPES = ('opt', 'debug', 'pgo[linux32,linux64,win32,win64]',
+                   'asan[linux64]', 'asan-debug[linux64]')
+
+    def build_regex(self):
+        return get_build_regex(
+            self.app_name, self.os, self.bits,
+            psuffix='-asan' if 'asan' in self.build_type else ''
+        ) + '$'
 
 
 @REGISTRY.register('thunderbird')
@@ -532,4 +542,5 @@ class JsShellConfig(FirefoxConfig):
                 part = 'win32'
         else:
             part = 'mac'
-        return r'jsshell-%s\.zip$' % part
+        psuffix = '-asan' if 'asan' in self.build_type else ''
+        return r'jsshell-%s%s\.zip$' % (part, psuffix)

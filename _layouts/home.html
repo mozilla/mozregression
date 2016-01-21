@@ -28,10 +28,11 @@ layout: default
 
 <script>
 function createElement(tags) {
-  var tag = document.createElement('dl');
-  var template = '<dl>'
-  +  '<dd>linux: ' + tags.data.linux + '</dd>'
-  +  '<dd>windows: ' + tags.data.windows + '</dd>';
+  var tag = document.createElement('ul');
+  var template = ''
+  +  '<li>linux: ' + tags.data.linux + '</li>'
+  +  '<li>windows: ' + tags.data.windows + '</li>'
+  +  '<li>osx: ' + tags.data.osx + '</li>';
   tag.innerHTML = template;
   document.getElementById('downloads').appendChild(tag);
 }
@@ -48,11 +49,11 @@ $.ajax({
 
       var platformName = platformData.name;
 
-      if(platformName.match(/\.[0-9a-z]{1,5}$/g) == '.exe') {
+      if(platformName.endsWith('.exe')) {
         tags['windows'] += platformData.download_count;
-      } else if (platformName.match(/.*\.(tgz$)|(tar\.gz$)/g) == 'tar.gz') {
+      } else if (platformName.endsWith('.tar.gz')) {
         tags['linux'] += platformData.download_count;
-      } else if (platformName.match(/\.[0-9a-z]{1,5}$/g) == '.dmg') {
+      } else if (platformName.endsWith('.dmg')) {
         tags['osx'] += platformData.download_count;
       }
 

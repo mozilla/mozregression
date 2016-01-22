@@ -23,12 +23,11 @@ class SingleBuildWorker(QObject):
         self.launch_arg = None
         self._build_info = None
 
-    def _find_build_info(self, fetcher_class, **fetch_kwargs):
+    def _find_build_info(self, fetcher_class):
         self.started.emit()
         fetcher = fetcher_class(self.fetch_config)
         try:
-            self._build_info = fetcher.find_build_info(self.launch_arg,
-                                                       **fetch_kwargs)
+            self._build_info = fetcher.find_build_info(self.launch_arg)
         except MozRegressionError as exc:
             self.error.emit(exc)
             return
@@ -41,7 +40,7 @@ class SingleBuildWorker(QObject):
 
     @Slot()
     def launch_inbounds(self):
-        self._find_build_info(InboundInfoFetcher, check_changeset=True)
+        self._find_build_info(InboundInfoFetcher)
 
     @Slot(object, str)
     def _on_downloaded(self, dl, dest):

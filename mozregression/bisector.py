@@ -329,12 +329,12 @@ class Bisection(object):
         self.history = BisectionHistory()
         self.approx_chooser = approx_chooser
 
-    def search_mid_point(self):
+    def search_mid_point(self, interrupt=None):
         self.handler.set_build_range(self.build_range)
-        return self._search_mid_point()
+        return self._search_mid_point(interrupt=interrupt)
 
-    def _search_mid_point(self):
-        return self.build_range.mid_point()
+    def _search_mid_point(self, interrupt=None):
+        return self.build_range.mid_point(interrupt=interrupt)
 
     def init_handler(self, mid_point):
         if len(self.build_range) == 0:

@@ -1,4 +1,5 @@
 import sys
+import threading
 from PyQt4.QtCore import QObject, pyqtSignal as Signal, pyqtSlot as Slot, \
     QTimer
 from PyQt4.QtGui import QMessageBox
@@ -39,6 +40,7 @@ class GuiBisector(QObject, Bisector):
         self.download_in_background = download_in_background
         self.index_promise = None
         self._persist_files = ()
+        self.should_stop = threading.Event()
 
         self.download_manager.download_finished.connect(
             self._build_dl_finished)
@@ -94,9 +96,12 @@ class GuiBisector(QObject, Bisector):
     def _bisect_next(self):
         # this is executed in the working thread
         try:
-            self.mid = mid = self.bisection.search_mid_point()
+            self.mid = mid = self.bisection.search_mid_point(
+                interrupt=self.should_stop.is_set)
         except MozRegressionError:
             self._finish_on_exception(self.bisection)
+            return
+        except StopIteration:
             return
 
         # if our last answer was skip, and that the next build
@@ -211,6 +216,11 @@ class BisectRunner(AbstractBuildRunner):
         if self.global_prefs['approx_policy']:
             self.worker.approx_chooser = ApproxPersistChooser(7)
         return self.worker.bisect
+
+    def stop(self, wait=True):
+        if self.worker:
+            self.worker.should_stop.set()
+        AbstractBuildRunner.stop(self, wait=wait)
 
     @Slot(str)
     def evaluate(self, err_message):

@@ -85,6 +85,13 @@ def test_mid_point(range_creator):
     assert build_range[:2].mid_point() == 0
 
 
+def test_mid_point_interrupt(range_creator):
+    build_range = range_creator.create(range(10))
+    assert build_range.mid_point(interrupt=lambda: False) == 5
+    with pytest.raises(StopIteration):
+        build_range.mid_point(interrupt=lambda: True)
+
+
 def test_index(range_creator):
     build_range = range_creator.create(range(10))
     # no build_info fetched yet, so ValueError is raised

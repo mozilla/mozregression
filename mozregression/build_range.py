@@ -119,7 +119,7 @@ class BuildRange(object):
             while thread.is_alive():
                 thread.join(0.1)
 
-    def mid_point(self):
+    def mid_point(self, interrupt=None):
         """
         Return the mid point of the range.
 
@@ -127,8 +127,16 @@ class BuildRange(object):
         accessed. Note that this method may resize the build range if some
         builds are invalids (we were not able to load build_info for some
         index)
+
+        if `interrupt` is given, it should be a callable that takes no
+        arguments and returns True when you want to stop looking for the
+        mid_point. In this case, StopIteration will be raised. This is provided
+        because this methods may take a long time to finish, and callers may
+        want to end it at some point.
         """
         while True:
+            if interrupt and interrupt():
+                raise StopIteration
             size = len(self)
             if size < 3:
                 # let's say that the middle point is 0 if there is not at least

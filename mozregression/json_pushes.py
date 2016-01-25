@@ -108,7 +108,8 @@ class JsonPushes(object):
             kwargs['tochange'] = tochange
         else:
             # add one day to take the last day in account
-            kwargs['enddate'] = tochange + datetime.timedelta(days=1)
+            kwargs['enddate'] = (
+                tochange + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
 
         # now fetch all remaining changesets
         chsets.extend(self.pushes(**kwargs))

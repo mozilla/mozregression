@@ -264,6 +264,11 @@ def create_parser(defaults):
                               " and bad, and 'no-first-check' won't. Defaults"
                               " to %(default)s."))
 
+    parser.add_argument('--archive-base-url',
+                        default=defaults['archive-base-url'],
+                        help=("Base url used to find the archived builds."
+                              " Defaults to %(default)s"))
+
     parser.add_argument('--write-config',
                         action=WriteConfigAction,
                         help="Helps to write the configuration file.")
@@ -388,6 +393,8 @@ class Configuration(object):
         self.fetch_config = fetch_config
 
         fetch_config.set_repo(options.repo)
+        if fetch_config.is_nightly():
+            fetch_config.set_base_url(options.archive_base_url)
 
         if not user_defined_bits and \
                 options.bits == 64 and \

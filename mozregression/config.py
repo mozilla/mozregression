@@ -25,6 +25,7 @@ TC_CREDENTIALS_FNAME = os.path.expanduser(
     os.path.join("~", ".mozilla", "mozregression",
                  "taskcluster-credentials.json")
 )
+ARCHIVE_BASE_URL = "https://archive.mozilla.org/pub"
 
 # default values when not defined in config file.
 # Note that this is also the list of options that can be used in config file
@@ -46,6 +47,7 @@ DEFAULTS = {
     'process-output': None,
     'mode': 'classic',
     'approx-policy': 'auto',
+    'archive-base-url': ARCHIVE_BASE_URL,
 }
 
 

@@ -25,9 +25,9 @@ import datetime
 from mozregression.class_registry import ClassRegistry
 from mozregression import errors, branches
 from mozregression.dates import to_utc_timestamp
+from mozregression.config import ARCHIVE_BASE_URL
 
 
-NIGHTLY_BASE_URL = "https://archive.mozilla.org/pub"
 # after this date, the gecko v2 routes are safe
 # TODO: Once we are far away of this date (one year), we should
 # make gecko v2 routes used everywhere, and remove any other case.
@@ -194,14 +194,18 @@ class NightlyConfigMixin(object):
     Note that subclasses must implement :meth:`_get_nightly_repo` to
     provide a default value.
     """
+    archive_base_url = ARCHIVE_BASE_URL
     nightly_base_repo_name = "firefox"
     nightly_repo = None
+
+    def set_base_url(self, url):
+        self.archive_base_url = url.rstrip('/')
 
     def get_nighly_base_url(self, date):
         """
         Returns the base part of the nightly build url for a given date.
         """
-        return "%s/%s/nightly/%04d/%02d/" % (NIGHTLY_BASE_URL,
+        return "%s/%s/nightly/%04d/%02d/" % (self.archive_base_url,
                                              self.nightly_base_repo_name,
                                              date.year,
                                              date.month)

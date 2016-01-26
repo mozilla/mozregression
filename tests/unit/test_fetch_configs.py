@@ -6,7 +6,7 @@ from mock import Mock
 
 from mozregression.json_pushes import Push
 from mozregression.fetch_configs import (FirefoxConfig, create_config, errors,
-                                         get_build_regex, NIGHTLY_BASE_URL,
+                                         get_build_regex, ARCHIVE_BASE_URL,
                                          TIMESTAMP_GECKO_V2)
 
 
@@ -48,7 +48,14 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
         base_url = self.conf.get_nighly_base_url(datetime.date(2008,
                                                                6, 27))
         self.assertEqual(base_url,
-                         NIGHTLY_BASE_URL + '/firefox/nightly/2008/06/')
+                         ARCHIVE_BASE_URL + '/firefox/nightly/2008/06/')
+
+    def test_get_nightly_base_url_with_specific_base(self):
+        self.conf.set_base_url("http://ftp-origin-scl3.mozilla.org/pub/")
+        self.assertEqual(
+            "http://ftp-origin-scl3.mozilla.org/pub/firefox/nightly/2008/06/",
+            self.conf.get_nighly_base_url(datetime.date(2008, 6, 27))
+        )
 
     def test_nightly_repo_regex(self):
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008,

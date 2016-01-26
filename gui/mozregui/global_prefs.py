@@ -5,7 +5,8 @@ from mozregui.ui.global_prefs import Ui_GlobalPrefs
 from mozregui import patch_requests
 
 from mozregression.network import set_http_session
-from mozregression.config import DEFAULT_CONF_FNAME, get_defaults
+from mozregression.config import (DEFAULT_CONF_FNAME, get_defaults,
+                                  ARCHIVE_BASE_URL)
 from configobj import ConfigObj
 
 
@@ -21,6 +22,7 @@ def get_prefs():
     options['background_downloads'] = \
         False if settings.get('background_downloads') == 'no' else True
     options['approx_policy'] = settings['approx-policy'] == 'auto'
+    options['archive_base_url'] = settings["archive-base-url"]
     return options
 
 
@@ -37,6 +39,12 @@ def save_prefs(options):
             'yes' if options['background_downloads'] else 'no',
         'approx-policy': 'auto' if options['approx_policy'] else 'none',
     })
+    # only save base url in the file if it differs from the default.
+    if options['archive_base_url'] and \
+       options['archive_base_url'] != ARCHIVE_BASE_URL:
+        settings['archive-base-url'] = options['archive_base_url']
+    elif 'archive-base-url' in settings:
+        del settings['archive-base-url']
     settings.write()
 
 
@@ -71,6 +79,7 @@ class ChangePrefsDialog(QDialog):
         self.ui.persist_size_limit.setValue(options['persist_size_limit'])
         self.ui.bg_downloads.setChecked(options['background_downloads'])
         self.ui.approx.setChecked(options['approx_policy'])
+        self.ui.archive_base_url.setText(options['archive_base_url'])
         self.ui.advanced_options.setText("Show Advanced Options")
         self.toggle_visibility(False)
         self.ui.advanced_options.clicked.connect(self.toggle_adv_options)
@@ -88,6 +97,8 @@ class ChangePrefsDialog(QDialog):
         self.ui.label_3.setVisible(visible)
         self.ui.bg_downloads.setVisible(visible)
         self.ui.label_2.setVisible(visible)
+        self.ui.archive_base_url.setVisible(visible)
+        self.ui.label_5.setVisible(visible)
 
     def save_prefs(self):
         options = get_prefs()
@@ -98,6 +109,7 @@ class ChangePrefsDialog(QDialog):
         options['persist_size_limit'] = ui.persist_size_limit.value()
         options['background_downloads'] = ui.bg_downloads.isChecked()
         options['approx_policy'] = ui.approx.isChecked()
+        options['archive_base_url'] = str(ui.archive_base_url.text())
         save_prefs(options)
 
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>690</width>
-    <height>244</height>
+    <width>689</width>
+    <height>299</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -102,6 +102,19 @@
         <string/>
        </property>
       </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Base url used to find the archived builds. You can set it blank to revert to the default value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Archives url:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="archive_base_url"/>
      </item>
     </layout>
    </item>

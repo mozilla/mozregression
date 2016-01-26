@@ -128,6 +128,9 @@ class AbstractBuildRunner(QObject):
         # apply the global prefs now
         apply_prefs(global_prefs)
 
+        if fetch_config.is_nightly():
+            fetch_config.set_base_url(global_prefs['archive_base_url'])
+
         download_dir = global_prefs['persist']
         if not download_dir:
             download_dir = self.mainwindow.persist

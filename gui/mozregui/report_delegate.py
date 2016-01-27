@@ -1,6 +1,6 @@
 from PyQt4.QtGui import QStyledItemDelegate, QStyleOptionProgressBarV2, \
     QApplication, QStyle, QWidget, QPainter, QIcon, QPixmap
-from PyQt4.QtCore import Qt, QRect, pyqtSignal as Signal
+from PyQt4.QtCore import Qt, QRect, pyqtSignal as Signal, pyqtSlot
 
 from mozregui.ui.ask_verdict import Ui_AskVerdict
 from mozregui.report import VERDICT_TO_ROW_COLORS
@@ -34,7 +34,9 @@ class AskVerdict(QWidget):
             text = str(self.ui.comboVerdict.itemText(i))
             self.ui.comboVerdict.setItemIcon(i, AskVerdict.icons_cache[text])
 
-        self.ui.evaluate.clicked.connect(self.on_evaluate_clicked)
+        #self.ui.evaluate.clicked.connect(self.on_evaluate_clicked)
+        self.ui.comboVerdict.activated.connect(self.on_dropdown_item_activated)
+        self.ui.goodVerdict.clicked.connect(self.on_good_bad_button_clicked)
 
     def on_evaluate_clicked(self):
         if not self.emitted:
@@ -46,6 +48,17 @@ class AskVerdict(QWidget):
             )
             self.emitted = True
 
+    def on_dropdown_item_activated(self):
+        self.delegate.got_verdict.emit(
+                str(self.comboVerdict.currentText())[0]
+        )
+        self.emitted = True
+
+    def on_good_bad_button_clicked(self):
+        self.delegate.got_verdict.emit(
+                str(self.sender().text())[0]
+        )
+        self.emitted = True
 
 class ReportItemDelegate(QStyledItemDelegate):
     got_verdict = Signal(str)

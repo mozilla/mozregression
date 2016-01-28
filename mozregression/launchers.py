@@ -20,6 +20,7 @@ import zipfile
 import mozinfo
 import stat
 from subprocess import call
+from abc import ABCMeta, abstractmethod
 
 from mozregression.class_registry import ClassRegistry
 from mozregression.errors import LauncherNotRunnable, LauncherError
@@ -27,11 +28,12 @@ from mozregression.errors import LauncherNotRunnable, LauncherError
 LOG = get_proxy_logger("Test Runner")
 
 
-class Launcher(object):
+class Launcher:
     """
     Handle the logic of downloading a build file, installing and
     running an application.
     """
+    __metaclass__ = ABCMeta
     profile_class = Profile
 
     @classmethod
@@ -107,15 +109,19 @@ class Launcher(object):
     def __exit__(self, *exc):
         self.cleanup()
 
+    @abstractmethod
     def _install(self, dest):
         raise NotImplementedError
 
+    @abstractmethod
     def _start(self, **kwargs):
         raise NotImplementedError
 
+    @abstractmethod
     def _wait(self):
         raise NotImplementedError
 
+    @abstractmethod
     def _stop(self):
         raise NotImplementedError
 

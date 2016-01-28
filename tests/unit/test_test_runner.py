@@ -30,7 +30,7 @@ class TestManualTestRunner(unittest.TestCase):
     def setUp(self):
         self.runner = test_runner.ManualTestRunner()
 
-    @patch('mozregression.test_runner.create_launcher')
+    @patch('mozregression.test_runner.mozlauncher')
     def test_nightly_create_launcher(self, create_launcher):
         launcher = Mock()
         create_launcher.return_value = launcher
@@ -39,17 +39,17 @@ class TestManualTestRunner(unittest.TestCase):
             app_name="firefox",
             build_file="/path/to"
         )
-        result_launcher = self.runner.create_launcher(info)
+        result_launcher = test_runner.create_launcher(info)
         create_launcher.\
             assert_called_with(info)
 
         self.assertEqual(result_launcher, launcher)
 
-    @patch('mozregression.test_runner.create_launcher')
+    @patch('mozregression.test_runner.mozlauncher')
     @patch('mozregression.test_runner.LOG')
-    def test_nightly_create_launcher_buildid(self, log, create_launcher):
+    def test_nightly_create_launcher_buildid(self, log, mozlauncher):
         launcher = Mock()
-        create_launcher.return_value = launcher
+        mozlauncher.return_value = launcher
         info = mockinfo(
             build_type='nightly',
             app_name="firefox",
@@ -57,8 +57,8 @@ class TestManualTestRunner(unittest.TestCase):
             build_date=datetime.datetime(2015, 11, 6, 5, 4, 3),
             repo_name='mozilla-central',
         )
-        result_launcher = self.runner.create_launcher(info)
-        create_launcher.\
+        result_launcher = test_runner.create_launcher(info)
+        mozlauncher.\
             assert_called_with(info)
         log.info.assert_called_with(
             'Running mozilla-central build for buildid 20151106050403')
@@ -66,17 +66,17 @@ class TestManualTestRunner(unittest.TestCase):
         self.assertEqual(result_launcher, launcher)
 
     @patch('mozregression.download_manager.DownloadManager.download')
-    @patch('mozregression.test_runner.create_launcher')
-    def test_inbound_create_launcher(self, create_launcher, download):
+    @patch('mozregression.test_runner.mozlauncher')
+    def test_inbound_create_launcher(self, mozlauncher, download):
         launcher = Mock()
-        create_launcher.return_value = launcher
+        mozlauncher.return_value = launcher
         info = mockinfo(
             build_type='inbound',
             app_name="firefox",
             build_file="/path/to"
         )
-        result_launcher = self.runner.create_launcher(info)
-        create_launcher.assert_called_with(info)
+        result_launcher = test_runner.create_launcher(info)
+        mozlauncher.assert_called_with(info)
         self.assertEqual(result_launcher, launcher)
 
     @patch('__builtin__.raw_input')
@@ -101,7 +101,7 @@ class TestManualTestRunner(unittest.TestCase):
         self.assertIn('back', output)
         self.assertEqual(verdict, 'back')
 
-    @patch('mozregression.test_runner.ManualTestRunner.create_launcher')
+    @patch('mozregression.test_runner.create_launcher')
     @patch('mozregression.test_runner.ManualTestRunner.get_verdict')
     def test_evaluate(self, get_verdict, create_launcher):
         get_verdict.return_value = 'g'
@@ -117,7 +117,7 @@ class TestManualTestRunner(unittest.TestCase):
         launcher.stop.assert_called_with()
         self.assertEqual(result[0], 'g')
 
-    @patch('mozregression.test_runner.ManualTestRunner.create_launcher')
+    @patch('mozregression.test_runner.create_launcher')
     @patch('mozregression.test_runner.ManualTestRunner.get_verdict')
     def test_evaluate_with_launcher_error_on_stop(self, get_verdict,
                                                   create_launcher):
@@ -131,7 +131,7 @@ class TestManualTestRunner(unittest.TestCase):
         launcher.stop.assert_called_with()
         self.assertEqual(result[0], 'g')
 
-    @patch('mozregression.test_runner.ManualTestRunner.create_launcher')
+    @patch('mozregression.test_runner.create_launcher')
     def test_run_once(self, create_launcher):
         launcher = Mock(wait=Mock(return_value=0))
         create_launcher.return_value = Launcher(launcher)
@@ -142,7 +142,7 @@ class TestManualTestRunner(unittest.TestCase):
         launcher.start.assert_called_with()
         launcher.wait.assert_called_with()
 
-    @patch('mozregression.test_runner.ManualTestRunner.create_launcher')
+    @patch('mozregression.test_runner.create_launcher')
     def test_run_once_ctrlc(self, create_launcher):
         launcher = Mock(wait=Mock(side_effect=KeyboardInterrupt))
         create_launcher.return_value = Launcher(launcher)
@@ -164,7 +164,7 @@ class TestCommandTestRunner(unittest.TestCase):
     def test_create(self):
         self.assertEqual(self.runner.command, 'my command')
 
-    @patch('mozregression.test_runner.CommandTestRunner.create_launcher')
+    @patch('mozregression.test_runner.create_launcher')
     @patch('subprocess.call')
     def evaluate(self, call, create_launcher, build_info={},
                  retcode=0, subprocess_call_effect=None):

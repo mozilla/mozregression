@@ -12,9 +12,14 @@ from mozregression import build_range
 from mozregression.errors import LauncherError, MozRegressionError
 
 
+class MockBisectorHandler(BisectorHandler):
+    def _print_progress(self, new_data):
+        pass
+
+
 class TestBisectorHandler(unittest.TestCase):
     def setUp(self):
-        self.handler = BisectorHandler()
+        self.handler = MockBisectorHandler()
         self.handler.set_build_range([
             {'build_url': 'http://build_url_0', 'repository': 'my'}
         ])
@@ -58,14 +63,14 @@ class TestBisectorHandler(unittest.TestCase):
         self.assertEqual(log[1], "First bad revision: 6")
         self.assertIn(self.handler.get_pushlog_url(), log[2])
 
-    @patch('mozregression.bisector.BisectorHandler._print_progress')
+    @patch('tests.unit.test_bisector.MockBisectorHandler._print_progress')
     def test_build_good(self, _print_progress):
         self.handler.build_good(0, [{"changeset": '123'},
                                     {"changeset": '456'}])
         _print_progress.assert_called_with([{"changeset": '123'},
                                             {"changeset": '456'}])
 
-    @patch('mozregression.bisector.BisectorHandler._print_progress')
+    @patch('tests.unit.test_bisector.MockBisectorHandler._print_progress')
     def test_build_bad(self, _print_progress):
         # with at least two, _print_progress will be called
         self.handler.build_bad(0, [{"changeset": '123'}, {"changeset": '456'}])

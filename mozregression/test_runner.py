@@ -13,37 +13,41 @@ import shlex
 import os
 import datetime
 
-from mozregression.launchers import create_launcher
+from mozregression.launchers import create_launcher as mozlauncher
 from mozregression.errors import TestCommandError, LauncherError
+from abc import ABCMeta, abstractmethod
 
 LOG = get_proxy_logger("Test Runner")
 
 
-class TestRunner(object):
+def create_launcher(build_info):
+    """
+    Create and returns a :class:`mozregression.launchers.Launcher`.
+    """
+    if build_info.build_type == 'nightly':
+        if isinstance(build_info.build_date, datetime.datetime):
+            desc = ("for buildid %s"
+                    % build_info.build_date.strftime("%Y%m%d%H%M%S"))
+        else:
+            desc = "for %s" % build_info.build_date
+    else:
+        desc = ("built on %s, revision %s"
+                % (build_info.build_date,
+                   build_info.short_changeset))
+    LOG.info("Running %s build %s" % (build_info.repo_name, desc))
+
+    return mozlauncher(build_info)
+
+
+class TestRunner:
     """
     Abstract class that allows to test a build.
 
     :meth:`evaluate` must be implemented by subclasses.
     """
+    __metaclass__ = ABCMeta
 
-    def create_launcher(self, build_info):
-        """
-        Create and returns a :class:`mozregression.launchers.Launcher`.
-        """
-        if build_info.build_type == 'nightly':
-            if isinstance(build_info.build_date, datetime.datetime):
-                desc = ("for buildid %s"
-                        % build_info.build_date.strftime("%Y%m%d%H%M%S"))
-            else:
-                desc = "for %s" % build_info.build_date
-        else:
-            desc = ("built on %s, revision %s"
-                    % (build_info.build_date,
-                       build_info.short_changeset))
-        LOG.info("Running %s build %s" % (build_info.repo_name, desc))
-
-        return create_launcher(build_info)
-
+    @abstractmethod
     def evaluate(self, build_info, allow_back=False):
         """
         Evaluate a given build. Must returns a tuple of (verdict, app_info).
@@ -63,6 +67,7 @@ class TestRunner(object):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def run_once(self, build_info):
         """
         Run the given build and wait for its completion. Return the error
@@ -113,7 +118,7 @@ class ManualTestRunner(TestRunner):
         return verdict[0]
 
     def evaluate(self, build_info, allow_back=False):
-        with self.create_launcher(build_info) as launcher:
+        with create_launcher(build_info) as launcher:
             launcher.start(**self.launcher_kwargs)
             build_info.update_from_app_info(launcher.get_app_info())
             verdict = self.get_verdict(build_info, allow_back)
@@ -127,7 +132,7 @@ class ManualTestRunner(TestRunner):
         return verdict
 
     def run_once(self, build_info):
-        with self.create_launcher(build_info) as launcher:
+        with create_launcher(build_info) as launcher:
             launcher.start(**self.launcher_kwargs)
             build_info.update_from_app_info(launcher.get_app_info())
             return launcher.wait()
@@ -182,7 +187,7 @@ class CommandTestRunner(TestRunner):
         self.command = command
 
     def evaluate(self, build_info, allow_back=False):
-        with self.create_launcher(build_info) as launcher:
+        with create_launcher(build_info) as launcher:
             build_info.update_from_app_info(launcher.get_app_info())
             variables = dict((k, str(v))
                              for k, v in build_info.to_dict().iteritems())

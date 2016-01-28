@@ -13,6 +13,7 @@ from mozregression.errors import LauncherError, MozRegressionError, \
 from mozregression.history import BisectionHistory
 from mozregression.branches import find_branch_in_merge_commit
 from mozregression.json_pushes import JsonPushes
+from abc import ABCMeta, abstractmethod
 
 LOG = get_proxy_logger('Bisector')
 
@@ -23,12 +24,13 @@ def compute_steps_left(steps):
     return math.trunc(math.log(steps, 2))
 
 
-class BisectorHandler(object):
+class BisectorHandler:
     """
     React to events of a :class:`Bisector`. This is intended to be subclassed.
 
     A BisectorHandler keep the state of the current bisection process.
     """
+    __metaclass__ = ABCMeta
 
     def __init__(self, find_fix=False, ensure_good_and_bad=False):
         self.find_fix = find_fix
@@ -48,6 +50,7 @@ class BisectorHandler(object):
         """
         self.build_range = build_range
 
+    @abstractmethod
     def _print_progress(self, new_data):
         """
         Log the current state of the bisection process.

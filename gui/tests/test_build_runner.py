@@ -79,7 +79,7 @@ class TestGuiTestRunner(unittest.TestCase):
         self.test_runner.evaluate_started.connect(self.evaluate_started)
         self.test_runner.evaluate_finished.connect(self.evaluate_finished)
 
-    @patch('mozregui.build_runner.GuiTestRunner.create_launcher')
+    @patch('mozregui.build_runner.create_launcher')
     def test_basic(self, create_launcher):
         launcher = Mock(get_app_info=lambda: 'app_info')
         create_launcher.return_value = launcher

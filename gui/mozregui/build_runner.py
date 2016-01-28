@@ -3,7 +3,7 @@ from PyQt4.QtCore import QObject, QThread, pyqtSignal as Signal, \
 
 from mozregui.global_prefs import get_prefs, apply_prefs
 from mozregression.download_manager import BuildDownloadManager
-from mozregression.test_runner import TestRunner
+from mozregression.test_runner import create_launcher
 from mozregression.network import get_http_session
 from mozregression.persist_limit import PersistLimit
 from mozregression.errors import LauncherError
@@ -55,13 +55,12 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
             self.download_finished.emit(None, dest)
 
 
-class GuiTestRunner(QObject, TestRunner):
+class GuiTestRunner(QObject):
     evaluate_started = Signal(str)
     evaluate_finished = Signal()
 
     def __init__(self):
         QObject.__init__(self)
-        TestRunner.__init__(self)
         self.verdict = None
         self.launcher = None
         self.launcher_kwargs = {}
@@ -69,7 +68,7 @@ class GuiTestRunner(QObject, TestRunner):
 
     def evaluate(self, build_info, allow_back=False):
         try:
-            self.launcher = self.create_launcher(build_info)
+            self.launcher = create_launcher(build_info)
             self.launcher.start(**self.launcher_kwargs)
             build_info.update_from_app_info(self.launcher.get_app_info())
         except Exception, exc:

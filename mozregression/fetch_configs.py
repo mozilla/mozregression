@@ -26,6 +26,7 @@ from mozregression.class_registry import ClassRegistry
 from mozregression import errors, branches
 from mozregression.dates import to_utc_timestamp
 from mozregression.config import ARCHIVE_BASE_URL
+from abc import ABCMeta, abstractmethod
 
 
 # after this date, the gecko v2 routes are safe
@@ -179,7 +180,7 @@ class CommonConfig(object):
                 self.build_type not in ('opt', 'asan'))
 
 
-class NightlyConfigMixin(object):
+class NightlyConfigMixin:
     """
     Define the nightly-related required configuration to find nightly builds.
 
@@ -195,6 +196,7 @@ class NightlyConfigMixin(object):
     provide a default value.
     """
     archive_base_url = ARCHIVE_BASE_URL
+    __metaclass__ = ABCMeta
     nightly_base_repo_name = "firefox"
     nightly_repo = None
 
@@ -218,6 +220,7 @@ class NightlyConfigMixin(object):
             date = date.date()
         return self.repo or self._get_nightly_repo(date)
 
+    @abstractmethod
     def _get_nightly_repo(self, date):
         """
         Returns a default repo name for a given date.
@@ -298,10 +301,11 @@ class FennecNightlyConfigMixin(NightlyConfigMixin):
         return self._get_nightly_repo_regex(date, repo)
 
 
-class InboundConfigMixin(object):
+class InboundConfigMixin:
     """
     Define the inbound-related required configuration.
     """
+    __metaclass__ = ABCMeta
     default_inbound_branch = 'mozilla-inbound'
     _tk_credentials = None
 
@@ -309,6 +313,7 @@ class InboundConfigMixin(object):
     def inbound_branch(self):
         return self.repo or self.default_inbound_branch
 
+    @abstractmethod
     def tk_inbound_route(self, push):
         """
         Returns a taskcluster route for a specific changeset.

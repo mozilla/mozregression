@@ -1,10 +1,10 @@
 import mozinfo
 import datetime
 from PyQt4.QtGui import QWizard, QWizardPage, QStringListModel, QMessageBox
-from PyQt4.QtCore import QString, QDateTime, QTimer, pyqtSlot as Slot
+from PyQt4.QtCore import QString, QTimer, QDate, pyqtSlot as Slot
 
 from ui.intro import Ui_Intro
-from ui.range_selection import Ui_RangeSelectionPage
+from ui.build_selection import Ui_BuildSelectionPage
 from ui.profile import Ui_Profile
 from ui.single_build_selection import Ui_SingleBuildSelectionPage
 
@@ -154,17 +154,17 @@ class ProfilePage(WizardPage):
         return unicode(self.ui.profile_persistence_combo.currentText())
 
 
-class RangeSelectionPage(WizardPage):
-    UI_CLASS = Ui_RangeSelectionPage
-    TITLE = "Bisection range selection"
+class BuildSelectionPage(WizardPage):
+    UI_CLASS = Ui_BuildSelectionPage
+    TITLE = "Build selection"
     SUBTITLE = ("Select the range to bisect.")
     FIELDS = {'find_fix': 'find_fix'}
 
     def __init__(self):
         WizardPage.__init__(self)
-        now = QDateTime.currentDateTime()
-        self.ui.start.datew.setDateTime(now.addYears(-1))
-        self.ui.end.datew.setDateTime(now)
+        now = QDate.currentDate()
+        self.ui.start.ui.date.setSelectedDate(now.addYears(-1))
+        self.ui.end.ui.date.setSelectedDate(now)
         self.ui.find_fix.stateChanged.connect(self.change_labels)
 
     def set_options(self, options):
@@ -187,7 +187,8 @@ class RangeSelectionPage(WizardPage):
     def initializePage(self):
         # set the focus on the first entry
         QTimer.singleShot(0,
-                          self.ui.start.stacked.currentWidget().setFocus)
+                          self.ui.start.ui.stackedWidget.
+                          currentWidget().setFocus)
 
     def get_start(self):
         return self.ui.start.get_value()
@@ -261,7 +262,7 @@ class Wizard(QWizard):
 class BisectionWizard(Wizard):
     def __init__(self, parent=None):
         Wizard.__init__(self, "Bisection wizard",
-                        (IntroPage, ProfilePage, RangeSelectionPage),
+                        (IntroPage, ProfilePage, BuildSelectionPage),
                         parent=parent)
 
 
@@ -272,17 +273,19 @@ class SingleBuildSelectionPage(WizardPage):
 
     def __init__(self):
         WizardPage.__init__(self)
-        now = QDateTime.currentDateTime()
-        self.ui.build.datew.setDateTime(now.addDays(-3))
+        now = QDate.currentDate()
+        self.ui.build.ui.date.setSelectedDate(now.addDays(-3))
 
     def set_options(self, options):
         WizardPage.set_options(self, options)
         options['launch'] = self.ui.build.get_value()
 
     def initializePage(self):
+        pass
         # set the focus on the field
         QTimer.singleShot(0,
-                          self.ui.build.stacked.currentWidget().setFocus)
+                          self.ui.build.ui.
+                          stackedWidget.currentWidget().setFocus)
 
 
 class SingleRunWizard(Wizard):

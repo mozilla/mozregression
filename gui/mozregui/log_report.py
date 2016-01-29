@@ -37,7 +37,7 @@ class LogView(QPlainTextEdit):
         self.actions[0].setChecked(True)
 
         self.customContextMenuRequested.connect(
-                self.on_custom_context_menu_requested)
+            self.on_custom_context_menu_requested)
 
         self.log_lvl = log_levels["DEBUG"]
 

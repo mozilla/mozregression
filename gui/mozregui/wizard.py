@@ -1,7 +1,8 @@
 import mozinfo
 import datetime
-from PyQt4.QtGui import QWizard, QWizardPage, QStringListModel, QMessageBox
-from PyQt4.QtCore import QString, QTimer, QDate, pyqtSlot as Slot
+from PyQt4.QtGui import (QWizard, QWizardPage, QStringListModel, QMessageBox,
+                         QCompleter, QApplication)
+from PyQt4.QtCore import QString, QTimer, QDate, pyqtSlot as Slot, Qt
 
 from ui.intro import Ui_Intro
 from ui.build_selection import Ui_BuildSelectionPage
@@ -12,6 +13,7 @@ from mozregression.fetch_configs import create_config, REGISTRY
 from mozregression.launchers import REGISTRY as LAUNCHER_REGISTRY
 from mozregression.errors import LauncherNotRunnable, DateFormatError
 from mozregression.dates import to_datetime
+from mozregression.branches import get_branches
 
 
 def resolve_obj_name(obj, name):
@@ -83,6 +85,16 @@ class IntroPage(WizardPage):
         self.ui.bits_combo.currentIndexChanged.connect(self._set_fetch_config)
         self.ui.app_combo.setCurrentIndex(
             self.ui.app_combo.findText("firefox"))
+
+        completer = QCompleter(sorted(get_branches()), self)
+        completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.ui.repository.setCompleter(completer)
+        QApplication.instance().focusChanged.connect(self._on_focus_changed)
+
+    def _on_focus_changed(self, old, new):
+        # show the repository completion on focus
+        if new == self.ui.repository and not self.ui.repository.text():
+            self.ui.repository.completer().complete()
 
     def _set_fetch_config(self, index):
         app_name = str(self.ui.app_combo.currentText())

@@ -11,14 +11,13 @@ application.
 """
 
 import os
-import sys
 import mozinfo
 import datetime
 import mozprofile
 import re
 
 from argparse import ArgumentParser, Action, SUPPRESS
-from mozlog.structured import commandline, get_default_logger
+from mozlog.structuredlog import get_default_logger
 from colorama import Style
 
 from mozregression import __version__
@@ -30,6 +29,7 @@ from mozregression.errors import (MozRegressionError, DateFormatError,
                                   UnavailableRelease)
 from mozregression.releases import (formatted_valid_release_dates,
                                     date_of_release)
+from mozregression.log import init_logger
 
 
 class _StopAction(Action):
@@ -269,10 +269,9 @@ def create_parser(defaults):
                         action=WriteConfigAction,
                         help="Helps to write the configuration file.")
 
-    commandline.add_logging_group(
-        parser,
-        include_formatters=commandline.TEXT_FORMATTERS
-    )
+    parser.add_argument('--debug', '-d', action='store_true',
+                        help='Show the debug output.')
+
     return parser
 
 
@@ -333,9 +332,7 @@ class Configuration(object):
     """
     def __init__(self, options):
         self.options = options
-        self.logger = commandline.setup_logging("mozregression",
-                                                self.options,
-                                                {"mach": sys.stdout})
+        self.logger = init_logger(debug=options.debug)
         # allow to filter process output based on the user option
         if options.process_output is None:
             # process_output not user defined

@@ -18,7 +18,6 @@ import re
 
 from argparse import ArgumentParser, Action, SUPPRESS
 from mozlog.structuredlog import get_default_logger
-from colorama import Style
 
 from mozregression import __version__
 from mozregression.dates import to_datetime, parse_date, is_date_or_datetime
@@ -29,7 +28,7 @@ from mozregression.errors import (MozRegressionError, DateFormatError,
                                   UnavailableRelease)
 from mozregression.releases import (formatted_valid_release_dates,
                                     date_of_release)
-from mozregression.log import init_logger
+from mozregression.log import init_logger, colorize
 
 
 class _StopAction(Action):
@@ -476,9 +475,9 @@ def cli(argv=None, conf_file=DEFAULT_CONF_FNAME, namespace=None):
         options = parse_args(argv=argv, defaults=defaults)
     if conf_file and not os.path.isfile(conf_file):
         print '*' * 10
-        print ("You should use a config file. Please use the " +
-               Style.BRIGHT + '--write-config' + Style.RESET_ALL +
-               " command line flag to help you create one.")
+        print colorize("You should use a config file. Please use the " +
+                       '{sBRIGHT}--write-config{sRESET_ALL}' +
+                       " command line flag to help you create one.")
         print '*' * 10
         print
     return Configuration(options)

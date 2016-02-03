@@ -95,14 +95,15 @@ class GuiBisector(QObject, Bisector):
     @Slot()
     def _bisect_next(self):
         # this is executed in the working thread
-        try:
-            self.mid = mid = self.bisection.search_mid_point(
-                interrupt=self.should_stop.is_set)
-        except MozRegressionError:
-            self._finish_on_exception(self.bisection)
-            return
-        except StopIteration:
-            return
+        if self.test_runner.verdict != 'r':
+            try:
+                self.mid = self.bisection.search_mid_point(
+                    interrupt=self.should_stop.is_set)
+            except MozRegressionError:
+                self._finish_on_exception(self.bisection)
+                return
+            except StopIteration:
+                return
 
         # if our last answer was skip, and that the next build
         # to use is not chosen yet, ask to choose it.
@@ -114,20 +115,20 @@ class GuiBisector(QObject, Bisector):
 
         if self._next_build_index is not None:
             # here user asked for specific build (eg from choose_next_build)
-            self.mid = mid = self._next_build_index
+            self.mid = self._next_build_index
             # this will download build infos if required
-            if self.bisection.build_range[mid] is False:
+            if self.bisection.build_range[self.mid] is False:
                 # in case no build info is found, ask to choose again
                 self.choose_next_build.emit()
                 return
             self._next_build_index = None
 
         self.step_started.emit(self.bisection)
-        result = self.bisection.init_handler(mid)
+        result = self.bisection.init_handler(self.mid)
         if result != Bisection.RUNNING:
             self.finished.emit(self.bisection, result)
         else:
-            self.build_infos = self.bisection.handler.build_range[mid]
+            self.build_infos = self.bisection.handler.build_range[self.mid]
             found, self.mid, self.build_infos, self._persist_files = \
                 self.bisection._find_approx_build(self.mid, self.build_infos)
             if not found:

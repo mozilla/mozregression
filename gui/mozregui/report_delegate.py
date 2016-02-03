@@ -5,6 +5,7 @@ from PyQt4.QtCore import Qt, QRect, pyqtSignal as Signal
 from mozregui.ui.ask_verdict import Ui_AskVerdict
 from mozregui.report import VERDICT_TO_ROW_COLORS
 
+verdicts = ["good", "bad", "skip", "retry"]
 
 class AskVerdict(QWidget):
     icons_cache = {}
@@ -17,8 +18,8 @@ class AskVerdict(QWidget):
         self.ui.setupUi(self)
         # build verdict icons
         if not AskVerdict.icons_cache:
-            for i in range(self.ui.comboVerdict.count()):
-                text = str(self.ui.comboVerdict.itemText(i))
+            for i in range(len(verdicts)):
+                text = verdicts[i]
                 color = VERDICT_TO_ROW_COLORS.get(text[0])
                 pixmap = QPixmap(16, 16)
                 pixmap.fill(Qt.transparent)
@@ -29,14 +30,23 @@ class AskVerdict(QWidget):
                     painter.drawEllipse(0, 0, 15, 15)
                     painter.end()
                 AskVerdict.icons_cache[text] = QIcon(pixmap)
+
+
+
         # set verdict icons
         for i in range(self.ui.comboVerdict.count()):
             text = str(self.ui.comboVerdict.itemText(i))
             self.ui.comboVerdict.setItemIcon(i, AskVerdict.icons_cache[text])
 
         self.ui.comboVerdict.activated.connect(self.on_dropdown_item_activated)
+
         self.ui.goodVerdict.clicked.connect(self.on_good_bad_button_clicked)
+        self.ui.goodVerdict.setIcon(AskVerdict.icons_cache[text])
+       # self.ui.goodVerdict.setIconSize(AskVerdict.icons_cache[text].rect().size())
+
         self.ui.badVerdict.clicked.connect(self.on_good_bad_button_clicked)
+        self.ui.badVerdict.setIcon(AskVerdict.icons_cache[text])
+       # self.ui.badVerdict.setIconSize(AskVerdict.icons_cache[text].rect().size())
 
     def on_dropdown_item_activated(self):
         self.delegate.got_verdict.emit(

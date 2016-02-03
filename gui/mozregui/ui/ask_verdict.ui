@@ -43,7 +43,7 @@
     <widget class="QPushButton" name="goodVerdict">
      <property name="maximumSize">
       <size>
-       <width>45</width>
+       <width>70</width>
        <height>16777215</height>
       </size>
      </property>
@@ -56,7 +56,7 @@
     <widget class="QPushButton" name="badVerdict">
      <property name="maximumSize">
       <size>
-       <width>45</width>
+       <width>70</width>
        <height>16777215</height>
       </size>
      </property>

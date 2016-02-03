@@ -40,29 +40,6 @@
     </spacer>
    </item>
    <item>
-    <widget class="QComboBox" name="comboVerdict">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="frame">
-      <bool>true</bool>
-     </property>
-     <item>
-      <property name="text">
-       <string>skip</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>retry</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item>
     <widget class="QPushButton" name="goodVerdict">
      <property name="maximumSize">
       <size>
@@ -86,6 +63,29 @@
      <property name="text">
       <string>bad</string>
      </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QComboBox" name="comboVerdict">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="frame">
+      <bool>true</bool>
+     </property>
+     <item>
+      <property name="text">
+       <string>skip</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>retry</string>
+      </property>
+     </item>
     </widget>
    </item>
   </layout>

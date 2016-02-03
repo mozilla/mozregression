@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>483</width>
+    <width>498</width>
     <height>359</height>
    </rect>
   </property>
@@ -22,7 +22,7 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="BuildSelection" name="end" native="true"/>
+    <widget class="BuildSelection" name="start" native="true"/>
    </item>
    <item row="1" column="0">
     <widget class="QLabel" name="label_2">
@@ -32,7 +32,7 @@
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="BuildSelection" name="start" native="true"/>
+    <widget class="BuildSelection" name="end" native="true"/>
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="label_4">

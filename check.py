@@ -7,6 +7,7 @@ import os
 import argparse
 import pipes
 import shutil
+import tempfile
 
 from subprocess import check_call
 
@@ -54,9 +55,16 @@ if __name__ == '__main__':
     else:
         test_run_cmd = ['python']
 
+    tmpdir = tempfile.gettempdir()
+    tmpfiles = set(os.listdir(tmpdir))
     run(test_run_cmd + ['setup.py', 'test'])
     if options.with_gui:
         run(test_run_cmd + ['build.py', 'test'], cwd='gui')
+
+    remaining_tmpfiles = tmpfiles - set(os.listdir(tmpdir))
+    assert not remaining_tmpfiles, "tests leaked some temp files: %s" % (
+        ", ".join("`%s`" % os.path.join(tmpdir, f) for f in remaining_tmpfiles)
+    )
 
     if options.with_coverage:
         if options.with_gui:

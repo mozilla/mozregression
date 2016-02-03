@@ -52,16 +52,6 @@
      </property>
      <item>
       <property name="text">
-       <string>good</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>bad</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
        <string>skip</string>
       </property>
      </item>
@@ -73,21 +63,28 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="evaluate">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+    <widget class="QPushButton" name="goodVerdict">
+     <property name="maximumSize">
+      <size>
+       <width>45</width>
+       <height>16777215</height>
+      </size>
      </property>
      <property name="text">
-      <string>evaluate</string>
+      <string>good</string>
      </property>
-     <property name="default">
-      <bool>false</bool>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="badVerdict">
+     <property name="maximumSize">
+      <size>
+       <width>45</width>
+       <height>16777215</height>
+      </size>
      </property>
-     <property name="flat">
-      <bool>false</bool>
+     <property name="text">
+      <string>bad</string>
      </property>
     </widget>
    </item>

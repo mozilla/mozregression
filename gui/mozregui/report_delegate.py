@@ -34,17 +34,21 @@ class AskVerdict(QWidget):
             text = str(self.ui.comboVerdict.itemText(i))
             self.ui.comboVerdict.setItemIcon(i, AskVerdict.icons_cache[text])
 
-        self.ui.evaluate.clicked.connect(self.on_evaluate_clicked)
+        self.ui.comboVerdict.activated.connect(self.on_dropdown_item_activated)
+        self.ui.goodVerdict.clicked.connect(self.on_good_bad_button_clicked)
+        self.ui.badVerdict.clicked.connect(self.on_good_bad_button_clicked)
 
-    def on_evaluate_clicked(self):
-        if not self.emitted:
-            # not sure why, but this signal is emitted three times
-            # (though the connection is made once, and I click one time)
-            # self.emitted is a workaround.
-            self.delegate.got_verdict.emit(
+    def on_dropdown_item_activated(self):
+        self.delegate.got_verdict.emit(
                 str(self.ui.comboVerdict.currentText())[0]
-            )
-            self.emitted = True
+        )
+        self.emitted = True
+
+    def on_good_bad_button_clicked(self):
+        self.delegate.got_verdict.emit(
+                str(self.sender().text())[0]
+        )
+        self.emitted = True
 
 
 class ReportItemDelegate(QStyledItemDelegate):

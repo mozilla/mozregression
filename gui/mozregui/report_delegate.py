@@ -5,6 +5,8 @@ from PyQt4.QtCore import Qt, QRect, pyqtSignal as Signal
 from mozregui.ui.ask_verdict import Ui_AskVerdict
 from mozregui.report import VERDICT_TO_ROW_COLORS
 
+VERDICTS = ("good", "bad", "skip", "retry", "other...")
+
 
 class AskVerdict(QWidget):
     icons_cache = {}
@@ -17,8 +19,7 @@ class AskVerdict(QWidget):
         self.ui.setupUi(self)
         # build verdict icons
         if not AskVerdict.icons_cache:
-            for i in range(self.ui.comboVerdict.count()):
-                text = str(self.ui.comboVerdict.itemText(i))
+            for text in VERDICTS:
                 color = VERDICT_TO_ROW_COLORS.get(text[0])
                 pixmap = QPixmap(16, 16)
                 pixmap.fill(Qt.transparent)
@@ -29,22 +30,32 @@ class AskVerdict(QWidget):
                     painter.drawEllipse(0, 0, 15, 15)
                     painter.end()
                 AskVerdict.icons_cache[text] = QIcon(pixmap)
-        # set verdict icons
-        for i in range(self.ui.comboVerdict.count()):
-            text = str(self.ui.comboVerdict.itemText(i))
-            self.ui.comboVerdict.setItemIcon(i, AskVerdict.icons_cache[text])
 
-        self.ui.evaluate.clicked.connect(self.on_evaluate_clicked)
+        # set combo verdict
+        for text in ('other...', 'skip', 'retry'):
+            self.ui.comboVerdict.addItem(AskVerdict.icons_cache[text], text)
+        model = self.ui.comboVerdict.model()
+        model.itemFromIndex(model.index(0, 0)).setSelectable(False)
 
-    def on_evaluate_clicked(self):
-        if not self.emitted:
-            # not sure why, but this signal is emitted three times
-            # (though the connection is made once, and I click one time)
-            # self.emitted is a workaround.
-            self.delegate.got_verdict.emit(
+        self.ui.comboVerdict.activated.connect(self.on_dropdown_item_activated)
+
+        self.ui.goodVerdict.clicked.connect(self.on_good_bad_button_clicked)
+        self.ui.goodVerdict.setIcon(AskVerdict.icons_cache["good"])
+
+        self.ui.badVerdict.clicked.connect(self.on_good_bad_button_clicked)
+        self.ui.badVerdict.setIcon(AskVerdict.icons_cache["bad"])
+
+    def on_dropdown_item_activated(self):
+        self.delegate.got_verdict.emit(
                 str(self.ui.comboVerdict.currentText())[0]
-            )
-            self.emitted = True
+        )
+        self.emitted = True
+
+    def on_good_bad_button_clicked(self):
+        self.delegate.got_verdict.emit(
+                str(self.sender().text())[0]
+        )
+        self.emitted = True
 
 
 class ReportItemDelegate(QStyledItemDelegate):

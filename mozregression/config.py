@@ -10,8 +10,8 @@ import os
 import mozinfo
 
 from configobj import ConfigObj, ParseError
-from colorama import Fore, Style
 
+from mozregression.log import colorize
 from mozregression.errors import MozRegressionError
 
 
@@ -144,7 +144,7 @@ def write_conf(conf_path):
         else:
             print '%s already defined.' % optname
             value = config[optname]
-        name = Fore.GREEN + optname + Style.RESET_ALL
+        name = colorize("{fGREEN}%s{sRESET_ALL}" % optname)
         print "%s: %s" % (name, value)
 
     _set_option('persist', _get_persist_dir,
@@ -157,8 +157,7 @@ def write_conf(conf_path):
 
     config.write()
 
-    conf_path_str = Style.BRIGHT + conf_path + Style.RESET_ALL
     print
-    print "Config file ", conf_path_str, " written."
+    print colorize('Config file {sBRIGHT}%s{sRESET_ALL} written.' % conf_path)
     print ("Note you can edit it manually, and there are other options you can"
            " configure. See %s." % CONFIG_FILE_HELP_URL)

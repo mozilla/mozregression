@@ -4,6 +4,7 @@ Logging and outputting configuration and utilities.
 
 import sys
 import time
+import mozinfo
 
 from colorama import Fore, Style, Back
 from mozlog.structuredlog import set_default_logger, StructuredLogger
@@ -18,10 +19,12 @@ def _format_seconds(total):
     return '%2d:%05.2f' % (minutes, seconds)
 
 
-def init_logger(debug=True, allow_color=ALLOW_COLOR, output=sys.stdout):
+def init_logger(debug=True, allow_color=ALLOW_COLOR, output=None):
     """
     Initialize the mozlog logger. Must be called once before using logs.
     """
+    # late binding of sys.stdout is required for windows color to work
+    output = output or sys.stdout
     start = time.time() * 1000
     level_color = {
         'WARNING': Fore.MAGENTA + Style.BRIGHT,
@@ -30,12 +33,15 @@ def init_logger(debug=True, allow_color=ALLOW_COLOR, output=sys.stdout):
         'DEBUG': Fore.CYAN + Style.BRIGHT,
         'INFO':  Style.BRIGHT,
     }
+    time_color = Fore.BLUE
+    if mozinfo.os == "win":
+        time_color += Style.BRIGHT  # this is unreadable on windows without it
 
     def format_log(data):
         level = data['level']
         elapsed = _format_seconds((data['time'] - start) / 1000)
         if allow_color:
-            elapsed = Fore.BLUE + elapsed + Style.RESET_ALL
+            elapsed = time_color + elapsed + Style.RESET_ALL
             if level in level_color:
                 level = level_color[level] + level + Style.RESET_ALL
         return "%s %s: %s\n" % (elapsed, level, data['message'])

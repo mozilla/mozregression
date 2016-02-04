@@ -229,7 +229,7 @@ class Wizard(QWizard):
     def __init__(self, title, class_pages, parent=None):
         QWizard.__init__(self, parent)
         self.setWindowTitle(title)
-        self.resize(800, 600)
+        self.resize(800, 650)
 
         # associate current text to comboboxes fields instead of current index
         self.setDefaultProperty("QComboBox", "currentText",

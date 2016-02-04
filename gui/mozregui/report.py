@@ -323,12 +323,13 @@ class BuildInfoTextBrowser(QTextBrowser):
         html = ""
         for k in sorted(item.data):
             v = item.data[k]
-            html += '<strong>%s</strong>: ' % k
-            if isinstance(v, basestring):
-                url = QUrl(v)
-                if url.isValid() and url.scheme():
-                    v = '<a href="%s">%s</a>' % (v, v)
-            html += '%s<br>' % v
+            if v is not None:
+                html += '<strong>%s</strong>: ' % k
+                if isinstance(v, basestring):
+                    url = QUrl(v)
+                    if url.isValid() and url.scheme():
+                        v = '<a href="%s">%s</a>' % (v, v)
+                html += '%s<br>' % v
         self.setHtml(html)
 
     @Slot(QUrl)

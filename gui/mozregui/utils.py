@@ -35,6 +35,7 @@ class DirectorySelectWidget(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
         self.line_edit = FSLineEdit()
         self.button = QPushButton("browse")
         layout.addWidget(self.line_edit)

@@ -21,6 +21,7 @@ import mozinfo
 import stat
 from subprocess import call
 from abc import ABCMeta, abstractmethod
+from threading import Thread
 
 from mozregression.class_registry import ClassRegistry
 from mozregression.errors import LauncherNotRunnable, LauncherError
@@ -234,7 +235,18 @@ class MozRunnerLauncher(Launcher):
         return self.runner.wait()
 
     def _stop(self):
-        self.runner.stop()
+        if mozinfo.os == "win" and self.app_name == 'firefox':
+            # for some reason, stopping the runner may hang on windows. For
+            # example restart the browser in safe mode, it will hang for a
+            # couple of minutes. As a workaround, we call that in a thread and
+            # wait a bit for the completion. If the stop() can't complete we
+            # forgot about that thread.
+            thread = Thread(target=self.runner.stop)
+            thread.daemon = True
+            thread.start()
+            thread.join(0.7)
+        else:
+            self.runner.stop()
         # release the runner since it holds a profile reference
         del self.runner
 

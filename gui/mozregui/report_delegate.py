@@ -32,7 +32,6 @@ class AskVerdict(QWidget):
                 AskVerdict.icons_cache[text] = QIcon(pixmap)
 
 
-
         # set verdict icons
         for i in range(self.ui.comboVerdict.count()):
             text = str(self.ui.comboVerdict.itemText(i))
@@ -41,12 +40,10 @@ class AskVerdict(QWidget):
         self.ui.comboVerdict.activated.connect(self.on_dropdown_item_activated)
 
         self.ui.goodVerdict.clicked.connect(self.on_good_bad_button_clicked)
-        self.ui.goodVerdict.setIcon(AskVerdict.icons_cache[text])
-       # self.ui.goodVerdict.setIconSize(AskVerdict.icons_cache[text].rect().size())
+        self.ui.goodVerdict.setIcon(AskVerdict.icons_cache["good"])
 
         self.ui.badVerdict.clicked.connect(self.on_good_bad_button_clicked)
-        self.ui.badVerdict.setIcon(AskVerdict.icons_cache[text])
-       # self.ui.badVerdict.setIconSize(AskVerdict.icons_cache[text].rect().size())
+        self.ui.badVerdict.setIcon(AskVerdict.icons_cache["bad"])
 
     def on_dropdown_item_activated(self):
         self.delegate.got_verdict.emit(

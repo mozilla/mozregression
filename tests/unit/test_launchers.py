@@ -4,6 +4,7 @@ import os
 import pytest
 import tempfile
 import mozfile
+import mozversion
 
 from mock import patch, Mock, ANY
 from mozprofile import Profile
@@ -152,6 +153,14 @@ profile_class', spec=Profile)
             self.assertEqual(self.launcher.get_app_info(), {'some': 'infos'})
             mozversion.get_version.assert_called_once_with(binary='/binary')
             self.launcher.stop()
+
+    @patch('mozregression.launchers.Runner')
+    @patch('mozversion.get_version')
+    def test_get_app_infos_error(self, get_version, Runner):
+        get_version.side_effect = mozversion.VersionError("err")
+        with self.launcher:
+            self.launcher_start()
+            self.assertEqual(self.launcher.get_app_info(), {})
 
     def test_launcher_deleted_whith_statement(self):
         tempdir = self.launcher.tempdir

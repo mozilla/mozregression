@@ -12,6 +12,7 @@ from mozregui.log_report import LogModel  # noqa
 from mozregui.check_release import CheckRelease  # noqa
 from mozregui.crash_reporter import CrashReporter  # noqa
 from mozregui.mainwindow import MainWindow  # noqa
+from mozregui.global_prefs import set_default_prefs  # noqa
 
 
 def main():
@@ -27,6 +28,7 @@ def main():
     app.setOrganizationName('mozilla')
     app.setOrganizationDomain('mozilla.org')
     app.setApplicationName('mozregression-gui')
+    set_default_prefs()
     # Create the main window and show it
     win = MainWindow()
     app.aboutToQuit.connect(win.bisect_runner.stop)

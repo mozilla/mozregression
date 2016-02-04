@@ -1,3 +1,4 @@
+import os
 from PyQt4.QtGui import QDialog
 
 from mozregui.ui.global_prefs import Ui_GlobalPrefs
@@ -24,6 +25,9 @@ def get_prefs():
 
 
 def save_prefs(options):
+    conf_dir = os.path.dirname(DEFAULT_CONF_FNAME)
+    if not os.path.isdir(conf_dir):
+        os.makedirs(conf_dir)
     settings = ConfigObj(DEFAULT_CONF_FNAME)
     settings.update({
         'persist': options['persist'] or '',
@@ -34,6 +38,16 @@ def save_prefs(options):
         'approx-policy': 'auto' if options['approx_policy'] else 'none',
     })
     settings.write()
+
+
+def set_default_prefs():
+    """Set the default prefs for a first launch of the application."""
+    if not os.path.isfile(DEFAULT_CONF_FNAME):
+        options = get_prefs()
+        options["persist"] = os.path.join(os.path.dirname(DEFAULT_CONF_FNAME),
+                                          "persist")
+        options["persist_size_limit"] = 2.0
+        save_prefs(options)
 
 
 def apply_prefs(options):

@@ -18,8 +18,7 @@ class AskVerdict(QWidget):
         self.ui.setupUi(self)
         # build verdict icons
         if not AskVerdict.icons_cache:
-            for i in range(len(verdicts)):
-                text = verdicts[i]
+            for text in verdicts:
                 color = VERDICT_TO_ROW_COLORS.get(text[0])
                 pixmap = QPixmap(16, 16)
                 pixmap.fill(Qt.transparent)

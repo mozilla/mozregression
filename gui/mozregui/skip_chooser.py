@@ -1,6 +1,6 @@
 from PyQt4.QtCore import Qt, pyqtSignal as Signal
 from PyQt4.QtGui import (QGraphicsRectItem, QGraphicsScene, QGraphicsView,
-                         QBrush, QToolTip, QDialog)
+                         QBrush, QToolTip, QDialog, QMessageBox)
 
 
 class BuildItem(QGraphicsRectItem):
@@ -110,6 +110,17 @@ class SkipDialog(QDialog):
             items = self.scene.selectedItems()
             assert len(items) == 1
             return self.build_index(items[0])
+
+    def closeEvent(self, evt):
+        if QMessageBox.warning(
+                self, "Stop the bisection ?",
+                "Closing this dialog will end the bisection. Are you sure"
+                " you want to end the bisection now ?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No) == QMessageBox.Yes:
+            evt.accept()
+        else:
+            evt.ignore()
 
 
 if __name__ == '__main__':

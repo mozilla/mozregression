@@ -249,8 +249,12 @@ class BisectRunner(AbstractBuildRunner):
 
     @Slot()
     def choose_next_build(self):
-        dlg = SkipDialog(self.worker.bisection.build_range)
-        self.worker._next_build_index = dlg.choose_next_build()
+        dlg = SkipDialog(self.worker.bisection.build_range, self.mainwindow)
+        index = dlg.choose_next_build()
+        if index is None:
+            self.stop()
+            return
+        self.worker._next_build_index = index
         QTimer.singleShot(0, self.worker._bisect_next)
 
     @Slot(object, int)

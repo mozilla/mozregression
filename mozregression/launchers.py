@@ -163,6 +163,16 @@ class Launcher:
         return profile
 
 
+def safe_get_version(**kwargs):
+    # some really old firefox builds are not supported by mozversion
+    # and let's be paranoid and handle any error (but report them!)
+    try:
+        return mozversion.get_version(**kwargs)
+    except mozversion.VersionError, exc:
+        LOG.warning("Unable to get app version: %s" % exc)
+        return {}
+
+
 class MozRunnerLauncher(Launcher):
     tempdir = None
     runner = None
@@ -237,7 +247,7 @@ class MozRunnerLauncher(Launcher):
                 rmtree(self.tempdir)
 
     def get_app_info(self):
-        return mozversion.get_version(binary=self.binary)
+        return safe_get_version(binary=self.binary)
 
 
 REGISTRY = ClassRegistry('app_name')
@@ -306,7 +316,7 @@ class FennecLauncher(Launcher):
 
     def _install(self, dest):
         # get info now, as dest may be removed
-        self.app_info = mozversion.get_version(binary=dest)
+        self.app_info = safe_get_version(binary=dest)
         self.package_name = self.app_info.get("package_name",
                                               "org.mozilla.fennec")
         self.adb = ADBAndroid()

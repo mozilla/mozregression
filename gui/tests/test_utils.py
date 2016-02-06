@@ -45,7 +45,7 @@ def test_date_picker(build_selection, qtbot):
     qtbot.keyClicks(build_selection.ui.combo_helper, "date")
     calendarWidget = build_selection.ui.date
     aDate = datetime.date(2000, 1, 1)
-    calendarWidget.setSelectedDate(aDate)
+    calendarWidget.setDate(aDate)
     assert build_selection.get_value() == aDate
 
 

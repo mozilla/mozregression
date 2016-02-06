@@ -67,16 +67,16 @@ class BuildSelection(QWidget):
 
     def get_value(self):
         currentw = self.ui.stackedWidget.currentWidget()
-        if currentw == self.ui.calendar:
-            return self.ui.date.selectedDate().toPyDate()
-        elif currentw == self.ui.combo:
+        if currentw == self.ui.s_date:
+            return self.ui.date.date().toPyDate()
+        elif currentw == self.ui.s_release:
             return parse_date(
                 date_of_release(str(self.ui.release.currentText())))
-        elif currentw == self.ui.lineEdit1:
+        elif currentw == self.ui.s_buildid:
             buildid = unicode(self.ui.buildid.text())
             try:
                 return parse_date(buildid)
             except DateFormatError:
                 raise DateFormatError(buildid, "Not a valid build id: `%s`")
-        elif currentw == self.ui.lineEdit2:
+        elif currentw == self.ui.s_changeset:
             return unicode(self.ui.changeset.text())

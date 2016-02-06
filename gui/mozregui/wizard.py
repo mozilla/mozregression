@@ -2,7 +2,7 @@ import mozinfo
 import datetime
 from PyQt4.QtGui import (QWizard, QWizardPage, QStringListModel, QMessageBox,
                          QCompleter, QApplication)
-from PyQt4.QtCore import QString, QTimer, QDate, pyqtSlot as Slot, Qt
+from PyQt4.QtCore import QString, QDate, pyqtSlot as Slot, Qt
 
 from ui.intro import Ui_Intro
 from ui.build_selection import Ui_BuildSelectionPage
@@ -175,8 +175,8 @@ class BuildSelectionPage(WizardPage):
     def __init__(self):
         WizardPage.__init__(self)
         now = QDate.currentDate()
-        self.ui.start.ui.date.setSelectedDate(now.addYears(-1))
-        self.ui.end.ui.date.setSelectedDate(now)
+        self.ui.start.ui.date.setDate(now.addYears(-1))
+        self.ui.end.ui.date.setDate(now)
         self.ui.find_fix.stateChanged.connect(self.change_labels)
 
     def set_options(self, options):
@@ -195,12 +195,6 @@ class BuildSelectionPage(WizardPage):
         else:
             self.ui.label.setText("Last known good build")
             self.ui.label_2.setText("First known bad build")
-
-    def initializePage(self):
-        # set the focus on the first entry
-        QTimer.singleShot(0,
-                          self.ui.start.ui.stackedWidget.
-                          currentWidget().setFocus)
 
     def get_start(self):
         return self.ui.start.get_value()
@@ -241,7 +235,7 @@ class Wizard(QWizard):
     def __init__(self, title, class_pages, parent=None):
         QWizard.__init__(self, parent)
         self.setWindowTitle(title)
-        self.resize(800, 650)
+        self.resize(800, 600)
 
         # associate current text to comboboxes fields instead of current index
         self.setDefaultProperty("QComboBox", "currentText",
@@ -286,18 +280,11 @@ class SingleBuildSelectionPage(WizardPage):
     def __init__(self):
         WizardPage.__init__(self)
         now = QDate.currentDate()
-        self.ui.build.ui.date.setSelectedDate(now.addDays(-3))
+        self.ui.build.ui.date.setDate(now.addDays(-3))
 
     def set_options(self, options):
         WizardPage.set_options(self, options)
         options['launch'] = self.ui.build.get_value()
-
-    def initializePage(self):
-        pass
-        # set the focus on the field
-        QTimer.singleShot(0,
-                          self.ui.build.ui.
-                          stackedWidget.currentWidget().setFocus)
 
 
 class SingleRunWizard(Wizard):

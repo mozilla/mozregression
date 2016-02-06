@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>498</width>
-    <height>359</height>
+    <width>558</width>
+    <height>384</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -61,6 +61,9 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>find_fix</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

@@ -310,10 +310,6 @@ class BuildInfoTextBrowser(QTextBrowser):
         QTextBrowser.__init__(self, parent)
         self.anchorClicked.connect(self.on_anchor_clicked)
 
-    def clear(self):
-        QTextBrowser.clear(self)
-        self.setStyleSheet("background-color: white;")
-
     @Slot(object)
     def update_content(self, item):
         if not item.data:

@@ -81,6 +81,7 @@ class GuiBisector(QObject, Bisector):
             return
         if result is None:
             self.bisection.no_more_merge = True
+            self.finished.emit(self.bisection, Bisection.FINISHED)
         else:
             self.handle_merge.emit(self.bisection, *result)
 

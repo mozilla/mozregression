@@ -26,6 +26,10 @@ TC_CREDENTIALS_FNAME = os.path.expanduser(
                  "taskcluster-credentials.json")
 )
 ARCHIVE_BASE_URL = "https://archive.mozilla.org/pub"
+# when a bisection range needs to be expanded, the following value is used to
+# specify how many builds we try (if 20, we will try 20 before the lower limit,
+# and another 20 after the higher limit)
+DEFAULT_EXPAND = 20
 
 # default values when not defined in config file.
 # Note that this is also the list of options that can be used in config file

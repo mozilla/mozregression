@@ -9,6 +9,7 @@ from mozregression.bisector import Bisector, Bisection, NightlyHandler, \
 from mozregression.errors import MozRegressionError
 from mozregression.dates import is_date_or_datetime
 from mozregression.approx_persist import ApproxPersistChooser
+from mozregression.config import DEFAULT_EXPAND
 
 from mozregui.build_runner import AbstractBuildRunner
 from mozregui.skip_chooser import SkipDialog
@@ -67,9 +68,12 @@ class GuiBisector(QObject, Bisector):
         try:
             nhandler = InboundHandler(find_fix=self.bisection.handler.find_fix)
             Bisector.bisect(self, nhandler, handler.good_revision,
-                            handler.bad_revision)
+                            handler.bad_revision, expand=DEFAULT_EXPAND,
+                            interrupt=self.should_stop.is_set)
         except MozRegressionError:
             self._finish_on_exception(None)
+        except StopIteration:
+            self.finished.emit(None, Bisection.USER_EXIT)
 
     @Slot()
     def check_merge(self):

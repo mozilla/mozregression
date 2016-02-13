@@ -272,11 +272,12 @@ class ReportModel(QAbstractTableModel):
 
     @Slot(object, int)
     def finished(self, bisection, result):
-        # remove the last insterted step
-        index = len(self.items) - 1
-        self.beginRemoveRows(QModelIndex(), index, index)
-        self.items.pop(index)
-        self.endRemoveRows()
+        # remove the last inserted step
+        if not self.items[-1].data:
+            index = len(self.items) - 1
+            self.beginRemoveRows(QModelIndex(), index, index)
+            self.items.pop(index)
+            self.endRemoveRows()
 
 
 class ReportView(QTableView):

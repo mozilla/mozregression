@@ -9,7 +9,7 @@ import requests
 from datetime import date
 from mock import patch, Mock, MagicMock, ANY
 
-from mozregression import main, errors, __version__
+from mozregression import main, errors, __version__, config
 from mozregression.test_runner import ManualTestRunner, CommandTestRunner
 from mozregression.download_manager import BuildDownloadManager
 from mozregression.bisector import Bisector, Bisection, InboundHandler, \
@@ -108,7 +108,8 @@ def test_app_bisect_nightlies_finished(create_app, mocker, can_go_inbound):
         "Got as far as we can go bisecting nightlies..."
     )
     if can_go_inbound:
-        app._bisect_inbounds.assert_called_once_with('c1', 'c2')
+        app._bisect_inbounds.assert_called_once_with(
+            'c1', 'c2', expand=config.DEFAULT_EXPAND)
 
 
 def test_app_bisect_nightlies_no_data(create_app):

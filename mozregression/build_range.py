@@ -50,6 +50,9 @@ class FutureBuildInfo(object):
     def is_valid(self):
         return self._build_info is not False
 
+    def __str__(self):
+        return "%s" % self.data
+
 
 class TCFutureBuildInfo(FutureBuildInfo):
     def date_or_changeset(self):
@@ -152,6 +155,67 @@ class BuildRange(object):
                 # nothing removed, so we found valid builds only
                 return mid
 
+    def check_expand(self, expand, range_before, range_after, interrupt=None):
+        """
+        Check the limits of the build range, expanding it if needed.
+
+        :param expand: number of builds to try in case expanding is required
+        :param range_before: a callable that takes 2 parameters,
+                             (FutureBuildInfo, size) that should construct a
+                             new BuildRange of the given size before the given
+                             build info.
+        :param range_after: same as `range_before`, but should build the range
+                            after the given build info.
+        :param interrupt: a callable that can interrupt the process (raising
+                          StopIteration) or None.
+        """
+        if len(self) < 2:
+            # we need at least two build to expand the range
+            return
+
+        first, last = self.get_future(0), self.get_future(-1)
+        self._fetch((0, -1))
+        self.filter_invalid_builds()
+
+        def _search(br, index, rng):
+            while len(br):
+                if interrupt and interrupt():
+                    raise StopIteration
+                build = br._future_build_infos[index]
+                if build.is_available() and build.is_valid():
+                    return build
+                br._fetch(rng(len(br)))
+                br.filter_invalid_builds()
+
+        def search_first(br):
+            # search the first available build in br, 3 at a time
+            return _search(br, 0, lambda s: range(0, min(3, s)))
+
+        def search_last(br):
+            # search the last available build in br, 3 at a time
+            return _search(br, -1, lambda s: range(max(s - 3, 0), s))
+
+        if self.get_future(0) != first:
+            new_first = search_last(range_before(first, expand))
+            if new_first:
+                LOG.info(
+                    "Expanding lower limit of the range to %s" % new_first)
+                self._future_build_infos.insert(0, new_first)
+            else:
+                LOG.critical("First build %s is missing, but mozregression"
+                             " can't find a build before - so it is excluded,"
+                             " but it could contain the regression!" % first)
+        if self.get_future(-1) != last:
+            new_last = search_first(range_after(last, expand))
+            if new_last:
+                LOG.info(
+                    "Expanding higher limit of the range to %s" % new_last)
+                self._future_build_infos.append(new_last)
+            else:
+                LOG.critical("Last build %s is missing, but mozregression"
+                             " can't find a build after - so it is excluded,"
+                             " but it could contain the regression!" % last)
+
     def index(self, build_info):
         """
         Returns the index in the range for a given build_info.
@@ -174,7 +238,29 @@ class BuildRange(object):
         return self._future_build_infos[index]
 
 
-def range_for_inbounds(fetch_config, start_rev, end_rev, time_limit=None):
+def _tc_build_range(future_tc, start_id, end_id):
+    jpushes = future_tc.build_info_fetcher.jpushes
+    futures_builds = [
+        future_tc.__class__(future_tc.build_info_fetcher, push)
+        for push in jpushes.pushes(startID=start_id, endID=end_id)
+    ]
+    return BuildRange(future_tc.build_info_fetcher, futures_builds)
+
+
+def tc_range_after(future_tc, size):
+    """Create a build range after a TCFutureBuildInfo"""
+    return _tc_build_range(future_tc, future_tc.data.push_id,
+                           int(future_tc.data.push_id) + size)
+
+
+def tc_range_before(future_tc, size):
+    """Create a build range before a TCFutureBuildInfo"""
+    p_id = int(future_tc.data.push_id) - 1
+    return _tc_build_range(future_tc, p_id - size, p_id)
+
+
+def range_for_inbounds(fetch_config, start_rev, end_rev, time_limit=None,
+                       expand=0, interrupt=None):
     """
     Creates a BuildRange for inbounds builds.
     """
@@ -201,10 +287,15 @@ def range_for_inbounds(fetch_config, start_rev, end_rev, time_limit=None):
     futures_builds = [TCFutureBuildInfo(info_fetcher, push)
                       for push in jpushes.pushes_within_changes(start_rev,
                                                                 end_rev)]
-    return BuildRange(info_fetcher, futures_builds)
+    br = BuildRange(info_fetcher, futures_builds)
+    if expand > 0:
+        br.check_expand(expand, tc_range_before, tc_range_after,
+                        interrupt=interrupt)
+    return br
 
 
-def range_for_nightlies(fetch_config, start_date, end_date):
+def range_for_nightlies(fetch_config, start_date, end_date, expand=0,
+                        interrupt=None):
     """
     Creates a BuildRange for inbounds nightlies.
     """

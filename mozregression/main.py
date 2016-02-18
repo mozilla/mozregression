@@ -19,7 +19,7 @@ from mozlog import get_proxy_logger
 from requests.exceptions import RequestException, HTTPError
 
 from mozregression import __version__
-from mozregression.config import TC_CREDENTIALS_FNAME
+from mozregression.config import TC_CREDENTIALS_FNAME, DEFAULT_EXPAND
 from mozregression.cli import cli
 from mozregression.errors import MozRegressionError, GoodBadExpectationError
 from mozregression.bisector import (Bisector, NightlyHandler, InboundHandler,
@@ -133,7 +133,8 @@ class Application(object):
                 self.fetch_config.set_repo(
                     self.fetch_config.get_nightly_repo(handler.bad_date))
                 return self._bisect_inbounds(handler.good_revision,
-                                             handler.bad_revision)
+                                             handler.bad_revision,
+                                             expand=DEFAULT_EXPAND)
         elif result == Bisection.USER_EXIT:
             self._print_resume_info(handler)
         else:
@@ -151,12 +152,13 @@ class Application(object):
             ensure_good_and_bad=self.options.mode != 'no-first-check',
         )
 
-    def _bisect_inbounds(self, good_rev, bad_rev, ensure_good_and_bad=False):
+    def _bisect_inbounds(self, good_rev, bad_rev, ensure_good_and_bad=False,
+                         expand=0):
         LOG.info("Getting %s builds between %s and %s"
                  % (self.fetch_config.inbound_branch, good_rev, bad_rev))
         handler = InboundHandler(find_fix=self.options.find_fix,
                                  ensure_good_and_bad=ensure_good_and_bad)
-        result = self._do_bisect(handler, good_rev, bad_rev)
+        result = self._do_bisect(handler, good_rev, bad_rev, expand=expand)
         if result == Bisection.FINISHED:
             LOG.info("Oh noes, no (more) inbound revisions :(")
             handler.print_range()
@@ -171,7 +173,8 @@ class Application(object):
                 if result:
                     branch, good_rev, bad_rev = result
                     self.fetch_config.set_repo(branch)
-                    return self._bisect_inbounds(good_rev, bad_rev)
+                    return self._bisect_inbounds(good_rev, bad_rev,
+                                                 expand=DEFAULT_EXPAND)
                 else:
                     bugids = find_bugids_in_push(
                         handler.build_range[1].repo_name,
@@ -194,9 +197,9 @@ class Application(object):
             return 1
         return 0
 
-    def _do_bisect(self, handler, good, bad):
+    def _do_bisect(self, handler, good, bad, **kwargs):
         try:
-            return self.bisector.bisect(handler, good, bad)
+            return self.bisector.bisect(handler, good, bad, **kwargs)
         except (KeyboardInterrupt, MozRegressionError,
                 RequestException) as exc:
             if handler.good_revision is not None and \

@@ -449,7 +449,7 @@ class Configuration(object):
                     raise MozRegressionError(
                         ("Good date %s is later than bad date %s."
                          " Maybe you wanted to use the --find-fix"
-                         " flag ?") % (options.good, options.bad))
+                         " flag?") % (options.good, options.bad))
                 elif options.find_fix and \
                         to_datetime(options.good) < to_datetime(options.bad):
                     raise MozRegressionError(

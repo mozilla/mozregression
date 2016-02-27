@@ -316,6 +316,27 @@ def preferences(prefs_files, prefs_args):
     return prefs()
 
 
+def get_default_date_range(fetch_config):
+    """
+    Compute the default date range (first, last) to bisect.
+    """
+    last_date = datetime.date.today()
+    if fetch_config.app_name == 'jsshell':
+        if fetch_config.os == "win" and fetch_config.bits == 64:
+            first_date = datetime.date(2014, 5, 27)
+        elif fetch_config.os == "linux" and "asan" in fetch_config.build_type:
+            first_date = datetime.date(2013, 9, 1)
+        else:
+            first_date = datetime.date(2012, 4, 18)
+    elif fetch_config.os == 'win' and fetch_config.bits == 64:
+        # first firefox build date for win64 is 2010-05-28
+        first_date = datetime.date(2010, 5, 28)
+    else:
+        first_date = datetime.date(2009, 1, 1)
+
+    return first_date, last_date
+
+
 class Configuration(object):
     """
     Holds the configuration extracted from the command line.
@@ -420,11 +441,8 @@ class Configuration(object):
                 self.action = "launch_nightlies"
         else:
             # define good/bad default values if required
-            default_bad_date = datetime.date.today()
-            default_good_date = datetime.date(2009, 1, 1)
-            if mozinfo.os == 'win' and options.bits == 64:
-                # first firefox build date for win64 is 2010-05-28
-                default_good_date = datetime.date(2010, 5, 28)
+            default_good_date, default_bad_date = \
+                get_default_date_range(fetch_config)
             if options.find_fix:
                 default_bad_date, default_good_date = \
                     default_good_date, default_bad_date

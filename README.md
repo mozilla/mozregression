@@ -1,8 +1,17 @@
-mozregression is an interactive regression range finder for Mozilla nightly and inbound builds.
+# MozRegression
+
+Mozregression is an interactive regression range finder for quickly tracking down the source of bugs in Mozilla nightly and inbound builds.
+
+You can start using MozRegression today:
+- [start with our installation guide](http://mozilla.github.io/mozregression/install.html), then 
+- take a look at [our Quick Start document](http://mozilla.github.io/mozregression/quickstart.html). 
+
+## Status
 
 [![Latest Version](https://img.shields.io/pypi/v/mozregression.svg)](https://pypi.python.org/pypi/mozregression/)
 [![Downloads](https://img.shields.io/pypi/dm/mozregression.svg)](https://pypi.python.org/pypi/mozregression/)
 [![License](https://img.shields.io/pypi/l/mozregression.svg)](https://pypi.python.org/pypi/mozregression/)
+
 
 Build status:
  - Linux:
@@ -14,17 +23,16 @@ For more information see:
 
 http://mozilla.github.io/mozregression/
 
-
-# Setup for development
+## Building And Developing Mozregression
 
 Want to hack on mozregression ? Cool!
 
-## Full environment setup
+### Full environment setup
 
 For a full environment setup (with GUI support), please see the [gui/README.rst file](gui/README.rst).
 This is recommended.
 
-## Command line only
+### Command line only
 
 If you are **really sure** that you only want to hack on mozregression command line:
 

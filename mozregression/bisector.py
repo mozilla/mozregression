@@ -11,7 +11,7 @@ from mozregression.build_range import range_for_inbounds, range_for_nightlies
 from mozregression.errors import LauncherError, MozRegressionError, \
     GoodBadExpectationError
 from mozregression.history import BisectionHistory
-from mozregression.branches import find_branch_in_merge_commit
+from mozregression.branches import find_branch_in_merge_commit, get_category
 from mozregression.json_pushes import JsonPushes
 from abc import ABCMeta, abstractmethod
 
@@ -245,7 +245,22 @@ class InboundHandler(BisectorHandler):
         LOG.debug("Found commit message:\n%s\n" % msg)
         branch = find_branch_in_merge_commit(msg)
         if not (branch and len(push.changesets) >= 2):
-            return
+            # So we did not found a branch. Let's try with inbound anyway
+            if get_category(most_recent_push.repo_name) != 'integration' and \
+               len(push.changesets) >= 2:
+                jp2 = JsonPushes("mozilla-inbound")
+                try:
+                    data = jp2.pushes_within_changes(
+                        push.changesets[0]['node'],
+                        push.changesets[-1]['node'])
+                except MozRegressionError:
+                    return
+                LOG.info("************* Switching to mozilla-inbound by"
+                         " default (no branch detected in commit message)")
+                return ('mozilla-inbound',
+                        data[0].changeset, data[-1].changeset)
+            else:
+                return
         try:
             # so, this is a merge. We can find the oldest and youngest
             # changesets, and the branch where the merge comes from.

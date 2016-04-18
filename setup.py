@@ -43,7 +43,9 @@ DEPENDENCIES = [
     'redo',
     # require mozdevice 0.47 because 0.48 requires rooted devices
     'mozdevice == 0.47',
-    'taskcluster>=0.0.32',
+    # later taskcluster versions seem not to work, see:
+    # https://bugzilla.mozilla.org/show_bug.cgi?id=1265498
+    'taskcluster == 0.0.32',
     'colorama',
     'configobj',
 ]

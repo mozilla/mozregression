@@ -33,6 +33,10 @@ to date list of available options.
 
         mozregression --arg='-foreground' --arg='-P'
 
+   You can also use this option to point Firefox to a specific URL when loading:
+
+        mozregression --arg="https://google.com"
+
 - Test a 32 bit binary on 64 bit system
 
         mozregression --bits 32

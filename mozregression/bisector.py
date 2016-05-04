@@ -416,7 +416,7 @@ class Bisection(object):
         found, mid_point, build_infos, persist_files = self._find_approx_build(
             mid_point, build_infos
         )
-        if not found:
+        if not found and self.download_manager:
             # else, do the download. Note that nothing will
             # be downloaded if the exact build file is already present.
             self.download_manager.focus_download(build_infos)

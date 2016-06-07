@@ -209,32 +209,32 @@ class TestB2GConfig(unittest.TestCase):
 class TestGetBuildUrl(unittest.TestCase):
     def test_for_linux(self):
         self.assertEqual(get_build_regex('test', 'linux', 32),
-                         r'test.*linux-i686\.tar.bz2')
+                         r'(target|test.*linux-i686)\.tar.bz2')
 
         self.assertEqual(get_build_regex('test', 'linux', 64),
-                         r'test.*linux-x86_64\.tar.bz2')
+                         r'(target|test.*linux-x86_64)\.tar.bz2')
 
         self.assertEqual(get_build_regex('test', 'linux', 64,
                                          with_ext=False),
-                         r'test.*linux-x86_64')
+                         r'(target|test.*linux-x86_64)')
 
     def test_for_win(self):
         self.assertEqual(get_build_regex('test', 'win', 32),
-                         r'test.*win32\.zip')
+                         r'(target|test.*win32)\.zip')
         self.assertEqual(get_build_regex('test', 'win', 64),
-                         r'test.*win64(-x86_64)?\.zip')
+                         r'(target|test.*win64(-x86_64)?)\.zip')
         self.assertEqual(get_build_regex('test', 'win', 64,
                                          with_ext=False),
-                         r'test.*win64(-x86_64)?')
+                         r'(target|test.*win64(-x86_64)?)')
 
     def test_for_mac(self):
         self.assertEqual(get_build_regex('test', 'mac', 32),
-                         r'test.*mac.*\.dmg')
+                         r'(target|test.*mac.*)\.dmg')
         self.assertEqual(get_build_regex('test', 'mac', 64),
-                         r'test.*mac.*\.dmg')
+                         r'(target|test.*mac.*)\.dmg')
         self.assertEqual(get_build_regex('test', 'mac', 64,
                                          with_ext=False),
-                         r'test.*mac.*')
+                         r'(target|test.*mac.*)')
 
     def test_unknown_os(self):
         with self.assertRaises(errors.MozRegressionError):

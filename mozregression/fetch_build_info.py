@@ -125,6 +125,15 @@ class InboundInfoFetcher(InfoFetcher):
                     task_id = self.index.findTask(old_route)['taskId']
                 except TaskclusterFailure:
                     err = True
+            elif 'debug' in tk_route:
+                err = False
+                try:
+                    new_route = tk_route.replace('debug', 'dbg')
+                    LOG.debug('using alternate debug route %r' % new_route)
+                    task_id = self.index.findTask(new_route)['taskId']
+                except TaskclusterFailure:
+                    err = True
+
             if err:
                 raise BuildInfoNotFound("Unable to find build info using the"
                                         " taskcluster route %r" % tk_route)

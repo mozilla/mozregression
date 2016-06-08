@@ -70,7 +70,9 @@ def get_build_regex(name, os, bits, psuffix='', with_ext=True):
             " os is reported as '%s'." % os
         )
 
-    regex = '%s%s%s' % (name, suffix, psuffix)
+    # New taskcluster builds now just name the binary archive 'target', so
+    # that is added as one possibility in the regex.
+    regex = '(target|%s%s%s)' % (name, suffix, psuffix)
     if with_ext:
         return '%s%s' % (regex, ext)
     else:

@@ -45,7 +45,7 @@ DEPENDENCIES = [
     'mozdevice == 0.47',
     # later taskcluster versions seem not to work, see:
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1265498
-    'taskcluster == 0.0.32',
+    'taskcluster >= 0.3.4',
     'colorama',
     'configobj',
 ]

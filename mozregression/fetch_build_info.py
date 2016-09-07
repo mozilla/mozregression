@@ -163,9 +163,11 @@ class InboundInfoFetcher(InfoFetcher):
                     meth = self.queue.buildSignedUrl
                 build_url = meth(
                     'getArtifact',
-                    task_id,
-                    run_id,
-                    a['name']
+                    replDict={
+                        'taskId': task_id,
+                        'runId': run_id,
+                        'name': a['name']
+                    }
                 )
                 break
         if build_url is None:

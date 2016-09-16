@@ -279,23 +279,23 @@ class FirefoxRegressionProfile(Profile):
     """Specialized Profile subclass for Firefox"""
 
     preferences = {  # Don't automatically update the application
-                   'app.update.enabled': False,
-                     # Don't restore the last open set of tabs
-                     # if the browser has crashed
-                   'browser.sessionstore.resume_from_crash': False,
-                     # Don't check for the default web browser during startup
-                   'browser.shell.checkDefaultBrowser': False,
-                     # Don't warn on exit when multiple tabs are open
-                   'browser.tabs.warnOnClose': False,
-                     # Don't warn when exiting the browser
-                   'browser.warnOnQuit': False,
-                     # Don't send Firefox health reports to the production
-                     # server
-                   'datareporting.healthreport.documentServerURI':
-                   'http://%(server)s/healthreport/',
-                     # Don't report telemetry information
-                   'toolkit.telemetry.enabled': False,
-                   }
+        'app.update.enabled': False,
+        # Don't restore the last open set of tabs
+        # if the browser has crashed
+        'browser.sessionstore.resume_from_crash': False,
+        # Don't check for the default web browser during startup
+        'browser.shell.checkDefaultBrowser': False,
+        # Don't warn on exit when multiple tabs are open
+        'browser.tabs.warnOnClose': False,
+        # Don't warn when exiting the browser
+        'browser.warnOnQuit': False,
+        # Don't send Firefox health reports to the production
+        # server
+        'datareporting.healthreport.documentServerURI':
+        'http://%(server)s/healthreport/',
+        # Don't report telemetry information
+        'toolkit.telemetry.enabled': False,
+    }
 
 
 @REGISTRY.register('firefox')

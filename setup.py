@@ -46,7 +46,6 @@ DEPENDENCIES = [
     'taskcluster == 0.3.4',
     'colorama',
     'configobj',
-    'packaging'
 ]
 
 desc = """Regression range finder for Mozilla nightly builds"""

@@ -1,5 +1,9 @@
 -r requirements-dev.txt
 
+# newer versions of setuptools don't seem to package mozregression gui
+# correctly, see: https://github.com/pyinstaller/pyinstaller/issues/1772#issuecomment-172467268
+setuptools == 19.2
+
 # requests 2.5.1 or 2.5.3 have an issue when the system is frozen
 requests==2.5.1
 

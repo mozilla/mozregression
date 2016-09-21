@@ -268,8 +268,7 @@ class InboundHandler(BisectorHandler):
             # We did not find a branch, lets check all the integration branches
             if get_category(most_recent_push.repo_name) != 'integration' and \
                len(push.changesets) >= 2:
-                branch = self._choose_integration_branch(
-                                most_recent_push.changeset)
+                branch = self._choose_integration_branch(most_recent_push.changeset)
                 jp2 = JsonPushes(branch)
                 try:
                     data = jp2.pushes_within_changes(

@@ -45,7 +45,7 @@ if __name__ == '__main__':
     here = os.path.dirname(os.path.abspath(__file__))
     os.chdir(here)
 
-    run(['flake8', 'mozregression', 'tests', 'setup.py', __file__])
+    run(['flake8', '--max-line-length=100', 'mozregression', 'tests', 'setup.py', __file__])
 
     if options.with_coverage:
         rm('.coverage')

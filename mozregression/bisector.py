@@ -9,7 +9,7 @@ from mozlog import get_proxy_logger
 
 from mozregression.build_range import range_for_inbounds, range_for_nightlies
 from mozregression.errors import LauncherError, MozRegressionError, \
-    GoodBadExpectationError
+    GoodBadExpectationError, EmptyPushlogError
 from mozregression.history import BisectionHistory
 from mozregression.branches import find_branch_in_merge_commit, get_category
 from mozregression.json_pushes import JsonPushes
@@ -231,6 +231,26 @@ class InboundHandler(BisectorHandler):
         LOG.info('%s known bad inbound revision: %s'
                  % (words[1], self.bad_revision))
 
+    def _choose_integration_branch(self, changeset):
+        """
+        Tries to determine which integration branch the given changeset
+        originated from by checking the date the changeset first showed up
+        in each repo. The repo with the earliest date is chosen.
+        """
+        landings = {}
+        # NB: Leaving b2g-inbound out for simplicity, it 404s at this point.
+        for k in ("autoland", "fx-team", "mozilla-inbound"):
+            jp = JsonPushes(k)
+
+            try:
+                push = jp.push(changeset, full='1')
+                landings[k] = push.timestamp
+            except EmptyPushlogError:
+                LOG.debug("Didn't find %s in %s" % (changeset, k))
+
+        repo = min(landings, key=landings.get)
+        return repo
+
     def handle_merge(self):
         # let's check if we are facing a merge, and in that case,
         # continue the bisection from the merged branch.
@@ -245,19 +265,22 @@ class InboundHandler(BisectorHandler):
         LOG.debug("Found commit message:\n%s\n" % msg)
         branch = find_branch_in_merge_commit(msg)
         if not (branch and len(push.changesets) >= 2):
-            # So we did not found a branch. Let's try with inbound anyway
+            # We did not find a branch, lets check all the integration branches
             if get_category(most_recent_push.repo_name) != 'integration' and \
                len(push.changesets) >= 2:
-                jp2 = JsonPushes("mozilla-inbound")
+                branch = self._choose_integration_branch(
+                                most_recent_push.changeset)
+                jp2 = JsonPushes(branch)
                 try:
                     data = jp2.pushes_within_changes(
                         push.changesets[0]['node'],
                         push.changesets[-1]['node'])
                 except MozRegressionError:
                     return
-                LOG.info("************* Switching to mozilla-inbound by"
-                         " default (no branch detected in commit message)")
-                return ('mozilla-inbound',
+                LOG.info("************* Switching to %s by"
+                         " process of elimination (no branch detected in"
+                         " commit message)" % branch)
+                return (branch,
                         data[0].changeset, data[-1].changeset)
             else:
                 return

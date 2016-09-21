@@ -231,22 +231,22 @@ class InboundHandler(BisectorHandler):
         LOG.info('%s known bad inbound revision: %s'
                  % (words[1], self.bad_revision))
 
-    def choose_integration_branch(self, changeset):
+    def _choose_integration_branch(self, changeset):
         """
         Tries to determine which integration branch the given changeset
         originated from by checking the date the changeset first showed up
         in each repo. The repo with the earliest date is chosen.
         """
-        landings = dict()
+        landings = {}
         # NB: Leaving b2g-inbound out for simplicity, it 404s at this point.
         for k in ("autoland", "fx-team", "mozilla-inbound"):
-            jp = JsonPushes(k);
+            jp = JsonPushes(k)
 
             try:
                 push = jp.push(changeset, full='1')
                 landings[k] = push.timestamp
             except EmptyPushlogError:
-                LOG.debug("Didn't find %s in %s" % (changeset, e))
+                LOG.debug("Didn't find %s in %s" % (changeset, k))
 
         repo = min(landings, key=landings.get)
         return repo
@@ -268,7 +268,7 @@ class InboundHandler(BisectorHandler):
             # We did not find a branch, lets check all the integration branches
             if get_category(most_recent_push.repo_name) != 'integration' and \
                len(push.changesets) >= 2:
-                branch = self.choose_integration_branch(
+                branch = self._choose_integration_branch(
                                 most_recent_push.changeset)
                 jp2 = JsonPushes(branch)
                 try:

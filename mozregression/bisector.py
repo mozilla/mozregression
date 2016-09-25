@@ -8,6 +8,7 @@ import threading
 from mozlog import get_proxy_logger
 
 from mozregression.build_range import range_for_inbounds, range_for_nightlies
+from mozregression.dates import to_datetime
 from mozregression.errors import LauncherError, MozRegressionError, \
     GoodBadExpectationError, EmptyPushlogError
 from mozregression.history import BisectionHistory
@@ -154,13 +155,15 @@ class NightlyHandler(BisectorHandler):
     def _print_progress(self, new_data):
         next_good_date = new_data[0].build_date
         next_bad_date = new_data[-1].build_date
-        next_days_range = abs((next_bad_date - next_good_date).days)
+        next_days_range = abs((to_datetime(next_bad_date) -
+                               to_datetime(next_good_date)).days)
         LOG.info("Narrowed nightly regression window from"
                  " [%s, %s] (%d days) to [%s, %s] (%d days)"
                  " (~%d steps left)"
                  % (self.good_date,
                     self.bad_date,
-                    abs((self.bad_date - self.good_date).days),
+                    abs((to_datetime(self.bad_date) -
+                         to_datetime(self.good_date)).days),
                     next_good_date,
                     next_bad_date,
                     next_days_range,

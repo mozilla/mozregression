@@ -108,6 +108,7 @@ class InboundInfoFetcher(InfoFetcher):
         LOG.debug('using taskcluster route %r' % tk_route)
         try:
             task_id = self.index.findTask(tk_route)['taskId']
+            status = self.queue.status(task_id)['status']
         except TaskclusterFailure:
             # HACK because of
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1199618
@@ -123,6 +124,7 @@ class InboundInfoFetcher(InfoFetcher):
                 try:
                     old_route = tk_route.replace(changeset, changeset[:12])
                     task_id = self.index.findTask(old_route)['taskId']
+                    status = self.queue.status(task_id)['status']
                 except TaskclusterFailure:
                     err = True
             elif 'debug' in tk_route:
@@ -131,6 +133,7 @@ class InboundInfoFetcher(InfoFetcher):
                     new_route = tk_route.replace('debug', 'dbg')
                     LOG.debug('using alternate debug route %r' % new_route)
                     task_id = self.index.findTask(new_route)['taskId']
+                    status = self.queue.status(task_id)['status']
                 except TaskclusterFailure:
                     err = True
 
@@ -140,7 +143,6 @@ class InboundInfoFetcher(InfoFetcher):
 
         # find a completed run for that task
         run_id, build_date = None, None
-        status = self.queue.status(task_id)['status']
         for run in reversed(status['runs']):
             if run['state'] == 'completed':
                 run_id = run['runId']

@@ -438,6 +438,7 @@ class FennecInboundConfigMixin(InboundConfigMixin):
 
 # ------------ full config implementations ------------
 
+
 REGISTRY = ClassRegistry('app_name')
 
 

@@ -1,7 +1,10 @@
 coverage
 mock
-flake8
 pytest
+# peg flake8 + deps so code doesn't suddenly violate validation expectations unexpectedly
+flake8==3.0.4
+mccabe==0.5.2
+pyflakes==1.2.3
 
 # install mozregression
 -e .

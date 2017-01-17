@@ -54,7 +54,7 @@ def test_approx_index(bdata, mid, around, fnames, result):
     # this is always a firefox 64 linux build info
     binfo = create_build_info(build_info.InboundBuildInfo)
     brange = create_build_range(bdata)
-    brange.index = lambda _: mid or len(bdata) /2
+    brange.index = lambda _: mid or len(bdata) / 2
     approx = approx_persist.ApproxPersistChooser(around)
 
     assert approx.index(brange, binfo, fnames) == result

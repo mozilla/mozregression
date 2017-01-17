@@ -221,7 +221,7 @@ class Application(object):
             for karg in args:
                 if karg == arg:
                     # handle '--good 2015-01-01'
-                    indexes_to_remove.extend((i, i +1))
+                    indexes_to_remove.extend((i, i + 1))
                     break
                 elif arg.startswith(karg + '='):
                     # handle '--good=2015-01-01'

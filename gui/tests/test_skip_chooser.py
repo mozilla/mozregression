@@ -34,14 +34,14 @@ def test_skip_dialog_init(qtbot, dialog_builder):
     dialog = dialog_builder.build(79)
     assert len(dialog.scene.items()) == 79
     mid_item = dialog.scene.mid_build
-    assert dialog.build_index(mid_item) == 79 /2
+    assert dialog.build_index(mid_item) == 79 / 2
     assert dialog.scene.selectedItems() == [mid_item]
 
 
 def test_skip_dialog_ok(qtbot, dialog_builder):
     dialog = dialog_builder.build(50)
     # this should block the ui in reality
-    assert dialog.choose_next_build() == 50 /2
+    assert dialog.choose_next_build() == 50 / 2
 
 
 def test_dbl_click_btn(qtbot, dialog_builder):

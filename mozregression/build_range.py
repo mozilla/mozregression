@@ -97,7 +97,7 @@ class BuildRange(object):
         new_range = copy.copy(self)
         new_range._future_build_infos = \
             self._future_build_infos[:pos] + \
-            self._future_build_infos[pos +count:]
+            self._future_build_infos[pos + count:]
         return new_range
 
     def filter_invalid_builds(self):
@@ -147,8 +147,8 @@ class BuildRange(object):
                 self._fetch(range(size))
                 self.filter_invalid_builds()
                 return 0
-            mid = size /2
-            self._fetch((0, mid, size -1))
+            mid = size / 2
+            self._fetch((0, mid, size - 1))
             # remove invalids
             self.filter_invalid_builds()
             if len(self) == size:

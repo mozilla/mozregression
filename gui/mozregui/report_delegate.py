@@ -84,7 +84,7 @@ class ReportItemDelegate(QStyledItemDelegate):
         if item and item.downloading:
             # Draw progress bar
             progressBarOption = QStyleOptionProgressBarV2()
-            progressBarHeight = option.rect.height()/4
+            progressBarHeight = option.rect.height() /4
             progressBarOption.rect = QRect(
                 option.rect.x(),
                 option.rect.y() +

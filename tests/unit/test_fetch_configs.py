@@ -247,43 +247,43 @@ CHSET12 = "47856a214918"
 
 @pytest.mark.parametrize("app,os,bits,repo,push_date,expected", [
     # firefox
-    ("firefox", 'linux', 32, None, TIMESTAMP_GECKO_V2-1,
+    ("firefox", 'linux', 32, None, TIMESTAMP_GECKO_V2 -1,
      'buildbot.revisions.%s.mozilla-inbound.linux' % CHSET),
-    ("firefox", 'linux', 64, 'm-i', TIMESTAMP_GECKO_V2-1,
+    ("firefox", 'linux', 64, 'm-i', TIMESTAMP_GECKO_V2 -1,
      'buildbot.revisions.%s.mozilla-inbound.linux64' % CHSET),
-    ("firefox", 'win', 32, 'm-i', TIMESTAMP_GECKO_V2-1,
+    ("firefox", 'win', 32, 'm-i', TIMESTAMP_GECKO_V2 -1,
      'buildbot.revisions.%s.mozilla-inbound.win32' % CHSET),
-    ("firefox", 'win', 64, 'm-i', TIMESTAMP_GECKO_V2-1,
+    ("firefox", 'win', 64, 'm-i', TIMESTAMP_GECKO_V2 -1,
      'buildbot.revisions.%s.mozilla-inbound.win64' % CHSET),
-    ("firefox", 'mac', 64, 'm-i', TIMESTAMP_GECKO_V2-1,
+    ("firefox", 'mac', 64, 'm-i', TIMESTAMP_GECKO_V2 -1,
      'buildbot.revisions.%s.mozilla-inbound.macosx64' % CHSET),
-    ("firefox", 'linux', 64, 'm-c', TIMESTAMP_GECKO_V2-1,
+    ("firefox", 'linux', 64, 'm-c', TIMESTAMP_GECKO_V2 -1,
      'buildbot.revisions.%s.mozilla-central.linux64' % CHSET),
     ("firefox", 'linux', 64, 'm-i', TIMESTAMP_GECKO_V2,
      'gecko.v2.mozilla-inbound.revision.%s.firefox.linux64-opt' % CHSET),
-    ("firefox", 'linux', 64, 'try', TIMESTAMP_GECKO_V2-1,
+    ("firefox", 'linux', 64, 'try', TIMESTAMP_GECKO_V2 -1,
      'gecko.v2.try.revision.%s.firefox.linux64-opt' % CHSET),
     # fennec
-    ("fennec", None, None, None, TIMESTAMP_GECKO_V2-1,
+    ("fennec", None, None, None, TIMESTAMP_GECKO_V2 -1,
      'buildbot.revisions.%s.mozilla-inbound.android-api-11' % CHSET),
     ("fennec", None, None, None, TIMESTAMP_GECKO_V2,
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-11-opt' % CHSET),
     ("fennec", None, None, None, TIMESTAMP_FENNEC_API_15,
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-15-opt' % CHSET),
-    ("fennec-2.3", None, None, 'm-i', TIMESTAMP_GECKO_V2-1,
+    ("fennec-2.3", None, None, 'm-i', TIMESTAMP_GECKO_V2 -1,
      'buildbot.revisions.%s.mozilla-inbound.android-api-9' % CHSET),
     ("fennec-2.3", None, None, 'm-i', TIMESTAMP_GECKO_V2,
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-9-opt' % CHSET),
     # b2g
-    ("b2g", 'linux', 32, None, TIMESTAMP_GECKO_V2-1,
+    ("b2g", 'linux', 32, None, TIMESTAMP_GECKO_V2 -1,
      'buildbot.revisions.%s.b2g-inbound.linux_gecko' % CHSET),
-    ("b2g", 'linux', 64, 'b-i', TIMESTAMP_GECKO_V2-1,
+    ("b2g", 'linux', 64, 'b-i', TIMESTAMP_GECKO_V2 -1,
      'buildbot.revisions.%s.b2g-inbound.linux64_gecko' % CHSET),
-    ("b2g", 'win', 32, 'b-i', TIMESTAMP_GECKO_V2-1,
+    ("b2g", 'win', 32, 'b-i', TIMESTAMP_GECKO_V2 -1,
      'buildbot.revisions.%s.b2g-inbound.win32_gecko' % CHSET12),
-    ("b2g", 'win', 64, 'b-i', TIMESTAMP_GECKO_V2-1,
+    ("b2g", 'win', 64, 'b-i', TIMESTAMP_GECKO_V2 -1,
      'buildbot.revisions.%s.b2g-inbound.win64_gecko' % CHSET12),
-    ("b2g", 'mac', 64, 'b-i', TIMESTAMP_GECKO_V2-1,
+    ("b2g", 'mac', 64, 'b-i', TIMESTAMP_GECKO_V2 -1,
      'buildbot.revisions.%s.b2g-inbound.macosx64_gecko' % CHSET12),
 ])
 def test_tk_inbound_route(app, os, bits, repo, push_date, expected):
@@ -313,7 +313,7 @@ def test_tk_inbound_route_with_build_type(app, os, bits, build_type, expected):
     conf = create_config(app, os, bits)
     conf.set_build_type(build_type)
     result = conf.tk_inbound_route(
-        create_push(CHSET, TIMESTAMP_GECKO_V2-1))
+        create_push(CHSET, TIMESTAMP_GECKO_V2 -1))
     assert result == expected
 
 

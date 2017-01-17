@@ -91,7 +91,7 @@ class Download(object):
                 # in case of exception here (like KeyboardInterrupt),
                 # cancel the task.
                 self.thread.join(0.02)
-            except:
+            except Exception:
                 self.cancel()
                 raise
         # this will raise exception that may happen inside the thread.
@@ -170,7 +170,7 @@ class Download(object):
                         bytes_so_far += len(chunk)
                         self._update_progress(bytes_so_far, total_size)
             response.raise_for_status()
-        except:
+        except Exception:
             self.__error = sys.exc_info()
         try:
             if temp is None:

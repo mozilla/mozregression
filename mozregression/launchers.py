@@ -187,7 +187,7 @@ class MozRunnerLauncher(Launcher):
                 mozinstall.install(src=dest, dest=self.tempdir),
                 self.app_name
             )
-        except:
+        except Exception:
             rmtree(self.tempdir)
             raise
 
@@ -407,7 +407,7 @@ class JsShellLauncher(Launcher):
             )
             # set the file executable
             os.chmod(self.binary, os.stat(self.binary).st_mode | stat.S_IEXEC)
-        except:
+        except Exception:
             rmtree(self.tempdir)
             raise
 

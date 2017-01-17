@@ -372,5 +372,6 @@ def test_set_firefox_build_type_pgo(os, bits, tc_suffix):
             create_push(CHSET, TIMESTAMP_GECKO_V2)) \
             .endswith('.' + tc_suffix)
 
+
 if __name__ == '__main__':
     unittest.main()

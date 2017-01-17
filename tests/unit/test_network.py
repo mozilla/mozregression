@@ -65,5 +65,6 @@ def test_set_http_session():
         # remove the global session to not impact other tests
         network.SESSION = None
 
+
 if __name__ == '__main__':
     unittest.main()

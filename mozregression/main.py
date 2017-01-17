@@ -320,5 +320,6 @@ def main(argv=None, namespace=None, check_new_version=True):
         if app:
             app.clear()
 
+
 if __name__ == "__main__":
     main()

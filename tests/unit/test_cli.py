@@ -186,6 +186,7 @@ def test_no_args(os, bits, default_good_date):
         assert config.options.good == default_good_date
         assert config.options.bad == datetime.date.today()
 
+
 TODAY = datetime.date.today()
 SOME_DATE = TODAY + datetime.timedelta(days=-20)
 SOME_OLDER_DATE = TODAY + datetime.timedelta(days=-10)

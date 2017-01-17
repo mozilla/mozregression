@@ -317,7 +317,7 @@ class B2GLauncher(MozRunnerLauncher):
 class B2GDeviceLauncher(Launcher):
     def _install(self, dest):
         print("*** Please install %s on your device and test it manually."
-               % dest)
+              % dest)
 
     def _start(self, **kwargs):
         pass

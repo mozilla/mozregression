@@ -165,5 +165,5 @@ def write_conf(conf_path):
 
     print
     print colorize('Config file {sBRIGHT}%s{sRESET_ALL} written.' % conf_path)
-    print ("Note you can edit it manually, and there are other options you can"
+    print("Note you can edit it manually, and there are other options you can"
            " configure. See %s." % CONFIG_FILE_HELP_URL)

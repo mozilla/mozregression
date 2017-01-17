@@ -316,7 +316,7 @@ class B2GLauncher(MozRunnerLauncher):
 @REGISTRY.register('b2g-device')
 class B2GDeviceLauncher(Launcher):
     def _install(self, dest):
-        print ("*** Please install %s on your device and test it manually."
+        print("*** Please install %s on your device and test it manually."
                % dest)
 
     def _start(self, **kwargs):

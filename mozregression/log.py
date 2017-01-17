@@ -31,7 +31,7 @@ def init_logger(debug=True, allow_color=ALLOW_COLOR, output=None):
         'CRITICAL': Fore.RED + Style.BRIGHT,
         'ERROR': Fore.RED + Style.BRIGHT,
         'DEBUG': Fore.CYAN + Style.BRIGHT,
-        'INFO':  Style.BRIGHT,
+        'INFO': Style.BRIGHT,
     }
     time_color = Fore.BLUE
     if mozinfo.os == "win":

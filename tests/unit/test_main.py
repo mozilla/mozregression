@@ -211,7 +211,7 @@ class TestCheckMozregresionVersion(unittest.TestCase):
     @patch('mozregression.main.LOG')
     @patch('requests.get')
     def test_version_is_upto_date(self, get, log):
-        response = Mock(json=lambda: {'info': {'version':  __version__}})
+        response = Mock(json=lambda: {'info': {'version': __version__}})
         get.return_value = response
         main.check_mozregression_version()
         self.assertFalse(log.critical.called)

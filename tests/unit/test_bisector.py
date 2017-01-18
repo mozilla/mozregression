@@ -367,7 +367,7 @@ class TestBisector(unittest.TestCase):
             call(MyBuildData([2, 3])),
         ])
         # ensure that we called the handler's methods
-        self.assertEqual(self.handler.initialize.mock_calls, [call()]*3)
+        self.assertEqual(self.handler.initialize.mock_calls, [call()] * 3)
         self.handler.build_good. \
             assert_called_once_with(2, MyBuildData([1, 2, 3]))
         self.handler.build_bad.assert_called_once_with(1, MyBuildData([2, 3]))

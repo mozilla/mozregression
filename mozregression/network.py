@@ -26,6 +26,7 @@ def retry_get(url, **karwgs):
                                         requests.exceptions.ConnectionError),
                       args=(url,), kwargs=karwgs)
 
+
 SESSION = None
 
 

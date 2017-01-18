@@ -187,7 +187,7 @@ class MozRunnerLauncher(Launcher):
                 mozinstall.install(src=dest, dest=self.tempdir),
                 self.app_name
             )
-        except:
+        except Exception:
             rmtree(self.tempdir)
             raise
 
@@ -316,8 +316,8 @@ class B2GLauncher(MozRunnerLauncher):
 @REGISTRY.register('b2g-device')
 class B2GDeviceLauncher(Launcher):
     def _install(self, dest):
-        print ("*** Please install %s on your device and test it manually."
-               % dest)
+        print("*** Please install %s on your device and test it manually."
+              % dest)
 
     def _start(self, **kwargs):
         pass
@@ -407,7 +407,7 @@ class JsShellLauncher(Launcher):
             )
             # set the file executable
             os.chmod(self.binary, os.stat(self.binary).st_mode | stat.S_IEXEC)
-        except:
+        except Exception:
             rmtree(self.tempdir)
             raise
 

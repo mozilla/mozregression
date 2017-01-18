@@ -47,13 +47,13 @@ class AskVerdict(QWidget):
 
     def on_dropdown_item_activated(self):
         self.delegate.got_verdict.emit(
-                str(self.ui.comboVerdict.currentText())[0]
+            str(self.ui.comboVerdict.currentText())[0]
         )
         self.emitted = True
 
     def on_good_bad_button_clicked(self):
         self.delegate.got_verdict.emit(
-                str(self.sender().text())[0]
+            str(self.sender().text())[0]
         )
         self.emitted = True
 
@@ -84,7 +84,7 @@ class ReportItemDelegate(QStyledItemDelegate):
         if item and item.downloading:
             # Draw progress bar
             progressBarOption = QStyleOptionProgressBarV2()
-            progressBarHeight = option.rect.height()/4
+            progressBarHeight = option.rect.height() / 4
             progressBarOption.rect = QRect(
                 option.rect.x(),
                 option.rect.y() +

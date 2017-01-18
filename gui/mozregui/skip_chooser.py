@@ -29,7 +29,7 @@ class SkipChooserScene(QGraphicsScene):
     def from_range(self, build_range):
         self.build_range = build_range
         mid = build_range.mid_point()
-        bounds = (0, len(build_range)-1)
+        bounds = (0, len(build_range) - 1)
         row = -1
         for i, future in enumerate(build_range.future_build_infos):
             column = i % self.COLUMNS

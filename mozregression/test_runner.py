@@ -146,10 +146,10 @@ class ManualTestRunner(TestRunner):
         min = -mid + 1
         max = build_range_len - mid - 2
         valid_range = range(min, max + 1)
-        print ("Build was skipped. You can manually choose a new build to"
-               " test, to be able to get out of a broken build range.")
-        print ("Please type the index of the build you would like to try - the"
-               " index is 0-based on the middle of the remaining build range.")
+        print("Build was skipped. You can manually choose a new build to"
+              " test, to be able to get out of a broken build range.")
+        print("Please type the index of the build you would like to try - the"
+              " index is 0-based on the middle of the remaining build range.")
         print "You can choose a build index between [%d, %d]:" % (min, max)
         while True:
             value = raw_input('> ')

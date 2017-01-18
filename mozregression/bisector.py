@@ -472,7 +472,7 @@ class Bisection(object):
         # download next left mid point
         start_dl(self.build_range[mid_point:])
         # download right next mid point
-        start_dl(self.build_range[:mid_point+1])
+        start_dl(self.build_range[:mid_point + 1])
         # since we called mid_point() on copy of self.build_range instance,
         # the underlying cache may have changed and we need to find the new
         # mid point.
@@ -535,7 +535,7 @@ class Bisection(object):
             if not self.handler.find_fix:
                 self.build_range = self.build_range[mid_point:]
             else:
-                self.build_range = self.build_range[:mid_point+1]
+                self.build_range = self.build_range[:mid_point + 1]
             self.handler.build_good(mid_point, self.build_range)
         elif verdict == 'b':
             # if build is bad and we are looking for a regression, we
@@ -545,7 +545,7 @@ class Bisection(object):
             # [G, ?, ?, B]
             self.history.add(self.build_range, mid_point, verdict)
             if not self.handler.find_fix:
-                self.build_range = self.build_range[:mid_point+1]
+                self.build_range = self.build_range[:mid_point + 1]
             else:
                 self.build_range = self.build_range[mid_point:]
             self.handler.build_bad(mid_point, self.build_range)

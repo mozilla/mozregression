@@ -43,7 +43,7 @@ DEPENDENCIES = [
     'redo',
     # require mozdevice 0.47 because 0.48 requires rooted devices
     'mozdevice == 0.47',
-    'taskcluster == 0.3.4',
+    'taskcluster == 0.0.32',
     'colorama',
     'configobj',
 ]

@@ -28,24 +28,25 @@ if sys.version_info < (2, 7) or sys.version_info > (3, 0):
     sys.exit("mozregression currently require python >=2.7 and <3.")
 
 DEPENDENCIES = [
-    'mozfile >= 1.2',
-    'mozprofile >= 0.28',
-    'mozrunner >= 6.11',
-    'BeautifulSoup >= 3.0.4',
-    'mozinstall >= 1.12',
-    'mozinfo >= 0.9',
-    'mozlog >= 3.0',
-    'mozversion >= 1.3',
+    'mozfile==1.2',
+    'mozprocess==0.24',
+    'mozprofile==0.28',
+    'mozrunner==6.13',
+    'BeautifulSoup==3.2.1',
+    'mozinstall==1.12',
+    'mozinfo==0.9',
+    'mozlog==3.3',
+    'mozversion==1.4',
     # require requests <3 because taskcluster needs it.
     # else there is install errors, see
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1212170
     'requests>=2.4.3,<3',
-    'redo',
+    'redo==1.6',
     # require mozdevice 0.47 because 0.48 requires rooted devices
-    'mozdevice == 0.47',
-    'taskcluster == 0.3.4',
-    'colorama',
-    'configobj',
+    'mozdevice==0.47',
+    'taskcluster==0.3.4',
+    'colorama==0.3.7',
+    'configobj==5.0.6',
 ]
 
 desc = """Regression range finder for Mozilla nightly builds"""

@@ -392,7 +392,7 @@ class Configuration(object):
                                  % (new_value, value))
                 value = new_value
             except UnavailableRelease:
-                pass
+                self.logger.info("Using hash to bisect inbound")
         return value
 
     def validate(self):

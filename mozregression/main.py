@@ -31,6 +31,7 @@ from mozregression.download_manager import BuildDownloadManager
 from mozregression.persist_limit import PersistLimit
 from mozregression.fetch_build_info import (NightlyInfoFetcher,
                                             InboundInfoFetcher)
+from mozregression.json_pushes import JsonPushes
 from mozregression.bugzilla import find_bugids_in_push, bug_url
 from mozregression.approx_persist import ApproxPersistChooser
 
@@ -168,7 +169,8 @@ class Application(object):
                     " in the same push. Check the pushlog url."
                 )
             elif len(handler.build_range) == 2:
-                # range reduced to 2 pushes: one good, one bad.
+                # range reduced to 2 pushes (at least ones with builds):
+                # one good, one bad.
                 result = handler.handle_merge()
                 if result:
                     branch, good_rev, bad_rev = result
@@ -176,16 +178,25 @@ class Application(object):
                     return self._bisect_inbounds(good_rev, bad_rev,
                                                  expand=DEFAULT_EXPAND)
                 else:
-                    bugids = find_bugids_in_push(
-                        handler.build_range[1].repo_name,
-                        handler.build_range[1].changeset
-                    )
-                    if len(bugids) == 1:
-                        word = 'fix' if handler.find_fix else 'regression'
-                        LOG.info("Looks like the following bug has the changes"
-                                 " which introduced the {}:\n{}".format(
-                                     word,
-                                     bug_url(bugids[0])))
+                    # print a bug if:
+                    # (1) there really is only one bad push (and we're not
+                    # just missing the builds for some intermediate builds)
+                    # (2) there is only one bug number in that push
+                    jp = JsonPushes(handler.build_range[1].repo_name)
+                    num_pushes = len(jp.pushes_within_changes(
+                        handler.build_range[0].changeset,
+                        handler.build_range[1].changeset))
+                    if num_pushes == 2:
+                        bugids = find_bugids_in_push(
+                            handler.build_range[1].repo_name,
+                            handler.build_range[1].changeset
+                        )
+                        if len(bugids) == 1:
+                            word = 'fix' if handler.find_fix else 'regression'
+                            LOG.info("Looks like the following bug has the "
+                                     " changes which introduced the"
+                                     " {}:\n{}".format(word,
+                                                       bug_url(bugids[0])))
         elif result == Bisection.USER_EXIT:
             self._print_resume_info(handler)
         else:

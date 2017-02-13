@@ -241,8 +241,7 @@ class InboundHandler(BisectorHandler):
         in each repo. The repo with the earliest date is chosen.
         """
         landings = {}
-        # NB: Leaving b2g-inbound out for simplicity, it 404s at this point.
-        for k in ("autoland", "fx-team", "mozilla-inbound"):
+        for k in ("autoland", "mozilla-inbound"):
             jp = JsonPushes(k)
 
             try:

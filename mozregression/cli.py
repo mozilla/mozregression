@@ -182,7 +182,7 @@ def create_parser(defaults):
                         help="application name. Default: %(default)s.")
 
     parser.add_argument("--repo",
-                        metavar="[mozilla-aurora|mozilla-inbound|fx-team...]",
+                        metavar="[mozilla-aurora|mozilla-inbound|autoland...]",
                         default=defaults["repo"],
                         help="repository name used for the bisection.")
 

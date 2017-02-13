@@ -168,7 +168,7 @@ def test_app_bisect_nightlies_user_exit(create_app, argv, expected_log,
 
 def test_app_bisect_inbounds_user_exit(create_app, mocker):
     Handler = mocker.patch("mozregression.main.InboundHandler")
-    Handler.return_value = Mock(build_range=[Mock(repo_name="fx-team")],
+    Handler.return_value = Mock(build_range=[Mock(repo_name="autoland")],
                                 good_revision='c1',
                                 bad_revision='c2',
                                 spec=InboundHandler)
@@ -177,7 +177,7 @@ def test_app_bisect_inbounds_user_exit(create_app, mocker):
     app.bisector.bisect = Mock(return_value=Bisection.USER_EXIT)
     assert app.bisect_inbounds() == 0
     assert create_app.find_in_log("To resume, run:")
-    assert create_app.find_in_log("--repo=fx-team", False)
+    assert create_app.find_in_log("--repo=autoland", False)
 
 
 def test_app_bisect_inbounds_no_data(create_app):

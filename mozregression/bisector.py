@@ -241,8 +241,7 @@ class InboundHandler(BisectorHandler):
         in each repo. The repo with the earliest date is chosen.
         """
         landings = {}
-        # NB: Leaving b2g-inbound out for simplicity, it 404s at this point.
-        for k in ("autoland", "fx-team", "mozilla-inbound"):
+        for k in ("autoland", "mozilla-inbound"):
             jp = JsonPushes(k)
 
             try:
@@ -269,7 +268,7 @@ class InboundHandler(BisectorHandler):
         branch = find_branch_in_merge_commit(msg)
         if not (branch and len(push.changesets) >= 2):
             # We did not find a branch, lets check all the integration branches
-            if get_category(most_recent_push.repo_name) != 'integration' and \
+            if get_category(most_recent_push.repo_name) == 'mozilla-central' and \
                len(push.changesets) >= 2:
                 branch = self._choose_integration_branch(most_recent_push.changeset)
                 jp2 = JsonPushes(branch)

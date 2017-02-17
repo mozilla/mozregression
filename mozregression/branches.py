@@ -54,7 +54,7 @@ def create_branches():
     branches.set_branch("mozilla-central", "mozilla-central")
 
     # integration branches
-    for name in ("autoland", "b2g-inbound", "fx-team", "mozilla-inbound"):
+    for name in ("autoland", "b2g-inbound", "mozilla-inbound"):
         branches.set_branch(name, "integration/%s" % name,
                             category='integration')
 
@@ -71,7 +71,6 @@ def create_branches():
             ("mozilla-inbound", ("m-i", "inbound")),
             ("mozilla-aurora", ("aurora",)),
             ("mozilla-beta", ("beta",)),
-            ("fx-team", ("f-t",)),
             ("b2g-inbound", ("b2ginbound", "b2g-i", "b-i")),
             ("b2g-ota", ("b2g-o", "b-o"))):
         for alias in aliases:

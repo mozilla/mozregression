@@ -46,7 +46,7 @@ def test_get_url_unknown_branch():
 
 @pytest.mark.parametrize('name, expected', [
     ('mozilla-central', 'default'),
-    ('fx-team', 'integration'),
+    ('autoland', 'integration'),
     ('m-i', 'integration'),
     ('', None),
     (None, None)
@@ -56,18 +56,18 @@ def test_get_category(name, expected):
 
 
 @pytest.mark.parametrize('commit, branch', [
-    ("Merge mozilla-central to fx-team",
+    ("Merge mozilla-central to autoland",
      "mozilla-central"),
-    ("Merge fx-team to central, a=merge",
-     "fx-team"),
+    ("Merge autoland to central, a=merge",
+     "autoland"),
     ("Merge m-c to b2g-inbound",
      "mozilla-central"),
     ("Merge b2ginbound to central, a=merge",
      "b2g-inbound"),
     ("Merge m-c to b2ginbound, a=merge CLOSED TREE",
      "mozilla-central"),
-    ("merge f-t to mozilla-central a=merge",
-     "fx-team"),
+    ("merge autoland to mozilla-central a=merge",
+     "autoland"),
     ("Merge m-i to m-c, a=merge CLOSED TREE",
      "mozilla-inbound"),
 ])

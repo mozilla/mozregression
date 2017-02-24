@@ -392,7 +392,7 @@ class Configuration(object):
                                  % (new_value, value))
                 value = new_value
             except UnavailableRelease:
-                pass
+                self.logger.info("%s is not a release, assuming it's a hash...", value)
         return value
 
     def validate(self):

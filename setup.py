@@ -42,8 +42,7 @@ DEPENDENCIES = [
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1212170
     'requests>=2.4.3,<3',
     'redo==1.6',
-    # require mozdevice 0.47 because 0.48 requires rooted devices
-    'mozdevice==0.47',
+    'mozdevice==0.50',
     'taskcluster==0.3.4',
     'colorama==0.3.7',
     'configobj==5.0.6',

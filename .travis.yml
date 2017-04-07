@@ -1,6 +1,7 @@
 os:
   - linux
-  - osx
+# not testing on osx for now
+#  - osx
 
 install:
     - if [ "$TRAVIS_OS_NAME" == "linux" ]; then

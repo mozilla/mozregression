@@ -27,6 +27,11 @@ LOG = get_proxy_logger(__name__)
 # and http://bugs.python.org/issue7980
 import _strptime  # noqa
 
+# Fix intermittent bug due to strptime first call not being thread safe
+# see https://bugzilla.mozilla.org/show_bug.cgi?id=1200270
+# and http://bugs.python.org/issue7980
+import _strptime  # noqa
+
 
 class InfoFetcher(object):
     def __init__(self, fetch_config):

@@ -276,7 +276,11 @@ def create_launcher(buildinfo):
 
 
 class FirefoxRegressionProfile(Profile):
-    """Specialized Profile subclass for Firefox"""
+    """
+    Specialized Profile subclass for Firefox / Fennec
+
+    Some preferences may only apply to one or the other
+    """
 
     preferences = {  # Don't automatically update the application
         'app.update.enabled': False,
@@ -337,6 +341,7 @@ class FennecLauncher(Launcher):
     app_info = None
     adb = None
     package_name = None
+    profile_class = FirefoxRegressionProfile
     remote_profile = None
 
     @classmethod

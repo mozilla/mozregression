@@ -528,10 +528,10 @@ class FennecConfig(CommonConfig,
     BUILD_TYPES = ('opt', 'debug')
 
     def build_regex(self):
-        return r'fennec-.*\.apk'
+        return r'(target|fennec-.*)\.apk'
 
     def build_info_regex(self):
-        return r'fennec-.*\.txt'
+        return r'(target|fennec-.*)\.txt'
 
     def available_bits(self):
         return ()

@@ -113,28 +113,6 @@ class TestCli(unittest.TestCase):
             warns
         )
 
-    @patch("mozregression.tc_authenticate.get_defaults")
-    def test_with_tk_credentials(self, get_defaults):
-        from mozregression.config import DEFAULTS
-        values = dict(DEFAULTS)
-        values.update({
-            'app': 'b2g-aries',
-            'taskcluster-clientid': 'id1',
-            'taskcluster-accesstoken': 'mytoken',
-        })
-        get_defaults.return_value = values
-        filepath = self._create_conf_file(
-            '\n'.join('%s=%s' % (k, v) for k, v in values.items())
-        )
-        conf = cli.cli(['--good=c1', '--bad=c2'], conf_file=filepath)
-        conf.validate()
-        self.assertEquals(conf.fetch_config.tk_options(), {
-            'credentials': {
-                'accessToken': 'mytoken',
-                'clientId': 'id1'
-            }
-        })
-
 
 def do_cli(*argv):
     conf = cli.cli(argv, conf_file=None)
@@ -195,10 +173,6 @@ SOME_OLDER_DATE = TODAY + datetime.timedelta(days=-10)
 @pytest.mark.parametrize('params,good,bad', [
     # we can use dates with integration branches
     (['--good=%s' % SOME_DATE, '--bad=%s' % SOME_OLDER_DATE, '--repo=m-i'],
-     SOME_DATE, SOME_OLDER_DATE),
-    # b2g devices always use taskcluster, even with releases branches
-    (['--good=%s' % SOME_DATE, '--bad=%s' % SOME_OLDER_DATE, '--repo=m-c',
-      '--app=b2g-emulator'],
      SOME_DATE, SOME_OLDER_DATE),
     # non opt build flavors are also found using taskcluster
     (['--good=%s' % SOME_DATE, '--bad=%s' % SOME_OLDER_DATE, '-B', 'debug'],

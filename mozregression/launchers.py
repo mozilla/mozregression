@@ -312,30 +312,6 @@ class ThunderbirdLauncher(MozRunnerLauncher):
     profile_class = ThunderbirdProfile
 
 
-@REGISTRY.register('b2g')
-class B2GLauncher(MozRunnerLauncher):
-    pass
-
-
-@REGISTRY.register('b2g-device')
-class B2GDeviceLauncher(Launcher):
-    def _install(self, dest):
-        print("*** Please install %s on your device and test it manually."
-              % dest)
-
-    def _start(self, **kwargs):
-        pass
-
-    def _stop(self, **kwargs):
-        pass
-
-    def get_app_info(self):
-        return {}
-
-    def _wait(self):
-        pass
-
-
 @REGISTRY.register('fennec')
 class FennecLauncher(Launcher):
     app_info = None

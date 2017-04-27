@@ -163,9 +163,6 @@ class CommonConfig(object):
             "Unable to find a suitable build type %r." % str(build_type)
         )
 
-    def is_b2g_device(self):
-        return isinstance(self, B2GDeviceConfigMixin)
-
     def set_repo(self, repo):
         """
         Allow to define the repo name.
@@ -182,7 +179,6 @@ class CommonConfig(object):
         Note that this method relies on the repo and build type defined.
         """
         return (branches.get_category(self.repo) in ('integration', 'try') or
-                self.is_b2g_device() or
                 # we can find the asan builds (firefox and jsshell) in
                 # archives.m.o
                 self.build_type not in ('opt', 'asan'))
@@ -284,13 +280,6 @@ class ThunderbirdNightlyConfigMixin(NightlyConfigMixin):
             return "comm-central"
 
 
-class B2GNightlyConfigMixin(NightlyConfigMixin):
-    nightly_base_repo_name = 'b2g'
-
-    def _get_nightly_repo(self, date):
-        return "mozilla-central"
-
-
 class FennecNightlyConfigMixin(NightlyConfigMixin):
     nightly_base_repo_name = "mobile"
 
@@ -389,35 +378,6 @@ class FirefoxInboundConfigMixin(InboundConfigMixin):
         )
 
 
-class B2GInboundConfigMixin(InboundConfigMixin):
-    default_inbound_branch = 'b2g-inbound'
-
-    def tk_inbound_route(self, push):
-        changeset = push.changeset
-        if self.os != 'linux':
-            # this is quite strange, but sometimes we have to limit the
-            # changeset size, and sometimes not. see
-            # https://bugzilla.mozilla.org/show_bug.cgi?id=1159700#c13
-            changeset = changeset[:12]
-        return 'buildbot.revisions.{}.{}.{}'.format(
-            changeset, self.inbound_branch, _common_tk_part(self) + '_gecko'
-        )
-
-
-class B2GDeviceConfigMixin(InboundConfigMixin):
-    default_inbound_branch = 'b2g-inbound'
-    device_name = None
-
-    def tk_inbound_route(self, push):
-        return 'gecko.v2.{}.revision.{}.b2g.{}-{}'.format(
-            self.inbound_branch, push.changeset, self.device_name,
-            self.build_type
-        )
-
-    def inbound_persist_part(self):
-        return self.build_type
-
-
 class FennecInboundConfigMixin(InboundConfigMixin):
     tk_name = 'android-api-11'
 
@@ -472,53 +432,6 @@ class FirefoxConfig(CommonConfig,
 class ThunderbirdConfig(CommonConfig,
                         ThunderbirdNightlyConfigMixin):
     pass
-
-
-@REGISTRY.register('b2g')
-class B2GConfig(CommonConfig,
-                B2GNightlyConfigMixin,
-                B2GInboundConfigMixin):
-    pass
-
-
-@REGISTRY.register('b2g-aries', attr_value='b2g-device',
-                   disable_in_gui=True)
-class B2GAriesConfig(CommonConfig,
-                     B2GDeviceConfigMixin):
-    BUILD_TYPES = ('opt', 'debug', 'eng-opt')
-    artifact_name = 'aries.zip'
-    device_name = 'aries'
-
-    def build_regex(self):
-        return self.artifact_name
-
-    def tk_needs_auth(self):
-        return True
-
-
-@REGISTRY.register('b2g-flame', attr_value='b2g-device')
-class B2GFlameConfig(B2GAriesConfig):
-    BUILD_TYPES = ('opt', 'debug', 'eng-opt', 'spark-eng-opt')
-    artifact_name = 'flame-kk.zip'
-    device_name = 'flame-kk'
-
-    def set_build_type(self, build_type):
-        # remove kk in case people define it, but we only have kk builds
-        flavors = _extract_build_type(build_type)
-        if 'kk' in flavors:
-            flavors.remove('kk')
-        CommonConfig.set_build_type(self, ','.join(flavors))
-
-
-@REGISTRY.register('b2g-emulator', attr_value='b2g-device')
-class B2GEmulatorConfig(B2GAriesConfig):
-    BUILD_TYPES = ('opt', 'debug', 'jb-debug', 'jb-opt',
-                   'kk-debug', 'kk-opt', 'l-debug', 'l-opt')
-    artifact_name = 'emulator.tar.gz'
-    device_name = 'emulator'
-
-    def tk_needs_auth(self):
-        return False
 
 
 @REGISTRY.register('fennec')

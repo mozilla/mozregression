@@ -172,7 +172,7 @@ class CommandTestRunner(TestRunner):
 
     Some variables may be used to evaluate the builds:
      - variables referenced in :meth:`TestRunner.evaluate`
-     - app_name (the tested application name: firefox, b2g...)
+     - app_name (the tested application name: firefox, ...)
      - binary (the path to the binary when applicable - not for fennec)
 
     These variables can be used in two ways:

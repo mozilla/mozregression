@@ -197,15 +197,6 @@ class TestFennec23Config(unittest.TestCase):
         self.assertIn("mozilla-central-android-api-9", regex)
 
 
-class TestB2GConfig(unittest.TestCase):
-    def setUp(self):
-        self.conf = create_config('b2g', 'linux', 64)
-
-    def test_get_nightly_repo(self):
-        repo = self.conf.get_nightly_repo(datetime.date(2014, 12, 5))
-        self.assertEqual(repo, "mozilla-central")
-
-
 class TestGetBuildUrl(unittest.TestCase):
     def test_for_linux(self):
         self.assertEqual(get_build_regex('test', 'linux', 32),
@@ -274,17 +265,6 @@ CHSET12 = "47856a214918"
      'buildbot.revisions.%s.mozilla-inbound.android-api-9' % CHSET),
     ("fennec-2.3", None, None, 'm-i', TIMESTAMP_GECKO_V2,
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-9-opt' % CHSET),
-    # b2g
-    ("b2g", 'linux', 32, None, TIMESTAMP_GECKO_V2 - 1,
-     'buildbot.revisions.%s.b2g-inbound.linux_gecko' % CHSET),
-    ("b2g", 'linux', 64, 'b-i', TIMESTAMP_GECKO_V2 - 1,
-     'buildbot.revisions.%s.b2g-inbound.linux64_gecko' % CHSET),
-    ("b2g", 'win', 32, 'b-i', TIMESTAMP_GECKO_V2 - 1,
-     'buildbot.revisions.%s.b2g-inbound.win32_gecko' % CHSET12),
-    ("b2g", 'win', 64, 'b-i', TIMESTAMP_GECKO_V2 - 1,
-     'buildbot.revisions.%s.b2g-inbound.win64_gecko' % CHSET12),
-    ("b2g", 'mac', 64, 'b-i', TIMESTAMP_GECKO_V2 - 1,
-     'buildbot.revisions.%s.b2g-inbound.macosx64_gecko' % CHSET12),
 ])
 def test_tk_inbound_route(app, os, bits, repo, push_date, expected):
     conf = create_config(app, os, bits)
@@ -297,17 +277,6 @@ def test_tk_inbound_route(app, os, bits, repo, push_date, expected):
     # firefox
     ("firefox", 'linux', 32, "debug",
      'buildbot.revisions.%s.mozilla-inbound.linux-debug' % CHSET),
-    # b2g-aries
-    ("b2g-aries", None, None, "opt,eng",
-     'gecko.v2.b2g-inbound.revision.%s.b2g.aries-eng-opt' % CHSET),
-    # b2g-flame
-    ("b2g-flame", None, None, "opt,spark,eng",
-     'gecko.v2.b2g-inbound.revision.%s.b2g.flame-kk-spark-eng-opt' % CHSET),
-    ("b2g-flame", None, None, "opt,spark,eng,kk",  # allow kk
-     'gecko.v2.b2g-inbound.revision.%s.b2g.flame-kk-spark-eng-opt' % CHSET),
-    # b2g-emulator
-    ("b2g-emulator", None, None, "debug,jb",
-     'gecko.v2.b2g-inbound.revision.%s.b2g.emulator-jb-debug' % CHSET),
 ])
 def test_tk_inbound_route_with_build_type(app, os, bits, build_type, expected):
     conf = create_config(app, os, bits)
@@ -328,12 +297,6 @@ def test_set_bad_build_type():
     conf = create_config('firefox', 'linux', 64)
     with pytest.raises(errors.MozRegressionError):
         conf.set_build_type("wrong build type")
-
-
-def test_cant_set_debug_build_type_for_b2g():
-    conf = create_config('b2g', 'linux', 64)
-    with pytest.raises(errors.MozRegressionError):
-        conf.set_build_type("debug")
 
 
 def test_jsshell_build_info_regex():

@@ -54,13 +54,13 @@ def create_branches():
     branches.set_branch("mozilla-central", "mozilla-central")
 
     # integration branches
-    for name in ("autoland", "b2g-inbound", "mozilla-inbound"):
+    for name in ("autoland", "mozilla-inbound"):
         branches.set_branch(name, "integration/%s" % name,
                             category='integration')
 
     # release branches
     for name in ("comm-aurora", "comm-beta", "comm-release", "mozilla-aurora",
-                 "mozilla-beta", "mozilla-release", "b2g-ota"):
+                 "mozilla-beta", "mozilla-release"):
         branches.set_branch(name, "releases/%s" % name)
 
     branches.set_branch('try', 'try', category='try')
@@ -70,9 +70,7 @@ def create_branches():
             ("mozilla-central", ("m-c", "central")),
             ("mozilla-inbound", ("m-i", "inbound")),
             ("mozilla-aurora", ("aurora",)),
-            ("mozilla-beta", ("beta",)),
-            ("b2g-inbound", ("b2ginbound", "b2g-i", "b-i")),
-            ("b2g-ota", ("b2g-o", "b-o"))):
+            ("mozilla-beta", ("beta",))):
         for alias in aliases:
             branches.set_alias(alias, name)
     return branches

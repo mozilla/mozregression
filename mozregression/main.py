@@ -161,7 +161,7 @@ class Application(object):
                                  ensure_good_and_bad=ensure_good_and_bad)
         result = self._do_bisect(handler, good_rev, bad_rev, expand=expand)
         if result == Bisection.FINISHED:
-            LOG.info("Oh noes, no (more) inbound revisions :(")
+            LOG.info("No more inbound revisions, bisection finished.")
             handler.print_range()
             if handler.good_revision == handler.bad_revision:
                 LOG.warning(

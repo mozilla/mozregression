@@ -131,7 +131,7 @@ def test_app_bisect_inbounds_finished(create_app, same_chsets):
     app = create_app(argv)
     app.bisector.bisect = Mock(return_value=Bisection.FINISHED)
     assert app.bisect_inbounds() == 0
-    assert create_app.find_in_log("Oh noes, no (more) inbound revisions :(")
+    assert create_app.find_in_log("No more inbound revisions, bisection finished.")
     if same_chsets:
         assert create_app.find_in_log("It seems that you used two changesets"
                                       " that are in in the same push.", False)

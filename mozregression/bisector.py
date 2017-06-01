@@ -12,7 +12,7 @@ from mozregression.dates import to_datetime
 from mozregression.errors import LauncherError, MozRegressionError, \
     GoodBadExpectationError, EmptyPushlogError
 from mozregression.history import BisectionHistory
-from mozregression.branches import find_branch_in_merge_commit, get_category
+from mozregression.branches import find_branch_in_merge_commit, get_name
 from mozregression.json_pushes import JsonPushes
 from abc import ABCMeta, abstractmethod
 
@@ -268,7 +268,7 @@ class InboundHandler(BisectorHandler):
         branch = find_branch_in_merge_commit(msg)
         if not (branch and len(push.changesets) >= 2):
             # We did not find a branch, lets check all the integration branches
-            if get_category(most_recent_push.repo_name) == 'mozilla-central' and \
+            if get_name(most_recent_push.repo_name) == 'mozilla-central' and \
                len(push.changesets) >= 2:
                 branch = self._choose_integration_branch(most_recent_push.changeset)
                 jp2 = JsonPushes(branch)

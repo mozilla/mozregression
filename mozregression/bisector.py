@@ -267,7 +267,7 @@ class InboundHandler(BisectorHandler):
         LOG.debug("Found commit message:\n%s\n" % msg)
         branch = find_branch_in_merge_commit(msg)
         if not (branch and len(push.changesets) >= 2):
-            # We did not find a branch, lets check all the integration branches
+            # We did not find a branch, lets check the integration branches if we are bisecting m-c
             if get_name(most_recent_push.repo_name) == 'mozilla-central' and \
                len(push.changesets) >= 2:
                 branch = self._choose_integration_branch(most_recent_push.changeset)

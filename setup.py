@@ -34,7 +34,7 @@ DEPENDENCIES = [
     'mozrunner==6.13',
     'BeautifulSoup==3.2.1',
     'mozinstall==1.12',
-    'mozinfo==0.9',
+    'mozinfo==0.10',
     'mozlog==3.3',
     'mozversion==1.4',
     # require requests <3 because taskcluster needs it.

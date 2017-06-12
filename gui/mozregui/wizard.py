@@ -86,10 +86,18 @@ class IntroPage(WizardPage):
         self.ui.app_combo.setCurrentIndex(
             self.ui.app_combo.findText("firefox"))
 
+        self.ui.repository.textChanged.connect(self._on_repo_changed)
+
         completer = QCompleter(sorted(get_branches()), self)
         completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.ui.repository.setCompleter(completer)
         QApplication.instance().focusChanged.connect(self._on_focus_changed)
+
+    def _on_repo_changed(self, text):
+        enable_release = (text == 'mozilla-central')
+        build_select_page = self.wizard().page(2)
+        for menu in build_select_page.ui.start, build_select_page.ui.end:
+            menu.ui.combo_helper.model().item(1).setEnabled(enable_release)
 
     def _on_focus_changed(self, old, new):
         # show the repository completion on focus

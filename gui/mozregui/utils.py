@@ -62,7 +62,7 @@ class BuildSelection(QWidget):
         self.ui = Ui_BuildSelectionHelper()
         self.ui.setupUi(self)
         self.ui.release.addItems([str(k) for k in sorted(releases())])
-        self.ui.combo_helper.activated.connect(
+        self.ui.combo_helper.currentIndexChanged.connect(
             self.ui.stackedWidget.setCurrentIndex)
 
     def get_value(self):

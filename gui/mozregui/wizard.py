@@ -94,10 +94,12 @@ class IntroPage(WizardPage):
         QApplication.instance().focusChanged.connect(self._on_focus_changed)
 
     def _on_repo_changed(self, text):
-        enable_release = (text == 'mozilla-central')
+        enable_release = (text == 'mozilla-central' or text == '')
         build_select_page = self.wizard().page(2)
         for menu in build_select_page.ui.start, build_select_page.ui.end:
             menu.ui.combo_helper.model().item(1).setEnabled(enable_release)
+            if menu.ui.combo_helper.currentIndex() == 1:
+                menu.ui.combo_helper.setCurrentIndex(0)
 
     def _on_focus_changed(self, old, new):
         # show the repository completion on focus

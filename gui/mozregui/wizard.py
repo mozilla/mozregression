@@ -94,7 +94,7 @@ class IntroPage(WizardPage):
         QApplication.instance().focusChanged.connect(self._on_focus_changed)
 
     def _on_repo_changed(self, text):
-        enable_release = (text == 'mozilla-central' or text == '')
+        enable_release = (not text or text == 'mozilla-central')
         build_select_page = self.wizard().page(2)
         for menu in build_select_page.ui.start, build_select_page.ui.end:
             menu.ui.combo_helper.model().item(1).setEnabled(enable_release)

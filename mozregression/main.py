@@ -178,6 +178,10 @@ class Application(object):
                     return self._bisect_inbounds(good_rev, bad_rev,
                                                  expand=DEFAULT_EXPAND)
                 else:
+                    # This code is broken, it prints out the message even when
+                    # there are multiple bug numbers or commits in the range.
+                    # Somebody should fix it before re-enabling it.
+                    return 0
                     # print a bug if:
                     # (1) there really is only one bad push (and we're not
                     # just missing the builds for some intermediate builds)

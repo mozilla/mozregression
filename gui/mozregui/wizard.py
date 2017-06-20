@@ -96,7 +96,12 @@ class IntroPage(WizardPage):
     def _on_repo_changed(self, text):
         enable_release = (not text or text == 'mozilla-central')
         build_select_page = self.wizard().page(2)
-        for menu in build_select_page.ui.start, build_select_page.ui.end:
+        if type(build_select_page) == SingleBuildSelectionPage:
+            build_menus = [build_select_page.ui.build]
+        else:
+            build_menus = [build_select_page.ui.start,
+                           build_select_page.ui.end]
+        for menu in build_menus:
             menu.ui.combo_helper.model().item(1).setEnabled(enable_release)
             if menu.ui.combo_helper.currentIndex() == 1:
                 menu.ui.combo_helper.setCurrentIndex(0)

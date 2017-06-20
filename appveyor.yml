@@ -30,7 +30,7 @@ artifacts:
 deploy:
   - provider: GitHub
     auth_token:
-      secure: 9JS0n1MfG2KVQ86suWQ7Zq51932EBanPp05GXoLfN+94AhMOQSerjUwGIxoBXKmp
+      secure: u0CNDZrlZBQIX4IfgbuQnPUtE6lFtKK8Mr0ROPzFQJe9pQuod8HB6pVGMnHSxuob
     artifact: gui\wininst\mozregression-gui.exe
     on:
       appveyor_repo_tag: true

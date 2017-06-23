@@ -37,10 +37,7 @@ DEPENDENCIES = [
     'mozinfo==0.10',
     'mozlog==3.3',
     'mozversion==1.4',
-    # require requests <3 because taskcluster needs it.
-    # else there is install errors, see
-    # https://bugzilla.mozilla.org/show_bug.cgi?id=1212170
-    'requests>=2.4.3,<3',
+    'requests[security]==2.15.1',
     'redo==1.6',
     'mozdevice==0.50',
     'taskcluster==0.3.4',

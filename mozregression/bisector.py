@@ -217,7 +217,7 @@ class InboundHandler(BisectorHandler):
 
     def _print_progress(self, new_data):
         LOG.info("Narrowed inbound regression window from [%s, %s]"
-                 " (%d revisions) to [%s, %s] (%d revisions)"
+                 " (%d builds) to [%s, %s] (%d builds)"
                  " (~%d steps left)"
                  % (self.build_range[0].short_changeset,
                     self.build_range[-1].short_changeset,

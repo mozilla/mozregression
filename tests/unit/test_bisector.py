@@ -184,8 +184,8 @@ class TestInboundHandler(unittest.TestCase):
         ]
 
         self.handler._print_progress(new_data)
-        self.assertIn('from [12, 12345] (4 revisions)', log[0])
-        self.assertIn('to [1234, 12345] (2 revisions)', log[0])
+        self.assertIn('from [12, 12345] (4 builds)', log[0])
+        self.assertIn('to [1234, 12345] (2 builds)', log[0])
         self.assertIn('1 steps left', log[0])
 
     @patch('mozregression.bisector.LOG')

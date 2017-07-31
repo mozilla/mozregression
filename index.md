@@ -7,10 +7,9 @@ main_link: True
 
 # About mozregression
 
-mozregression is an interactive regression range finder for Mozilla *nightly*
-and *inbound* builds. It uses a binary search algorithm for quickly determining
-a changeset range corresponding to when a problem was introduced. It is widely
-used by Mozilla developers and other community members to help find regressions.
+mozregression is an interactive regression range finder for Firefox and other Mozilla
+products. It uses a binary search algorithm for quickly determining a changeset range
+corresponding to when a problem was introduced.
 
 Currently, mozregression can work with:
 
@@ -18,7 +17,6 @@ Currently, mozregression can work with:
 {% for app in site.data.mozregression_supported_apps %}{% assign first = site.data.mozregression_supported_apps | first %}
 - **[{{app.name}}]({{app.url}})**{% if app.description %} ({{app.description}}){% endif %}{% if app == first %} - default{% endif %}{% endfor %}
 
-To get a feel for how mozregression works, you can see the (pretty old but still
-useful) video on
-[codefirefox.com](http://codefirefox.com/video/mozregression), or take a look at
-the [quick start]({{ "/quickstart.html" | prepend: site.baseurl }}) section.
+To get a feel for how mozregression works, see this video from Pascal Chevrel:
+
+<center><iframe width="560" height="315" src="https://www.youtube.com/embed/IwrWot3jVFI" frameborder="0" allowfullscreen></iframe></center>

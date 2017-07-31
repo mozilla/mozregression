@@ -22,14 +22,6 @@ For the graphical interface, we provide a simple installation process:
   **mozregression-gui.tar.gz**, decompress it somewhere and run the
   mozregression-gui executable file.
 
-Please note that the mozregression GUI (including the installation process)
-is at a very early stage of development -- please report any bug you find.
-
-A graphical installation process for MacOS X is planned. You can still install
-the GUI directly [from github] if your OS is not supported or if you have issues
-with the prebuilt packages.
-
-
 ## mozregression
 
 The original command line tool.

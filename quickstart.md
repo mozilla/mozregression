@@ -5,7 +5,17 @@ order: 10
 main_link: True
 ---
 
-# Quick start
+# GUI
+
+The easiest way to use mozregression (at least on Windows) is via the GUI. This
+youtube video by Pascal Chevrel describes how to install and use it:
+
+<center><iframe width="560" height="315" src="https://www.youtube.com/embed/IwrWot3jVFI" frameborder="0" allowfullscreen></iframe></center>
+
+# Command line
+
+The command-line version of mozregression is good for power users or those using Linux
+or MacOS X.
 
 Let's say you just found a bug in the current nightly build and you know that
 bug didn't exist in the nightly from a few weeks ago. You want to find the

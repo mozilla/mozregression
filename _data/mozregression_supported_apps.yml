@@ -9,7 +9,3 @@
 - name: fennec
   url: https://wiki.mozilla.org/Mobile/Fennec
   description: Firefox for Android
-
-- name: B2G
-  url: https://wiki.mozilla.org/B2G
-  description: FirefoxOS

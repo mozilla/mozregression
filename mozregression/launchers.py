@@ -15,7 +15,6 @@ from mozfile import rmtree
 from mozdevice import ADBAndroid, ADBHost, ADBError
 import mozversion
 import mozinstall
-import tempfile
 import zipfile
 import mozinfo
 import stat
@@ -25,6 +24,7 @@ from threading import Thread
 
 from mozregression.class_registry import ClassRegistry
 from mozregression.errors import LauncherNotRunnable, LauncherError
+from mozregression.tempdir import safe_mkdtemp
 
 LOG = get_proxy_logger("Test Runner")
 
@@ -181,7 +181,7 @@ class MozRunnerLauncher(Launcher):
     binary = None
 
     def _install(self, dest):
-        self.tempdir = tempfile.mkdtemp()
+        self.tempdir = safe_mkdtemp()
         try:
             self.binary = mozinstall.get_binary(
                 mozinstall.install(src=dest, dest=self.tempdir),
@@ -378,7 +378,7 @@ class JsShellLauncher(Launcher):
     temp_dir = None
 
     def _install(self, dest):
-        self.tempdir = tempfile.mkdtemp()
+        self.tempdir = safe_mkdtemp()
         try:
             with zipfile.ZipFile(dest, "r") as z:
                 z.extractall(self.tempdir)

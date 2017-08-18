@@ -11,7 +11,6 @@ import sys
 import requests
 import atexit
 import pipes
-import tempfile
 import mozfile
 import colorama
 
@@ -26,6 +25,7 @@ from mozregression.bisector import (Bisector, NightlyHandler, InboundHandler,
                                     Bisection)
 from mozregression.launchers import REGISTRY as APP_REGISTRY
 from mozregression.network import set_http_session
+from mozregression.tempdir import safe_mkdtemp
 from mozregression.test_runner import ManualTestRunner, CommandTestRunner
 from mozregression.download_manager import BuildDownloadManager
 from mozregression.persist_limit import PersistLimit
@@ -48,7 +48,7 @@ class Application(object):
         self._download_dir = options.persist
         self._rm_download_dir = False
         if not options.persist:
-            self._download_dir = tempfile.mkdtemp()
+            self._download_dir = safe_mkdtemp()
             self._rm_download_dir = True
         launcher_class = APP_REGISTRY.get(fetch_config.app_name)
         launcher_class.check_is_runnable()

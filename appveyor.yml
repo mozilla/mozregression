@@ -7,6 +7,7 @@ environment:
 init:
   - "ECHO %PYTHON%"
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - "SET OPENSSL_PATH=C:\\OpenSSL-Win32"
 install:
   # install PyQt4
   ## miniconda (installed by appveyor) prevent pyqt installer to run, because
@@ -16,6 +17,9 @@ install:
   - ps: Start-Process -FilePath C:\install-PyQt4.exe -ArgumentList "/S" -Wait -Passthru
   - "python -c \"from PyQt4 import QtGui\""
   # install mozregression code and test dependencies
+  - choco install -r -y swig
+  - "pip install typing"
+  - "pip install --global-option=build_ext --global-option=\"--openssl=\"%OPENSSL_PATH%\"\" M2Crypto"
   - "pip install -r requirements-gui-dev.txt"
 test_script:
   - "python check.py --with-gui"

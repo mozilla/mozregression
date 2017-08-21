@@ -43,6 +43,7 @@ DEPENDENCIES = [
     'taskcluster==0.3.4',
     'colorama==0.3.7',
     'configobj==5.0.6',
+    'adb==1.2.0'
 ]
 
 desc = """Regression range finder for Mozilla nightly builds"""

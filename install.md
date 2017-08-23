@@ -56,7 +56,7 @@ you are on:
 
 - **Windows**
 
-      pip install -U mozregression
+      pip2.7-script.py install -U mozregression
 
 - **Linux / Mac**
 

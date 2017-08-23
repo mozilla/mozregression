@@ -9,7 +9,6 @@ main_link: True
 
 We welcome contributions to mozregression!
 
-See the [mozregression project page](https://wiki.mozilla.org/Auto-tools/Projects/Mozregression)
-for more information on how to contribute.
+If you want to report a bug, use our [bugzilla component](https://bugzilla.mozilla.org/enter_bug.cgi?product=Testing&component=mozregression).
 
 Source code is maintained on [github]({{ site.github_url }}).

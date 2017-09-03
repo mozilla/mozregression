@@ -8,7 +8,8 @@ from mozregression.json_pushes import Push
 from mozregression.fetch_configs import (FirefoxConfig, create_config, errors,
                                          get_build_regex, ARCHIVE_BASE_URL,
                                          TIMESTAMP_GECKO_V2,
-                                         TIMESTAMP_FENNEC_API_15)
+                                         TIMESTAMP_FENNEC_API_15,
+                                         TIMESTAMP_FENNEC_API_16)
 
 
 def create_push(chset, timestamp):
@@ -173,6 +174,9 @@ class TestFennecConfig(unittest.TestCase):
         regex = self.conf.get_nightly_repo_regex(datetime.date(2016,
                                                                1, 29))
         self.assertIn("mozilla-central-android-api-15", regex)
+        regex = self.conf.get_nightly_repo_regex(datetime.date(2017,
+                                                               8, 30))
+        self.assertIn("mozilla-central-android-api-16", regex)
 
     def test_build_regex(self):
         regex = re.compile(self.conf.build_regex())
@@ -261,6 +265,8 @@ CHSET12 = "47856a214918"
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-11-opt' % CHSET),
     ("fennec", None, None, None, TIMESTAMP_FENNEC_API_15,
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-15-opt' % CHSET),
+    ("fennec", None, None, None, TIMESTAMP_FENNEC_API_16,
+     'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-16-opt' % CHSET),
     ("fennec-2.3", None, None, 'm-i', TIMESTAMP_GECKO_V2 - 1,
      'buildbot.revisions.%s.mozilla-inbound.android-api-9' % CHSET),
     ("fennec-2.3", None, None, 'm-i', TIMESTAMP_GECKO_V2,

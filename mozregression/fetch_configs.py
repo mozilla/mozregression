@@ -40,6 +40,12 @@ TIMESTAMP_FENNEC_API_15 = to_utc_timestamp(
     datetime.datetime(2016, 1, 29, 0, 30, 13)
 )
 
+# switch from fennec api-15 to api-16 on taskcluster
+# appeared on this date for m-c.
+TIMESTAMP_FENNEC_API_16 = to_utc_timestamp(
+    datetime.datetime(2017, 8, 29, 18, 28, 36)
+)
+
 
 def get_build_regex(name, os, bits, psuffix='', with_ext=True):
     """
@@ -295,8 +301,10 @@ class FennecNightlyConfigMixin(NightlyConfigMixin):
                 repo += "-android-api-10"
             elif date < datetime.date(2016, 1, 29):
                 repo += "-android-api-11"
-            else:
+            elif date < datetime.date(2017, 8, 30):
                 repo += "-android-api-15"
+            else:
+                repo += "-android-api-16"
         return self._get_nightly_repo_regex(date, repo)
 
 
@@ -384,9 +392,11 @@ class FennecInboundConfigMixin(InboundConfigMixin):
     def tk_inbound_route(self, push):
         if push.timestamp >= TIMESTAMP_GECKO_V2:
             tk_name = self.tk_name
-            if tk_name == 'android-api-11' and \
-               push.timestamp >= TIMESTAMP_FENNEC_API_15:
-                tk_name = 'android-api-15'
+            if tk_name == 'android-api-11':
+                if push.timestamp >= TIMESTAMP_FENNEC_API_16:
+                    tk_name = 'android-api-16'
+                elif push.timestamp >= TIMESTAMP_FENNEC_API_15:
+                    tk_name = 'android-api-15'
             return 'gecko.v2.{}.revision.{}.mobile.{}-{}'.format(
                 self.inbound_branch, push.changeset, tk_name,
                 self.build_type

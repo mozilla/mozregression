@@ -3,6 +3,8 @@ os:
 # not testing on osx for now
 #  - osx
 
+dist: precise
+
 install:
     - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
           export DISPLAY=:99.0;

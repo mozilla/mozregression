@@ -20,8 +20,7 @@ install:
 test_script:
   - "python check.py --with-gui"
   # bundle the application
-  - cinst nsis --version 3.0 -y -installArgs /D=%NSIS_ROOT%
-  - "python gui\\build.py bundle"
+  - "python gui\\build.py bundle --nsis-path \"C:\\Program Files (x86)\\NSIS\""
 
 # section required for deploy
 artifacts:

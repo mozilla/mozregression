@@ -1,6 +1,6 @@
 # MozRegression
 
-Mozregression is an interactive regression range finder for quickly tracking down the source of bugs in Mozilla nightly and inbound builds.
+MozRegression is an interactive regression rangefinder for quickly tracking down the source of bugs in Mozilla nightly and inbound builds.
 
 You can start using MozRegression today:
 - [start with our installation guide](http://mozilla.github.io/mozregression/install.html), then 
@@ -34,7 +34,7 @@ This is recommended.
 
 ### Command line only
 
-If you are **really sure** that you only want to hack on mozregression command line:
+If you are **really sure** that you only want to hack on the mozregression command line:
 
 1. Install [virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/)
   or [virtualenvwrapper](https://virtualenvwrapper.readthedocs.org/en/latest/).

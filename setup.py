@@ -24,7 +24,7 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
-if sys.version_info < (2, 7) or sys.version_info > (3, 0):
+if sys.version_info < (2, 7) or sys.version_info >= (3, 0):
     sys.exit("mozregression currently require python >=2.7 and <3.")
 
 DEPENDENCIES = [

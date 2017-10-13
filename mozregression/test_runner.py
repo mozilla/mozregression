@@ -189,14 +189,16 @@ class CommandTestRunner(TestRunner):
     def evaluate(self, build_info, allow_back=False):
         with create_launcher(build_info) as launcher:
             build_info.update_from_app_info(launcher.get_app_info())
-            variables = dict((k, str(v))
-                             for k, v in build_info.to_dict().iteritems())
+            variables = {k: v for k, v in build_info.to_dict().iteritems()}
             if hasattr(launcher, 'binary'):
                 variables['binary'] = launcher.binary
 
             env = dict(os.environ)
             for k, v in variables.iteritems():
-                env['MOZREGRESSION_' + k.upper()] = v
+                if type(v) == unicode:
+                    v = v.encode('ascii', errors='ignore')
+                else:
+                    env['MOZREGRESSION_' + k.upper()] = str(v)
             try:
                 command = self.command.format(**variables)
             except KeyError as exc:

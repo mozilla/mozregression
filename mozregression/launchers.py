@@ -295,6 +295,7 @@ class FirefoxRegressionProfile(Profile):
         'browser.warnOnQuit': False,
         # Don't send Firefox health reports to the production
         # server
+        'datareporting.healthreport.uploadEnabled': False,
         'datareporting.healthreport.documentServerURI':
         'http://%(server)s/healthreport/',
         # Don't report telemetry information

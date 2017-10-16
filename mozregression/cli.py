@@ -195,9 +195,12 @@ def create_parser(defaults):
 
     parser.add_argument("-c", "--command",
                         help=("Test command to evaluate builds automatically."
-                              " A return code of 0 will evaluate build as"
-                              " good, any other value will evaluate the build"
-                              " as bad."))
+                              " A return code of 0 will evaluate the build as"
+                              " good, and any other value as bad."
+                              " Variables like {binary} can be used, which"
+                              " will be replaced with their value as retrieved"
+                              " by the actual build."
+                              ))
 
     parser.add_argument("--persist",
                         default=defaults["persist"],

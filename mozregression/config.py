@@ -105,9 +105,9 @@ def _get_persist_size_limit(default):
 
 
 def _get_bits(default):
-    print("You are using a 64-bits system, so mozregression will by default"
-          " use the 64 bits build files. If you want to change that to"
-          " 32 bits by default, type 32 here.")
+    print("You are using a 64-bit system, so mozregression will by default"
+          " use the 64-bit build files. If you want to change that to"
+          " 32-bit by default, type 32 here.")
     while 1:
         value = raw_input('bits: ')
         if value in ('', '32', '64'):

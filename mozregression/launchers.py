@@ -298,6 +298,8 @@ class FirefoxRegressionProfile(Profile):
         'datareporting.healthreport.uploadEnabled': False,
         'datareporting.healthreport.documentServerURI':
         'http://%(server)s/healthreport/',
+        # Don't show tab with privacy notice on every launch 
+        'datareporting.policy.dataSubmissionPolicyBypassNotification': True,
         # Don't report telemetry information
         'toolkit.telemetry.enabled': False,
     }

@@ -8,7 +8,7 @@ def releases():
     The date is a string formated as "yyyy-mm-dd", and the release an integer.
     """
     # The dates comes from from https://wiki.mozilla.org/RapidRelease/Calendar,
-    # using the ones in the "beta" column (formerly "aurora"). This is because 
+    # using the ones in the "beta" column (formerly "aurora"). This is because
     # the merge date for beta corresponds to the last nightly for that
     # release. See bug 996812.
     return {

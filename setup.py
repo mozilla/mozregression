@@ -30,8 +30,8 @@ if sys.version_info < (2, 7) or sys.version_info >= (3, 0):
 DEPENDENCIES = [
     'mozfile==1.2',
     'mozprocess==0.25',
-    'mozprofile==0.28',
-    'mozrunner==6.13',
+    'mozprofile==0.29',
+    'mozrunner==6.14',
     'BeautifulSoup==3.2.1',
     'mozinstall==1.12',
     'mozinfo==0.10',

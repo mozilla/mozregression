@@ -302,6 +302,8 @@ class FirefoxRegressionProfile(Profile):
         'datareporting.policy.dataSubmissionPolicyBypassNotification': True,
         # Don't report telemetry information
         'toolkit.telemetry.enabled': False,
+        # Allow sideloading extensions
+        'extensions.autoDisableScopes': 0,
     }
 
 

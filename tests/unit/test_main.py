@@ -134,7 +134,7 @@ def test_app_bisect_inbounds_finished(create_app, same_chsets):
     assert create_app.find_in_log("No more inbound revisions, bisection finished.")
     if same_chsets:
         assert create_app.find_in_log("It seems that you used two changesets"
-                                      " that are in in the same push.", False)
+                                      " that are in the same push.", False)
 
 
 @pytest.mark.parametrize("argv,expected_log", [

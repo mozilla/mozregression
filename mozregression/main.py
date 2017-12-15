@@ -166,7 +166,7 @@ class Application(object):
             if handler.good_revision == handler.bad_revision:
                 LOG.warning(
                     "It seems that you used two changesets that are in"
-                    " in the same push. Check the pushlog url."
+                    " the same push. Check the pushlog url."
                 )
             elif len(handler.build_range) == 2:
                 # range reduced to 2 pushes (at least ones with builds):

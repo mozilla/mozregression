@@ -360,8 +360,11 @@ class FennecLauncher(Launcher):
                                        os.path.basename(profile.profile)])
         if self.adb.exists(self.remote_profile):
             self.adb.rm(self.remote_profile, recursive=True)
+        LOG.debug("Pushing profile to device (%s -> %s)" % (
+            profile.profile, self.remote_profile))
         self.adb.push(profile.profile, self.remote_profile)
 
+        LOG.debug("Launching fennec")
         self.adb.launch_fennec(self.package_name,
                                extra_args=["-profile", self.remote_profile])
 

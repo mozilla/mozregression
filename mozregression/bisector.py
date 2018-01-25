@@ -281,8 +281,9 @@ class InboundHandler(BisectorHandler):
                 LOG.info("************* Switching to %s by"
                          " process of elimination (no branch detected in"
                          " commit message)" % branch)
-                return (branch,
-                        data[0].changeset, data[-1].changeset)
+                gr, br = self._reverse_if_find_fix(data[0].changeset,
+                                                   data[-1].changeset)
+                return (branch, gr, br)
             else:
                 return
         try:

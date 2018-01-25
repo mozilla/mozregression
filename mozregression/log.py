@@ -44,7 +44,10 @@ def init_logger(debug=True, allow_color=ALLOW_COLOR, output=None):
             elapsed = time_color + elapsed + Style.RESET_ALL
             if level in level_color:
                 level = level_color[level] + level + Style.RESET_ALL
-        return "%s %s: %s\n" % (elapsed, level, data['message'])
+        msg = data['message']
+        if 'stack' in data:
+            msg += "\n%s" % data['stack']
+        return "%s %s: %s\n" % (elapsed, level, msg)
 
     logger = StructuredLogger("mozregression")
     handler = LogLevelFilter(StreamHandler(output, format_log),

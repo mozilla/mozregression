@@ -39,7 +39,7 @@ DEPENDENCIES = [
     'mozversion==1.4',
     'requests[security]==2.15.1',
     'redo==1.6',
-    'mozdevice==0.50',
+    'mozdevice==0.51',
     'taskcluster==0.3.4',
     'colorama==0.3.7',
     'configobj==5.0.6',

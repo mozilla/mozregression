@@ -32,7 +32,7 @@ follow the OS-specific instructions to install pip if you don't know how to do i
 - **Windows**
 
   Download and install python 2.7 from
-  [ActiveState](http://www.activestate.com/activepython/downloads).
+  [ActiveState](https://www.activestate.com/activepython/downloads).
   It will include pip and set python in your PATH.
 - **Mac**
 

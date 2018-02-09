@@ -6,7 +6,7 @@ github_url: https://github.com/mozilla/mozregression
 # It will appear in your document head meta (for Google search results)
 description: Regression range finder for Firefox
 baseurl: "/mozregression" # the subpath of your site, e.g. /blog/
-url: "http://mozilla.github.io" # the base hostname & protocol for your site
+url: "https://mozilla.github.io" # the base hostname & protocol for your site
 
 # Build settings
 markdown: kramdown

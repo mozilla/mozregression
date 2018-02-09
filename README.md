@@ -1,12 +1,12 @@
 # Testing documentation
 
-First install [bundler](http://bundler.io/) for ruby:
+First install [bundler](https://bundler.io/) for ruby:
 
 ```
 gem install bundler
 ```
 
-Then install [jekyll](http://jekyllrb.com/docs/usage/) adapted to github:
+Then install [jekyll](https://jekyllrb.com/docs/usage/) adapted to github:
 
 ```
 bundle install --path vendor/bundle --binstubs

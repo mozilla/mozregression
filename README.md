@@ -3,8 +3,8 @@
 mozregression is an interactive regression rangefinder for quickly tracking down the source of bugs in Mozilla nightly and inbound builds.
 
 You can start using mozregression today:
-- [start with our installation guide](http://mozilla.github.io/mozregression/install.html), then 
-- take a look at [our Quick Start document](http://mozilla.github.io/mozregression/quickstart.html). 
+- [start with our installation guide](https://mozilla.github.io/mozregression/install.html), then 
+- take a look at [our Quick Start document](https://mozilla.github.io/mozregression/quickstart.html). 
 
 ## Status
 
@@ -21,7 +21,7 @@ Build status:
 
 For more information see:
 
-http://mozilla.github.io/mozregression/
+https://mozilla.github.io/mozregression/
 
 ## Building And Developing mozregression
 
@@ -36,7 +36,7 @@ This is recommended.
 
 If you are **really sure** that you only want to hack on the mozregression command line:
 
-1. Install [virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/)
+1. Install [virtualenv](https://virtualenv.pypa.io/en/stable/)
   or [virtualenvwrapper](https://virtualenvwrapper.readthedocs.org/en/latest/).
 
 2. install dependencies:

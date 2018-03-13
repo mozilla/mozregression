@@ -23,6 +23,7 @@ def get_prefs():
         False if settings.get('background_downloads') == 'no' else True
     options['approx_policy'] = settings['approx-policy'] == 'auto'
     options['archive_base_url'] = settings["archive-base-url"]
+    options['cmdargs'] = settings['cmdargs']
     return options
 
 
@@ -45,6 +46,9 @@ def save_prefs(options):
         settings['archive-base-url'] = options['archive_base_url']
     elif 'archive-base-url' in settings:
         del settings['archive-base-url']
+    # likewise only save args if it has a value
+    if 'cmdargs' in settings and not settings['cmdargs']:
+        del settings['cmdargs']
     settings.write()
 
 

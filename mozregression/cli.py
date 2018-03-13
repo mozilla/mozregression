@@ -501,6 +501,11 @@ def cli(argv=None, conf_file=DEFAULT_CONF_FNAME, namespace=None):
     else:
         defaults = get_defaults(conf_file)
         options = parse_args(argv=argv, defaults=defaults)
+        if not options.cmdargs:
+            # we don't set the cmdargs default to be that from the
+            # configuration file, because then any new arguments
+            # will be appended: https://bugs.python.org/issue16399
+            options.cmdargs = defaults['cmdargs']
     if conf_file and not os.path.isfile(conf_file):
         print '*' * 10
         print colorize("You should use a config file. Please use the " +

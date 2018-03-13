@@ -40,6 +40,7 @@ DEFAULTS = {
     'background-dl-policy': 'cancel',
     'bits': None,
     'build-type': 'opt',
+    'cmdargs': [],
     'http-timeout': 30.0,
     'inbound-branch': None,
     'mode': 'classic',

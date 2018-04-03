@@ -287,7 +287,14 @@ class InboundHandler(BisectorHandler):
             else:
                 return
         try:
-            # so, this is a merge. We can find the oldest and youngest
+            # so, this is a merge. see how many changesets are in it, if it
+            # is just one, we have our answer
+            if len(push.changesets) == 2:
+                LOG.info("Merge commit has only two revisions (one of which "
+                         "is the merge): we are done")
+                return
+
+            # Otherwise, we can find the oldest and youngest
             # changesets, and the branch where the merge comes from.
             oldest = push.changesets[0]['node']
             # exclude the merge commit

@@ -55,15 +55,17 @@ def test_get_category(name, expected):
     assert branches.get_category(name) == expected
 
 
-@pytest.mark.parametrize('commit, branch', [
+@pytest.mark.parametrize('commit, branch, current', [
     ("Merge mozilla-central to autoland",
-     "mozilla-central"),
+     "mozilla-central", "autoland"),
+    ("Merge mozilla-central to autoland",
+     "autoland", "mozilla-central"),
     ("Merge autoland to central, a=merge",
-     "autoland"),
+     "autoland", "mozilla-central"),
     ("merge autoland to mozilla-central a=merge",
-     "autoland"),
+     "autoland", "mozilla-central"),
     ("Merge m-i to m-c, a=merge CLOSED TREE",
-     "mozilla-inbound"),
+     "mozilla-inbound", "mozilla-central"),
 ])
-def test_find_branch_in_merge_commit(commit, branch):
-    assert branches.find_branch_in_merge_commit(commit) == branch
+def test_find_branch_in_merge_commit(commit, branch, current):
+    assert branches.find_branch_in_merge_commit(commit, current) == branch

@@ -86,16 +86,22 @@ get_branches = BRANCHES.get_branches
 get_category = BRANCHES.get_category
 
 
-RE_MERGE_BRANCH = re.compile(r"merge ([\w-]+) to [\w-]+.*", re.I)
+RE_MERGE_BRANCH = re.compile(r"merge ([\w-]+) to ([\w-]+).*", re.I)
 
 
-def find_branch_in_merge_commit(message):
+def find_branch_in_merge_commit(message, current_branch):
     """
     Try to extract the branch name where commits comes from in a merge commit
     message.
+
+    Some commit messages incorrectly transpose the repo names.  If the first
+    repo is the same as current_branch assume this is the case.
 
     Return None if the message does not looks like a merge commit.
     """
     match = RE_MERGE_BRANCH.match(message)
     if match:
-        return get_name(match.group(1))
+        if get_name(match.group(1)) == current_branch:
+            return get_name(match.group(2))
+        else:
+            return get_name(match.group(1))

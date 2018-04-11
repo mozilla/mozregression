@@ -265,7 +265,7 @@ class InboundHandler(BisectorHandler):
         push = jp.push(most_recent_push.changeset, full='1')
         msg = push.changeset['desc']
         LOG.debug("Found commit message:\n%s\n" % msg)
-        branch = find_branch_in_merge_commit(msg)
+        branch = find_branch_in_merge_commit(msg, most_recent_push.repo_name)
         if not (branch and len(push.changesets) >= 2):
             # We did not find a branch, lets check the integration branches if we are bisecting m-c
             if get_name(most_recent_push.repo_name) == 'mozilla-central' and \

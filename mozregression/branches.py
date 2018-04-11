@@ -5,7 +5,11 @@ Access to mozilla branches information.
 import re
 from collections import defaultdict
 
+from mozlog import get_proxy_logger
+
 from mozregression.errors import MozRegressionError
+
+LOG = get_proxy_logger('Branches')
 
 
 class Branches(object):
@@ -102,6 +106,7 @@ def find_branch_in_merge_commit(message, current_branch):
     match = RE_MERGE_BRANCH.match(message)
     if match:
         if get_name(match.group(1)) == current_branch:
+            LOG.debug("Assuming transposed repos in merge commit message")
             return get_name(match.group(2))
         else:
             return get_name(match.group(1))

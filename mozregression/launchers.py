@@ -304,6 +304,8 @@ class FirefoxRegressionProfile(Profile):
         'toolkit.telemetry.enabled': False,
         # Allow sideloading extensions
         'extensions.autoDisableScopes': 0,
+        # Disable what's new page
+        'browser.startup.homepage_override.mstone': 'ignore',
     }
 
 

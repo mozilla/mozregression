@@ -2,7 +2,7 @@ import mozinfo
 import datetime
 from PyQt4.QtGui import (QWizard, QWizardPage, QStringListModel, QMessageBox,
                          QCompleter, QApplication)
-from PyQt4.QtCore import QString, QDate, pyqtSlot as Slot, Qt
+from PyQt4.QtCore import QString, QDate, pyqtSlot as Slot, Qt, SIGNAL
 
 from ui.intro import Ui_Intro
 from ui.build_selection import Ui_BuildSelectionPage
@@ -254,7 +254,7 @@ class Wizard(QWizard):
 
         # associate current text to comboboxes fields instead of current index
         self.setDefaultProperty("QComboBox", "currentText",
-                                "currentIndexChanged")
+                                SIGNAL('currentIndexChanged(QString)'))
 
         for klass in class_pages:
             self.addPage(klass())

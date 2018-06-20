@@ -1,4 +1,8 @@
+import re
+
+from datetime import date
 from mozregression.errors import UnavailableRelease
+from mozregression.network import retry_get
 
 
 def releases():
@@ -11,7 +15,7 @@ def releases():
     # using the ones in the "beta" column (formerly "aurora"). This is because
     # the merge date for beta corresponds to the last nightly for that
     # release. See bug 996812.
-    return {
+    releases = {
         5: "2011-04-12",
         6: "2011-05-24",
         7: "2011-07-05",
@@ -63,12 +67,33 @@ def releases():
         53: "2017-01-23",
         54: "2017-03-06",
         55: "2017-06-12",
-        56: "2017-08-02",
-        57: "2017-09-21",
-        58: "2017-11-13",
-        59: "2018-01-22",
-        60: "2018-03-12"
+        56: "2017-08-02"
     }
+
+    def filter_tags(tag_node):
+        match = re.match("^FIREFOX_NIGHTLY_(\d+)_END$", tag_node["tag"])
+        return int(match.group(1)) > 56 if match else False
+
+    def map_tags(tag_node):
+        release = {}
+        merge_date = date.fromtimestamp(tag_node["date"][0] + tag_node["date"][1])
+        ver_match = re.search("_(\d+)_", tag_node["tag"])
+        release[int(ver_match.group(1))] = merge_date.isoformat()
+        return release
+
+    tags_url = "https://hg.mozilla.org/mozilla-central/json-tags"
+    response = retry_get(tags_url)
+
+    if response.status_code == 200:
+        fetched_releases = map(
+            map_tags,
+            filter(filter_tags, response.json()["tags"])
+        )
+
+        for release in fetched_releases:
+            releases.update(release)
+
+    return releases
 
 
 def date_of_release(release):

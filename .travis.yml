@@ -41,13 +41,10 @@ install:
 script:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ./check.py --with-coverage --with-gui; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ./check.py --with-gui; fi
+  - python gui/build.py bundle
 
 after_success:
     - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install coveralls; coveralls; fi
-
-
-before_deploy:
-    - python gui/build.py bundle
 
 deploy:
   - provider: releases

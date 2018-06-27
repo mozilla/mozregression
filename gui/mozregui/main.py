@@ -14,6 +14,13 @@ from mozregui.crash_reporter import CrashReporter  # noqa
 from mozregui.mainwindow import MainWindow  # noqa
 from mozregui.global_prefs import set_default_prefs  # noqa
 
+# stupid hack to make sure mozprocess.winprocess gets bundled despite some
+# bug in cx_Freeze (might be fixable when we upgrade to python3 / cx_freeze 6+)
+import os  # noqa
+if os.name == 'nt':
+    import mozprocess.winprocess
+    mywinprocess = mozprocess.winprocess
+
 
 def main():
     logger = StructuredLogger('mozregression-gui')

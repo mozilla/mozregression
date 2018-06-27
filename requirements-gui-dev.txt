@@ -9,4 +9,4 @@ pytest-qt == 2.0.0
 pytest-mock == 1.2
 
 # for bundling standalone executable
-cx_Freeze == 4.3.4
+cx_Freeze == 5.1.1

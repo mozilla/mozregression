@@ -9,7 +9,6 @@ You can start using mozregression today:
 ## Status
 
 [![Latest Version](https://img.shields.io/pypi/v/mozregression.svg)](https://pypi.python.org/pypi/mozregression/)
-[![Downloads](https://img.shields.io/pypi/dm/mozregression.svg)](https://pypi.python.org/pypi/mozregression/)
 [![License](https://img.shields.io/pypi/l/mozregression.svg)](https://pypi.python.org/pypi/mozregression/)
 
 

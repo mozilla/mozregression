@@ -105,7 +105,7 @@ def call_cx_freeze():
         else:
             paths.insert(0, p)
     args.append('--include-path=%s' % os.pathsep.join(['.', '..'] + paths))
-    args.append('--include-modules=requests')
+    args.append('--include-modules=idna')
 
     # find taskcluster apis.json file
     import taskcluster.client

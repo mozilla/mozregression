@@ -72,7 +72,7 @@ def create_branches():
     # aliases
     for name, aliases in (
             ("mozilla-central", ("m-c", "central")),
-            ("mozilla-inbound", ("m-i", "inbound")),
+            ("mozilla-inbound", ("m-i", "inbound", "mozilla inbound")),
             ("mozilla-aurora", ("aurora",)),
             ("mozilla-beta", ("beta",))):
         for alias in aliases:

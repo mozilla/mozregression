@@ -251,6 +251,7 @@ class InboundHandler(BisectorHandler):
                 LOG.debug("Didn't find %s in %s" % (changeset, k))
 
         repo = min(landings, key=landings.get)
+        LOG.debug("Repo '%s' seems to have the earliest push" % repo)
         return repo
 
     def handle_merge(self):
@@ -268,6 +269,7 @@ class InboundHandler(BisectorHandler):
         branch = find_branch_in_merge_commit(msg, most_recent_push.repo_name)
         if not (branch and len(push.changesets) >= 2):
             # We did not find a branch, lets check the integration branches if we are bisecting m-c
+            LOG.debug("Did not find a branch, checking all integration branches")
             if get_name(most_recent_push.repo_name) == 'mozilla-central' and \
                len(push.changesets) >= 2:
                 branch = self._choose_integration_branch(most_recent_push.changeset)
@@ -276,8 +278,10 @@ class InboundHandler(BisectorHandler):
                     data = jp2.pushes_within_changes(
                         push.changesets[0]['node'],
                         push.changesets[-1]['node'])
-                except MozRegressionError:
-                    return
+                except MozRegressionError, exc:
+                    LOG.error("Failed to find changes in branch '%s' (error: %s)" %
+                              (branch, exc))
+                    raise
                 LOG.info("************* Switching to %s by"
                          " process of elimination (no branch detected in"
                          " commit message)" % branch)

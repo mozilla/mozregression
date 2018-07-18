@@ -90,7 +90,7 @@ get_branches = BRANCHES.get_branches
 get_category = BRANCHES.get_category
 
 
-RE_MERGE_BRANCH = re.compile(r"merge ([\w-]+) to ([\w-]+).*", re.I)
+RE_MERGE_BRANCH = re.compile(r"merge ([\w\s-]+) to ([\w\s-]+).*", re.I)
 
 
 def find_branch_in_merge_commit(message, current_branch):

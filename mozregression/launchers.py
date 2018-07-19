@@ -282,8 +282,13 @@ class FirefoxRegressionProfile(Profile):
     Some preferences may only apply to one or the other
     """
 
-    preferences = {  # Don't automatically update the application
+    preferences = {
+        # Don't automatically update the application (only works on older
+        # versions of Firefox)
         'app.update.enabled': False,
+        # On newer versions of Firefox (where disabling automatic updates
+        # is impossible, at least don't update automatically)
+        'app.update.auto': False,
         # Don't restore the last open set of tabs
         # if the browser has crashed
         'browser.sessionstore.resume_from_crash': False,

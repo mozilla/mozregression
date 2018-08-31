@@ -347,8 +347,7 @@ class FennecLauncher(Launcher):
         self.app_info = safe_get_version(binary=dest)
         self.package_name = self.app_info.get("package_name",
                                               "org.mozilla.fennec")
-        self.adb = ADBAndroid()
-        self.adb._require_root = False
+        self.adb = ADBAndroid(require_root=False)
         try:
             self.adb.uninstall_app(self.package_name)
         except ADBError, msg:

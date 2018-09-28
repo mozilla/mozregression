@@ -31,7 +31,7 @@ DEPENDENCIES = [
     'mozfile==1.2',
     'mozprocess==0.26',
     'mozprofile==1.1.0',
-    'mozrunner==7.0.1',
+    'mozrunner==7.1.0',
     'BeautifulSoup==3.2.1',
     'mozinstall==1.16.0',
     'mozinfo==0.10',

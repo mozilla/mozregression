@@ -317,7 +317,7 @@ class BuildInfoTextBrowser(QTextBrowser):
             self.clear()
             return
 
-        html = ""
+        html = u""
         for k in sorted(item.data):
             v = item.data[k]
             if v is not None:
@@ -326,7 +326,10 @@ class BuildInfoTextBrowser(QTextBrowser):
                     url = QUrl(v)
                     if url.isValid() and url.scheme():
                         v = '<a href="%s">%s</a>' % (v, v)
-                html += '%s<br>' % v
+                # I thought these values were always supposed to be ascii,
+                # but apparently not:
+                # https://bugzilla.mozilla.org/show_bug.cgi?id=1507293
+                html += '%s<br>' % v.decode('ascii', 'ignore')
         self.setHtml(html)
 
     @Slot(QUrl)

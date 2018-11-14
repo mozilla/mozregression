@@ -254,6 +254,7 @@ class NightlyInfoFetcher(InfoFetcher):
         # time in some threads. The first good one found is returned.
         try:
             build_urls = self._get_urls(date)
+            LOG.debug("got build_urls %s" % build_urls)
         except HTTPError as exc:
             raise BuildInfoNotFound(str(exc))
         build_info = None
@@ -270,6 +271,7 @@ class NightlyInfoFetcher(InfoFetcher):
             for thread in threads:
                 while thread.is_alive():
                     thread.join(0.1)
+            LOG.debug("got valid_builds %s" % valid_builds)
             if valid_builds:
                 infos = sorted(valid_builds, key=lambda b: b[0])[0][1]
                 if fetch_txt_info:

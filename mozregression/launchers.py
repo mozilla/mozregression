@@ -324,13 +324,20 @@ class ThunderbirdLauncher(MozRunnerLauncher):
     profile_class = ThunderbirdProfile
 
 
-@REGISTRY.register('fennec')
-class FennecLauncher(Launcher):
+class AndroidLauncher(Launcher):
     app_info = None
     adb = None
     package_name = None
     profile_class = FirefoxRegressionProfile
     remote_profile = None
+
+    @abstractmethod
+    def _get_package_name(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def _launch(self):
+        raise NotImplementedError
 
     @classmethod
     def check_is_runnable(cls):
@@ -346,7 +353,7 @@ class FennecLauncher(Launcher):
         # get info now, as dest may be removed
         self.app_info = safe_get_version(binary=dest)
         self.package_name = self.app_info.get("package_name",
-                                              "org.mozilla.fennec")
+                                              self._get_package_name())
         self.adb = ADBAndroid(require_root=False)
         try:
             self.adb.uninstall_app(self.package_name)
@@ -370,10 +377,7 @@ class FennecLauncher(Launcher):
         LOG.debug("Pushing profile to device (%s -> %s)" % (
             profile.profile, self.remote_profile))
         self.adb.push(profile.profile, self.remote_profile)
-
-        LOG.debug("Launching fennec")
-        self.adb.launch_fennec(self.package_name,
-                               extra_args=["-profile", self.remote_profile])
+        self._launch()
 
     def _wait(self):
         while self.adb.process_exist(self.package_name):
@@ -386,6 +390,30 @@ class FennecLauncher(Launcher):
 
     def get_app_info(self):
         return self.app_info
+
+
+@REGISTRY.register('fennec')
+class FennecLauncher(AndroidLauncher):
+    def _get_package_name(self):
+        return "org.mozilla.fennec"
+
+    def _launch(self):
+        LOG.debug("Launching fennec")
+        self.adb.launch_fennec(self.package_name,
+                               extra_args=["-profile", self.remote_profile])
+
+
+@REGISTRY.register('gve')
+class GeckoViewExampleLauncher(AndroidLauncher):
+    def _get_package_name(self):
+        return "org.mozilla.geckoview_example"
+
+    def _launch(self):
+        LOG.debug("Launching geckoview_example")
+        self.adb.launch_activity(self.package_name,
+                                 activity_name="GeckoViewActivity",
+                                 extra_args=["-profile", self.remote_profile],
+                                 e10s=True)
 
 
 @REGISTRY.register('jsshell')

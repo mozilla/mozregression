@@ -460,6 +460,26 @@ class FennecConfig(CommonConfig,
         return ()
 
 
+@REGISTRY.register('gve')
+class GeckoViewExampleConfig(CommonConfig,
+                             FennecNightlyConfigMixin,
+                             FennecInboundConfigMixin):
+    BUILD_TYPES = ('opt', 'debug')
+
+    def build_regex(self):
+        return r'geckoview_example\.apk'
+
+    def build_info_regex(self):
+        return r'(target|fennec-.*)\.txt'
+
+    def available_bits(self):
+        return ()
+
+    def should_use_taskcluster(self):
+        # GVE is not on archive.mozilla.org, only on taskcluster
+        return True
+
+
 @REGISTRY.register('fennec-2.3', attr_value='fennec')
 class Fennec23Config(FennecConfig):
     tk_name = 'android-api-9'

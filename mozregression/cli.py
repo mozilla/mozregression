@@ -293,7 +293,7 @@ def parse_bits(option_bits):
         return mozinfo.bits
 
 
-def preferences(prefs_files, prefs_args):
+def preferences(prefs_files, prefs_args, logger):
     """
     profile preferences
     """
@@ -310,6 +310,10 @@ def preferences(prefs_files, prefs_args):
     if prefs_args:
         for pref in prefs_args:
             if separator not in pref:
+                if logger:
+                    if '=' in pref:
+                        logger.warning('Pref %s has an "=", did you mean to use ":"?' % pref)
+                    logger.info('Dropping pref %s for missing separator ":"' % pref)
                 continue
             cli_prefs.append(pref.split(separator, 1))
 
@@ -483,7 +487,7 @@ class Configuration(object):
                 and not fetch_config.is_inbound():
             raise MozRegressionError('Unable to bisect inbound for `%s`'
                                      % fetch_config.app_name)
-        options.preferences = preferences(options.prefs_files, options.prefs)
+        options.preferences = preferences(options.prefs_files, options.prefs, self.logger)
         # convert GiB to bytes.
         options.persist_size_limit = \
             int(abs(float(options.persist_size_limit)) * 1073741824)

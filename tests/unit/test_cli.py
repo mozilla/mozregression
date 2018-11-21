@@ -56,18 +56,18 @@ class TestPreferences(unittest.TestCase):
             conf_file.write('{ "browser.tabs.remote.autostart": false }')
 
         prefs_files = [filepath]
-        prefs = cli.preferences(prefs_files, None)
+        prefs = cli.preferences(prefs_files, None, None)
         self.assertEqual(prefs, [('browser.tabs.remote.autostart', False)])
 
     def test_preferences_args(self):
         prefs_args = ["browser.tabs.remote.autostart:false"]
 
-        prefs = cli.preferences(None, prefs_args)
+        prefs = cli.preferences(None, prefs_args, None)
         self.assertEqual(prefs, [('browser.tabs.remote.autostart', False)])
 
         prefs_args = ["browser.tabs.remote.autostart"]
 
-        prefs = cli.preferences(None, prefs_args)
+        prefs = cli.preferences(None, prefs_args, None)
         self.assertEquals(len(prefs), 0)
 
 

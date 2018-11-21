@@ -39,7 +39,7 @@ class LogView(QPlainTextEdit):
         self.customContextMenuRequested.connect(
             self.on_custom_context_menu_requested)
 
-        self.log_lvl = log_levels["DEBUG"]
+        self.log_lvl = log_levels["INFO"]
 
     def text_blocks(self):
         current_block = QTextCursor(self.document()).block()

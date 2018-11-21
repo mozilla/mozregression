@@ -329,7 +329,7 @@ class BuildInfoTextBrowser(QTextBrowser):
                 # I thought these values were always supposed to be ascii,
                 # but apparently not:
                 # https://bugzilla.mozilla.org/show_bug.cgi?id=1507293
-                html += '%s<br>' % v.decode('ascii', 'ignore')
+                html += '%s<br>' % str(v).decode('ascii', 'ignore')
         self.setHtml(html)
 
     @Slot(QUrl)

@@ -53,7 +53,7 @@ def test_app_get_manual_test_runner(create_app):
     app = create_app(['--profile=/prof'])
     assert isinstance(app.test_runner, ManualTestRunner)
     assert app.test_runner.launcher_kwargs == dict(
-        addons=[], profile='/prof', cmdargs=[], preferences=[]
+        addons=[], profile='/prof', cmdargs=['--allow-downgrade'], preferences=[]
     )
 
 

@@ -152,7 +152,7 @@ class AbstractBuildRunner(QObject):
         launcher_kwargs['addons'] = options['addons']
         self.test_runner.launcher_kwargs = launcher_kwargs
 
-        if options.profile_persistence in ('clone-first', 'reuse') or options.profile:
+        if options['profile_persistence'] in ('clone-first', 'reuse') or options['profile']:
             launcher_kwargs['cmdargs'] = launcher_kwargs['cmdargs'] + ['--allow-downgrade']
 
         self.worker = self.worker_class(fetch_config, self.test_runner,

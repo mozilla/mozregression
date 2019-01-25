@@ -61,6 +61,9 @@ class Application(object):
                 preferences=options.preferences,
                 clone=options.profile_persistence == 'clone-first'
             )
+            options.cmdargs = options.cmdargs + ['--allow-downgrade']
+        elif options.profile:
+            options.cmdargs = options.cmdargs + ['--allow-downgrade']
 
     def clear(self):
         if self._build_download_manager:

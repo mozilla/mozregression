@@ -21,8 +21,8 @@ install:
           sudo apt-get install python-qt4 pyqt4-dev-tools;
       fi
     - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-          brew tap cartr/qt4
-          brew tap-pin cartr/qt4
+          brew tap cartr/qt4;
+          brew tap-pin cartr/qt4;
           brew update; brew outdated xctool || brew upgrade xctool;
           pip install virtualenv;
           brew install pyqt@4;

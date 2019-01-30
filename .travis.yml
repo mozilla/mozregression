@@ -8,10 +8,10 @@ dist: precise
 before_install:
     # ridiculous set of hacks to update setuptools in the travis precise
     # environment (can probably go away whenever we upgrade to trusty)
-    - sudo pip install requests[security]
-    - sudo pip uninstall distribute -y || true
-    - sudo pip uninstall setuptools -y || true
-    - sudo pip install setuptools
+    #- sudo pip install requests[security]
+    #- sudo pip uninstall distribute -y || true
+    #- sudo pip uninstall setuptools -y || true
+    #- sudo pip install setuptools
 
 install:
     - if [ "$TRAVIS_OS_NAME" == "linux" ]; then

@@ -21,10 +21,12 @@ install:
           sudo apt-get install python-qt4 pyqt4-dev-tools;
       fi
     - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+          brew tap cartr/qt4
+          brew tap-pin cartr/qt4
           brew update; brew outdated xctool || brew upgrade xctool;
           pip install virtualenv;
-          brew install pyqt;
-          brew linkapps qt;
+          brew install pyqt@4;
+          brew linkapps qt@4;
           MOZPATH="$PWD";
           mkdir -p /Users/travis/Library/Python/2.7/lib/python/site-packages;
           echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> /Users/travis/Library/Python/2.7/lib/python/site-packages/homebrew.pth;

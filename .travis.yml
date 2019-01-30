@@ -1,7 +1,7 @@
 os:
   - linux
 # not testing on osx for now
-#  - osx
+  - osx
 
 dist: precise
 

@@ -378,9 +378,10 @@ class InboundConfigMixin:
         Returns the takcluster options, including the credentials required to
         download private artifacts.
         """
-        if not self.tk_needs_auth():
-            return None
-        return {'credentials': self._tk_credentials}
+        tk_options = {'rootUrl': 'https://taskcluster.net'}
+        if self.tk_needs_auth():
+            tk_options.update({'credentials': self._tk_credentials})
+        return tk_options
 
 
 def _common_tk_part(inbound_conf):

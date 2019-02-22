@@ -80,7 +80,7 @@ class InboundInfoFetcher(InfoFetcher):
     def __init__(self, fetch_config):
         InfoFetcher.__init__(self, fetch_config)
         options = fetch_config.tk_options()
-        self.index = taskcluster.client.Index(options)
+        self.index = taskcluster.Index(options)
         self.queue = taskcluster.Queue(options)
         self.jpushes = JsonPushes(branch=fetch_config.inbound_branch)
 
@@ -147,14 +147,7 @@ class InboundInfoFetcher(InfoFetcher):
                 meth = self.queue.buildUrl
                 if self.fetch_config.tk_needs_auth():
                     meth = self.queue.buildSignedUrl
-                build_url = meth(
-                    'getArtifact',
-                    replDict={
-                        'taskId': task_id,
-                        'runId': run_id,
-                        'name': a['name']
-                    }
-                )
+                build_url = meth('getArtifact', task_id, run_id, a['name'])
                 break
         if build_url is None:
             raise BuildInfoNotFound("unable to find a build url for the"

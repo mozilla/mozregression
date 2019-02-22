@@ -135,8 +135,8 @@ class TestInboundInfoFetcher(unittest.TestCase):
                 {'name': 'firefox-42.0a1.en-US.linux-x86_64.txt'},
             ]}
 
-        def build_url(name, replDict=None):
-            return 'http://' + replDict['name']
+        def build_url(method_name, task_id, run_id, name):
+            return 'http://' + name
 
         self.info_fetcher.index.findTask = find_task
         self.info_fetcher.queue.status = status

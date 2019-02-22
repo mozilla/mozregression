@@ -40,7 +40,7 @@ DEPENDENCIES = [
     'requests[security]==2.20.0',
     'redo==1.6',
     'mozdevice==3.0.1',
-    'taskcluster==0.3.4',
+    'taskcluster==6.0.0',
     'colorama==0.3.7',
     'configobj==5.0.6',
 ]

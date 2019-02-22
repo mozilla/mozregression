@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from PyQt4.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
 from PyQt4.QtGui import (QPlainTextEdit, QTextCursor, QColor,
                          QTextCharFormat, QMenu, QAction,
@@ -45,7 +46,7 @@ class LogView(QPlainTextEdit):
         current_block = QTextCursor(self.document()).block()
         while current_block.isValid and current_block.text():
             yield current_block
-            current_block = current_block.next()
+            current_block = next(current_block)
 
     @Slot(dict)
     def on_log_received(self, data):
@@ -89,7 +90,7 @@ class LogView(QPlainTextEdit):
                 current_block.setVisible(True)
             else:
                 current_block.setVisible(False)
-            current_block = current_block.next()
+            current_block = next(current_block)
         self.viewport().update()
 
 

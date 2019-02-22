@@ -1,6 +1,9 @@
+from __future__ import absolute_import
+from __future__ import print_function
 from PyQt4.QtCore import Qt, pyqtSignal as Signal
 from PyQt4.QtGui import (QGraphicsRectItem, QGraphicsScene, QGraphicsView,
                          QBrush, QToolTip, QDialog, QMessageBox)
+from six.moves import range
 
 
 class BuildItem(QGraphicsRectItem):
@@ -137,4 +140,4 @@ if __name__ == '__main__':
     win = QMainWindow()
 
     dlg = SkipDialog(build_range)
-    print dlg.choose_next_build()
+    print(dlg.choose_next_build())

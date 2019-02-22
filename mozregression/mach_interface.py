@@ -9,6 +9,7 @@ Be careful to not break backward compatibility here, or you will
 break mach!
 """
 
+from __future__ import absolute_import
 from argparse import Namespace
 
 from mozregression.cli import create_parser

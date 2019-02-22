@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+from __future__ import absolute_import
 import unittest
 from mock import patch, Mock, call, MagicMock
 import datetime
@@ -10,6 +11,7 @@ from mozregression.bisector import (NightlyHandler, InboundHandler, Bisector,
                                     Bisection, BisectorHandler)
 from mozregression import build_range
 from mozregression.errors import LauncherError, MozRegressionError
+from six.moves import range
 
 
 class MockBisectorHandler(BisectorHandler):
@@ -252,7 +254,7 @@ class TestBisector(unittest.TestCase):
         iter_verdict = iter(verdicts)
 
         def evaluate(build_info, allow_back=False):
-            verdict = iter_verdict.next()
+            verdict = next(iter_verdict)
             if isinstance(verdict, Exception):
                 raise verdict
             return verdict
@@ -413,10 +415,10 @@ class TestBisector(unittest.TestCase):
         self.assertEqual(test_result['result'], Bisection.FINISHED)
 
     def test__bisect_user_exit(self):
-        test_result = self.do__bisect(MyBuildData(range(20)), ['e'])
+        test_result = self.do__bisect(MyBuildData(list(range(20))), ['e'])
         # check that set_build_range was called
         self.handler.set_build_range.\
-            assert_has_calls([call(MyBuildData(range(20)))])
+            assert_has_calls([call(MyBuildData(list(range(20))))])
         # ensure that we called the handler's method
         self.handler.initialize.assert_called_once_with()
         self.handler.user_exit.assert_called_with(10)

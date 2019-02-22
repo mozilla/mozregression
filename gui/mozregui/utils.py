@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from PyQt4.QtCore import QDir
 from PyQt4.QtGui import QLineEdit, QPushButton, QWidget, QHBoxLayout, \
     QFileDialog, QFileSystemModel, QCompleter
@@ -6,6 +7,7 @@ from mozregression.releases import date_of_release, releases
 from mozregression.dates import parse_date
 from mozregression.errors import DateFormatError
 from mozregui.ui.build_selection_helper import Ui_BuildSelectionHelper
+import six
 
 
 class FSLineEdit(QLineEdit):
@@ -73,10 +75,10 @@ class BuildSelection(QWidget):
             return parse_date(
                 date_of_release(str(self.ui.release.currentText())))
         elif currentw == self.ui.s_buildid:
-            buildid = unicode(self.ui.buildid.text())
+            buildid = six.text_type(self.ui.buildid.text())
             try:
                 return parse_date(buildid)
             except DateFormatError:
                 raise DateFormatError(buildid, "Not a valid build id: `%s`")
         elif currentw == self.ui.s_changeset:
-            return unicode(self.ui.changeset.text())
+            return six.text_type(self.ui.changeset.text())

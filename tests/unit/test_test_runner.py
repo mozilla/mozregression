@@ -2,12 +2,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+from __future__ import absolute_import
 import pytest
 import unittest
 import datetime
 from mock import patch, Mock
 
 from mozregression import test_runner, errors, build_info
+from six.moves import range
 
 
 def mockinfo(**kwargs):
@@ -239,18 +241,18 @@ class TestCommandTestRunner(unittest.TestCase):
 
 
 # useful fixture
-from test_build_range import range_creator  # noqa
+from .test_build_range import range_creator  # noqa
 
 
 @pytest.mark.parametrize('brange,input,allowed_range,result', [  # noqa
     # [0, 1, 2, 3, 4, 5] (6 elements, mid is '3')
-    (range(6), ['-2'], '[-2, 1]', 1),
+    (list(range(6)), ['-2'], '[-2, 1]', 1),
     # [0, 1, 2, 3, 4] (5 elements, mid is '2')
-    (range(5), ['1'], '[-1, 1]', 3),
+    (list(range(5)), ['1'], '[-1, 1]', 3),
     # user hit something bad, we loop
-    (range(5), ['aa', '', '1'], '[-1, 1]', 3),
+    (list(range(5)), ['aa', '', '1'], '[-1, 1]', 3),
     # small range, no raw_input
-    (range(3), Exception('raw_input called, it should not happen'), None, 1)
+    (list(range(3)), Exception('raw_input called, it should not happen'), None, 1)
 ])
 def test_index_to_try_after_skip(mocker, range_creator, brange,
                                  input, allowed_range, result):

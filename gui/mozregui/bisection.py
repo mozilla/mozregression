@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import sys
 import threading
 from PyQt4.QtCore import QObject, pyqtSignal as Signal, pyqtSlot as Slot, \

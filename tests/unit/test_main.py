@@ -2,6 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+from __future__ import absolute_import
+from __future__ import print_function
 import pytest
 import unittest
 import requests
@@ -14,6 +16,7 @@ from mozregression.test_runner import ManualTestRunner, CommandTestRunner
 from mozregression.download_manager import BuildDownloadManager
 from mozregression.bisector import Bisector, Bisection, InboundHandler, \
     NightlyHandler
+from six.moves import range
 
 
 class AppCreator(object):
@@ -101,8 +104,8 @@ def test_app_bisect_nightlies_finished(create_app, mocker, can_go_inbound):
     assert app.bisect_nightlies() == 0
     app.bisector.bisect.assert_called_once_with(
         ANY,
-        date(2015, 06, 01),
-        date(2015, 06, 02)
+        date(2015, 0o6, 0o1),
+        date(2015, 0o6, 0o2)
     )
     assert create_app.find_in_log(
         "Got as far as we can go bisecting nightlies..."
@@ -199,7 +202,7 @@ def test_app_bisect_ctrl_c_exit(create_app, mocker):
     Handler.return_value = handler
     with pytest.raises(KeyboardInterrupt):
         app.bisect_nightlies()
-    print handler
+    print(handler)
     at_exit.assert_called_once_with(app._on_exit_print_resume_info, handler)
     # call the atexit handler
     mocker.stopall()

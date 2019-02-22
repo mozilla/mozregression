@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from PyQt4.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
 from PyQt4.QtGui import QMessageBox
 
@@ -7,6 +8,7 @@ from mozregression.fetch_build_info import (NightlyInfoFetcher,
                                             InboundInfoFetcher)
 
 from mozregui.build_runner import AbstractBuildRunner
+import six
 
 
 class SingleBuildWorker(QObject):
@@ -74,4 +76,4 @@ class SingleBuildRunner(AbstractBuildRunner):
     def on_error(self, error):
         if error:
             self.stop(wait=False)
-            QMessageBox.critical(self.mainwindow, "Error", unicode(error))
+            QMessageBox.critical(self.mainwindow, "Error", six.text_type(error))

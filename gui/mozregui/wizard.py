@@ -1,19 +1,21 @@
+from __future__ import absolute_import
 import mozinfo
 import datetime
 from PyQt4.QtGui import (QWizard, QWizardPage, QStringListModel, QMessageBox,
                          QCompleter, QApplication)
 from PyQt4.QtCore import QString, QDate, pyqtSlot as Slot, Qt, SIGNAL
 
-from ui.intro import Ui_Intro
-from ui.build_selection import Ui_BuildSelectionPage
-from ui.profile import Ui_Profile
-from ui.single_build_selection import Ui_SingleBuildSelectionPage
+from .ui.intro import Ui_Intro
+from .ui.build_selection import Ui_BuildSelectionPage
+from .ui.profile import Ui_Profile
+from .ui.single_build_selection import Ui_SingleBuildSelectionPage
 
 from mozregression.fetch_configs import create_config, REGISTRY
 from mozregression.launchers import REGISTRY as LAUNCHER_REGISTRY
 from mozregression.errors import LauncherNotRunnable, DateFormatError
 from mozregression.dates import to_datetime
 from mozregression.branches import get_branches
+import six
 
 
 def resolve_obj_name(obj, name):
@@ -35,7 +37,7 @@ class WizardPage(QWizardPage):
         self.setSubTitle(self.SUBTITLE)
         self.ui = self.UI_CLASS()
         self.ui.setupUi(self)
-        for name, widget_name in self.FIELDS.iteritems():
+        for name, widget_name in six.iteritems(self.FIELDS):
             self.registerField(name, resolve_obj_name(self.ui, widget_name))
 
     def set_options(self, options):
@@ -48,7 +50,7 @@ class WizardPage(QWizardPage):
         for fieldname in self.FIELDS:
             value = self.field(fieldname).toPyObject()
             if isinstance(value, QString):
-                value = unicode(value)
+                value = six.text_type(value)
             options[fieldname] = value
 
 
@@ -134,7 +136,7 @@ class IntroPage(WizardPage):
         try:
             launcher_class.check_is_runnable()
             return True
-        except LauncherNotRunnable, exc:
+        except LauncherNotRunnable as exc:
             QMessageBox.critical(
                 self,
                 "%s is not runnable" % app_name,
@@ -178,7 +180,7 @@ class ProfilePage(WizardPage):
         return self.ui.addons_widget.get_addons()
 
     def get_profile_persistence(self):
-        return unicode(self.ui.profile_persistence_combo.currentText())
+        return six.text_type(self.ui.profile_persistence_combo.currentText())
 
 
 class BuildSelectionPage(WizardPage):
@@ -219,14 +221,14 @@ class BuildSelectionPage(WizardPage):
 
     def validatePage(self):
         start, end = self.get_start(), self.get_end()
-        if isinstance(start, basestring) or isinstance(end, basestring):
+        if isinstance(start, six.string_types) or isinstance(end, six.string_types):
             # do not check revisions
             return True
         try:
             start_date = to_datetime(start)
             end_date = to_datetime(end)
         except DateFormatError as exc:
-            QMessageBox.critical(self, "Error", unicode(exc))
+            QMessageBox.critical(self, "Error", six.text_type(exc))
             return False
         current = datetime.datetime.now()
         if start_date < end_date:

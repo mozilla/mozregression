@@ -1,4 +1,5 @@
 # first thing, patch requests lib if required
+from __future__ import absolute_import
 from mozregui import patch_requests
 patch_requests.patch()
 

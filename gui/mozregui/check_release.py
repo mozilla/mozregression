@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from PyQt4.QtCore import QObject, QThread, pyqtSlot as Slot, Qt, QUrl
 from PyQt4.QtGui import QLabel, QDesktopServices
 from mozregression.network import retry_get

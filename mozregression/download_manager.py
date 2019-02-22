@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import tempfile
 import threading
 import requests
@@ -9,6 +11,7 @@ from contextlib import closing
 from mozlog import get_proxy_logger
 
 from mozregression.persist_limit import PersistLimit
+import six
 
 LOG = get_proxy_logger('Download')
 
@@ -111,7 +114,7 @@ class Download(object):
         :class:`DownloadInterrupt`.
         """
         if self.__error:
-            raise self.__error[0], self.__error[1], self.__error[2]
+            six.reraise(self.__error[0], self.__error[1], self.__error[2])
         if self.__canceled:
             raise DownloadInterrupt()
 
@@ -247,7 +250,7 @@ class DownloadManager(object):
         Note that download threads won't be stopped directly.
         """
         with self._lock:
-            for download in self._downloads.itervalues():
+            for download in six.itervalues(self._downloads):
                 if cancel_if is None or cancel_if(download):
                     if download.is_running():
                         download.cancel()
@@ -365,7 +368,7 @@ class BuildDownloadManager(DownloadManager):
             try:
                 dl.wait()
             finally:
-                print ''  # a new line after download_progress calls
+                print('')  # a new line after download_progress calls
 
         else:
             msg = "Using local file: %s" % dest

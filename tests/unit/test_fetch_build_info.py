@@ -1,9 +1,10 @@
+from __future__ import absolute_import
 import unittest
 import datetime
 from mock import patch, Mock
 
 from mozregression import fetch_build_info, fetch_configs, errors
-from test_fetch_configs import create_push
+from .test_fetch_configs import create_push
 
 
 class TestInfoFetcher(unittest.TestCase):
@@ -63,12 +64,12 @@ class TestNightlyInfoFetcher(unittest.TestCase):
             'foo',
             'bar/'
         ]
-        urls = self.info_fetcher._get_urls(datetime.date(2014, 11, 01))
+        urls = self.info_fetcher._get_urls(datetime.date(2014, 11, 0o1))
         self.assertEqual(
             urls[0],
             fetch_configs.ARCHIVE_BASE_URL +
             '/firefox/nightly/2014/11/2014-11-01-03-02-05-mozilla-central/')
-        urls = self.info_fetcher._get_urls(datetime.date(2014, 11, 02))
+        urls = self.info_fetcher._get_urls(datetime.date(2014, 11, 0o2))
         self.assertEqual(urls, [])
 
     def test_find_build_info(self):

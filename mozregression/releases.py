@@ -1,8 +1,12 @@
+from __future__ import absolute_import
 import re
 
 from datetime import date
 from mozregression.errors import UnavailableRelease
 from mozregression.network import retry_get
+import six
+from six.moves import filter
+from six.moves import map
 
 
 def releases():
@@ -85,10 +89,10 @@ def releases():
     response = retry_get(tags_url)
 
     if response.status_code == 200:
-        fetched_releases = map(
+        fetched_releases = list(map(
             map_tags,
-            filter(filter_tags, response.json()["tags"])
-        )
+            list(filter(filter_tags, response.json()["tags"]))
+        ))
 
         for release in fetched_releases:
             releases.update(release)
@@ -112,7 +116,7 @@ def formatted_valid_release_dates():
     the valid release dates.
     """
     message = "Valid releases: \n"
-    for key, value in releases().iteritems():
+    for key, value in six.iteritems(releases()):
         message += '% 3s: %s\n' % (key, value)
 
     return message

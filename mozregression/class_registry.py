@@ -1,3 +1,4 @@
+import six
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -28,7 +29,7 @@ class ClassRegistry(object):
         def wrapper(klass):
             self._classes[name] = klass
             setattr(klass, self.attr_name, attr_value or name)
-            for key, value in kwargs.iteritems():
+            for key, value in six.iteritems(kwargs):
                 setattr(klass, key, value)
             return klass
         return wrapper
@@ -49,7 +50,7 @@ class ClassRegistry(object):
         """
         names = sorted(self._classes)
         if predicate:
-            for name, klass in self._classes.iteritems():
+            for name, klass in six.iteritems(self._classes):
                 if not predicate(klass):
                     names.remove(name)
         return names

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from PyQt4.QtGui import QStyledItemDelegate, QStyleOptionProgressBarV2, \
     QApplication, QStyle, QWidget, QPainter, QIcon, QPixmap
 from PyQt4.QtCore import Qt, QRect, pyqtSignal as Signal

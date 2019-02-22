@@ -6,6 +6,8 @@
 Reading and writing of the configuration file.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import mozinfo
 
@@ -13,6 +15,7 @@ from configobj import ConfigObj, ParseError
 
 from mozregression.log import colorize
 from mozregression.errors import MozRegressionError
+from six.moves import input
 
 
 CONFIG_FILE_HELP_URL = (
@@ -63,7 +66,7 @@ def get_defaults(conf_path):
     defaults = dict(DEFAULTS)
     try:
         config = ConfigObj(conf_path)
-    except ParseError, exc:
+    except ParseError as exc:
         raise MozRegressionError(
             "Error while reading the config file %s:\n  %s" % (conf_path, exc)
         )
@@ -75,10 +78,10 @@ def get_defaults(conf_path):
 def _get_persist_dir(default):
     print("You should configure a persist directory, where to put downloaded"
           " build files to reuse them in future bisections.")
-    print("I recommend using %s. Leave blank to use that default. If you"
-          " really don't want a persist dir type NONE, else you can"
-          " just define a path that you would like to use." % default)
-    value = raw_input("persist: ")
+    print(("I recommend using %s. Leave blank to use that default. If you"
+           " really don't want a persist dir type NONE, else you can"
+           " just define a path that you would like to use." % default))
+    value = input("persist: ")
     if value == "NONE":
         return ''
     elif value:
@@ -93,11 +96,11 @@ def _get_persist_dir(default):
 
 
 def _get_persist_size_limit(default):
-    print("You should choose a size limit for the persist dir. I recommend you"
-          " to use %s GiB, so leave it blank to use that default. Else you"
-          " can type NONE to not limit the persist dir, or any number you like"
-          " (a GiB value, so type 0.5 to allow ~500 MiB)." % default)
-    value = raw_input('persist-size-limit: ')
+    print(("You should choose a size limit for the persist dir. I recommend you"
+           " to use %s GiB, so leave it blank to use that default. Else you"
+           " can type NONE to not limit the persist dir, or any number you like"
+           " (a GiB value, so type 0.5 to allow ~500 MiB)." % default))
+    value = input('persist-size-limit: ')
     if value == "NONE":
         return 0.0
     elif value:
@@ -110,7 +113,7 @@ def _get_bits(default):
           " use the 64-bit build files. If you want to change that to"
           " 32-bit by default, type 32 here.")
     while 1:
-        value = raw_input('bits: ')
+        value = input('bits: ')
         if value in ('', '32', '64'):
             break
     if not value:
@@ -141,7 +144,7 @@ def write_conf(conf_path):
         config.initial_comment = CONF_HELP.splitlines()
 
     def _set_option(optname, getfunc, default):
-        print
+        print()
         if optname not in config:
             value = getfunc(default)
             if value is not None:
@@ -149,10 +152,10 @@ def write_conf(conf_path):
             else:
                 value = default
         else:
-            print '%s already defined.' % optname
+            print('%s already defined.' % optname)
             value = config[optname]
         name = colorize("{fGREEN}%s{sRESET_ALL}" % optname)
-        print "%s: %s" % (name, value)
+        print("%s: %s" % (name, value))
 
     _set_option('persist', _get_persist_dir,
                 os.path.join(conf_dir, "persist"))
@@ -164,7 +167,7 @@ def write_conf(conf_path):
 
     config.write()
 
-    print
-    print colorize('Config file {sBRIGHT}%s{sRESET_ALL} written.' % conf_path)
-    print("Note you can edit it manually, and there are other options you can"
-          " configure. See %s." % CONFIG_FILE_HELP_URL)
+    print()
+    print(colorize('Config file {sBRIGHT}%s{sRESET_ALL} written.' % conf_path))
+    print(("Note you can edit it manually, and there are other options you can"
+          " configure. See %s." % CONFIG_FILE_HELP_URL))

@@ -38,10 +38,10 @@ DEPENDENCIES = [
     'mozinfo==1.1.0',
     'mozlog==4.0',
     'mozversion==2.1.0',
-    'requests[security]==2.20.0',
-    'redo==1.6',
+    'requests[security]==2.21.0',
+    'redo==2.0.2',
     'taskcluster==6.0.0',
-    'colorama==0.3.7',
+    'colorama==0.4.1',
     'configobj==5.0.6',
 ]
 

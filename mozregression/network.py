@@ -10,7 +10,7 @@ import re
 import redo
 import requests
 
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
 
 def retry_get(url, **karwgs):

@@ -35,13 +35,13 @@ DEPENDENCIES = [
     'BeautifulSoup==3.2.1',
     'mozinstall==2.0.0',
     'mozinfo==1.0.0',
-    'requests[security]==2.20.0',
-    'redo==1.6',
     'mozlog==4.0',
     'mozversion==2.1.0',
+    'requests[security]==2.21.0',
+    'redo==2.0.2',
     'mozdevice==3.0.0',
     'taskcluster==6.0.0',
-    'colorama==0.3.7',
+    'colorama==0.4.1',
     'configobj==5.0.6',
 ]
 

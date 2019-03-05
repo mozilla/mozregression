@@ -273,24 +273,14 @@ class InboundHandler(BisectorHandler):
             if get_name(most_recent_push.repo_name) == 'mozilla-central' and \
                len(push.changesets) >= 2:
                 branch = self._choose_integration_branch(most_recent_push.changeset)
-                jp2 = JsonPushes(branch)
-                try:
-                    data = jp2.pushes_within_changes(
-                        push.changesets[0]['node'],
-                        push.changesets[-1]['node'])
-                except MozRegressionError, exc:
-                    LOG.error("Failed to find changes in branch '%s' (error: %s)" %
-                              (branch, exc))
-                    raise
+                oldest = push.changesets[0]['node']
+                youngest = push.changesets[-1]['node']
                 LOG.info("************* Switching to %s by"
                          " process of elimination (no branch detected in"
                          " commit message)" % branch)
-                gr, br = self._reverse_if_find_fix(data[0].changeset,
-                                                   data[-1].changeset)
-                return (branch, gr, br)
             else:
                 return
-        try:
+        else:
             # so, this is a merge. see how many changesets are in it, if it
             # is just one, we have our answer
             if len(push.changesets) == 2:
@@ -303,17 +293,18 @@ class InboundHandler(BisectorHandler):
             oldest = push.changesets[0]['node']
             # exclude the merge commit
             youngest = push.changesets[-2]['node']
-            LOG.debug("This is a merge from %s" % branch)
+            LOG.info("************* Switching to %s" % branch)
 
-            # we can't use directly the oldest changeset because we
-            # don't know yet if it is good.
-            #
-            # PUSH1    PUSH2
-            # [1 2] [3 4 5 6 7]
-            #    G    MERGE  B
-            #
-            # so first grab the previous push to get the last known good
-            # changeset. This needs to be done on the right branch.
+        # we can't use directly the oldest changeset because we
+        # don't know yet if it is good.
+        #
+        # PUSH1    PUSH2
+        # [1 2] [3 4 5 6 7]
+        #    G    MERGE  B
+        #
+        # so first grab the previous push to get the last known good
+        # changeset. This needs to be done on the right branch.
+        try:
             jp2 = JsonPushes(branch)
             raw = [int(p.push_id) for p in
                    jp2.pushes_within_changes(oldest, youngest)]
@@ -326,7 +317,6 @@ class InboundHandler(BisectorHandler):
             youngest = data[-1].changeset
 
             # we are ready to bisect further
-            LOG.info("************* Switching to %s" % branch)
             gr, br = self._reverse_if_find_fix(older, youngest)
             result = (branch, gr, br)
         except MozRegressionError:

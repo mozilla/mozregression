@@ -305,14 +305,15 @@ class InboundHandler(BisectorHandler):
             youngest = push.changesets[-2]['node']
             LOG.debug("This is a merge from %s" % branch)
 
-            # we can't use directly the youngest changeset because we
+            # we can't use directly the oldest changeset because we
             # don't know yet if it is good.
             #
             # PUSH1    PUSH2
             # [1 2] [3 4 5 6 7]
             #    G    MERGE  B
             #
-            # so first, grab it. This needs to be done on the right branch.
+            # so first grab the previous push to get the last known good
+            # changeset. This needs to be done on the right branch.
             jp2 = JsonPushes(branch)
             raw = [int(p.push_id) for p in
                    jp2.pushes_within_changes(oldest, youngest)]
@@ -321,12 +322,12 @@ class InboundHandler(BisectorHandler):
                 endID=str(max(raw)),
             )
 
-            oldest = data[0].changesets[0]
-            youngest = data[-1].changesets[-1]
+            older = data[0].changeset
+            youngest = data[-1].changeset
 
             # we are ready to bisect further
             LOG.info("************* Switching to %s" % branch)
-            gr, br = self._reverse_if_find_fix(oldest, youngest)
+            gr, br = self._reverse_if_find_fix(older, youngest)
             result = (branch, gr, br)
         except MozRegressionError:
             LOG.debug("Got exception", exc_info=True)

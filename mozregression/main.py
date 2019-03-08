@@ -91,6 +91,7 @@ class Application(object):
                     profile=self._global_profile or self.options.profile,
                     cmdargs=self.options.cmdargs,
                     preferences=self.options.preferences,
+                    adb_profile_dir=self.options.adb_profile_dir,
                 ))
             else:
                 self._test_runner = CommandTestRunner(self.options.command)

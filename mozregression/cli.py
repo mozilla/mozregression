@@ -141,6 +141,16 @@ def create_parser(defaults):
                         metavar="PATH",
                         help="profile to use with nightlies.")
 
+    parser.add_argument('--adb-profile-dir',
+                        dest="adb_profile_dir",
+                        default=defaults["adb-profile-dir"],
+                        help=("Path to use on android devices for storing"
+                              " the profile. Generally you should not need"
+                              " to specify this, and an appropriate path"
+                              " will be used. Specifying this to a value,"
+                              " e.g. '/sdcard/tests' will forcibly try to create"
+                              " the profile inside that folder."))
+
     parser.add_argument('--profile-persistence',
                         choices=('clone', 'clone-first', 'reuse'),
                         default=defaults["profile-persistence"],

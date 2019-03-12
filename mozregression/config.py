@@ -34,6 +34,7 @@ DEFAULT_EXPAND = 20
 # default values when not defined in config file.
 # Note that this is also the list of options that can be used in config file
 DEFAULTS = {
+    'adb-profile-dir': None,
     'app': 'firefox',
     'approx-policy': 'auto',
     'archive-base-url': ARCHIVE_BASE_URL,

@@ -191,7 +191,8 @@ class MozRunnerLauncher(Launcher):
             rmtree(self.tempdir)
             raise
 
-    def _start(self, profile=None, addons=(), cmdargs=(), preferences=None):
+    def _start(self, profile=None, addons=(), cmdargs=(), preferences=None,
+               adb_profile_dir=None):
         profile = self._create_profile(profile=profile, addons=addons,
                                        preferences=preferences)
 
@@ -365,12 +366,15 @@ class AndroidLauncher(Launcher):
             )
         self.adb.install_app(dest)
 
-    def _start(self, profile=None, addons=(), cmdargs=(), preferences=None):
+    def _start(self, profile=None, addons=(), cmdargs=(), preferences=None,
+               adb_profile_dir=None):
         # for now we don't handle addons on the profile for fennec
         profile = self._create_profile(profile=profile,
                                        preferences=preferences)
         # send the profile on the device
-        self.remote_profile = "/".join([self.adb.test_root,
+        if not adb_profile_dir:
+            adb_profile_dir = self.adb.test_root
+        self.remote_profile = "/".join([adb_profile_dir,
                                        os.path.basename(profile.profile)])
         if self.adb.exists(self.remote_profile):
             self.adb.rm(self.remote_profile, recursive=True)

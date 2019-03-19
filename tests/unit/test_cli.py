@@ -323,20 +323,21 @@ def test_mozversion_output_filtered(mozversion_msg, shown):
         assert not result
 
 
-@pytest.mark.parametrize('app, os, bits, build_type, expected_range', [
-    ('jsshell', 'win', 64, None, (datetime.date(2014, 5, 27), TODAY)),
-    ('jsshell', 'linux', 64, 'asan', (datetime.date(2013, 9, 1), TODAY)),
-    ('jsshell', 'linux', 64, 'debug,asan', (datetime.date(2013, 9, 1), TODAY)),
-    ('jsshell', 'linux', 32, None, (datetime.date(2012, 4, 18), TODAY)),
-    ('jsshell', 'mac', 64, None, (datetime.date(2012, 4, 18), TODAY)),
-    ('jsshell', 'win', 32, None, (datetime.date(2012, 4, 18), TODAY)),
+@pytest.mark.parametrize('app, os, bits, processor, build_type, expected_range', [
+    ('jsshell', 'win', 64, 'x86_64', None, (datetime.date(2014, 5, 27), TODAY)),
+    ('jsshell', 'linux', 64, 'x86_64', 'asan', (datetime.date(2013, 9, 1), TODAY)),
+    ('jsshell', 'linux', 64, 'x86_64', 'debug,asan', (datetime.date(2013, 9, 1), TODAY)),
+    ('jsshell', 'linux', 32, 'x86', None, (datetime.date(2012, 4, 18), TODAY)),
+    ('jsshell', 'mac', 64, 'x86_64', None, (datetime.date(2012, 4, 18), TODAY)),
+    ('jsshell', 'win', 32, 'x86', None, (datetime.date(2012, 4, 18), TODAY)),
     # anything else on win 64
-    ('firefox', 'win', 64, None, (datetime.date(2010, 5, 28), TODAY)),
+    ('firefox', 'win', 64, 'x86_64', None, (datetime.date(2010, 5, 28), TODAY)),
     # anything else
-    ('firefox', 'linux', 64, None, (datetime.date(2009, 1, 1), TODAY)),
+    ('firefox', 'linux', 64, 'x86_64', None, (datetime.date(2009, 1, 1), TODAY)),
 ])
-def test_get_default_date_range(app, os, bits, build_type, expected_range):
-    fetch_config = create_config(app, os, bits)
+def test_get_default_date_range(app, os, bits, processor, build_type,
+                                expected_range):
+    fetch_config = create_config(app, os, bits, processor)
     if build_type:
         fetch_config.set_build_type(build_type)
 

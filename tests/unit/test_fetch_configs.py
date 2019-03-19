@@ -20,6 +20,7 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
     app_name = 'firefox'
     os = 'linux'
     bits = 64
+    processor = 'x86_64'
 
     build_examples = ['firefox-38.0a1.en-US.linux-x86_64.tar.bz2']
     build_info_examples = ['firefox-38.0a1.en-US.linux-x86_64.txt']
@@ -29,7 +30,8 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
     is_inbound = True
 
     def setUp(self):
-        self.conf = create_config(self.app_name, self.os, self.bits)
+        self.conf = create_config(self.app_name, self.os, self.bits,
+                                  self.processor)
 
     def test_instance(self):
         self.assertIsInstance(self.conf, self.instance_type)
@@ -88,6 +90,7 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
 
 class TestFirefoxConfigLinux32(TestFirefoxConfigLinux64):
     bits = 32
+    processor = 'x86'
     build_examples = ['firefox-38.0a1.en-US.linux-i686.tar.bz2']
     build_info_examples = ['firefox-38.0a1.en-US.linux-i686.txt']
 
@@ -102,6 +105,7 @@ class TestFirefoxConfigWin64(TestFirefoxConfigLinux64):
 
 class TestFirefoxConfigWin32(TestFirefoxConfigWin64):
     bits = 32
+    processor = 'x86'
     build_examples = ['firefox-38.0a1.en-US.win32.zip']
     build_info_examples = ['firefox-38.0a1.en-US.win32.txt']
 
@@ -115,9 +119,11 @@ class TestFirefoxConfigMac(TestFirefoxConfigLinux64):
 class TestThunderbirdConfig(unittest.TestCase):
     os = 'linux'
     bits = 64
+    processor = 'x86_64'
 
     def setUp(self):
-        self.conf = create_config('thunderbird', self.os, self.bits)
+        self.conf = create_config('thunderbird', self.os, self.bits,
+                                  self.processor)
 
     def test_nightly_repo_regex_before_2008_07_26(self):
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008,
@@ -156,7 +162,7 @@ class TestThunderbirdConfigWin(TestThunderbirdConfig):
 
 class TestFennecConfig(unittest.TestCase):
     def setUp(self):
-        self.conf = create_config('fennec', 'linux', 64)
+        self.conf = create_config('fennec', 'linux', 64, None)
 
     def test_get_nightly_repo_regex(self):
         regex = self.conf.get_nightly_repo_regex(datetime.date(2014,
@@ -189,7 +195,7 @@ class TestFennecConfig(unittest.TestCase):
 
 class TestFennec23Config(unittest.TestCase):
     def setUp(self):
-        self.conf = create_config('fennec-2.3', 'linux', 64)
+        self.conf = create_config('fennec-2.3', 'linux', 64, None)
 
     def test_class_attr_name(self):
         self.assertEqual(self.conf.app_name, 'fennec')
@@ -203,89 +209,98 @@ class TestFennec23Config(unittest.TestCase):
 
 class TestGetBuildUrl(unittest.TestCase):
     def test_for_linux(self):
-        self.assertEqual(get_build_regex('test', 'linux', 32),
+        self.assertEqual(get_build_regex('test', 'linux', 32, 'x86'),
                          r'(target|test.*linux-i686)\.tar.bz2')
 
-        self.assertEqual(get_build_regex('test', 'linux', 64),
+        self.assertEqual(get_build_regex('test', 'linux', 64, 'x86_64'),
                          r'(target|test.*linux-x86_64)\.tar.bz2')
 
-        self.assertEqual(get_build_regex('test', 'linux', 64,
+        self.assertEqual(get_build_regex('test', 'linux', 64, 'x86_64',
                                          with_ext=False),
                          r'(target|test.*linux-x86_64)')
 
     def test_for_win(self):
-        self.assertEqual(get_build_regex('test', 'win', 32),
+        self.assertEqual(get_build_regex('test', 'win', 32, 'x86'),
                          r'(target|test.*win32)\.zip')
-        self.assertEqual(get_build_regex('test', 'win', 64),
+        self.assertEqual(get_build_regex('test', 'win', 64, 'x86_64'),
                          r'(target|test.*win64(-x86_64)?)\.zip')
-        self.assertEqual(get_build_regex('test', 'win', 64,
+        self.assertEqual(get_build_regex('test', 'win', 64, 'x86_64',
                                          with_ext=False),
                          r'(target|test.*win64(-x86_64)?)')
+        self.assertEqual(get_build_regex('test', 'win', 32, 'aarch64'),
+                         r'(target|test.*win32)\.zip')
+        self.assertEqual(get_build_regex('test', 'win', 64, 'aarch64'),
+                         r'(target|test.*win64-aarch64)\.zip')
 
     def test_for_mac(self):
-        self.assertEqual(get_build_regex('test', 'mac', 32),
+        self.assertEqual(get_build_regex('test', 'mac', 32, 'x86'),
                          r'(target|test.*mac.*)\.dmg')
-        self.assertEqual(get_build_regex('test', 'mac', 64),
+        self.assertEqual(get_build_regex('test', 'mac', 64, 'x86_64'),
                          r'(target|test.*mac.*)\.dmg')
-        self.assertEqual(get_build_regex('test', 'mac', 64,
+        self.assertEqual(get_build_regex('test', 'mac', 64, 'x86_64',
                                          with_ext=False),
                          r'(target|test.*mac.*)')
 
     def test_unknown_os(self):
         with self.assertRaises(errors.MozRegressionError):
-            get_build_regex('test', 'unknown', 32)
+            get_build_regex('test', 'unknown', 32, 'x86')
 
 
 CHSET = "47856a21491834da3ab9b308145caa8ec1b98ee1"
 CHSET12 = "47856a214918"
 
 
-@pytest.mark.parametrize("app,os,bits,repo,push_date,expected", [
+@pytest.mark.parametrize("app,os,bits,processor,repo,push_date,expected", [
     # firefox
-    ("firefox", 'linux', 32, None, TIMESTAMP_GECKO_V2 - 1,
+    ("firefox", 'linux', 32, 'x86', None, TIMESTAMP_GECKO_V2 - 1,
      'buildbot.revisions.%s.mozilla-inbound.linux' % CHSET),
-    ("firefox", 'linux', 64, 'm-i', TIMESTAMP_GECKO_V2 - 1,
+    ("firefox", 'linux', 64, 'x86_64', 'm-i', TIMESTAMP_GECKO_V2 - 1,
      'buildbot.revisions.%s.mozilla-inbound.linux64' % CHSET),
-    ("firefox", 'win', 32, 'm-i', TIMESTAMP_GECKO_V2 - 1,
+    ("firefox", 'win', 32, 'x86', 'm-i', TIMESTAMP_GECKO_V2 - 1,
      'buildbot.revisions.%s.mozilla-inbound.win32' % CHSET),
-    ("firefox", 'win', 64, 'm-i', TIMESTAMP_GECKO_V2 - 1,
+    ("firefox", 'win', 64, 'x86_64', 'm-i', TIMESTAMP_GECKO_V2 - 1,
      'buildbot.revisions.%s.mozilla-inbound.win64' % CHSET),
-    ("firefox", 'mac', 64, 'm-i', TIMESTAMP_GECKO_V2 - 1,
+    ("firefox", 'win', 64, 'aarch64', 'm-i', TIMESTAMP_GECKO_V2,
+     'gecko.v2.mozilla-inbound.revision.%s.firefox.win64-aarch64-opt' % CHSET),
+    ("firefox", 'win', 32, 'aarch64', 'm-i', TIMESTAMP_GECKO_V2,
+     'gecko.v2.mozilla-inbound.revision.%s.firefox.win32-opt' % CHSET),
+    ("firefox", 'mac', 64, 'x86_64', 'm-i', TIMESTAMP_GECKO_V2 - 1,
      'buildbot.revisions.%s.mozilla-inbound.macosx64' % CHSET),
-    ("firefox", 'linux', 64, 'm-c', TIMESTAMP_GECKO_V2 - 1,
+    ("firefox", 'linux', 64, 'x86_64', 'm-c', TIMESTAMP_GECKO_V2 - 1,
      'buildbot.revisions.%s.mozilla-central.linux64' % CHSET),
-    ("firefox", 'linux', 64, 'm-i', TIMESTAMP_GECKO_V2,
+    ("firefox", 'linux', 64, 'x86_64', 'm-i', TIMESTAMP_GECKO_V2,
      'gecko.v2.mozilla-inbound.revision.%s.firefox.linux64-opt' % CHSET),
-    ("firefox", 'linux', 64, 'try', TIMESTAMP_GECKO_V2 - 1,
+    ("firefox", 'linux', 64, 'x86_64', 'try', TIMESTAMP_GECKO_V2 - 1,
      'gecko.v2.try.revision.%s.firefox.linux64-opt' % CHSET),
     # fennec
-    ("fennec", None, None, None, TIMESTAMP_GECKO_V2 - 1,
+    ("fennec", None, None, None, None, TIMESTAMP_GECKO_V2 - 1,
      'buildbot.revisions.%s.mozilla-inbound.android-api-11' % CHSET),
-    ("fennec", None, None, None, TIMESTAMP_GECKO_V2,
+    ("fennec", None, None, None, None, TIMESTAMP_GECKO_V2,
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-11-opt' % CHSET),
-    ("fennec", None, None, None, TIMESTAMP_FENNEC_API_15,
+    ("fennec", None, None, None, None, TIMESTAMP_FENNEC_API_15,
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-15-opt' % CHSET),
-    ("fennec", None, None, None, TIMESTAMP_FENNEC_API_16,
+    ("fennec", None, None, None, None, TIMESTAMP_FENNEC_API_16,
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-16-opt' % CHSET),
-    ("fennec-2.3", None, None, 'm-i', TIMESTAMP_GECKO_V2 - 1,
+    ("fennec-2.3", None, None, None, 'm-i', TIMESTAMP_GECKO_V2 - 1,
      'buildbot.revisions.%s.mozilla-inbound.android-api-9' % CHSET),
-    ("fennec-2.3", None, None, 'm-i', TIMESTAMP_GECKO_V2,
+    ("fennec-2.3", None, None, None, 'm-i', TIMESTAMP_GECKO_V2,
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-9-opt' % CHSET),
 ])
-def test_tk_inbound_route(app, os, bits, repo, push_date, expected):
-    conf = create_config(app, os, bits)
+def test_tk_inbound_route(app, os, bits, processor, repo, push_date, expected):
+    conf = create_config(app, os, bits, processor)
     conf.set_repo(repo)
     result = conf.tk_inbound_route(create_push(CHSET, push_date))
     assert result == expected
 
 
-@pytest.mark.parametrize("app,os,bits,build_type,expected", [
+@pytest.mark.parametrize("app,os,bits,processor,build_type,expected", [
     # firefox
-    ("firefox", 'linux', 32, "debug",
+    ("firefox", 'linux', 32, 'x86', "debug",
      'buildbot.revisions.%s.mozilla-inbound.linux-debug' % CHSET),
 ])
-def test_tk_inbound_route_with_build_type(app, os, bits, build_type, expected):
-    conf = create_config(app, os, bits)
+def test_tk_inbound_route_with_build_type(app, os, bits, processor, build_type,
+                                          expected):
+    conf = create_config(app, os, bits, processor)
     conf.set_build_type(build_type)
     result = conf.tk_inbound_route(
         create_push(CHSET, TIMESTAMP_GECKO_V2 - 1))
@@ -293,50 +308,53 @@ def test_tk_inbound_route_with_build_type(app, os, bits, build_type, expected):
 
 
 def test_set_build_type():
-    conf = create_config('firefox', 'linux', 64)
+    conf = create_config('firefox', 'linux', 64, 'x86_64')
     assert conf.build_type == 'opt'  # default is opt
     conf.set_build_type('debug')
     assert conf.build_type == 'debug'
 
 
 def test_set_bad_build_type():
-    conf = create_config('firefox', 'linux', 64)
+    conf = create_config('firefox', 'linux', 64, 'x86_64')
     with pytest.raises(errors.MozRegressionError):
         conf.set_build_type("wrong build type")
 
 
 def test_jsshell_build_info_regex():
-    conf = create_config('jsshell', 'linux', 64)
+    conf = create_config('jsshell', 'linux', 64, 'x86_64')
     assert re.match(conf.build_info_regex(),
                     'firefox-38.0a1.en-US.linux-x86_64.txt')
 
 
-@pytest.mark.parametrize('os,bits,name', [
-    ('linux', 32, 'jsshell-linux-i686.zip'),
-    ('linux', 64, 'jsshell-linux-x86_64.zip'),
-    ('mac', 64, 'jsshell-mac.zip'),
-    ('win', 32, 'jsshell-win32.zip'),
-    ('win', 64, 'jsshell-win64.zip'),
+@pytest.mark.parametrize('os,bits,processor,name', [
+    ('linux', 32, 'x86', 'jsshell-linux-i686.zip'),
+    ('linux', 64, 'x86_64', 'jsshell-linux-x86_64.zip'),
+    ('mac', 64, 'x86_64', 'jsshell-mac.zip'),
+    ('win', 32, 'x86', 'jsshell-win32.zip'),
+    ('win', 64, 'x86_64', 'jsshell-win64.zip'),
+    ('win', 64, 'x86_64', 'jsshell-win64-x86_64.zip'),
+    ('win', 32, 'aarch64', 'jsshell-win32.zip'),
+    ('win', 64, 'aarch64', 'jsshell-win64-aarch64.zip'),
 ])
-def test_jsshell_build_regex(os, bits, name):
-    conf = create_config('jsshell', os, bits)
+def test_jsshell_build_regex(os, bits, processor, name):
+    conf = create_config('jsshell', os, bits, processor)
     assert re.match(conf.build_regex(), name)
 
 
 def test_jsshell_x86_64_build_regex():
-    conf = create_config('jsshell', 'win', 64)
+    conf = create_config('jsshell', 'win', 64, 'x86_64')
     assert not re.match(conf.build_regex(), 'jsshell-win64-aarch64.zip')
 
 
-@pytest.mark.parametrize('os,bits,tc_suffix', [
-    ('linux', 32, 'linux-pgo'),
-    ('linux', 64, 'linux64-pgo'),
-    ('mac', 64, errors.MozRegressionError),
-    ('win', 32, 'win32-pgo'),
-    ('win', 64, 'win64-pgo'),
+@pytest.mark.parametrize('os,bits,processor,tc_suffix', [
+    ('linux', 32, 'x86', 'linux-pgo'),
+    ('linux', 64, 'x86_64', 'linux64-pgo'),
+    ('mac', 64, 'x86_64', errors.MozRegressionError),
+    ('win', 32, 'x86', 'win32-pgo'),
+    ('win', 64, 'x86_64', 'win64-pgo'),
 ])
-def test_set_firefox_build_type_pgo(os, bits, tc_suffix):
-    conf = create_config('firefox', os, bits)
+def test_set_firefox_build_type_pgo(os, bits, processor, tc_suffix):
+    conf = create_config('firefox', os, bits, processor)
     if type(tc_suffix) is not str:
         with pytest.raises(tc_suffix):
             conf.set_build_type('pgo')

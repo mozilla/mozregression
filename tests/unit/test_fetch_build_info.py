@@ -8,7 +8,8 @@ from test_fetch_configs import create_push
 
 class TestInfoFetcher(unittest.TestCase):
     def setUp(self):
-        fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
+        fetch_config = fetch_configs.create_config('firefox', 'linux', 64,
+                                                   'x86_64')
         self.info_fetcher = fetch_build_info.InfoFetcher(fetch_config)
 
     @patch('requests.get')
@@ -36,7 +37,8 @@ mozilla-central/rev/b695d9575654\n")
 
 class TestNightlyInfoFetcher(unittest.TestCase):
     def setUp(self):
-        fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
+        fetch_config = fetch_configs.create_config('firefox', 'linux', 64,
+                                                   'x86_64')
         self.info_fetcher = fetch_build_info.NightlyInfoFetcher(fetch_config)
 
     @patch('mozregression.fetch_build_info.url_links')
@@ -109,7 +111,8 @@ bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/',
 
 class TestInboundInfoFetcher(unittest.TestCase):
     def setUp(self):
-        fetch_config = fetch_configs.create_config('firefox', 'linux', 64)
+        fetch_config = fetch_configs.create_config('firefox', 'linux', 64,
+                                                   'x86_64')
         self.info_fetcher = fetch_build_info.InboundInfoFetcher(fetch_config)
 
     def test_find_build_info(self):

@@ -7,7 +7,7 @@ from mozregression import build_info
 
 def create_build_info(klass, **attrs):
     defaults = dict(
-        fetch_config=create_config('firefox', 'linux', 64),
+        fetch_config=create_config('firefox', 'linux', 64, 'x86_64'),
         build_url='http://build/url',
         build_date=date(2015, 9, 1),
         changeset='12ab' * 10,

@@ -421,7 +421,8 @@ class Configuration(object):
 
         user_defined_bits = options.bits is not None
         options.bits = parse_bits(options.bits or mozinfo.bits)
-        fetch_config = create_config(options.app, mozinfo.os, options.bits)
+        fetch_config = create_config(options.app, mozinfo.os, options.bits,
+                                     mozinfo.processor)
         try:
             fetch_config.set_build_type(options.build_type)
         except MozRegressionError as msg:

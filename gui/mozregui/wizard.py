@@ -115,7 +115,8 @@ class IntroPage(WizardPage):
         app_name = str(self.ui.app_combo.currentText())
         bits = int(self.ui.bits_combo.currentText())
 
-        self.fetch_config = create_config(app_name, mozinfo.os, bits)
+        self.fetch_config = create_config(app_name, mozinfo.os, bits,
+                                          mozinfo.processor)
 
         self.build_type_model = QStringListModel(
             self.fetch_config.available_build_types())

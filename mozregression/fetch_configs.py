@@ -47,20 +47,26 @@ TIMESTAMP_FENNEC_API_16 = to_utc_timestamp(
 )
 
 
-def get_build_regex(name, os, bits, psuffix='', with_ext=True):
+def get_build_regex(name, os, bits, processor, psuffix='', with_ext=True):
     """
     Returns a string regexp that can match a build filename.
 
     :param name: must be the beginning of the filename to match
     :param os: the os, as returned by mozinfo.os
     :param bits: the bits information of the build. Either 32 or 64.
+    :param processor: the architecture of the build. Only one that alters
+                      results is aarch64.
     :param psuffix: optional suffix before the extension
     :param with_ext: if True, the build extension will be appended (either
                      .zip, .tar.bz2 or .dmg depending on the os).
     """
     if os == "win":
         if bits == 64:
-            suffix, ext = r".*win64(-x86_64)?", r"\.zip"
+            if processor == "aarch64":
+                suffix = r".*win64-aarch64"
+            else:
+                suffix = r".*win64(-x86_64)?"
+            ext = r"\.zip"
         else:
             suffix, ext = r".*win32", r"\.zip"
     elif os == "linux":
@@ -97,9 +103,10 @@ class CommonConfig(object):
     BUILD_TYPES = ('opt',)  # only opt allowed by default
     app_name = None
 
-    def __init__(self, os, bits):
+    def __init__(self, os, bits, processor):
         self.os = os
         self.bits = bits
+        self.processor = processor
         self.build_type = 'opt'
         self.repo = None
 
@@ -107,7 +114,8 @@ class CommonConfig(object):
         """
         Returns a string regex that can match a build file on the servers.
         """
-        return get_build_regex(self.app_name, self.os, self.bits) + '$'
+        return get_build_regex(self.app_name, self.os, self.bits,
+                               self.processor) + '$'
 
     def build_info_regex(self):
         """
@@ -115,7 +123,7 @@ class CommonConfig(object):
         on the servers.
         """
         return get_build_regex(self.app_name, self.os, self.bits,
-                               with_ext=False) + r'\.txt$'
+                               self.processor, with_ext=False) + r'\.txt$'
 
     def is_nightly(self):
         """
@@ -141,10 +149,11 @@ class CommonConfig(object):
         for available in self.BUILD_TYPES:
             match = re.match("(.+)\[(.+)\]", available)
             if match:
+                os = ('win64-aarch64' if self.os == 'win' and
+                      self.processor == 'aarch64' else self.os)
                 available = match.group(1)
                 platforms = match.group(2)
-                if '{}{}'.format(self.os,
-                                 self.bits) not in platforms.split(','):
+                if '{}{}'.format(os, self.bits) not in platforms.split(','):
                     available = None
             if available:
                 res.append(available)
@@ -369,6 +378,8 @@ def _common_tk_part(inbound_conf):
     else:
         # windows
         part = '{}{}'.format(inbound_conf.os, inbound_conf.bits)
+        if inbound_conf.processor == 'aarch64' and inbound_conf.bits == 64:
+            part += '-aarch64'
     return part
 
 
@@ -412,7 +423,7 @@ class FennecInboundConfigMixin(InboundConfigMixin):
 REGISTRY = ClassRegistry('app_name')
 
 
-def create_config(name, os, bits):
+def create_config(name, os, bits, processor):
     """
     Create and returns a configuration for the given name.
 
@@ -420,8 +431,10 @@ def create_config(name, os, bits):
     :param os: os name, e.g 'linux', 'win' or 'mac'
     :param bits: the bit of the os as an int, e.g 32 or 64. Can be None
                  if the bits do not make sense (e.g. fennec)
+    :param processor: processor family, e.g 'x86', 'x86_86', 'ppc', 'ppc64' or
+                      'aarch64'
     """
-    return REGISTRY.get(name)(os, bits)
+    return REGISTRY.get(name)(os, bits, processor)
 
 
 @REGISTRY.register('firefox')
@@ -433,7 +446,7 @@ class FirefoxConfig(CommonConfig,
 
     def build_regex(self):
         return get_build_regex(
-            self.app_name, self.os, self.bits,
+            self.app_name, self.os, self.bits, self.processor,
             psuffix='-asan' if 'asan' in self.build_type else ''
         ) + '$'
 
@@ -498,7 +511,7 @@ class Fennec23Config(FennecConfig):
 class JsShellConfig(FirefoxConfig):
     def build_info_regex(self):
         # the info file is the one for firefox
-        return get_build_regex('firefox', self.os, self.bits,
+        return get_build_regex('firefox', self.os, self.bits, self.processor,
                                with_ext=False) + r'\.txt$'
 
     def build_regex(self):
@@ -509,7 +522,10 @@ class JsShellConfig(FirefoxConfig):
                 part = 'linux-i686'
         elif self.os == 'win':
             if self.bits == 64:
-                part = 'win64(-x86_64)?'
+                if self.processor == "aarch64":
+                    part = 'win64-aarch64'
+                else:
+                    part = 'win64(-x86_64)?'
             else:
                 part = 'win32'
         else:

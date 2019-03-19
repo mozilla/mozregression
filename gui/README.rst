@@ -57,9 +57,13 @@ is not installable via pip).
 .. _MacPorts: http://www.macports.org
 .. _Homebrew: http://brew.sh
 
-- On windows, you can download a pre build intaller from
-  http://www.riverbankcomputing.co.uk/software/pyqt/download. Be careful to choose
-  the qt4 / python 2.7 version for your architecture.
+- On windows, download a pre-built PyQt4 installer: ::
+
+    32-bit: https://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt4-4.11.4-gpl-Py2.7-Qt4.8.7-x32.exe
+    64-bit: https://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt4-4.11.4-gpl-Py2.7-Qt4.8.7-x64.exe
+
+    bbb778a7c43113740f7b50f4053880c74ac8021496a0568b8c5f39ba8888d29b *PyQt4-4.11.4-gpl-Py2.7-Qt4.8.7-x32.exe
+    1ad2fd94ec8f6e8287d6ae80d520b4974b90ca30dbeae4256f3317ce4d79bc23 *PyQt4-4.11.4-gpl-Py2.7-Qt4.8.7-x64.exe
 
 
 Next thing to do is to install the other dependencies. It is highly suggested to use

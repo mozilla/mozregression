@@ -323,6 +323,11 @@ def test_jsshell_build_regex(os, bits, name):
     assert re.match(conf.build_regex(), name)
 
 
+def test_jsshell_x86_64_build_regex():
+    conf = create_config('jsshell', 'win', 64)
+    assert not re.match(conf.build_regex(), 'jsshell-win64-aarch64.zip')
+
+
 @pytest.mark.parametrize('os,bits,tc_suffix', [
     ('linux', 32, 'linux-pgo'),
     ('linux', 64, 'linux64-pgo'),

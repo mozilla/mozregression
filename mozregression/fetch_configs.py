@@ -509,7 +509,7 @@ class JsShellConfig(FirefoxConfig):
                 part = 'linux-i686'
         elif self.os == 'win':
             if self.bits == 64:
-                part = 'win64.*'
+                part = 'win64(-x86_64)?'
             else:
                 part = 'win32'
         else:

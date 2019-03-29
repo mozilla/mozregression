@@ -40,7 +40,7 @@ DEFAULTS = {
     'archive-base-url': ARCHIVE_BASE_URL,
     'background-dl-policy': 'cancel',
     'bits': None,
-    'build-type': 'opt',
+    'build-type': '',
     'cmdargs': [],
     'http-timeout': 30.0,
     'inbound-branch': None,

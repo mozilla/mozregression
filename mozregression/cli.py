@@ -121,7 +121,7 @@ def create_parser(defaults):
                               " of build options. Note that on nightly, only"
                               " opt is available most of the time. See"
                               " --list-build-types to see available values"
-                              ". Defaults to %(default)s."))
+                              ". Defaults to opt."))
 
     parser.add_argument("--list-build-types", action=ListBuildTypesAction,
                         help="List available build types combinations.")
@@ -423,12 +423,13 @@ class Configuration(object):
         options.bits = parse_bits(options.bits or mozinfo.bits)
         fetch_config = create_config(options.app, mozinfo.os, options.bits,
                                      mozinfo.processor)
-        try:
-            fetch_config.set_build_type(options.build_type)
-        except MozRegressionError as msg:
-            self.logger.warning(
-                "%s (Defaulting to %r)" % (msg, fetch_config.build_type)
-            )
+        if options.build_type:
+            try:
+                fetch_config.set_build_type(options.build_type)
+            except MozRegressionError as msg:
+                self.logger.warning(
+                    "%s (Defaulting to %r)" % (msg, fetch_config.build_type)
+                )
         self.fetch_config = fetch_config
 
         fetch_config.set_repo(options.repo)

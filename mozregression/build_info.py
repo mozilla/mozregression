@@ -152,7 +152,7 @@ class BuildInfo(object):
                 prefix = data.strftime("%Y-%m-%d-%H-%M-%S")
             else:
                 prefix = str(data)
-            persist_part = ''
+            persist_part = self._fetch_config.nightly_persist_part()
         else:
             prefix = str(data[:12])
             persist_part = self._fetch_config.inbound_persist_part()

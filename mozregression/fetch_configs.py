@@ -96,14 +96,34 @@ class CommonConfig(object):
     Define the configuration for both nightly and inbound fetching.
     """
     BUILD_TYPES = ('opt',)  # only opt allowed by default
+    BUILD_TYPE_FALLBACKS = {}
     app_name = None
 
     def __init__(self, os, bits, processor):
         self.os = os
         self.bits = bits
         self.processor = processor
-        self.build_type = 'opt'
         self.repo = None
+        self.set_build_type('opt')
+        self._used_build_index = 0
+
+    @property
+    def build_type(self):
+        """
+        Returns the currently selected build type, which can change if there
+        are fallbacks specified.
+        """
+        return self.build_types[self._used_build_index]
+
+    def _inc_used_build(self):
+        """
+        Increments the index into the build_types indicating the currently
+        selected build type.
+        """
+        self._used_build_index = (
+            # Need to be careful not to overflow the list
+            (self._used_build_index + 1) % len(self.build_types)
+        )
 
     def build_regex(self):
         """
@@ -161,7 +181,10 @@ class CommonConfig(object):
         :raises: MozRegressionError on error.
         """
         if build_type in self.available_build_types():
-            self.build_type = build_type
+            fallbacks = self.BUILD_TYPE_FALLBACKS.get(build_type)
+            self.build_types = (
+                (build_type,) + fallbacks if fallbacks else (build_type,)
+            )
             return
         raise errors.MozRegressionError(
             "Unable to find a suitable build type %r." % str(build_type)
@@ -318,10 +341,16 @@ class InboundConfigMixin:
     def inbound_branch(self):
         return self.repo or self.default_inbound_branch
 
-    @abstractmethod
     def tk_inbound_route(self, push):
         """
-        Returns a taskcluster route for a specific changeset.
+        Returns the first taskcluster route for a specific changeset
+        """
+        return self.tk_inbound_routes(push).next()
+
+    @abstractmethod
+    def tk_inbound_routes(self, push):
+        """
+        Returns a generator of taskcluster routes for a specific changeset.
         """
         raise NotImplementedError
 
@@ -373,23 +402,27 @@ def _common_tk_part(inbound_conf):
 
 
 class FirefoxInboundConfigMixin(InboundConfigMixin):
-    def tk_inbound_route(self, push):
+    def tk_inbound_routes(self, push):
         if self.inbound_branch == 'try' or \
            push.timestamp >= TIMESTAMP_GECKO_V2:
-            return 'gecko.v2.{}.revision.{}.firefox.{}-{}'.format(
-                self.inbound_branch, push.changeset, _common_tk_part(self),
-                self.build_type
-            )
+            for build_type in self.build_types:
+                yield 'gecko.v2.{}.revision.{}.firefox.{}-{}'.format(
+                    self.inbound_branch, push.changeset,
+                    _common_tk_part(self), build_type
+                )
+                self._inc_used_build()
+            return
         debug = '-debug' if self.build_type == 'debug' else ''
-        return 'buildbot.revisions.{}.{}.{}{}'.format(
+        yield 'buildbot.revisions.{}.{}.{}{}'.format(
             push.changeset, self.inbound_branch, _common_tk_part(self), debug
         )
+        return
 
 
 class FennecInboundConfigMixin(InboundConfigMixin):
     tk_name = 'android-api-11'
 
-    def tk_inbound_route(self, push):
+    def tk_inbound_routes(self, push):
         if push.timestamp >= TIMESTAMP_GECKO_V2:
             tk_name = self.tk_name
             if tk_name == 'android-api-11':
@@ -397,14 +430,18 @@ class FennecInboundConfigMixin(InboundConfigMixin):
                     tk_name = 'android-api-16'
                 elif push.timestamp >= TIMESTAMP_FENNEC_API_15:
                     tk_name = 'android-api-15'
-            return 'gecko.v2.{}.revision.{}.mobile.{}-{}'.format(
-                self.inbound_branch, push.changeset, tk_name,
-                self.build_type
-            )
+            for build_type in self.build_types:
+                yield 'gecko.v2.{}.revision.{}.mobile.{}-{}'.format(
+                    self.inbound_branch, push.changeset, tk_name,
+                    build_type
+                )
+                self._inc_used_build()
+                return
         debug = '-debug' if self.build_type == 'debug' else ''
-        return 'buildbot.revisions.{}.{}.{}{}'.format(
+        yield 'buildbot.revisions.{}.{}.{}{}'.format(
             push.changeset, self.inbound_branch, self.tk_name, debug
         )
+        return
 
 # ------------ full config implementations ------------
 

@@ -246,6 +246,38 @@ class TestGetBuildUrl(unittest.TestCase):
             get_build_regex('test', 'unknown', 32, 'x86')
 
 
+class TestFallbacksConfig(TestFirefoxConfigLinux64):
+    def setUp(self):
+        self.conf = create_config(self.app_name, self.os, self.bits,
+                                  self.processor)
+        self.conf.BUILD_TYPE_FALLBACKS = {
+            'opt': ('test', 'fallback')
+        }
+        self.conf.set_build_type('opt')
+
+    def test_fallbacking(self):
+        assert self.conf.build_type == 'opt'
+        self.conf._inc_used_build()
+        assert self.conf.build_type == 'test'
+        self.conf._inc_used_build()
+        assert self.conf.build_type == 'fallback'
+        # Check we wrap
+        self.conf._inc_used_build()
+        assert self.conf.build_type == 'opt'
+
+    def test_fallback_routes(self):
+        routes = list(self.conf.tk_inbound_routes(
+            create_push('1a', TIMESTAMP_GECKO_V2)
+        ))
+        assert len(routes) == 3
+        assert routes[0] == (
+            'gecko.v2.mozilla-inbound.revision.1a.firefox.linux64-opt'
+        )
+        assert routes[2] == (
+            'gecko.v2.mozilla-inbound.revision.1a.firefox.linux64-fallback'
+        )
+
+
 CHSET = "47856a21491834da3ab9b308145caa8ec1b98ee1"
 CHSET12 = "47856a214918"
 

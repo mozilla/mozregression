@@ -104,11 +104,23 @@ class InboundInfoFetcher(InfoFetcher):
 
         changeset = push.changeset
 
-        tk_route = self.fetch_config.tk_inbound_route(push)
-        LOG.debug('using taskcluster route %r' % tk_route)
+        tk_routes = self.fetch_config.tk_inbound_routes(push)
         try:
-            task_id = self.index.findTask(tk_route)['taskId']
-            status = self.queue.status(task_id)['status']
+            task_id = None
+            stored_failure = None
+            for tk_route in tk_routes:
+                LOG.debug('using taskcluster route %r' % tk_route)
+                try:
+                    task_id = self.index.findTask(tk_route)['taskId']
+                except TaskclusterFailure as ex:
+                    LOG.debug('nothing found via route %r' % tk_route)
+                    stored_failure = ex
+                    continue
+                if task_id:
+                    status = self.queue.status(task_id)['status']
+                    break
+            if not task_id:
+                raise stored_failure
         except TaskclusterFailure:
             # HACK because of
             # https://bugzilla.mozilla.org/show_bug.cgi?id=1199618

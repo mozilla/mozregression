@@ -91,11 +91,6 @@ def get_build_regex(name, os, bits, processor, psuffix='', with_ext=True):
         return regex
 
 
-def _extract_build_type(build_type):
-    """Internal function to return a list from a build type string"""
-    return [t.strip() for t in build_type.split(',')]
-
-
 class CommonConfig(object):
     """
     Define the configuration for both nightly and inbound fetching.
@@ -161,19 +156,13 @@ class CommonConfig(object):
 
     def set_build_type(self, build_type):
         """
-        Define the build types (opt, debug, eng, jb, asan...).
-
-        *build_type* should be a comma separated list of wanted build
-        flavors. Calling this method should store a *build_type*
-        instance attribute suitable for taskcluster.
+        Define the build type (opt, debug, asan...).
 
         :raises: MozRegressionError on error.
         """
-        flavors = set(_extract_build_type(build_type))
-        for available in self.available_build_types():
-            if flavors == set(available.split('-')):
-                self.build_type = available
-                return
+        if build_type in self.available_build_types():
+            self.build_type = build_type
+            return
         raise errors.MozRegressionError(
             "Unable to find a suitable build type %r." % str(build_type)
         )

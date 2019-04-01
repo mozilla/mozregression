@@ -326,7 +326,7 @@ def test_mozversion_output_filtered(mozversion_msg, shown):
 @pytest.mark.parametrize('app, os, bits, processor, build_type, expected_range', [
     ('jsshell', 'win', 64, 'x86_64', None, (datetime.date(2014, 5, 27), TODAY)),
     ('jsshell', 'linux', 64, 'x86_64', 'asan', (datetime.date(2013, 9, 1), TODAY)),
-    ('jsshell', 'linux', 64, 'x86_64', 'debug,asan', (datetime.date(2013, 9, 1), TODAY)),
+    ('jsshell', 'linux', 64, 'x86_64', 'asan-debug', (datetime.date(2013, 9, 1), TODAY)),
     ('jsshell', 'linux', 32, 'x86', None, (datetime.date(2012, 4, 18), TODAY)),
     ('jsshell', 'mac', 64, 'x86_64', None, (datetime.date(2012, 4, 18), TODAY)),
     ('jsshell', 'win', 32, 'x86', None, (datetime.date(2012, 4, 18), TODAY)),

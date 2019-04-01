@@ -60,7 +60,7 @@ class ListBuildTypesAction(_StopAction):
             print("%s:" % name)
             klass = FC_REGISTRY.get(name)
             for btype in klass.BUILD_TYPES:
-                print("  %s" % btype.replace('-', ','))
+                print("  %s" % btype)
         parser.exit()
 
 
@@ -117,11 +117,9 @@ def create_parser(defaults):
 
     parser.add_argument("-B", "--build-type",
                         default=defaults["build-type"],
-                        help=("Build flavor - should be a comma separated list"
-                              " of build options. Note that on nightly, only"
-                              " opt is available most of the time. See"
-                              " --list-build-types to see available values"
-                              ". Defaults to opt."))
+                        help=("Build type to use, e.g. opt, debug. "
+                              "See --list-build-types for available values. "
+                              "Defaults to opt."))
 
     parser.add_argument("--list-build-types", action=ListBuildTypesAction,
                         help="List available build types combinations.")
@@ -378,7 +376,7 @@ class Configuration(object):
         # allow to filter process output based on the user option
         if options.process_output is None:
             # process_output not user defined
-            log_process_output = options.build_type != 'opt'
+            log_process_output = options.build_type != ''
         else:
             log_process_output = options.process_output == 'stdout'
         get_default_logger("process").component_filter = \

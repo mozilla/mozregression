@@ -109,7 +109,7 @@ class TestCli(unittest.TestCase):
         conf.validate()
         self.assertIn(
             "Unable to find a suitable build type 'foo'."
-            " (Defaulting to 'opt')",
+            " (Defaulting to 'shippable')",
             warns
         )
 

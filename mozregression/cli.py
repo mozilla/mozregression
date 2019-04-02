@@ -119,7 +119,8 @@ def create_parser(defaults):
                         default=defaults["build-type"],
                         help=("Build type to use, e.g. opt, debug. "
                               "See --list-build-types for available values. "
-                              "Defaults to opt."))
+                              "Defaults to shippable for desktop Fx, opt for "
+                              "everything else."))
 
     parser.add_argument("--list-build-types", action=ListBuildTypesAction,
                         help="List available build types combinations.")

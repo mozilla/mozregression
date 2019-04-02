@@ -45,7 +45,7 @@ def test_wizard(mocker, qtbot, os, bits, wizard_class, pages):
     assert fetch_config.app_name == 'firefox'  # this is the default
     assert fetch_config.os == os
     assert fetch_config.bits == bits
-    assert fetch_config.build_type == 'opt'
+    assert fetch_config.build_type == 'shippable'
     assert not fetch_config.repo
 
     assert options['profile'] == ''

@@ -139,7 +139,7 @@ def test_list_build_types(mocker):
         with pytest.raises(SystemExit) as exc:
             do_cli('--list-build-types')
     assert exc.value.code == 0
-    assert "firefox:\n  opt" in ''.join(output)
+    assert "firefox:\n  shippable" in ''.join(output)
 
 
 DEFAULTS_DATE = [

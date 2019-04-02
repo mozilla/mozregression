@@ -406,9 +406,12 @@ class FirefoxInboundConfigMixin(InboundConfigMixin):
         if self.inbound_branch == 'try' or \
            push.timestamp >= TIMESTAMP_GECKO_V2:
             for build_type in self.build_types:
-                yield 'gecko.v2.{}.revision.{}.firefox.{}-{}'.format(
-                    self.inbound_branch, push.changeset,
-                    _common_tk_part(self), build_type
+                yield 'gecko.v2.{}{}.revision.{}.firefox.{}-{}'.format(
+                    self.inbound_branch,
+                    '.shippable' if build_type == 'shippable' else '',
+                    push.changeset,
+                    _common_tk_part(self),
+                    'opt' if build_type == 'shippable' else build_type
                 )
                 self._inc_used_build()
             return
@@ -467,8 +470,8 @@ def create_config(name, os, bits, processor):
 class FirefoxConfig(CommonConfig,
                     FireFoxNightlyConfigMixin,
                     FirefoxInboundConfigMixin):
-    BUILD_TYPES = ('opt', 'debug', 'pgo[linux32,linux64,win32,win64]',
-                   'asan[linux64]', 'asan-debug[linux64]')
+    BUILD_TYPES = ('shippable', 'opt', 'pgo[linux32,linux64,win32,win64]',
+                   'debug', 'asan[linux64]', 'asan-debug[linux64]')
 
     def build_regex(self):
         return get_build_regex(

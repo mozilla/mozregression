@@ -325,17 +325,22 @@ def test_tk_inbound_route(app, os, bits, processor, repo, push_date, expected):
     assert result == expected
 
 
-@pytest.mark.parametrize("app,os,bits,processor,build_type,expected", [
+@pytest.mark.parametrize("app,os,bits,processor,build_type,date,expected", [
     # firefox
-    ("firefox", 'linux', 32, 'x86', "debug",
+    ("firefox", 'linux', 32, 'x86', "debug", TIMESTAMP_GECKO_V2 - 1,
      'buildbot.revisions.%s.mozilla-inbound.linux-debug' % CHSET),
+    ("firefox", 'linux', 64, 'x86_64', "asan", TIMESTAMP_GECKO_V2,
+     'gecko.v2.mozilla-inbound.revision.%s.firefox.linux64-asan' % CHSET),
+    ("firefox", 'linux', 64, 'x86_64', 'shippable', TIMESTAMP_GECKO_V2,
+     'gecko.v2.mozilla-inbound.shippable.revision.%s.firefox.linux64-opt'
+     % CHSET),
 ])
 def test_tk_inbound_route_with_build_type(app, os, bits, processor, build_type,
-                                          expected):
+                                          date, expected):
     conf = create_config(app, os, bits, processor)
     conf.set_build_type(build_type)
     result = conf.tk_inbound_route(
-        create_push(CHSET, TIMESTAMP_GECKO_V2 - 1))
+        create_push(CHSET, date))
     assert result == expected
 
 

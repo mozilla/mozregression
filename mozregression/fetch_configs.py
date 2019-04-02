@@ -472,6 +472,10 @@ class FirefoxConfig(CommonConfig,
                     FirefoxInboundConfigMixin):
     BUILD_TYPES = ('shippable', 'opt', 'pgo[linux32,linux64,win32,win64]',
                    'debug', 'asan[linux64]', 'asan-debug[linux64]')
+    BUILD_TYPE_FALLBACKS = {
+        'shippable': ('opt', 'pgo'),
+        'opt': ('shippable', 'pgo'),
+    }
 
     def build_regex(self):
         return get_build_regex(

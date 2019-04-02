@@ -293,17 +293,17 @@ CHSET12 = "47856a214918"
     ("firefox", 'win', 64, 'x86_64', 'm-i', TIMESTAMP_GECKO_V2 - 1,
      'buildbot.revisions.%s.mozilla-inbound.win64' % CHSET),
     ("firefox", 'win', 64, 'aarch64', 'm-i', TIMESTAMP_GECKO_V2,
-     'gecko.v2.mozilla-inbound.revision.%s.firefox.win64-aarch64-opt' % CHSET),
+     'gecko.v2.mozilla-inbound.shippable.revision.%s.firefox.win64-aarch64-opt' % CHSET),
     ("firefox", 'win', 32, 'aarch64', 'm-i', TIMESTAMP_GECKO_V2,
-     'gecko.v2.mozilla-inbound.revision.%s.firefox.win32-opt' % CHSET),
+     'gecko.v2.mozilla-inbound.shippable.revision.%s.firefox.win32-opt' % CHSET),
     ("firefox", 'mac', 64, 'x86_64', 'm-i', TIMESTAMP_GECKO_V2 - 1,
      'buildbot.revisions.%s.mozilla-inbound.macosx64' % CHSET),
     ("firefox", 'linux', 64, 'x86_64', 'm-c', TIMESTAMP_GECKO_V2 - 1,
      'buildbot.revisions.%s.mozilla-central.linux64' % CHSET),
     ("firefox", 'linux', 64, 'x86_64', 'm-i', TIMESTAMP_GECKO_V2,
-     'gecko.v2.mozilla-inbound.revision.%s.firefox.linux64-opt' % CHSET),
+     'gecko.v2.mozilla-inbound.shippable.revision.%s.firefox.linux64-opt' % CHSET),
     ("firefox", 'linux', 64, 'x86_64', 'try', TIMESTAMP_GECKO_V2 - 1,
-     'gecko.v2.try.revision.%s.firefox.linux64-opt' % CHSET),
+     'gecko.v2.try.shippable.revision.%s.firefox.linux64-opt' % CHSET),
     # fennec
     ("fennec", None, None, None, None, TIMESTAMP_GECKO_V2 - 1,
      'buildbot.revisions.%s.mozilla-inbound.android-api-11' % CHSET),
@@ -346,7 +346,7 @@ def test_tk_inbound_route_with_build_type(app, os, bits, processor, build_type,
 
 def test_set_build_type():
     conf = create_config('firefox', 'linux', 64, 'x86_64')
-    assert conf.build_type == 'opt'  # default is opt
+    assert conf.build_type == 'shippable'  # desktop Fx default is shippable
     conf.set_build_type('debug')
     assert conf.build_type == 'debug'
 

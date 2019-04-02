@@ -208,7 +208,7 @@ class CommonConfig(object):
         return (branches.get_category(self.repo) in ('integration', 'try') or
                 # we can find the asan builds (firefox and jsshell) in
                 # archives.m.o
-                self.build_type not in ('opt', 'asan'))
+                self.build_type not in ('opt', 'asan', 'shippable'))
 
 
 class NightlyConfigMixin:
@@ -476,6 +476,10 @@ class FirefoxConfig(CommonConfig,
         'shippable': ('opt', 'pgo'),
         'opt': ('shippable', 'pgo'),
     }
+
+    def __init__(self, os, bits, processor):
+        super(FirefoxConfig, self).__init__(os, bits, processor)
+        self.set_build_type('shippable')
 
     def build_regex(self):
         return get_build_regex(

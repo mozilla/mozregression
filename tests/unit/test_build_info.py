@@ -106,7 +106,7 @@ def test_to_dict(klass):
     # same but for inbound
     (build_info.InboundBuildInfo,
      {},
-     '12ab12ab12ab--mozilla-inbound--url'),
+     '12ab12ab12ab-shippable--mozilla-inbound--url'),
 ])
 def test_persist_filename(klass, extra, result):
     persist_part = extra.pop('persist_part', None)

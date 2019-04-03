@@ -6,6 +6,7 @@
 Define the launcher classes, responsible of running the tested applications.
 """
 
+import json
 import os
 import time
 from mozlog.structured import get_default_logger, get_proxy_logger
@@ -191,6 +192,29 @@ class MozRunnerLauncher(Launcher):
             rmtree(self.tempdir)
             raise
 
+    def _disableUpdateByPolicy(self):
+        updatePolicy = {
+            'policies': {
+                'DisableAppUpdate': True
+            }
+        }
+        installdir = os.path.dirname(self.binary)
+        if mozinfo.os == 'mac':
+            # macOS has the following filestructure:
+            # binary at:
+            #     PackageName.app/Contents/MacOS/firefox
+            # we need policies.json in:
+            #     PackageName.app/Contents/Resources/distribution
+            installdir = os.path.normpath(
+                os.path.join(installdir, '..', 'Resources')
+            )
+        os.mkdir(os.path.join(installdir, 'distribution'))
+        policyFile = os.path.join(
+            installdir, 'distribution', 'policies.json'
+        )
+        with open(policyFile, 'w') as fp:
+            json.dump(updatePolicy, fp, indent=2)
+
     def _start(self, profile=None, addons=(), cmdargs=(), preferences=None,
                adb_profile_dir=None):
         profile = self._create_profile(profile=profile, addons=addons,
@@ -321,6 +345,10 @@ class FirefoxRegressionProfile(Profile):
 @REGISTRY.register('firefox')
 class FirefoxLauncher(MozRunnerLauncher):
     profile_class = FirefoxRegressionProfile
+
+    def _install(self, dest):
+        super(FirefoxLauncher, self)._install(dest)
+        self._disableUpdateByPolicy()
 
 
 @REGISTRY.register('thunderbird')

@@ -19,7 +19,6 @@ from mozregression.network import url_links, retry_get
 from mozregression.errors import BuildInfoNotFound, MozRegressionError
 from mozregression.build_info import NightlyBuildInfo, InboundBuildInfo
 from mozregression.json_pushes import JsonPushes, Push
-from mozregression.fetch_configs import TIMESTAMP_GECKO_V2
 
 LOG = get_proxy_logger(__name__)
 # Fix intermittent bug due to strptime first call not being thread safe
@@ -122,36 +121,8 @@ class InboundInfoFetcher(InfoFetcher):
             if not task_id:
                 raise stored_failure
         except TaskclusterFailure:
-            # HACK because of
-            # https://bugzilla.mozilla.org/show_bug.cgi?id=1199618
-            # and https://bugzilla.mozilla.org/show_bug.cgi?id=1211251
-            # TODO remove the if statement once these tasks no longer exists
-            # (just raise BuildInfoNotFound)
-            err = True
-            if self.fetch_config.app_name in ('firefox',
-                                              'fennec',
-                                              'fennec-2.3') \
-                    and push.timestamp < TIMESTAMP_GECKO_V2:
-                err = False
-                try:
-                    old_route = tk_route.replace(changeset, changeset[:12])
-                    task_id = self.index.findTask(old_route)['taskId']
-                    status = self.queue.status(task_id)['status']
-                except TaskclusterFailure:
-                    err = True
-            elif 'debug' in tk_route:
-                err = False
-                try:
-                    new_route = tk_route.replace('debug', 'dbg')
-                    LOG.debug('using alternate debug route %r' % new_route)
-                    task_id = self.index.findTask(new_route)['taskId']
-                    status = self.queue.status(task_id)['status']
-                except TaskclusterFailure:
-                    err = True
-
-            if err:
-                raise BuildInfoNotFound("Unable to find build info using the"
-                                        " taskcluster route %r" % tk_route)
+            raise BuildInfoNotFound("Unable to find build info using the"
+                                    " taskcluster route %r" % tk_route)
 
         # find a completed run for that task
         run_id, build_date = None, None

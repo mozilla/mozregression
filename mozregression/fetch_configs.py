@@ -29,11 +29,6 @@ from mozregression.config import ARCHIVE_BASE_URL
 from abc import ABCMeta, abstractmethod
 
 
-# after this date, the gecko v2 routes are safe
-# TODO: Once we are far away of this date (one year), we should
-# make gecko v2 routes used everywhere, and remove any other case.
-TIMESTAMP_GECKO_V2 = to_utc_timestamp(datetime.datetime(2015, 10, 1, 1, 1, 1))
-
 # switch from fennec api-11 to api-15 on taskcluster
 # appeared on this date for m-c.
 TIMESTAMP_FENNEC_API_15 = to_utc_timestamp(
@@ -403,22 +398,15 @@ def _common_tk_part(inbound_conf):
 
 class FirefoxInboundConfigMixin(InboundConfigMixin):
     def tk_inbound_routes(self, push):
-        if self.inbound_branch == 'try' or \
-           push.timestamp >= TIMESTAMP_GECKO_V2:
-            for build_type in self.build_types:
-                yield 'gecko.v2.{}{}.revision.{}.firefox.{}-{}'.format(
-                    self.inbound_branch,
-                    '.shippable' if build_type == 'shippable' else '',
-                    push.changeset,
-                    _common_tk_part(self),
-                    'opt' if build_type == 'shippable' else build_type
-                )
-                self._inc_used_build()
-            return
-        debug = '-debug' if self.build_type == 'debug' else ''
-        yield 'buildbot.revisions.{}.{}.{}{}'.format(
-            push.changeset, self.inbound_branch, _common_tk_part(self), debug
-        )
+        for build_type in self.build_types:
+            yield 'gecko.v2.{}{}.revision.{}.firefox.{}-{}'.format(
+                self.inbound_branch,
+                '.shippable' if build_type == 'shippable' else '',
+                push.changeset,
+                _common_tk_part(self),
+                'opt' if build_type == 'shippable' else build_type
+            )
+            self._inc_used_build()
         return
 
 
@@ -426,25 +414,19 @@ class FennecInboundConfigMixin(InboundConfigMixin):
     tk_name = 'android-api-11'
 
     def tk_inbound_routes(self, push):
-        if push.timestamp >= TIMESTAMP_GECKO_V2:
-            tk_name = self.tk_name
-            if tk_name == 'android-api-11':
-                if push.timestamp >= TIMESTAMP_FENNEC_API_16:
-                    tk_name = 'android-api-16'
-                elif push.timestamp >= TIMESTAMP_FENNEC_API_15:
-                    tk_name = 'android-api-15'
-            for build_type in self.build_types:
-                yield 'gecko.v2.{}.revision.{}.mobile.{}-{}'.format(
-                    self.inbound_branch, push.changeset, tk_name,
-                    build_type
-                )
-                self._inc_used_build()
-                return
-        debug = '-debug' if self.build_type == 'debug' else ''
-        yield 'buildbot.revisions.{}.{}.{}{}'.format(
-            push.changeset, self.inbound_branch, self.tk_name, debug
-        )
-        return
+        tk_name = self.tk_name
+        if tk_name == 'android-api-11':
+            if push.timestamp >= TIMESTAMP_FENNEC_API_16:
+                tk_name = 'android-api-16'
+            elif push.timestamp >= TIMESTAMP_FENNEC_API_15:
+                tk_name = 'android-api-15'
+        for build_type in self.build_types:
+            yield 'gecko.v2.{}.revision.{}.mobile.{}-{}'.format(
+                self.inbound_branch, push.changeset, tk_name,
+                build_type
+            )
+            self._inc_used_build()
+            return
 
 # ------------ full config implementations ------------
 

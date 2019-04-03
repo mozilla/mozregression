@@ -4,12 +4,17 @@ import re
 import pytest
 from mock import Mock
 
+from mozregression.dates import to_utc_timestamp
 from mozregression.json_pushes import Push
 from mozregression.fetch_configs import (FirefoxConfig, create_config, errors,
                                          get_build_regex, ARCHIVE_BASE_URL,
-                                         TIMESTAMP_GECKO_V2,
                                          TIMESTAMP_FENNEC_API_15,
                                          TIMESTAMP_FENNEC_API_16)
+
+
+TIMESTAMP_TEST = to_utc_timestamp(
+    datetime.datetime(2017, 11, 14, 0, 0, 0)
+)
 
 
 def create_push(chset, timestamp):
@@ -267,7 +272,7 @@ class TestFallbacksConfig(TestFirefoxConfigLinux64):
 
     def test_fallback_routes(self):
         routes = list(self.conf.tk_inbound_routes(
-            create_push('1a', TIMESTAMP_GECKO_V2)
+            create_push('1a', TIMESTAMP_TEST)
         ))
         assert len(routes) == 3
         assert routes[0] == (
@@ -284,38 +289,24 @@ CHSET12 = "47856a214918"
 
 @pytest.mark.parametrize("app,os,bits,processor,repo,push_date,expected", [
     # firefox
-    ("firefox", 'linux', 32, 'x86', None, TIMESTAMP_GECKO_V2 - 1,
-     'buildbot.revisions.%s.mozilla-inbound.linux' % CHSET),
-    ("firefox", 'linux', 64, 'x86_64', 'm-i', TIMESTAMP_GECKO_V2 - 1,
-     'buildbot.revisions.%s.mozilla-inbound.linux64' % CHSET),
-    ("firefox", 'win', 32, 'x86', 'm-i', TIMESTAMP_GECKO_V2 - 1,
-     'buildbot.revisions.%s.mozilla-inbound.win32' % CHSET),
-    ("firefox", 'win', 64, 'x86_64', 'm-i', TIMESTAMP_GECKO_V2 - 1,
-     'buildbot.revisions.%s.mozilla-inbound.win64' % CHSET),
-    ("firefox", 'win', 64, 'aarch64', 'm-i', TIMESTAMP_GECKO_V2,
+    ("firefox", 'win', 64, 'aarch64', 'm-i', TIMESTAMP_TEST,
      'gecko.v2.mozilla-inbound.shippable.revision.%s.firefox.win64-aarch64-opt' % CHSET),
-    ("firefox", 'win', 32, 'aarch64', 'm-i', TIMESTAMP_GECKO_V2,
+    ("firefox", 'win', 32, 'aarch64', 'm-i', TIMESTAMP_TEST,
      'gecko.v2.mozilla-inbound.shippable.revision.%s.firefox.win32-opt' % CHSET),
-    ("firefox", 'mac', 64, 'x86_64', 'm-i', TIMESTAMP_GECKO_V2 - 1,
-     'buildbot.revisions.%s.mozilla-inbound.macosx64' % CHSET),
-    ("firefox", 'linux', 64, 'x86_64', 'm-c', TIMESTAMP_GECKO_V2 - 1,
-     'buildbot.revisions.%s.mozilla-central.linux64' % CHSET),
-    ("firefox", 'linux', 64, 'x86_64', 'm-i', TIMESTAMP_GECKO_V2,
+    ("firefox", 'mac', 64, 'x86_64', 'm-i', TIMESTAMP_TEST,
+     'gecko.v2.mozilla-inbound.shippable.revision.%s.firefox.macosx64-opt' % CHSET),
+    ("firefox", 'linux', 64, 'x86_64', 'm-i', TIMESTAMP_TEST,
      'gecko.v2.mozilla-inbound.shippable.revision.%s.firefox.linux64-opt' % CHSET),
-    ("firefox", 'linux', 64, 'x86_64', 'try', TIMESTAMP_GECKO_V2 - 1,
+    ("firefox", 'linux', 64, 'x86_64', 'try', TIMESTAMP_TEST,
      'gecko.v2.try.shippable.revision.%s.firefox.linux64-opt' % CHSET),
     # fennec
-    ("fennec", None, None, None, None, TIMESTAMP_GECKO_V2 - 1,
-     'buildbot.revisions.%s.mozilla-inbound.android-api-11' % CHSET),
-    ("fennec", None, None, None, None, TIMESTAMP_GECKO_V2,
+    ("fennec", None, None, None, None, TIMESTAMP_FENNEC_API_15 - 1,
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-11-opt' % CHSET),
     ("fennec", None, None, None, None, TIMESTAMP_FENNEC_API_15,
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-15-opt' % CHSET),
     ("fennec", None, None, None, None, TIMESTAMP_FENNEC_API_16,
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-16-opt' % CHSET),
-    ("fennec-2.3", None, None, None, 'm-i', TIMESTAMP_GECKO_V2 - 1,
-     'buildbot.revisions.%s.mozilla-inbound.android-api-9' % CHSET),
-    ("fennec-2.3", None, None, None, 'm-i', TIMESTAMP_GECKO_V2,
+    ("fennec-2.3", None, None, None, 'm-i', TIMESTAMP_TEST,
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-9-opt' % CHSET),
 ])
 def test_tk_inbound_route(app, os, bits, processor, repo, push_date, expected):
@@ -325,22 +316,20 @@ def test_tk_inbound_route(app, os, bits, processor, repo, push_date, expected):
     assert result == expected
 
 
-@pytest.mark.parametrize("app,os,bits,processor,build_type,date,expected", [
+@pytest.mark.parametrize("app,os,bits,processor,build_type,expected", [
     # firefox
-    ("firefox", 'linux', 32, 'x86', "debug", TIMESTAMP_GECKO_V2 - 1,
-     'buildbot.revisions.%s.mozilla-inbound.linux-debug' % CHSET),
-    ("firefox", 'linux', 64, 'x86_64', "asan", TIMESTAMP_GECKO_V2,
+    ("firefox", 'linux', 64, 'x86_64', "asan",
      'gecko.v2.mozilla-inbound.revision.%s.firefox.linux64-asan' % CHSET),
-    ("firefox", 'linux', 64, 'x86_64', 'shippable', TIMESTAMP_GECKO_V2,
+    ("firefox", 'linux', 64, 'x86_64', 'shippable',
      'gecko.v2.mozilla-inbound.shippable.revision.%s.firefox.linux64-opt'
      % CHSET),
 ])
 def test_tk_inbound_route_with_build_type(app, os, bits, processor, build_type,
-                                          date, expected):
+                                          expected):
     conf = create_config(app, os, bits, processor)
     conf.set_build_type(build_type)
     result = conf.tk_inbound_route(
-        create_push(CHSET, date))
+        create_push(CHSET, TIMESTAMP_TEST))
     assert result == expected
 
 
@@ -398,7 +387,7 @@ def test_set_firefox_build_type_pgo(os, bits, processor, tc_suffix):
     else:
         conf.set_build_type('pgo')
         assert conf.tk_inbound_route(
-            create_push(CHSET, TIMESTAMP_GECKO_V2)) \
+            create_push(CHSET, TIMESTAMP_TEST)) \
             .endswith('.' + tc_suffix)
 
 

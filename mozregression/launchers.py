@@ -351,9 +351,21 @@ class FirefoxLauncher(MozRunnerLauncher):
         self._disableUpdateByPolicy()
 
 
+class ThunderbirdRegressionProfile(ThunderbirdProfile):
+    """
+    Specialized Profile subclass for Thunderbird
+    """
+
+    preferences = {
+        # Don't automatically update the application
+        'app.update.enabled': False,
+        'app.update.auto': False,
+    }
+
+
 @REGISTRY.register('thunderbird')
 class ThunderbirdLauncher(MozRunnerLauncher):
-    profile_class = ThunderbirdProfile
+    profile_class = ThunderbirdRegressionProfile
 
 
 class AndroidLauncher(Launcher):

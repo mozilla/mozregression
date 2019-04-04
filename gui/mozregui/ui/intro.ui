@@ -61,7 +61,7 @@
    <item row="3" column="1">
     <widget class="QLineEdit" name="repository">
      <property name="toolTip">
-      <string>repository like mozilla-aurora|mozilla-beta|...</string>
+      <string>repository like mozilla-inbound|mozilla-beta|...</string>
      </property>
      <property name="placeholderText">
       <string>you can choose a specific repository name here</string>

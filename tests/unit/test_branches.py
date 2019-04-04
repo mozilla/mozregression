@@ -18,8 +18,8 @@ def test_branch_name(branch, alias):
      "https://hg.mozilla.org/mozilla-central"),
     ("m-i",
      "https://hg.mozilla.org/integration/mozilla-inbound"),
-    ("mozilla-aurora",
-     "https://hg.mozilla.org/releases/mozilla-aurora")
+    ("mozilla-beta",
+     "https://hg.mozilla.org/releases/mozilla-beta")
 ])
 def test_get_urls(branch, url):
     assert branches.get_url(branch) == url

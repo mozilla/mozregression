@@ -74,7 +74,8 @@ def create_branches():
     for name, aliases in (
             ("mozilla-central", ("m-c", "central")),
             ("mozilla-inbound", ("m-i", "inbound", "mozilla inbound")),
-            ("mozilla-beta", ("m-b", "beta"))):
+            ("mozilla-beta", ("m-b", "beta")),
+            ("mozilla-release", ("m-r", "release"))):
         for alias in aliases:
             branches.set_alias(alias, name)
     return branches

@@ -290,6 +290,9 @@ class FirefoxRegressionProfile(Profile):
         # On newer versions of Firefox (where disabling automatic updates
         # is impossible, at least don't update automatically)
         'app.update.auto': False,
+        # Don't automatically download the update (this pref is specific to
+        # some versions of Fennec)
+        'app.update.autodownload': 'disabled',
         # Don't restore the last open set of tabs
         # if the browser has crashed
         'browser.sessionstore.resume_from_crash': False,

@@ -310,7 +310,7 @@ class FennecNightlyConfigMixin(NightlyConfigMixin):
 
     def get_nightly_repo_regex(self, date):
         repo = self.get_nightly_repo(date)
-        if repo in ('mozilla-central', 'mozilla-aurora'):
+        if repo in ('mozilla-central',):
             if date < datetime.date(2014, 12, 6):
                 repo += "-android"
             elif date < datetime.date(2014, 12, 13):

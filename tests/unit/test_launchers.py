@@ -4,6 +4,7 @@ import os
 import pytest
 import tempfile
 import mozfile
+import mozinfo
 import mozversion
 
 from mock import patch, Mock, ANY
@@ -168,6 +169,31 @@ profile_class', spec=Profile)
         with self.launcher:
             pass
         self.assertFalse(os.path.isdir(tempdir))
+
+
+def test_firefox_install(mocker):
+    install_ext, binary_name = (
+        ('zip', 'firefox.exe') if mozinfo.isWin else
+        ('tar.bz2', 'firefox') if mozinfo.isLinux else
+        ('dmg', 'firefox')  # if mozinfo.ismac
+    )
+
+    installer_file = 'firefox.{}'.format(install_ext)
+
+    installer = os.path.abspath(
+        os.path.join('tests', 'unit', 'installer_stubs', installer_file)
+    )
+    assert os.path.isfile(installer)
+    with launchers.FirefoxLauncher(installer) as fx:
+        assert os.path.isdir(fx.tempdir)
+        assert os.path.basename(fx.binary) == binary_name
+        installdir = os.path.dirname(fx.binary)
+        if mozinfo.isMac:
+            installdir = os.path.normpath(
+                os.path.join(installdir, '..', 'Resources')
+            )
+        assert os.path.exists(os.path.join(installdir, 'distribution', 'policies.json'))
+    assert not os.path.isdir(fx.tempdir)
 
 
 class TestFennecLauncher(unittest.TestCase):

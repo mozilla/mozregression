@@ -170,7 +170,9 @@ def create_parser(defaults):
                         default=[],
                         metavar="ARG1",
                         help=("a command-line argument to pass to the"
-                              " application; repeat for multiple arguments."))
+                              " application; repeat for multiple arguments."
+                              " Use --arg='-option' to pass in options"
+                              " starting with `-`."))
 
     parser.add_argument('--pref', nargs='*', dest='prefs',
                         help=(" A preference to set. Must be a key-value pair"

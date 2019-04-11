@@ -407,8 +407,12 @@ class Configuration(object):
         except DateFormatError:
             try:
                 repo = self.options.repo
-                if get_name(repo) == 'mozilla-release':
+                if (get_name(repo) == 'mozilla-release' or
+                        (not repo and re.match(r'^\d+\.\d\.\d$', value))):
                     new_value = tag_of_release(value)
+                    if not repo:
+                        self.logger.info("Assuming repo mozilla-release")
+                        self.fetch_config.set_repo('mozilla-release')
                     self.logger.info("Using tag %s for release %s"
                                      % (new_value, value))
                     value = new_value

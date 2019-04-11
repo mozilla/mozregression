@@ -228,6 +228,16 @@ def test_launch(args, action, value):
     assert config.options.launch == value
 
 
+@pytest.mark.parametrize('args,repo,value', [
+    (['--launch=60.0', '--repo=m-r'], 'mozilla-release', 'FIREFOX_60_0_RELEASE'),
+    (['--launch=61', '--repo=m-r'], 'mozilla-release', 'FIREFOX_61_0_RELEASE'),
+])
+def test_versions(args, repo, value):
+    config = do_cli(*args)
+    assert config.fetch_config.repo == repo
+    assert config.options.launch == value
+
+
 def test_bad_date_later_than_good():
     with pytest.raises(errors.MozRegressionError) as exc:
         do_cli('--good=2015-01-01', '--bad=2015-01-10', '--find-fix')

@@ -417,8 +417,12 @@ class Configuration(object):
                     self.logger.info("Using tag %s for release %s"
                                      % (new_value, value))
                     value = new_value
-                elif get_name(repo) == 'mozilla-beta':
+                elif (get_name(repo) == 'mozilla-beta' or
+                      (not repo and re.match(r'^\d+\.0b\d+$', value))):
                     new_value = tag_of_beta(value)
+                    if not repo:
+                        self.logger.info("Assuming repo mozilla-beta")
+                        self.fetch_config.set_repo('mozilla-beta')
                     self.logger.info("Using tag %s for release %s"
                                      % (new_value, value))
                     value = new_value

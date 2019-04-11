@@ -28,7 +28,8 @@ from mozregression.fetch_configs import REGISTRY as FC_REGISTRY, create_config
 from mozregression.errors import (MozRegressionError, DateFormatError,
                                   UnavailableRelease)
 from mozregression.releases import (formatted_valid_release_dates,
-                                    date_of_release, tag_of_release)
+                                    date_of_release, tag_of_release,
+                                    tag_of_beta)
 from mozregression.log import init_logger, colorize
 
 
@@ -413,6 +414,11 @@ class Configuration(object):
                     if not repo:
                         self.logger.info("Assuming repo mozilla-release")
                         self.fetch_config.set_repo('mozilla-release')
+                    self.logger.info("Using tag %s for release %s"
+                                     % (new_value, value))
+                    value = new_value
+                elif get_name(repo) == 'mozilla-beta':
+                    new_value = tag_of_beta(value)
                     self.logger.info("Using tag %s for release %s"
                                      % (new_value, value))
                     value = new_value

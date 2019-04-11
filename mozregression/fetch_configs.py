@@ -200,7 +200,8 @@ class CommonConfig(object):
 
         Note that this method relies on the repo and build type defined.
         """
-        return (branches.get_category(self.repo) in ('integration', 'try') or
+        return (branches.get_category(self.repo) in
+                ('integration', 'try', 'releases') or
                 # we can find the asan builds (firefox and jsshell) in
                 # archives.m.o
                 self.build_type not in ('opt', 'asan', 'shippable'))

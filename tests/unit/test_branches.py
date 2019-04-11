@@ -48,6 +48,8 @@ def test_get_url_unknown_branch():
     ('mozilla-central', 'default'),
     ('autoland', 'integration'),
     ('m-i', 'integration'),
+    ('release', 'releases'),
+    ('mozilla-beta', 'releases'),
     ('', None),
     (None, None)
 ])

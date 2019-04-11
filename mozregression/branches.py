@@ -66,7 +66,7 @@ def create_branches():
     # release branches
     for name in ("comm-beta", "comm-release",
                  "mozilla-beta", "mozilla-release"):
-        branches.set_branch(name, "releases/%s" % name)
+        branches.set_branch(name, "releases/%s" % name, category='releases')
 
     branches.set_branch('try', 'try', category='try')
 

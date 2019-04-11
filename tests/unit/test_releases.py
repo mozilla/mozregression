@@ -2,7 +2,7 @@ import unittest
 
 from mozregression import errors
 from mozregression.releases import (releases, formatted_valid_release_dates,
-                                    date_of_release)
+                                    date_of_release, tag_of_release)
 
 
 class TestRelease(unittest.TestCase):
@@ -38,3 +38,19 @@ class TestRelease(unittest.TestCase):
             date_of_release(441)
         with self.assertRaises(errors.UnavailableRelease):
             date_of_release('ew21rtw112')
+
+    def test_valid_release_tags(self):
+        tag = tag_of_release('57.0')
+        self.assertEquals(tag, "FIREFOX_57_0_RELEASE")
+        tag = tag_of_release('60')
+        self.assertEquals(tag, "FIREFOX_60_0_RELEASE")
+        tag = tag_of_release('65.0.1')
+        self.assertEquals(tag, "FIREFOX_65_0_1_RELEASE")
+
+    def test_invalid_release_tags(self):
+        with self.assertRaises(errors.UnavailableRelease):
+            tag_of_release('55.0.1.1')
+        with self.assertRaises(errors.UnavailableRelease):
+            tag_of_release('57.0b4')
+        with self.assertRaises(errors.UnavailableRelease):
+            tag_of_release('abc')

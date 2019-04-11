@@ -61,6 +61,10 @@ class TestRelease(unittest.TestCase):
         self.assertEquals(tag, "FIREFOX_57_0b9_RELEASE")
         tag = tag_of_beta('60.0b12')
         self.assertEquals(tag, "FIREFOX_60_0b12_RELEASE")
+        tag = tag_of_beta('65')
+        self.assertEquals(tag, "FIREFOX_RELEASE_65_BASE")
+        tag = tag_of_beta('66.0')
+        self.assertEquals(tag, "FIREFOX_RELEASE_66_BASE")
 
     def test_invalid_beta_tags(self):
         with self.assertRaises(errors.UnavailableRelease):

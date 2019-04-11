@@ -125,6 +125,8 @@ def tag_of_beta(release):
     """
     if re.match(r'^\d+\.0b\d+$', release):
         return 'FIREFOX_%s_RELEASE' % release.replace('.', '_')
+    elif re.match(r'^\d+(\.0)?$', release):
+        return 'FIREFOX_RELEASE_%s_BASE' % release.replace('.0', '')
     else:
         raise UnavailableRelease(release)
 

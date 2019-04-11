@@ -234,6 +234,7 @@ def test_launch(args, action, value):
     (['--launch=62.0.1'], 'mozilla-release', 'FIREFOX_62_0_1_RELEASE'),
     (['--launch=63.0b4', '--repo=m-b'], 'mozilla-beta', 'FIREFOX_63_0b4_RELEASE'),
     (['--launch=64', '--repo=m-b'], 'mozilla-beta', 'FIREFOX_RELEASE_64_BASE'),
+    (['--launch=65.0b11'], 'mozilla-beta', 'FIREFOX_65_0b11_RELEASE'),
 ])
 def test_versions(args, repo, value):
     config = do_cli(*args)

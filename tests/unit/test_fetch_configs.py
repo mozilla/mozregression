@@ -283,6 +283,27 @@ class TestFallbacksConfig(TestFirefoxConfigLinux64):
         )
 
 
+class TestAarch64AvailableBuildTypes(unittest.TestCase):
+    app_name = 'firefox'
+    os = 'win'
+    bits = 64
+    processor = 'aarch64'
+
+    def setUp(self):
+        self.conf = create_config(self.app_name, self.os, self.bits,
+                                  self.processor)
+        self.conf.BUILD_TYPES = (
+            'excluded[win64]', 'included[win64-aarch64]', 'default'
+        )
+
+    def test_aarch64_build_types(self):
+        build_types = self.conf.available_build_types()
+        assert len(build_types) == 2
+        assert 'default' in build_types
+        assert 'included' in build_types
+        assert 'excluded' not in build_types
+
+
 CHSET = "47856a21491834da3ab9b308145caa8ec1b98ee1"
 CHSET12 = "47856a214918"
 

@@ -159,11 +159,13 @@ class CommonConfig(object):
         for available in self.BUILD_TYPES:
             match = re.match("(.+)\[(.+)\]", available)
             if match:
-                os = ('win64-aarch64' if self.os == 'win' and
-                      self.processor == 'aarch64' else self.os)
+                suffix = ('-aarch64' if self.processor == 'aarch64' and
+                          self.bits == 64 else '')
                 available = match.group(1)
                 platforms = match.group(2)
-                if '{}{}'.format(os, self.bits) not in platforms.split(','):
+                if '{}{}{}'.format(
+                    self.os, self.bits, suffix
+                ) not in platforms.split(','):
                     available = None
             if available:
                 res.append(available)

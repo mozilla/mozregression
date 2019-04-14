@@ -56,6 +56,7 @@ def create_branches():
     branches = Branches()
 
     branches.set_branch("mozilla-central", "mozilla-central")
+    branches.set_branch("comm-central", "comm-central")
 
     # integration branches
     for name in ("autoland", "mozilla-inbound"):

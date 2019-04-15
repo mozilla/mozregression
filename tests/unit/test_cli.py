@@ -250,13 +250,6 @@ def test_basic_inbound():
     assert config.options.bad == 'c5'
 
 
-def test_inbound_must_be_doable():
-    # no inbounds for thunderbird
-    with pytest.raises(errors.MozRegressionError) as exc:
-        do_cli('--app', 'thunderbird', '--good=c1', '--bad=c5')
-        assert 'Unable to bissect inbound' in str(exc.value)
-
-
 def test_list_releases(mocker):
     out = []
     stdout = mocker.patch('sys.stdout')

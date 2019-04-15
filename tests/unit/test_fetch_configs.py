@@ -329,6 +329,11 @@ CHSET12 = "47856a214918"
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-16-opt' % CHSET),
     ("fennec-2.3", None, None, None, 'm-i', TIMESTAMP_TEST,
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-9-opt' % CHSET),
+    # thunderbird
+    ('thunderbird', 'win', 32, 'x86_64', 'comm-central', TIMESTAMP_TEST,
+     'comm.v2.comm-central.revision.%s.thunderbird.win32-opt' % CHSET),
+    ('thunderbird', 'linux', 64, 'x86_64', 'comm-beta', TIMESTAMP_TEST,
+     'comm.v2.comm-beta.revision.%s.thunderbird.linux64-opt' % CHSET),
 ])
 def test_tk_inbound_route(app, os, bits, processor, repo, push_date, expected):
     conf = create_config(app, os, bits, processor)

@@ -431,6 +431,19 @@ class FennecInboundConfigMixin(InboundConfigMixin):
             self._inc_used_build()
             return
 
+
+class ThunderbirdInboundConfigMixin(InboundConfigMixin):
+    default_inbound_branch = 'comm-central'
+
+    def tk_inbound_routes(self, push):
+        for build_type in self.build_types:
+            yield 'comm.v2.{}.revision.{}.thunderbird.{}-{}'.format(
+                self.inbound_branch, push.changeset, _common_tk_part(self),
+                build_type
+            )
+            self._inc_used_build()
+        return
+
 # ------------ full config implementations ------------
 
 
@@ -475,7 +488,8 @@ class FirefoxConfig(CommonConfig,
 
 @REGISTRY.register('thunderbird')
 class ThunderbirdConfig(CommonConfig,
-                        ThunderbirdNightlyConfigMixin):
+                        ThunderbirdNightlyConfigMixin,
+                        ThunderbirdInboundConfigMixin):
     pass
 
 

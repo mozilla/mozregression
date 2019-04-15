@@ -155,6 +155,12 @@ class AbstractBuildRunner(QObject):
         if options['profile_persistence'] in ('clone-first', 'reuse') or options['profile']:
             launcher_kwargs['cmdargs'] = launcher_kwargs.get('cmdargs', []) + ['--allow-downgrade']
 
+        # Thunderbird will fail to start if passed an URL arg
+        if 'url' in options and fetch_config.app_name != 'thunderbird':
+            launcher_kwargs['cmdargs'] = (
+                launcher_kwargs.get('cmdargs', []) + [options['url']]
+            )
+
         self.worker = self.worker_class(fetch_config, self.test_runner,
                                         self.download_manager)
         # Move self.bisector in the thread. This will

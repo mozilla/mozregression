@@ -343,7 +343,7 @@ class InboundConfigMixin:
         """
         Returns the first taskcluster route for a specific changeset
         """
-        return self.tk_inbound_routes(push).next()
+        return next(self.tk_inbound_routes(push))
 
     @abstractmethod
     def tk_inbound_routes(self, push):

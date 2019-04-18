@@ -122,7 +122,8 @@ class InboundInfoFetcher(InfoFetcher):
                 raise stored_failure
         except TaskclusterFailure:
             raise BuildInfoNotFound("Unable to find build info using the"
-                                    " taskcluster route %r" % tk_route)
+                                    " taskcluster route %r" %
+                                    self.fetch_config.tk_inbound_route(push))
 
         # find a completed run for that task
         run_id, build_date = None, None

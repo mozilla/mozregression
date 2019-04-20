@@ -52,15 +52,15 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
             res = re.match(self.conf.build_info_regex(), example)
             self.assertIsNotNone(res)
 
-    def test_get_nighly_base_url(self):
-        base_url = self.conf.get_nighly_base_url(datetime.date(2008, 6, 27))
+    def test_get_nightly_base_url(self):
+        base_url = self.conf.get_nightly_base_url(datetime.date(2008, 6, 27))
         self.assertEqual(base_url, ARCHIVE_BASE_URL + "/firefox/nightly/2008/06/")
 
     def test_get_nightly_base_url_with_specific_base(self):
         self.conf.set_base_url("http://ftp-origin-scl3.mozilla.org/pub/")
         self.assertEqual(
             "http://ftp-origin-scl3.mozilla.org/pub/firefox/nightly/2008/06/",
-            self.conf.get_nighly_base_url(datetime.date(2008, 6, 27)),
+            self.conf.get_nightly_base_url(datetime.date(2008, 6, 27)),
         )
 
     def test_nightly_repo_regex(self):

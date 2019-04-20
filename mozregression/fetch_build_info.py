@@ -225,7 +225,7 @@ class NightlyInfoFetcher(InfoFetcher):
         This methods needs to be thread-safe as it is used in
         :meth:`NightlyBuildData.get_build_url`.
         """
-        url = self.fetch_config.get_nighly_base_url(date)
+        url = self.fetch_config.get_nightly_base_url(date)
         link_regex = re.compile(self.fetch_config.get_nightly_repo_regex(date))
 
         month_links = self._get_month_links(url)

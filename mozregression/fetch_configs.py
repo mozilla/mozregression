@@ -224,7 +224,7 @@ class NightlyConfigMixin(metaclass=ABCMeta):
 
     A nightly build url is divided in 2 parts here:
 
-    1. the base part as returned by :meth:`get_nighly_base_url`
+    1. the base part as returned by :meth:`get_nightly_base_url`
     2. the final part, which can be found using :meth:`get_nighly_repo_regex`
 
     The final part contains a repo name, which is returned by
@@ -241,7 +241,7 @@ class NightlyConfigMixin(metaclass=ABCMeta):
     def set_base_url(self, url):
         self.archive_base_url = url.rstrip("/")
 
-    def get_nighly_base_url(self, date):
+    def get_nightly_base_url(self, date):
         """
         Returns the base part of the nightly build url for a given date.
         """

@@ -58,7 +58,7 @@ class IntroPage(WizardPage):
     SUBTITLE = ("Please choose an application and other options to specify"
                 " what you want to test.")
     FIELDS = {'application': 'app_combo', "repository": "repository",
-              'bits': 'bits_combo', "build_type": "build_type"}
+              'bits': 'bits_combo', "build_type": "build_type", "url": "url"}
 
     def __init__(self):
         WizardPage.__init__(self)
@@ -128,6 +128,14 @@ class IntroPage(WizardPage):
         else:
             self.ui.bits_combo.show()
             self.ui.label_4.show()
+
+        # URL doesn't make sense for Thunderbird
+        if app_name == 'thunderbird':
+            self.ui.url.hide()
+            self.ui.url_label.hide()
+        else:
+            self.ui.url.show()
+            self.ui.url_label.show()
 
     def validatePage(self):
         app_name = self.fetch_config.app_name

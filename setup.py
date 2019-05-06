@@ -27,22 +27,24 @@ class PyTest(TestCommand):
 if sys.version_info < (2, 7) or sys.version_info >= (3, 0):
     sys.exit("mozregression currently require python >=2.7 and <3.")
 
+# we pin these dependencies in the requirements files -- all of these
+# should be python 3 compatible
 DEPENDENCIES = [
-    'beautifulsoup4==4.7.1',
-    'colorama==0.4.1',
-    'configobj==5.0.6',
-    'mozdevice==3.0.1',
-    'mozfile==2.0.0',
-    'mozinfo==1.1.0',
-    'mozinstall==2.0.0',
-    'mozlog==4.0',
-    'mozprocess==1.0.0',
-    'mozprofile==2.2.0',
-    'mozrunner==7.3.0',
-    'mozversion==2.1.0',
-    'redo==2.0.2',
-    'requests[security]==2.21.0',
-    'taskcluster==6.0.0',
+    'beautifulsoup4>=4.7.1',
+    'colorama>=0.4.1',
+    'configobj>=5.0.6',
+    'mozdevice>=3.0.1',
+    'mozfile>=2.0.0',
+    'mozinfo>=1.1.0',
+    'mozinstall>=2.0.0',
+    'mozlog>=4.0',
+    'mozprocess>=1.0.0',
+    'mozprofile>=2.2.0',
+    'mozrunner>=7.3.0',
+    'mozversion>=2.1.0',
+    'redo>=2.0.2',
+    'requests[security]>=2.21.0',
+    'taskcluster>=6.0.0',
 ]
 
 desc = """Regression range finder for Mozilla nightly builds"""

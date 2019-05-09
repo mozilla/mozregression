@@ -39,7 +39,7 @@ TIMESTAMP_FENNEC_API_15 = to_utc_timestamp(datetime.datetime(2016, 1, 29, 0, 30,
 TIMESTAMP_FENNEC_API_16 = to_utc_timestamp(datetime.datetime(2017, 8, 29, 18, 28, 36))
 
 
-def get_build_regex(name, os, bits, processor, psuffix="", with_ext=True):
+def get_build_regex(name, os, bits, processor, platprefix=r".*", platsuffix="", with_ext=True):
     """
     Returns a string regexp that can match a build filename.
 
@@ -48,26 +48,27 @@ def get_build_regex(name, os, bits, processor, psuffix="", with_ext=True):
     :param bits: the bits information of the build. Either 32 or 64.
     :param processor: the architecture of the build. Only one that alters
                       results is aarch64.
-    :param psuffix: optional suffix before the extension
+    :param platprefix: optional prefix before the platform
+    :param platsuffix: optional suffix after the platform
     :param with_ext: if True, the build extension will be appended (either
                      .zip, .tar.bz2 or .dmg depending on the os).
     """
     if os == "win":
         if bits == 64:
             if processor == "aarch64":
-                suffix = r".*win64-aarch64"
+                platform = r"win64-aarch64"
             else:
-                suffix = r".*win64(-x86_64)?"
+                platform = r"win64(-x86_64)?"
             ext = r"\.zip"
         else:
-            suffix, ext = r".*win32", r"\.zip"
+            platform, ext = r"win32", r"\.zip"
     elif os == "linux":
         if bits == 64:
-            suffix, ext = r".*linux-x86_64", r"\.tar.bz2"
+            platform, ext = r"linux-x86_64", r"\.tar.bz2"
         else:
-            suffix, ext = r".*linux-i686", r"\.tar.bz2"
+            platform, ext = r"linux-i686", r"\.tar.bz2"
     elif os == "mac":
-        suffix, ext = r".*mac.*", r"\.dmg"
+        platform, ext = r"mac.*", r"\.dmg"
     else:
         raise errors.MozRegressionError(
             "mozregression supports linux, mac and windows but your" " os is reported as '%s'." % os
@@ -75,7 +76,7 @@ def get_build_regex(name, os, bits, processor, psuffix="", with_ext=True):
 
     # New taskcluster builds now just name the binary archive 'target', so
     # that is added as one possibility in the regex.
-    regex = "(target|%s%s%s)" % (name, suffix, psuffix)
+    regex = "(target|%s%s%s%s)" % (name, platprefix, platform, platsuffix)
     if with_ext:
         return "%s%s" % (regex, ext)
     else:
@@ -513,7 +514,7 @@ class FirefoxConfig(CommonConfig, FirefoxNightlyConfigMixin, FirefoxIntegrationC
                 self.os,
                 self.bits,
                 self.processor,
-                psuffix="-asan-reporter" if "asan" in self.build_type else "",
+                platsuffix="-asan-reporter" if "asan" in self.build_type else "",
             )
             + "$"
         )

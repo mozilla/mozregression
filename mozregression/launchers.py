@@ -353,7 +353,7 @@ class FirefoxLauncher(MozRunnerLauncher):
     def _start(self, profile=None, addons=(), cmdargs=(), preferences=None,
                adb_profile_dir=None):
         super(FirefoxLauncher, self)._start(profile, addons,
-                                            cmdargs + ('--allow-downgrade'),
+                                            ['--allow-downgrade'] + cmdargs,
                                             preferences, adb_profile_dir)
 
 

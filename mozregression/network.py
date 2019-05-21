@@ -76,7 +76,7 @@ def url_links(url, regex=None, auth=None):
     response = retry_get(url, auth=auth)
     response.raise_for_status()
 
-    soup = BeautifulSoup(response.text)
+    soup = BeautifulSoup(response.text, features="html.parser")
 
     if regex:
         if isinstance(regex, basestring):

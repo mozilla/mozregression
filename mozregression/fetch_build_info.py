@@ -6,6 +6,7 @@ The public API is composed of two classes, :class:`NightlyInfoFetcher` and
 :class:`mozregression.build_info.BuildInfo` instances.
 """
 
+from __future__ import absolute_import
 import os
 import re
 import taskcluster
@@ -98,7 +99,7 @@ class InboundInfoFetcher(InfoFetcher):
         if not isinstance(push, Push):
             try:
                 push = self.jpushes.push(push)
-            except MozRegressionError, exc:
+            except MozRegressionError as exc:
                 raise BuildInfoNotFound(str(exc))
 
         changeset = push.changeset

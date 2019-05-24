@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+from __future__ import absolute_import
 import unittest
 import tempfile
 import os
@@ -14,6 +15,7 @@ from mozlog import get_default_logger
 from mozregression import cli, errors
 from mozregression.releases import releases
 from mozregression.fetch_configs import create_config
+import six
 
 
 class TestParseDate(unittest.TestCase):
@@ -92,7 +94,7 @@ class TestCli(unittest.TestCase):
                         'bits': '64'}
 
         content = ["%s=%s\n" % (key, value)
-                   for key, value in valid_values.iteritems()]
+                   for key, value in six.iteritems(valid_values)]
         filepath = self._create_conf_file('\n'.join(content))
 
         options = cli.cli(['--bits=32'], conf_file=filepath).options
@@ -206,7 +208,7 @@ def test_find_fix_reverse_default_dates(os, bits, default_bad_date):
 
 def test_with_releases():
     releases_data = sorted(((k, v) for k, v in releases().items()),
-                           key=(lambda (k, v): k))
+                           key=(lambda k_v: k_v[0]))
     conf = do_cli(
         '--bad=%s' % releases_data[-1][0],
         '--good=%s' % releases_data[0][0],

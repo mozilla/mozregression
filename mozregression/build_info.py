@@ -5,9 +5,10 @@
 """
 The BuildInfo classes, that are used to store information a build.
 """
+from __future__ import absolute_import
 import re
 import datetime
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 
 
 FIELDS = []

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 
 from mozlog import get_proxy_logger
@@ -6,6 +7,7 @@ from mozregression.errors import MozRegressionError, EmptyPushlogError
 from mozregression.network import retry_get
 from mozregression import branches
 from mozregression.dates import is_date_or_datetime
+import six
 
 LOG = get_proxy_logger("JsonPushes")
 
@@ -62,7 +64,7 @@ class JsonPushes(object):
         Basically issue a raw request to the server.
         """
         base_url = '%s/json-pushes?' % self.repo_url
-        url = base_url + '&'.join("%s=%s" % kv for kv in kwargs.iteritems())
+        url = base_url + '&'.join("%s=%s" % kv for kv in six.iteritems(kwargs))
         LOG.debug("Using url: %s" % url)
 
         response = retry_get(url)

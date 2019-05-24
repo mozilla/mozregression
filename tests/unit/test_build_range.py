@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import pytest
 from datetime import date, datetime, timedelta
 
@@ -6,7 +7,8 @@ from mozregression.fetch_build_info import InfoFetcher
 from mozregression.errors import BuildInfoNotFound
 from mozregression.fetch_configs import create_config
 from mozregression.json_pushes import JsonPushes
-from test_fetch_configs import create_push
+from .test_fetch_configs import create_push
+from six.moves import range
 
 
 class RangeCreator(object):
@@ -28,11 +30,11 @@ def range_creator(mocker):
 
 
 def test_len(range_creator):
-    assert len(range_creator.create(range(5))) == 5
+    assert len(range_creator.create(list(range(5)))) == 5
 
 
 def test_access(range_creator):
-    build_range = range_creator.create(range(5))
+    build_range = range_creator.create(list(range(5)))
     assert build_range[0] == 0
 
     build_range.build_info_fetcher.find_build_info.side_effect = \
@@ -47,7 +49,7 @@ def test_access(range_creator):
 
 
 def test_slice(range_creator):
-    build_range = range_creator.create(range(5))
+    build_range = range_creator.create(list(range(5)))
     build_range2 = build_range[3:]
     assert len(build_range) == 5
     assert len(build_range2) == 2
@@ -57,7 +59,7 @@ def test_slice(range_creator):
 
 
 def test_deleted(range_creator):
-    build_range = range_creator.create(range(5))
+    build_range = range_creator.create(list(range(5)))
     build_range2 = build_range.deleted(1)
     assert len(build_range) == 5
     assert len(build_range2) == 4
@@ -76,19 +78,19 @@ def fetch_unless(br, func):
 
 
 def test_mid_point(range_creator):
-    build_range = range_creator.create(range(10))
+    build_range = range_creator.create(list(range(10)))
     fetch_unless(build_range, lambda i: i == 9)
 
     assert build_range.mid_point() == 4
     assert len(build_range) == 9
-    assert [build_range[i] for i in range(9)] == range(9)
+    assert [build_range[i] for i in range(9)] == list(range(9))
 
     # with a range len < 3, mid is 0.
     assert build_range[:2].mid_point() == 0
 
 
 def test_mid_point_interrupt(range_creator):
-    build_range = range_creator.create(range(10))
+    build_range = range_creator.create(list(range(10)))
     assert build_range.mid_point(interrupt=lambda: False) == 5
     with pytest.raises(StopIteration):
         build_range.mid_point(interrupt=lambda: True)
@@ -101,39 +103,39 @@ def _build_range(fb, rng):
 
 
 def range_before(fb, expand):
-    return _build_range(fb, range(fb.data - expand, fb.data))
+    return _build_range(fb, list(range(fb.data - expand, fb.data)))
 
 
 def range_after(fb, expand):
-    return _build_range(fb, range(fb.data + 1, fb.data + 1 + expand))
+    return _build_range(fb, list(range(fb.data + 1, fb.data + 1 + expand)))
 
 
 @pytest.mark.parametrize('size_expand,initial,fail_in,expected,error', [
     # short range
-    (10, range(1), [], range(1), None),
+    (10, list(range(1)), [], list(range(1)), None),
     # empty range after removing invalids
-    (10, range(2), [0, 1], [], None),
+    (10, list(range(2)), [0, 1], [], None),
     # lower limit missing
-    (10, range(10), [0], [-1] + range(1, 10), None),
+    (10, list(range(10)), [0], [-1] + list(range(1, 10)), None),
     # higher limit missing
-    (10, range(10), [9], range(0, 9) + [10], None),
+    (10, list(range(10)), [9], list(range(0, 9)) + [10], None),
     # lower and higher limit missing
-    (10, range(10), [0, 9], [-1] + range(1, 9) + [10], None),
+    (10, list(range(10)), [0, 9], [-1] + list(range(1, 9)) + [10], None),
     # lower missing, with missing builds in the before range
-    (10, range(10), range(-5, 1), [-6] + range(1, 10), None),
+    (10, list(range(10)), list(range(-5, 1)), [-6] + list(range(1, 10)), None),
     # higher missing, with missing builds in the after range
-    (10, range(10), range(9, 15), range(0, 9) + [15], None),
+    (10, list(range(10)), list(range(9, 15)), list(range(0, 9)) + [15], None),
     # lower and higher missing, with missing builds in the before/after range
-    (10, range(10), range(-6, 1) + range(9, 14), [-7] + range(1, 9) + [14],
+    (10, list(range(10)), list(range(-6, 1)) + list(range(9, 14)), [-7] + list(range(1, 9)) + [14],
      None),
     # unable to find any valid builds in before range
-    (10, range(10), range(-10, 1), range(1, 10),
+    (10, list(range(10)), list(range(-10, 1)), list(range(1, 10)),
      ["can't find a build before"]),
     # unable to find any valid builds in after range
-    (10, range(10), range(9, 20), range(0, 9),
+    (10, list(range(10)), list(range(9, 20)), list(range(0, 9)),
      ["can't find a build after"]),
     # unable to find valid builds in before and after
-    (10, range(10), range(-10, 1) + range(9, 20), range(1, 9),
+    (10, list(range(10)), list(range(-10, 1)) + list(range(9, 20)), list(range(1, 9)),
      ["can't find a build before", "can't find a build after"]),
 ])
 def test_check_expand(mocker, range_creator, size_expand, initial, fail_in,
@@ -152,7 +154,7 @@ def test_check_expand(mocker, range_creator, size_expand, initial, fail_in,
 
 
 def test_check_expand_interrupt(range_creator):
-    build_range = range_creator.create(range(10))
+    build_range = range_creator.create(list(range(10)))
     fetch_unless(build_range, lambda i: i == 0)
 
     mp = build_range.mid_point
@@ -164,7 +166,7 @@ def test_check_expand_interrupt(range_creator):
 
 
 def test_index(range_creator):
-    build_range = range_creator.create(range(10))
+    build_range = range_creator.create(list(range(10)))
     # no build_info fetched yet, so ValueError is raised
     with pytest.raises(ValueError):
         build_range.index(5)
@@ -251,17 +253,17 @@ def test_range_for_nightlies():
 
     b_range = build_range.range_for_nightlies(
         fetch_config,
-        date(2015, 01, 01),
-        date(2015, 01, 03)
+        date(2015, 0o1, 0o1),
+        date(2015, 0o1, 0o3)
     )
 
     assert isinstance(b_range, build_range.BuildRange)
     assert len(b_range) == 3
 
     b_range.build_info_fetcher.find_build_info = lambda v: v
-    assert b_range[0] == date(2015, 01, 01)
-    assert b_range[1] == date(2015, 01, 02)
-    assert b_range[2] == date(2015, 01, 03)
+    assert b_range[0] == date(2015, 0o1, 0o1)
+    assert b_range[1] == date(2015, 0o1, 0o2)
+    assert b_range[2] == date(2015, 0o1, 0o3)
 
 
 @pytest.mark.parametrize('start,end,range_size', [
@@ -288,7 +290,7 @@ def test_range_for_nightlies_datetime(start, end, range_size):
 
 @pytest.mark.parametrize('func,start,size,expected_range', [
     (build_range.tc_range_before, 1, 2, [-1, 0]),
-    (build_range.tc_range_after, 1, 3, range(2, 5)),
+    (build_range.tc_range_after, 1, 3, list(range(2, 5))),
 ])
 def test_tc_range_before_after(mocker, func, start, size, expected_range):
     ftc = build_range.FutureBuildInfo(mocker.Mock(),
@@ -297,7 +299,7 @@ def test_tc_range_before_after(mocker, func, start, size, expected_range):
     def pushes(startID, endID):
         # startID: greaterThan  -  endID: up to and including
         # http://mozilla-version-control-tools.readthedocs.org/en/latest/hgmo/pushlog.html#query-parameters  # noqa
-        return range(startID + 1, endID + 1)
+        return list(range(startID + 1, endID + 1))
 
     ftc.build_info_fetcher.jpushes.pushes.side_effect = pushes
     rng = func(ftc, size)

@@ -2,7 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+from __future__ import absolute_import
 import re
+from six.moves import range
 
 
 class ApproxPersistChooser(object):
@@ -46,7 +48,7 @@ class ApproxPersistChooser(object):
             )
 
         first, last = 0, len(build_range) - 1
-        for i in xrange(1, around + 1):
+        for i in range(1, around + 1):
             try:
                 next_index = index - i
                 if next_index > first:

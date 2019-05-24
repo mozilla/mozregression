@@ -2,12 +2,14 @@
 Access to mozilla branches information.
 """
 
+from __future__ import absolute_import
 import re
 from collections import defaultdict
 
 from mozlog import get_proxy_logger
 
 from mozregression.errors import MozRegressionError
+import six
 
 LOG = get_proxy_logger('Branches')
 
@@ -27,7 +29,7 @@ class Branches(object):
 
     def get_branches(self, category=None):
         if category is None:
-            return self._branches.keys()
+            return list(self._branches.keys())
         return self._categories[category]
 
     def set_alias(self, alias, branch_name):
@@ -47,7 +49,7 @@ class Branches(object):
 
     def get_category(self, branch_name_or_alias):
         name = self.get_name(branch_name_or_alias)
-        for cat, names in self._categories.iteritems():
+        for cat, names in six.iteritems(self._categories):
             if name in names:
                 return cat
 

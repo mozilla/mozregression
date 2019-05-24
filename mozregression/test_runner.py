@@ -7,6 +7,8 @@ This module implements a :class:`TestRunner` interface for testing builds
 and a default implementation :class:`ManualTestRunner`.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 from mozlog import get_proxy_logger
 import subprocess
 import shlex
@@ -16,6 +18,9 @@ import datetime
 from mozregression.launchers import create_launcher as mozlauncher
 from mozregression.errors import TestCommandError, LauncherError
 from abc import ABCMeta, abstractmethod
+import six
+from six.moves import range
+from six.moves import input
 
 LOG = get_proxy_logger("Test Runner")
 
@@ -39,13 +44,12 @@ def create_launcher(build_info):
     return mozlauncher(build_info)
 
 
-class TestRunner:
+class TestRunner(six.with_metaclass(ABCMeta)):
     """
     Abstract class that allows to test a build.
 
     :meth:`evaluate` must be implemented by subclasses.
     """
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def evaluate(self, build_info, allow_back=False):
@@ -107,10 +111,9 @@ class ManualTestRunner(TestRunner):
                              " or '%s'" % options[-1])
         verdict = ""
         while verdict not in allowed_inputs:
-            verdict = raw_input("Was this %s build good, bad, or broken?"
-                                " (type %s and press Enter): "
-                                % (build_info.build_type,
-                                   formatted_options))
+            verdict = input("Was this %s build good, bad, or broken?"
+                            " (type %s and press Enter): " % (build_info.build_type,
+                                                              formatted_options))
 
         if verdict == 'back':
             return 'back'
@@ -145,14 +148,14 @@ class ManualTestRunner(TestRunner):
             return mid
         min = -mid + 1
         max = build_range_len - mid - 2
-        valid_range = range(min, max + 1)
+        valid_range = list(range(min, max + 1))
         print("Build was skipped. You can manually choose a new build to"
               " test, to be able to get out of a broken build range.")
         print("Please type the index of the build you would like to try - the"
               " index is 0-based on the middle of the remaining build range.")
-        print "You can choose a build index between [%d, %d]:" % (min, max)
+        print("You can choose a build index between [%d, %d]:" % (min, max))
         while True:
-            value = raw_input('> ')
+            value = input('> ')
             try:
                 index = int(value)
                 if index in valid_range:
@@ -189,13 +192,13 @@ class CommandTestRunner(TestRunner):
     def evaluate(self, build_info, allow_back=False):
         with create_launcher(build_info) as launcher:
             build_info.update_from_app_info(launcher.get_app_info())
-            variables = {k: v for k, v in build_info.to_dict().iteritems()}
+            variables = {k: v for k, v in six.iteritems(build_info.to_dict())}
             if hasattr(launcher, 'binary'):
                 variables['binary'] = launcher.binary
 
             env = dict(os.environ)
-            for k, v in variables.iteritems():
-                if type(v) == unicode:
+            for k, v in six.iteritems(variables):
+                if type(v) == six.text_type:
                     v = v.encode('ascii', errors='ignore')
                 else:
                     env['MOZREGRESSION_' + k.upper()] = str(v)

@@ -6,6 +6,8 @@
 Define the launcher classes, responsible of running the tested applications.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import json
 import os
 import time
@@ -26,16 +28,16 @@ from threading import Thread
 from mozregression.class_registry import ClassRegistry
 from mozregression.errors import LauncherNotRunnable, LauncherError
 from mozregression.tempdir import safe_mkdtemp
+import six
 
 LOG = get_proxy_logger("Test Runner")
 
 
-class Launcher:
+class Launcher(six.with_metaclass(ABCMeta)):
     """
     Handle the logic of downloading a build file, installing and
     running an application.
     """
-    __metaclass__ = ABCMeta
     profile_class = Profile
 
     @classmethod
@@ -170,7 +172,7 @@ def safe_get_version(**kwargs):
     # and let's be paranoid and handle any error (but report them!)
     try:
         return mozversion.get_version(**kwargs)
-    except mozversion.VersionError, exc:
+    except mozversion.VersionError as exc:
         LOG.warning("Unable to get app version: %s" % exc)
         return {}
 
@@ -238,7 +240,7 @@ class MozRunnerLauncher(Launcher):
                 try:
                     exitcode = self.runner.process_handler.proc.wait()
                 except Exception:
-                    print
+                    print()
                     LOG.error(
                         "Error while waiting process, consider filing a bug.",
                         exc_info=True
@@ -247,7 +249,7 @@ class MozRunnerLauncher(Launcher):
                 if exitcode != 0:
                     # first print a blank line, to be sure we don't
                     # write on an already printed line without EOL.
-                    print
+                    print()
                     LOG.warning('Process exited with code %s' % exitcode)
 
         self.runner.process_args = {
@@ -407,7 +409,7 @@ class AndroidLauncher(Launcher):
         self.adb = ADBAndroid(require_root=False)
         try:
             self.adb.uninstall_app(self.package_name)
-        except ADBError, msg:
+        except ADBError as msg:
             LOG.warning(
                 "Failed to uninstall %s (%s)\nThis is normal if it is the"
                 " first time the application is installed."

@@ -6,11 +6,13 @@
 network functions utilities for mozregression.
 """
 
+from __future__ import absolute_import
 import re
 import redo
 import requests
 
 from bs4 import BeautifulSoup
+import six
 
 
 def retry_get(url, **karwgs):
@@ -48,7 +50,7 @@ def set_http_session(session=None, get_defaults=None):
         _get = session.get
 
         def _default_get(*args, **kwargs):
-            for k, v in get_defaults.iteritems():
+            for k, v in six.iteritems(get_defaults):
                 kwargs.setdefault(k, v)
             return _get(*args, **kwargs)
         session.get = _default_get
@@ -79,7 +81,7 @@ def url_links(url, regex=None, auth=None):
     soup = BeautifulSoup(response.text, features="html.parser")
 
     if regex:
-        if isinstance(regex, basestring):
+        if isinstance(regex, six.string_types):
             regex = re.compile(regex)
         match = regex.match
     else:

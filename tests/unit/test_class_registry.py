@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from mozregression.class_registry import ClassRegistry
 
 TEST_REGISTRY = ClassRegistry()

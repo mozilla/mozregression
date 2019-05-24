@@ -7,6 +7,7 @@ This module provide a BuildRange class, which acts like a list of BuildInfo
 objects that are loaded on demand. A BuildRange is used for bisecting builds.
 """
 
+from __future__ import absolute_import
 import copy
 import datetime
 
@@ -18,6 +19,7 @@ from mozregression.dates import to_date, is_date_or_datetime, \
 from mozregression.errors import BuildInfoNotFound
 from mozregression.fetch_build_info import (InboundInfoFetcher,
                                             NightlyInfoFetcher)
+from six.moves import range
 
 LOG = get_proxy_logger("Bisector")
 
@@ -39,7 +41,7 @@ class FutureBuildInfo(object):
         if self._build_info is None:
             try:
                 self._build_info = self._fetch()
-            except BuildInfoNotFound, exc:
+            except BuildInfoNotFound as exc:
                 LOG.warning("Skipping build %s: %s" % (self.data, exc))
                 self._build_info = False
         return self._build_info
@@ -146,16 +148,16 @@ class BuildRange(object):
             if size < 3:
                 # let's say that the middle point is 0 if there is not at least
                 # 2 points - still, fetch data if needed.
-                self._fetch(range(size))
+                self._fetch(list(range(size)))
                 self.filter_invalid_builds()
                 return 0
-            mid = size / 2
+            mid = int(size / 2)
             self._fetch((0, mid, size - 1))
             # remove invalids
             self.filter_invalid_builds()
             if len(self) == size:
                 # nothing removed, so we found valid builds only
-                return mid
+                return int(mid)
 
     def check_expand(self, expand, range_before, range_after, interrupt=None):
         """
@@ -195,11 +197,11 @@ class BuildRange(object):
 
         def search_first(br):
             # search the first available build in br, 3 at a time
-            return _search(br, 0, lambda s: range(0, min(3, s)))
+            return _search(br, 0, lambda s: list(range(0, min(3, s))))
 
         def search_last(br):
             # search the last available build in br, 3 at a time
-            return _search(br, -1, lambda s: range(max(s - 3, 0), s))
+            return _search(br, -1, lambda s: list(range(max(s - 3, 0), s)))
 
         if self.get_future(0) != first:
             new_first = search_last(range_before(first, expand))

@@ -1,5 +1,6 @@
+from __future__ import absolute_import
 import pytest
-from test_build_info import create_build_info
+from .test_build_info import create_build_info
 
 from mozregression import build_info, approx_persist, build_range
 

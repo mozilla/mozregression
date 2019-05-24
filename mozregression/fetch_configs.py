@@ -19,6 +19,7 @@ an instance of :class:`ClassRegistry`. Example: ::
 
   print REGISTRY.names()
 """
+from __future__ import absolute_import
 import re
 import datetime
 
@@ -27,6 +28,7 @@ from mozregression import errors, branches
 from mozregression.dates import to_utc_timestamp
 from mozregression.config import ARCHIVE_BASE_URL
 from abc import ABCMeta, abstractmethod
+import six
 
 
 # switch from fennec api-11 to api-15 on taskcluster
@@ -209,7 +211,7 @@ class CommonConfig(object):
                 self.build_type not in ('opt', 'asan', 'shippable'))
 
 
-class NightlyConfigMixin:
+class NightlyConfigMixin(six.with_metaclass(ABCMeta)):
     """
     Define the nightly-related required configuration to find nightly builds.
 
@@ -225,7 +227,6 @@ class NightlyConfigMixin:
     provide a default value.
     """
     archive_base_url = ARCHIVE_BASE_URL
-    __metaclass__ = ABCMeta
     nightly_base_repo_name = "firefox"
     nightly_repo = None
 
@@ -327,11 +328,10 @@ class FennecNightlyConfigMixin(NightlyConfigMixin):
         return self._get_nightly_repo_regex(date, repo)
 
 
-class InboundConfigMixin:
+class InboundConfigMixin(six.with_metaclass(ABCMeta)):
     """
     Define the inbound-related required configuration.
     """
-    __metaclass__ = ABCMeta
     default_inbound_branch = 'mozilla-inbound'
     _tk_credentials = None
 

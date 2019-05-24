@@ -2,6 +2,7 @@
 Logging and outputting configuration and utilities.
 """
 
+from __future__ import absolute_import
 import sys
 import time
 import mozinfo
@@ -9,6 +10,7 @@ import mozinfo
 from colorama import Fore, Style, Back
 from mozlog.structuredlog import set_default_logger, StructuredLogger
 from mozlog.handlers import StreamHandler, LogLevelFilter
+import six
 
 ALLOW_COLOR = sys.stdout.isatty()
 
@@ -62,7 +64,7 @@ COLORS = {}
 NO_COLORS = {}
 
 for prefix, st in (('b', Back), ('s', Style), ('f', Fore)):
-    for name, value in st.__dict__.iteritems():
+    for name, value in six.iteritems(st.__dict__):
         COLORS[prefix + name] = value
         NO_COLORS[prefix + name] = ''
 

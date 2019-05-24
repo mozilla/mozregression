@@ -10,6 +10,8 @@ application.
 :func:`cli` is intended to be the only public interface of this module.
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import mozinfo
 import datetime
@@ -546,10 +548,10 @@ def cli(argv=None, conf_file=DEFAULT_CONF_FNAME, namespace=None):
             # will be appended: https://bugs.python.org/issue16399
             options.cmdargs = defaults['cmdargs']
     if conf_file and not os.path.isfile(conf_file):
-        print '*' * 10
-        print colorize("You should use a config file. Please use the " +
+        print('*' * 10)
+        print(colorize("You should use a config file. Please use the " +
                        '{sBRIGHT}--write-config{sRESET_ALL}' +
-                       " command line flag to help you create one.")
-        print '*' * 10
-        print
+                       " command line flag to help you create one."))
+        print('*' * 10)
+        print()
     return Configuration(options)

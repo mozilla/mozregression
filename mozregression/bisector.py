@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+from __future__ import absolute_import
 import os
 import math
 import threading
@@ -15,6 +16,7 @@ from mozregression.history import BisectionHistory
 from mozregression.branches import find_branch_in_merge_commit, get_name
 from mozregression.json_pushes import JsonPushes
 from abc import ABCMeta, abstractmethod
+import six
 
 LOG = get_proxy_logger('Bisector')
 
@@ -25,13 +27,12 @@ def compute_steps_left(steps):
     return math.trunc(math.log(steps, 2))
 
 
-class BisectorHandler:
+class BisectorHandler(six.with_metaclass(ABCMeta)):
     """
     React to events of a :class:`Bisector`. This is intended to be subclassed.
 
     A BisectorHandler keep the state of the current bisection process.
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self, find_fix=False, ensure_good_and_bad=False):
         self.find_fix = find_fix
@@ -646,7 +647,7 @@ class Bisector(object):
                 else:
                     try:
                         verdict = bisection.evaluate(build_info)
-                    except LauncherError, exc:
+                    except LauncherError as exc:
                         # we got an unrecoverable error while trying
                         # to run the tested app. We can just fallback
                         # to skip the build.

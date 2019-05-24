@@ -1,8 +1,10 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+from __future__ import absolute_import
 import os
 import tempfile
+import six
 
 
 def safe_mkdtemp():
@@ -17,7 +19,7 @@ def safe_mkdtemp():
         BUFFER_SIZE = 500
         buffer = create_unicode_buffer(BUFFER_SIZE)
         get_long_path_name = windll.kernel32.GetLongPathNameW
-        get_long_path_name(unicode(tempdir), buffer, BUFFER_SIZE)
+        get_long_path_name(six.text_type(tempdir), buffer, BUFFER_SIZE)
         return buffer.value
     else:
         return tempdir

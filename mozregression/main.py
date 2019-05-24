@@ -6,6 +6,7 @@
 Entry point for the mozregression command line.
 """
 
+from __future__ import absolute_import
 import os
 import sys
 import requests

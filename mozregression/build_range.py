@@ -85,13 +85,15 @@ class BuildRange(object):
     def __len__(self):
         return len(self._future_build_infos)
 
-    def __getslice__(self, smin, smax):
-        new_range = copy.copy(self)
-        new_range._future_build_infos = self._future_build_infos[smin:smax]
-        return new_range
+    def __getitem__(self, item):
+        if isinstance(item, slice):
+            if item.step not in (1, None):
+                raise ValueError('only step=1 supported')
+            new_range = copy.copy(self)
+            new_range._future_build_infos = self._future_build_infos[item.start:item.stop]
+            return new_range
 
-    def __getitem__(self, i):
-        return self._future_build_infos[i].build_info
+        return self._future_build_infos[item].build_info
 
     def deleted(self, pos, count=1):
         new_range = copy.copy(self)

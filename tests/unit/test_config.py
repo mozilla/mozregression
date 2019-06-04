@@ -31,7 +31,8 @@ def test_write_conf(tmp, mocker, os_, bits, inputs, conf_dir_exists, results):
     mozinfo = mocker.patch('mozregression.config.mozinfo')
     mozinfo.os = os_
     mozinfo.bits = bits
-    mocked_input = mocker.patch('__builtin__.raw_input')
+    mocked_input = mocker.patch('mozregression.config.input')
+    mocked_input.return_value = ""
     mocked_input.side_effect = inputs
     conf_path = os.path.join(tmp, 'conf.cfg')
     if not conf_dir_exists:
@@ -49,7 +50,7 @@ def test_write_conf(tmp, mocker, os_, bits, inputs, conf_dir_exists, results):
 
 
 def test_write_existing_conf(tmp, mocker):
-    mocked_input = mocker.patch('__builtin__.raw_input')
+    mocked_input = mocker.patch('mozregression.config.input')
     mocked_input.return_value = ""
     conf_path = os.path.join(tmp, 'conf.cfg')
     write_conf(conf_path)

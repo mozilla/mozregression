@@ -81,24 +81,24 @@ class TestManualTestRunner(unittest.TestCase):
         mozlauncher.assert_called_with(info)
         self.assertEqual(result_launcher, launcher)
 
-    @patch('__builtin__.raw_input')
-    def test_get_verdict(self, raw_input):
-        raw_input.return_value = 'g'
+    @patch('mozregression.test_runner.input')
+    def test_get_verdict(self, input):
+        input.return_value = 'g'
         verdict = self.runner.get_verdict(mockinfo(build_type='inbound'),
                                           False)
         self.assertEqual(verdict, 'g')
 
-        output = raw_input.call_args[0][0]
+        output = input.call_args[0][0]
         # bad is proposed
         self.assertIn('bad', output)
         # back is not
         self.assertNotIn('back', output)
 
-    @patch('__builtin__.raw_input')
-    def test_get_verdict_allow_back(self, raw_input):
-        raw_input.return_value = 'back'
+    @patch('mozregression.test_runner.input')
+    def test_get_verdict_allow_back(self, input):
+        input.return_value = 'back'
         verdict = self.runner.get_verdict(mockinfo(build_type='inbound'), True)
-        output = raw_input.call_args[0][0]
+        output = input.call_args[0][0]
         # back is now proposed
         self.assertIn('back', output)
         self.assertEqual(verdict, 'back')
@@ -251,17 +251,17 @@ from .test_build_range import range_creator  # noqa
     (list(range(5)), ['1'], '[-1, 1]', 3),
     # user hit something bad, we loop
     (list(range(5)), ['aa', '', '1'], '[-1, 1]', 3),
-    # small range, no raw_input
-    (list(range(3)), Exception('raw_input called, it should not happen'), None, 1)
+    # small range, no input
+    (list(range(3)), Exception('input called, it should not happen'), None, 1)
 ])
 def test_index_to_try_after_skip(mocker, range_creator, brange,
                                  input, allowed_range, result):
     build_range = range_creator.create(brange)
-    raw_input = mocker.patch("__builtin__.raw_input")
-    raw_input.side_effect = input
+    mocked_input = mocker.patch("mozregression.test_runner.input")
+    mocked_input.side_effect = input
     output = []
-    stdout = mocker.patch('sys.stdout')
-    stdout.write = output.append
+    mocked_stdout = mocker.patch('sys.stdout')
+    mocked_stdout.write = output.append
 
     runner = test_runner.ManualTestRunner()
     assert runner.index_to_try_after_skip(build_range) == result

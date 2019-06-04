@@ -22,7 +22,7 @@ six==1.12.0
 coverage==4.5.3
 mock==3.0.5
 pytest==4.5.0
-# peg flake8 + deps so code doesn't suddenly violate validation expectations unexpectedly
+pytest-mock==1.10.4
 flake8==3.2.1
 mccabe==0.5.3
 pyflakes==1.3.0

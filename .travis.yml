@@ -1,7 +1,18 @@
-os:
-  - linux
-# not testing on osx for now
-#  - osx
+matrix:
+  include:
+    - env: python2-linux
+      os: linux
+      python: '2.7'
+      script:
+        - ./check.py --with-coverage --with-gui
+        - python gui/build.py bundle
+        - pip install coveralls; coveralls
+    - env: python2-linters
+      os: linux
+      python: '2.7'
+      script:
+        - flake8 mozregression tests setup.py check.py
+        - flake8 gui/mozregui gui/build.py gui/tests
 
 install:
     - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
@@ -26,15 +37,7 @@ install:
       fi
     - virtualenv --system-site-packages venv
     - source venv/bin/activate
-    - pip install -r  requirements-gui-dev.txt
-
-script:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ./check.py --with-coverage --with-gui; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ./check.py --with-gui; fi
-  - python gui/build.py bundle
-
-after_success:
-    - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install coveralls; coveralls; fi
+    - pip install -r requirements-gui-dev.txt
 
 deploy:
   - provider: releases

@@ -265,16 +265,13 @@ class TestFennecLauncher(unittest.TestCase):
         self.adb.install_app.assert_called_once_with(ANY)
 
     @patch('mozregression.launchers.ADBHost')
-    @patch('__builtin__.raw_input')
-    def test_check_is_runnable(self, raw_input, ADBHost):
-        raw_input.return_value = 'y'
+    def test_check_is_runnable(self, ADBHost):
         devices = Mock(return_value=True)
         ADBHost.return_value = Mock(devices=devices)
         # this won't raise errors
         launchers.FennecLauncher.check_is_runnable()
 
         # exception raised if there is no device
-        raw_input.return_value = 'y'
         devices.return_value = False
         self.assertRaises(LauncherNotRunnable,
                           launchers.FennecLauncher.check_is_runnable)

@@ -72,7 +72,6 @@ def do_run(options):
 def do_test(options):
     do_uic(options)
     do_rcc(options)
-    call(py_script('flake8'), 'mozregui', 'build.py', 'tests')
     print('Running tests...')
     import pytest
     sys.exit(pytest.main(['tests', '-v']))

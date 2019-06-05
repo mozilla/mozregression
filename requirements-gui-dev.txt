@@ -1,9 +1,5 @@
 -r requirements-dev.txt
 
-# newer versions of setuptools don't seem to package mozregression gui
-# correctly, see: https://github.com/pyinstaller/pyinstaller/issues/1772#issuecomment-172467268
-setuptools == 19.2
-
 # for testing
 pytest-qt == 2.0.0
 

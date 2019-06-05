@@ -67,6 +67,7 @@ setup(name="mozregression",
         """,
       platforms=['Any'],
       install_requires=DEPENDENCIES,
+      setup_requires=['pytest-runner'],
       tests_require=['mock', 'pytest', 'pytest-mock'],
       classifiers=[
           'Development Status :: 5 - Production/Stable',

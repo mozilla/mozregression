@@ -1,7 +1,7 @@
 -r requirements-dev.txt
 
 # for testing
-pytest-qt == 2.0.0
+pytest-qt == 3.2.2
 
 # for bundling standalone executable
 cx_Freeze == 5.1.1

@@ -18,7 +18,8 @@ install:
   # install mozregression code and test dependencies
   - "pip install -r requirements-gui-dev.txt"
 test_script:
-  - "python check.py --with-gui"
+  - "python setup.py test"
+  - "python gui\\build.py test"
   # bundle the application
   - "python gui\\build.py bundle --nsis-path \"C:\\Program Files (x86)\\NSIS\""
 

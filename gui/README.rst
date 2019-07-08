@@ -103,12 +103,7 @@ Running unit tests
 
 Be sure to be in you virtualenv, then: ::
 
-  python check.py -G
-
-You can run them with coverage: ::
-
-  python check.py -GCH
-  firefox htmlcov/index.html
+  python gui/build.py test
 
 
 Freeze the application

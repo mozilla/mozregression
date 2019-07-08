@@ -4,14 +4,16 @@ matrix:
       os: linux
       python: '2.7'
       script:
-        - ./check.py --with-coverage --with-gui
-        - python gui/build.py bundle
+        - coverage run setup.py test && mv .coverage .coverage.core
+        - coverage run gui/build.py test && mv .coverage .coverage.gui
+        - coverage combine
         - pip install coveralls; coveralls
+        - python gui/build.py bundle
     - env: python2-linters
       os: linux
       python: '2.7'
       script:
-        - flake8 mozregression tests setup.py check.py
+        - flake8 mozregression tests setup.py
         - flake8 gui/mozregui gui/build.py gui/tests
 
 install:

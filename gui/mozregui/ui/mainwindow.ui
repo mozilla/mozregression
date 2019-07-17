@@ -94,7 +94,7 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>&amp;File</string>
     </property>
     <addaction name="actionStart_a_new_bisection"/>
     <addaction name="separator"/>
@@ -106,19 +106,19 @@
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
-     <string>Edit</string>
+     <string>&amp;Edit</string>
     </property>
     <addaction name="actionGlobal_preferences"/>
    </widget>
    <widget class="QMenu" name="menuViews">
     <property name="title">
-     <string>Views</string>
+     <string>&amp;Views</string>
     </property>
     <addaction name="actionToolBar"/>
     <addaction name="actionLogView"/>
@@ -182,7 +182,7 @@
      <normaloff>:/cutting.png</normaloff>:/cutting.png</iconset>
    </property>
    <property name="text">
-    <string>Run a new bisection</string>
+    <string>&amp;Run a new bisection</string>
    </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
@@ -190,12 +190,12 @@
   </action>
   <action name="actionQuit">
    <property name="text">
-    <string>Quit</string>
+    <string>&amp;Quit</string>
    </property>
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>About</string>
+    <string>&amp;About</string>
    </property>
   </action>
   <action name="actionStop_the_bisection">
@@ -207,7 +207,7 @@
      <normaloff>:/stop.png</normaloff>:/stop.png</iconset>
    </property>
    <property name="text">
-    <string>Stop</string>
+    <string>&amp;Stop</string>
    </property>
    <property name="toolTip">
     <string>Stop bisection or single build run</string>
@@ -218,7 +218,7 @@
   </action>
   <action name="actionGlobal_preferences">
    <property name="text">
-    <string>Global preferences</string>
+    <string>Global &amp;preferences</string>
    </property>
   </action>
   <action name="actionToolBar">
@@ -229,7 +229,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Toolbar</string>
+    <string>&amp;Toolbar</string>
    </property>
   </action>
   <action name="actionLogView">
@@ -240,7 +240,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Log view</string>
+    <string>&amp;Log view</string>
    </property>
   </action>
   <action name="actionRun_a_single_build">
@@ -249,7 +249,7 @@
      <normaloff>:/s.png</normaloff>:/s.png</iconset>
    </property>
    <property name="text">
-    <string>Run a single build</string>
+    <string>Run &amp;a single build</string>
    </property>
    <property name="toolTip">
     <string>Run a single build</string>

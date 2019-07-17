@@ -184,6 +184,9 @@
    <property name="text">
     <string>&amp;Run a new bisection</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
    </property>
@@ -191,6 +194,9 @@
   <action name="actionQuit">
    <property name="text">
     <string>&amp;Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -208,6 +214,9 @@
    </property>
    <property name="text">
     <string>&amp;Stop</string>
+   </property>
+   <property name="shortcut">
+    <string>Esc</string>
    </property>
    <property name="toolTip">
     <string>Stop bisection or single build run</string>

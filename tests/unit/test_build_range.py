@@ -111,6 +111,8 @@ def range_after(fb, expand):
 @pytest.mark.parametrize('size_expand,initial,fail_in,expected,error', [
     # short range
     (10, range(1), [], range(1), None),
+    # empty range after removing invalids
+    (10, range(2), [0, 1], [], None),
     # lower limit missing
     (10, range(10), [0], [-1] + range(1, 10), None),
     # higher limit missing

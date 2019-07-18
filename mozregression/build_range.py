@@ -179,6 +179,10 @@ class BuildRange(object):
         self._fetch((0, -1))
         self.filter_invalid_builds()
 
+        if len(self) < 2:
+            # we need at least two valid builds to expand the range
+            return
+
         def _search(br, index, rng):
             while len(br):
                 if interrupt and interrupt():

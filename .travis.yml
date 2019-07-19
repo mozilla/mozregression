@@ -15,6 +15,12 @@ matrix:
       script:
         - flake8 mozregression tests setup.py
         - flake8 gui/mozregui gui/build.py gui/tests
+    - env: python3-linters
+      os: linux
+      python: '3.7'
+      script:
+        - python3 -m compileall -q tests mozregression
+        - flake8 mozregression tests setup.py
 
 install:
     - if [ "$TRAVIS_OS_NAME" == "linux" ]; then

@@ -5,7 +5,10 @@ matrix:
       os: linux
       language: python
       python: '2.7'
+      virtualenv:
+      - system_site_packages: true
       script:
+        - pip install -r requirements-gui-dev.txt
         - coverage run setup.py test && mv .coverage .coverage.core
         - coverage run gui/build.py test && mv .coverage .coverage.gui
         - coverage combine
@@ -58,7 +61,7 @@ install:
           sudo install_name_tool -id $PWD/QtGui.so QtGui.so;
           cd $MOZPATH;
       fi
-    - pip install -r requirements-gui-dev.txt
+    - pip install -r requirements-dev.txt
 
 deploy:
   - provider: releases

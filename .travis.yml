@@ -3,6 +3,7 @@ matrix:
     - name: python2-linux
       env: PYTHON=python2
       os: linux
+      language: python
       python: '2.7'
       script:
         - coverage run setup.py test && mv .coverage .coverage.core
@@ -13,6 +14,7 @@ matrix:
     - name: python3-linux
       env: PYTHON=python3.5
       os: linux
+      language: python
       python: '3.5'
       script:
         - coverage run setup.py test && mv .coverage .coverage.core
@@ -21,6 +23,7 @@ matrix:
     - name: python2-linters
       env: PYTHON=python2
       os: linux
+      language: python
       python: '2.7'
       script:
         - flake8 mozregression tests setup.py
@@ -28,6 +31,7 @@ matrix:
     - name: python3-linters
       env: PYTHON=python3.5
       os: linux
+      language: python
       python: '3.5'
       script:
         - python3 -m compileall -q tests mozregression
@@ -54,8 +58,6 @@ install:
           sudo install_name_tool -id $PWD/QtGui.so QtGui.so;
           cd $MOZPATH;
       fi
-    - virtualenv --python $PYTHON --system-site-packages venv
-    - source venv/bin/activate
     - pip install -r requirements-gui-dev.txt
 
 deploy:

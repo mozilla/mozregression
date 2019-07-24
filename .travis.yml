@@ -50,7 +50,7 @@ install:
           sudo install_name_tool -id $PWD/QtGui.so QtGui.so;
           cd $MOZPATH;
       fi
-    - pip install -r requirements-gui-dev.txt
+    - pip install --user -r requirements-gui-dev.txt
 
 deploy:
   - provider: releases

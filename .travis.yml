@@ -1,30 +1,41 @@
 dist: trusty  # xenial seems to have some weird ssl error with python2
 matrix:
   include:
-    - env: python2-linux
+    - name: python2-linux
+      env: PYTHON=python2
       os: linux
+      language: python
       python: '2.7'
+      virtualenv:
+        system_site_packages: true
       script:
+        - pip install -r requirements-gui-dev.txt
         - coverage run setup.py test && mv .coverage .coverage.core
         - coverage run gui/build.py test && mv .coverage .coverage.gui
         - coverage combine
         - pip install coveralls; coveralls
         - python gui/build.py bundle
-    - env: python3-linux
+    - name: python3-linux
+      env: PYTHON=python3.5
       os: linux
+      language: python
       python: '3.5'
       script:
         - coverage run setup.py test && mv .coverage .coverage.core
         - coverage combine
         - pip install coveralls; coveralls
-    - env: python2-linters
+    - name: python2-linters
+      env: PYTHON=python2
       os: linux
+      language: python
       python: '2.7'
       script:
         - flake8 mozregression tests setup.py
         - flake8 gui/mozregui gui/build.py gui/tests
-    - env: python3-linters
+    - name: python3-linters
+      env: PYTHON=python3.5
       os: linux
+      language: python
       python: '3.5'
       script:
         - python3 -m compileall -q tests mozregression
@@ -51,9 +62,7 @@ install:
           sudo install_name_tool -id $PWD/QtGui.so QtGui.so;
           cd $MOZPATH;
       fi
-    - virtualenv --system-site-packages venv
-    - source venv/bin/activate
-    - pip install -r requirements-gui-dev.txt
+    - pip install -r requirements-dev.txt
 
 deploy:
   - provider: releases

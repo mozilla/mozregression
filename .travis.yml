@@ -1,6 +1,7 @@
 matrix:
   include:
-    - env: python2-linux
+    - name: python2-linux
+      env: PYTHON=python2
       os: linux
       python: '2.7'
       script:
@@ -9,20 +10,23 @@ matrix:
         - coverage combine
         - pip install coveralls; coveralls
         - python gui/build.py bundle
-    - env: python3-linux
+    - name: python3-linux
+      env: PYTHON=python3.5
       os: linux
       python: '3.5'
       script:
         - coverage run setup.py test && mv .coverage .coverage.core
         - coverage combine
         - pip install coveralls; coveralls
-    - env: python2-linters
+    - name: python2-linters
+      env: PYTHON=python2
       os: linux
       python: '2.7'
       script:
         - flake8 mozregression tests setup.py
         - flake8 gui/mozregui gui/build.py gui/tests
-    - env: python3-linters
+    - name: python3-linters
+      env: PYTHON=python3.5
       os: linux
       python: '3.5'
       script:
@@ -50,7 +54,7 @@ install:
           sudo install_name_tool -id $PWD/QtGui.so QtGui.so;
           cd $MOZPATH;
       fi
-    - virtualenv --system-site-packages venv
+    - virtualenv --python $PYTHON --system-site-packages venv
     - source venv/bin/activate
     - pip install -r requirements-gui-dev.txt
 

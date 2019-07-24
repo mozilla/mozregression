@@ -50,8 +50,6 @@ install:
           sudo install_name_tool -id $PWD/QtGui.so QtGui.so;
           cd $MOZPATH;
       fi
-    - virtualenv --system-site-packages venv
-    - source venv/bin/activate
     - pip install -r requirements-gui-dev.txt
 
 deploy:

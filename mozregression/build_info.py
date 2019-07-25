@@ -147,7 +147,7 @@ class BuildInfo(object):
         the fetch_config.build_regex() value. For example, it can return:
 
         '2015-01-11--mozilla-central--firefox.*linux-x86_64\.tar.bz2$'
-        """
+        """ # noqa
         if self.build_type == 'nightly':
             if isinstance(data, datetime.datetime):
                 prefix = data.strftime("%Y-%m-%d-%H-%M-%S")

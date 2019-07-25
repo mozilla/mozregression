@@ -20,7 +20,7 @@ class TestUrlLinks(unittest.TestCase):
         </body>
         """)
         self.assertEqual(network.url_links(''),
-                          ['thing/', 'thing2/'])
+                         ['thing/', 'thing2/'])
 
     @patch('requests.get')
     def test_url_with_links_regex(self, get):
@@ -43,7 +43,7 @@ class TestUrlLinks(unittest.TestCase):
         </body>
         """)
         self.assertEqual(network.url_links(''),
-                          ['thing/', 'thing2'])
+                         ['thing/', 'thing2'])
 
 
 def test_set_http_session():

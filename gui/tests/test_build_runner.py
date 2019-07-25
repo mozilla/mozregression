@@ -60,7 +60,7 @@ class TestGuiBuildDownloadManager(unittest.TestCase):
 
         # build_path is defined
         self.assertEqual(build_info.build_file,
-                          self.dl_manager.get_dest('foo'))
+                         self.dl_manager.get_dest('foo'))
 
         # signals have been emitted
         self.assertEqual(self.signals['download_started'].call_count, 1)

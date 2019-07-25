@@ -219,22 +219,22 @@ class TestCommandTestRunner(unittest.TestCase):
     def test_command_placeholder_error(self):
         self.runner.command = 'run {app_nam} "1"'
         self.assertRaisesRegex(errors.TestCommandError,
-                                'formatting',
-                                self.evaluate)
+                               'formatting',
+                               self.evaluate)
 
     def test_command_empty_error(self):
         # in case the command line is empty,
         # subprocess.call will raise IndexError
         self.assertRaisesRegex(errors.TestCommandError,
-                                'Empty', self.evaluate,
-                                subprocess_call_effect=IndexError)
+                               'Empty', self.evaluate,
+                               subprocess_call_effect=IndexError)
 
     def test_command_missing_error(self):
         # in case the command is missing or not executable,
         # subprocess.call will raise IOError
         self.assertRaisesRegex(errors.TestCommandError,
-                                'not found', self.evaluate,
-                                subprocess_call_effect=OSError)
+                               'not found', self.evaluate,
+                               subprocess_call_effect=OSError)
 
     def test_run_once(self):
         self.runner.evaluate = Mock(return_value='g')
@@ -257,7 +257,7 @@ from .test_build_range import range_creator  # noqa
     # small range, no input
     (list(range(3)), Exception('input called, it should not happen'), None, 1)
 ])
-def test_index_to_try_after_skip(mocker, range_creator, brange,
+def test_index_to_try_after_skip(mocker, range_creator, brange, # noqa
                                  input, allowed_range, result):
     build_range = range_creator.create(brange)
     mocked_input = mocker.patch("mozregression.test_runner.input")

@@ -275,11 +275,11 @@ class TestBisector(unittest.TestCase):
     def test_ensure_good_bad_invalid(self):
         self.handler.ensure_good_and_bad = True
         with self.assertRaisesRegex(MozRegressionError,
-                                     "expected to be good"):
+                                    "expected to be good"):
             self.do__bisect(MyBuildData([1, 2, 3, 4, 5]), ['b'])
 
         with self.assertRaisesRegex(MozRegressionError,
-                                     "expected to be bad"):
+                                    "expected to be bad"):
             self.do__bisect(MyBuildData([1, 2, 3, 4, 5]), ['g', 'g'])
 
     def test_ensure_good_bad(self):

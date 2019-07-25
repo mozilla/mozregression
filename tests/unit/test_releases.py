@@ -26,7 +26,7 @@ class TestRelease(unittest.TestCase):
             if "Valid releases: " in line:
                 continue
 
-            fields = line.translate(None, " ").split(":")
+            fields = line.replace(" ", "").split(":")
             version = int(fields[0])
             date = fields[1]
 

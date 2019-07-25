@@ -26,10 +26,6 @@ class TestBisectorHandler(unittest.TestCase):
             {'build_url': 'http://build_url_0', 'repository': 'my'}
         ])
 
-        # shim for py2.7
-        if not hasattr(self, 'assertRaisesRegex'):
-            self.assertRaisesRegex = self.assertRaisesRegexp
-
     def test_initialize(self):
         self.handler.set_build_range([
             Mock(changeset='1', repo_url='my'),

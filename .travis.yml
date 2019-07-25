@@ -1,7 +1,6 @@
 matrix:
   include:
-    - name: python2-linux
-      env: PYTHON=python2
+    - env: python2-linux
       os: linux
       language: python
       python: '2.7'
@@ -14,8 +13,7 @@ matrix:
         - coverage combine
         - pip install coveralls; coveralls
         - python gui/build.py bundle
-    - name: python3-linux
-      env: PYTHON=python3.5
+    - env: python3-linux
       os: linux
       language: python
       python: '3.5'
@@ -23,21 +21,19 @@ matrix:
         - coverage run setup.py test && mv .coverage .coverage.core
         - coverage combine
         - pip install coveralls; coveralls
-    - name: python2-linters
-      env: PYTHON=python2
+    - env: python2-linters
       os: linux
       language: python
       python: '2.7'
       script:
         - flake8 mozregression tests setup.py
         - flake8 gui/mozregui gui/build.py gui/tests
-    - name: python3-linters
-      env: PYTHON=python3.5
+    - env: python3-linters
       os: linux
       language: python
       python: '3.5'
       script:
-        - python3 -m compileall -q tests mozregression
+        - python -m compileall -q tests mozregression
         - flake8 mozregression tests setup.py
 
 install:

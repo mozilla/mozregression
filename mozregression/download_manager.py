@@ -169,8 +169,8 @@ class Download(object):
                         if self.is_canceled():
                             break
                         if chunk:
-                            temp.write(chunk)
-                        bytes_so_far += len(chunk)
+                            temp.write(chunk.encode())
+                            bytes_so_far += len(chunk)
                         self._update_progress(bytes_so_far, total_size)
             response.raise_for_status()
         except Exception:

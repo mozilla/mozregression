@@ -9,7 +9,7 @@ class TestUrlLinks(unittest.TestCase):
     @patch('requests.get')
     def test_url_no_links(self, get):
         get.return_value = Mock(text='')
-        self.assertEquals(network.url_links(''), [])
+        self.assertEqual(network.url_links(''), [])
 
     @patch('requests.get')
     def test_url_with_links(self, get):
@@ -19,7 +19,7 @@ class TestUrlLinks(unittest.TestCase):
         <a href="thing2/">thing2</a>
         </body>
         """)
-        self.assertEquals(network.url_links(''),
+        self.assertEqual(network.url_links(''),
                           ['thing/', 'thing2/'])
 
     @patch('requests.get')
@@ -30,7 +30,7 @@ class TestUrlLinks(unittest.TestCase):
         <a href="thing2/">thing2</a>
         </body>
         """)
-        self.assertEquals(
+        self.assertEqual(
             network.url_links('', regex="thing2.*"),
             ['thing2/'])
 
@@ -42,7 +42,7 @@ class TestUrlLinks(unittest.TestCase):
         <a href="/useless/thing2">thing2</a>
         </body>
         """)
-        self.assertEquals(network.url_links(''),
+        self.assertEqual(network.url_links(''),
                           ['thing/', 'thing2'])
 
 

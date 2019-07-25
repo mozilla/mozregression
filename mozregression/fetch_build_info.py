@@ -59,7 +59,7 @@ class InfoFetcher(object):
             # the txt file could be in an old format:
             # DATE CHANGESET
             # we can try to extract that to get the changeset at least.
-            matched = re.match('^\d+ (\w+)$', response.text.strip())
+            matched = re.match(r'^\d+ (\w+)$', response.text.strip())
             if matched:
                 data['changeset'] = matched.group(1)
         return data

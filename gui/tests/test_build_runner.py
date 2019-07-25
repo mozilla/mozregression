@@ -59,12 +59,12 @@ class TestGuiBuildDownloadManager(unittest.TestCase):
             self.dl_manager.focus_download(build_info)
 
         # build_path is defined
-        self.assertEquals(build_info.build_file,
+        self.assertEqual(build_info.build_file,
                           self.dl_manager.get_dest('foo'))
 
         # signals have been emitted
-        self.assertEquals(self.signals['download_started'].call_count, 1)
-        self.assertEquals(self.signals['download_finished'].call_count, 1)
+        self.assertEqual(self.signals['download_started'].call_count, 1)
+        self.assertEqual(self.signals['download_finished'].call_count, 1)
         self.assertTrue(self.signals['download_progress'].call_count >= 2)
 
         # well, file has been downloaded finally
@@ -85,24 +85,24 @@ class TestGuiTestRunner(unittest.TestCase):
         create_launcher.return_value = launcher
 
         # nothing called yet
-        self.assertEquals(self.evaluate_started.call_count, 0)
-        self.assertEquals(self.evaluate_finished.call_count, 0)
+        self.assertEqual(self.evaluate_started.call_count, 0)
+        self.assertEqual(self.evaluate_finished.call_count, 0)
 
         self.test_runner.evaluate(Mock())
 
         # now evaluate_started has been called
-        self.assertEquals(self.evaluate_started.call_count, 1)
-        self.assertEquals(self.evaluate_finished.call_count, 0)
+        self.assertEqual(self.evaluate_started.call_count, 1)
+        self.assertEqual(self.evaluate_finished.call_count, 0)
         # launcher is defined
-        self.assertEquals(self.test_runner.launcher, launcher)
+        self.assertEqual(self.test_runner.launcher, launcher)
 
         self.test_runner.finish('g')
 
         # now evaluate_finished has been called
-        self.assertEquals(self.evaluate_started.call_count, 1)
-        self.assertEquals(self.evaluate_finished.call_count, 1)
+        self.assertEqual(self.evaluate_started.call_count, 1)
+        self.assertEqual(self.evaluate_finished.call_count, 1)
         # verdict is defined, launcher is None
-        self.assertEquals(self.test_runner.verdict, 'g')
+        self.assertEqual(self.test_runner.verdict, 'g')
 
 
 def test_abstract_build_runner(qtbot):

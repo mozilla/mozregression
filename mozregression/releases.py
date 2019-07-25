@@ -75,13 +75,13 @@ def releases():
     }
 
     def filter_tags(tag_node):
-        match = re.match("^FIREFOX_NIGHTLY_(\d+)_END$", tag_node["tag"])
+        match = re.match(r"^FIREFOX_NIGHTLY_(\d+)_END$", tag_node["tag"])
         return int(match.group(1)) > 56 if match else False
 
     def map_tags(tag_node):
         release = {}
         merge_date = date.fromtimestamp(tag_node["date"][0] + tag_node["date"][1])
-        ver_match = re.search("_(\d+)_", tag_node["tag"])
+        ver_match = re.search(r"_(\d+)_", tag_node["tag"])
         release[int(ver_match.group(1))] = merge_date.isoformat()
         return release
 

@@ -159,7 +159,7 @@ class CommonConfig(object):
     def available_build_types(self):
         res = []
         for available in self.BUILD_TYPES:
-            match = re.match("(.+)\[(.+)\]", available)
+            match = re.match(r"(.+)\[(.+)\]", available)
             if match:
                 suffix = ('-aarch64' if self.processor == 'aarch64' and
                           self.bits == 64 else '')

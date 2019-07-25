@@ -280,7 +280,7 @@ class TestMain(unittest.TestCase):
         # bisect_nightlies has been called
         self.app.bisect_nightlies.assert_called_with()
         # we exited with the return value of bisect_nightlies
-        self.assertEquals(exitcode, 0)
+        self.assertEqual(exitcode, 0)
 
     def test_bisect_inbounds(self):
         self.app.bisect_inbounds.return_value = 0

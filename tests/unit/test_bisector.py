@@ -232,6 +232,10 @@ class TestBisector(unittest.TestCase):
                                  dl_in_background=False)
         self.bisector.download_background = False
 
+        # shim for py2.7
+        if not hasattr(self, 'assertRaisesRegex'):
+            self.assertRaisesRegex = self.assertRaisesRegexp
+
     def test__bisect_no_data(self):
         build_range = MyBuildData()
         result = self.bisector._bisect(self.handler, build_range)
@@ -266,12 +270,12 @@ class TestBisector(unittest.TestCase):
 
     def test_ensure_good_bad_invalid(self):
         self.handler.ensure_good_and_bad = True
-        with self.assertRaisesRegexp(MozRegressionError,
-                                     "expected to be good"):
+        with self.assertRaisesRegex(MozRegressionError,
+                                    "expected to be good"):
             self.do__bisect(MyBuildData([1, 2, 3, 4, 5]), ['b'])
 
-        with self.assertRaisesRegexp(MozRegressionError,
-                                     "expected to be bad"):
+        with self.assertRaisesRegex(MozRegressionError,
+                                    "expected to be bad"):
             self.do__bisect(MyBuildData([1, 2, 3, 4, 5]), ['g', 'g'])
 
     def test_ensure_good_bad(self):

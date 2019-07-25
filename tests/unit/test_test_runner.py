@@ -163,6 +163,9 @@ class TestCommandTestRunner(unittest.TestCase):
         self.launcher = Mock()
         del self.launcher.binary  # block the auto attr binary on the mock
 
+        if not hasattr(self, 'assertRaisesRegex'):
+            self.assertRaisesRegex = self.assertRaisesRegexp
+
     def test_create(self):
         self.assertEqual(self.runner.command, 'my command')
 
@@ -215,28 +218,28 @@ class TestCommandTestRunner(unittest.TestCase):
 
     def test_command_placeholder_error(self):
         self.runner.command = 'run {app_nam} "1"'
-        self.assertRaisesRegexp(errors.TestCommandError,
-                                'formatting',
-                                self.evaluate)
+        self.assertRaisesRegex(errors.TestCommandError,
+                               'formatting',
+                               self.evaluate)
 
     def test_command_empty_error(self):
         # in case the command line is empty,
         # subprocess.call will raise IndexError
-        self.assertRaisesRegexp(errors.TestCommandError,
-                                'Empty', self.evaluate,
-                                subprocess_call_effect=IndexError)
+        self.assertRaisesRegex(errors.TestCommandError,
+                               'Empty', self.evaluate,
+                               subprocess_call_effect=IndexError)
 
     def test_command_missing_error(self):
         # in case the command is missing or not executable,
         # subprocess.call will raise IOError
-        self.assertRaisesRegexp(errors.TestCommandError,
-                                'not found', self.evaluate,
-                                subprocess_call_effect=OSError)
+        self.assertRaisesRegex(errors.TestCommandError,
+                               'not found', self.evaluate,
+                               subprocess_call_effect=OSError)
 
     def test_run_once(self):
         self.runner.evaluate = Mock(return_value='g')
         build_info = Mock()
-        self.assertEquals(self.runner.run_once(build_info), 0)
+        self.assertEqual(self.runner.run_once(build_info), 0)
         self.runner.evaluate.assert_called_once_with(build_info)
 
 

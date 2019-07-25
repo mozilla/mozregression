@@ -17,7 +17,7 @@ class TempCreator(object):
 
     def create_file(self, name, size, delay):
         fname = os.path.join(self.tempdir, name)
-        with open(fname, 'wb') as f:
+        with open(fname, 'w') as f:
             f.write('a' * size)
         # equivalent to touch, but we apply a delay for the test
         atime = time.time() + delay

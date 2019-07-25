@@ -48,8 +48,8 @@ class TestDownload(unittest.TestCase):
         self.assertFalse(self.dl.is_canceled())
         self.assertFalse(self.dl.is_running())
         self.assertIsNone(self.dl.error())
-        self.assertEquals(self.dl.get_url(), 'http://url')
-        self.assertEquals(self.dl.get_dest(), self.tempfile)
+        self.assertEqual(self.dl.get_url(), 'http://url')
+        self.assertEqual(self.dl.get_dest(), self.tempfile)
 
     def create_response(self, data, wait=0):
         mock_response(self.session_response, data, wait)
@@ -68,7 +68,7 @@ class TestDownload(unittest.TestCase):
         self.finished.assert_called_with(self.dl)
         # file has been downloaded
         with open(self.tempfile) as f:
-            self.assertEquals(f.read(), '1234' * 4)
+            self.assertEqual(f.read(), '1234' * 4)
 
     def test_download_cancel(self):
         self.create_response('1234' * 1000, wait=0.01)
@@ -104,7 +104,7 @@ class TestDownload(unittest.TestCase):
         self.dl.start()
         self.dl.wait()
 
-        self.assertEquals(data, [
+        self.assertEqual(data, [
             (self.dl, 0, 16),
             (self.dl, 4, 16),
             (self.dl, 8, 16),
@@ -113,7 +113,7 @@ class TestDownload(unittest.TestCase):
         ])
         # file has been downloaded
         with open(self.tempfile) as f:
-            self.assertEquals(f.read(), '1234' * 4)
+            self.assertEqual(f.read(), '1234' * 4)
         # finished callback was called
         self.finished.assert_called_with(self.dl)
 
@@ -125,7 +125,7 @@ class TestDownload(unittest.TestCase):
         with self.assertRaises(IOError):
             self.dl.wait()
 
-        self.assertEquals(self.dl.error()[0], IOError)
+        self.assertEqual(self.dl.error()[0], IOError)
         # finished callback was called
         self.finished.assert_called_with(self.dl)
 
@@ -185,12 +185,12 @@ class TestDownloadManager(unittest.TestCase):
         # with the same fname, no new download is started. The same instance
         # is returned since the download is running.
         dl2 = self.do_download('http://bar', 'foo', 'hello2' * 4, wait=0.02)
-        self.assertEquals(dl1, dl2)
+        self.assertEqual(dl1, dl2)
 
         # starting a download with another fname will trigger a new download
         dl3 = self.do_download('http://bar', 'foo2', 'hello you' * 4)
         self.assertIsInstance(dl3, download_manager.Download)
-        self.assertNotEquals(dl3, dl1)
+        self.assertNotEqual(dl3, dl1)
 
         # let's wait for the downloads to finish
         dl3.wait()
@@ -204,11 +204,11 @@ class TestDownloadManager(unittest.TestCase):
         def content(fname):
             with open(os.path.join(self.tempdir, fname)) as f:
                 return f.read()
-        self.assertEquals(content('foo'), 'hello' * 4)
-        self.assertEquals(content('foo2'), 'hello you' * 4)
+        self.assertEqual(content('foo'), 'hello' * 4)
+        self.assertEqual(content('foo2'), 'hello you' * 4)
 
         # download instances are removed from the manager (internal test)
-        self.assertEquals(self.dl_manager._downloads, {})
+        self.assertEqual(self.dl_manager._downloads, {})
 
     def test_cancel(self):
         dl1 = self.do_download('http://foo', 'foo', 'foo' * 50000, wait=0.02)
@@ -241,13 +241,13 @@ class TestDownloadManager(unittest.TestCase):
         dl2.wait(raise_if_error=False)
 
         # at the end, only dl3 has been downloaded
-        self.assertEquals(os.listdir(self.tempdir), ["foobar"])
+        self.assertEqual(os.listdir(self.tempdir), ["foobar"])
 
         with open(os.path.join(self.tempdir, 'foobar')) as f:
-            self.assertEquals(f.read(), 'foobar' * 4)
+            self.assertEqual(f.read(), 'foobar' * 4)
 
         # download instances are removed from the manager (internal test)
-        self.assertEquals(self.dl_manager._downloads, {})
+        self.assertEqual(self.dl_manager._downloads, {})
 
 
 class TestDownloadProgress(unittest.TestCase):
@@ -271,8 +271,8 @@ class TestBuildDownloadManager(unittest.TestCase):
             'build_url': 'http://some/thing',
             'persist_filename': '2015-01-03--my-repo--thing'
         }))
-        self.assertEquals(url, 'http://some/thing')
-        self.assertEquals(fname, '2015-01-03--my-repo--thing')
+        self.assertEqual(url, 'http://some/thing')
+        self.assertEqual(fname, '2015-01-03--my-repo--thing')
 
     @patch("mozregression.download_manager.BuildDownloadManager."
            "_extract_download_info")
@@ -286,7 +286,7 @@ class TestBuildDownloadManager(unittest.TestCase):
         extract.assert_called_with({'build': 'info'})
         download.assert_called_with('http://foo/bar', 'myfile')
         self.assertIn('myfile', self.dl_manager._downloads_bg)
-        self.assertEquals(result, ANY)
+        self.assertEqual(result, ANY)
 
     @patch('mozregression.download_manager.LOG')
     @patch("mozregression.download_manager.BuildDownloadManager."
@@ -317,13 +317,13 @@ class TestBuildDownloadManager(unittest.TestCase):
         self.assertFalse(curent_download.is_canceled())
         curent_download.wait.assert_called_with()
 
-        self.assertEquals(other_download.is_canceled(), other_canceled)
+        self.assertEqual(other_download.is_canceled(), other_canceled)
 
         log.info.assert_called_with(
             "Downloading build from: http://foo/bar")
 
-        self.assertEquals(result, current_dest)
-        self.assertEquals(result, build_info.build_file)
+        self.assertEqual(result, current_dest)
+        self.assertEqual(result, build_info.build_file)
 
     def test_focus_download(self):
         self._test_focus_download(True)
@@ -350,5 +350,5 @@ class TestBuildDownloadManager(unittest.TestCase):
         log.info.assert_called_with(
             "Using local file: %s (downloaded in background)" % dest_file)
 
-        self.assertEquals(result, dest_file)
-        self.assertEquals(result, build_info.build_file)
+        self.assertEqual(result, dest_file)
+        self.assertEqual(result, build_info.build_file)

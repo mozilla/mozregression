@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import re
 from mozregression.json_pushes import JsonPushes
 
-RE_BUG_ID = re.compile('bug\s+(\d+)', re.I)
+RE_BUG_ID = re.compile(r'bug\s+(\d+)', re.I)
 
 
 def find_bugids_in_push(branch, changeset):

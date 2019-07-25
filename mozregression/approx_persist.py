@@ -35,7 +35,7 @@ class ApproxPersistChooser(object):
         iterate over the possible file name regexes that can match
         an approx build, without the exact filename
         """
-        around = len(build_range) / self.one_every
+        around = len(build_range) // self.one_every
         index = build_range.index(build_info)
 
         def date_or_chset(next_index):

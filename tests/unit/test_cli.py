@@ -21,11 +21,11 @@ import six
 class TestParseDate(unittest.TestCase):
     def test_valid_date(self):
         date = cli.parse_date("2014-07-05")
-        self.assertEquals(date, datetime.date(2014, 7, 5))
+        self.assertEqual(date, datetime.date(2014, 7, 5))
 
     def test_parse_buildid(self):
         date = cli.parse_date("20151103030248")
-        self.assertEquals(date, datetime.datetime(2015, 11, 3, 3, 2, 48))
+        self.assertEqual(date, datetime.datetime(2015, 11, 3, 3, 2, 48))
 
     def test_invalid_date(self):
         self.assertRaises(errors.DateFormatError, cli.parse_date,
@@ -70,7 +70,7 @@ class TestPreferences(unittest.TestCase):
         prefs_args = ["browser.tabs.remote.autostart"]
 
         prefs = cli.preferences(None, prefs_args, None)
-        self.assertEquals(len(prefs), 0)
+        self.assertEqual(len(prefs), 0)
 
 
 class TestCli(unittest.TestCase):

@@ -198,10 +198,7 @@ class CommandTestRunner(TestRunner):
 
             env = dict(os.environ)
             for k, v in six.iteritems(variables):
-                if type(v) == six.text_type:
-                    v = v.encode('ascii', errors='ignore')
-                else:
-                    env['MOZREGRESSION_' + k.upper()] = str(v)
+                env['MOZREGRESSION_' + k.upper()] = str(v)
             try:
                 command = self.command.format(**variables)
             except KeyError as exc:

@@ -14,7 +14,7 @@ import time
 from mozlog.structured import get_default_logger, get_proxy_logger
 from mozprofile import ThunderbirdProfile, Profile
 from mozrunner import Runner
-from mozfile import rmtree
+from mozfile import remove
 from mozdevice import ADBAndroid, ADBHost, ADBError
 import mozversion
 import mozinstall
@@ -191,7 +191,7 @@ class MozRunnerLauncher(Launcher):
                 self.app_name
             )
         except Exception:
-            rmtree(self.tempdir)
+            remove(self.tempdir)
             raise
 
     def _disableUpdateByPolicy(self):
@@ -283,7 +283,7 @@ class MozRunnerLauncher(Launcher):
         finally:
             # always remove tempdir
             if self.tempdir is not None:
-                rmtree(self.tempdir)
+                remove(self.tempdir)
 
     def get_app_info(self):
         return safe_get_version(binary=self.binary)
@@ -487,7 +487,7 @@ class JsShellLauncher(Launcher):
             # set the file executable
             os.chmod(self.binary, os.stat(self.binary).st_mode | stat.S_IEXEC)
         except Exception:
-            rmtree(self.tempdir)
+            remove(self.tempdir)
             raise
 
     def _start(self, **kwargs):
@@ -511,4 +511,4 @@ class JsShellLauncher(Launcher):
         finally:
             # always remove tempdir
             if self.tempdir is not None:
-                rmtree(self.tempdir)
+                remove(self.tempdir)

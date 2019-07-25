@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import re
 import pytest
 from mozregression import log
-from StringIO import StringIO
+from six import StringIO
 from colorama import Fore, Style
 
 

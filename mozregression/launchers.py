@@ -331,13 +331,6 @@ class FirefoxLauncher(MozRunnerLauncher):
         super(FirefoxLauncher, self)._install(dest)
         self._disableUpdateByPolicy()
 
-    def _start(
-        self, profile=None, addons=(), cmdargs=(), preferences=None, adb_profile_dir=None,
-    ):
-        super(FirefoxLauncher, self)._start(
-            profile, addons, ["--allow-downgrade"] + cmdargs, preferences, adb_profile_dir,
-        )
-
 
 class ThunderbirdRegressionProfile(ThunderbirdProfile):
     """

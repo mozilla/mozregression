@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+
+import re
 import unittest
 import datetime
 from mock import patch, Mock
@@ -57,6 +59,25 @@ class TestNightlyInfoFetcher(unittest.TestCase):
         builds = []
         self.info_fetcher._fetch_build_info_from_url('http://foo', 0, builds)
         self.assertEqual(builds, [(0, expected)])
+
+    @patch('mozregression.fetch_build_info.url_links')
+    def test__find_build_info_incomplete_data_raises_exception(self, url_links):
+        # We want to find a valid match for one of the build file regexes,
+        # build_info_regex. But we will make the build filename regex fail. This
+        # could happen if, for example, the name of the build file changed in
+        # the archive but our tool is still searching with the old build file
+        # regex.
+        url_links.return_value = [
+            "validinfofilename.txt",
+            "invalidbuildfilename.tar.bz2"
+        ]
+        # build_regex doesn't match any of the files in the web directory.
+        self.info_fetcher.build_regex = re.compile("xxx")
+        # But build_info_regex does match one file in the directory.
+        self.info_fetcher.build_info_regex = re.compile("validinfofilename.txt")
+
+        with self.assertRaises(errors.BuildInfoNotFound):
+            self.info_fetcher._fetch_build_info_from_url("some-url", 1, [])
 
     @patch('mozregression.fetch_build_info.url_links')
     def test__get_url(self, url_links):

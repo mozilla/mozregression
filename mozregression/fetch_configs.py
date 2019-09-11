@@ -483,7 +483,7 @@ class FirefoxConfig(CommonConfig,
     def build_regex(self):
         return get_build_regex(
             self.app_name, self.os, self.bits, self.processor,
-            psuffix='-asan' if 'asan' in self.build_type else ''
+            psuffix='-asan-reporter' if 'asan' in self.build_type else ''
         ) + '$'
 
 

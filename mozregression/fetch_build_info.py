@@ -188,6 +188,13 @@ class NightlyInfoFetcher(InfoFetcher):
                     and self.build_info_regex.match(link):
                 data['build_txt_url'] = url + link
         if data:
+            # Check that we found all required data. The URL in build_url is
+            # required. build_txt_url is optional.
+            if 'build_url' not in data:
+                raise BuildInfoNotFound(
+                    "Failed to find a build file in directory {} that "
+                    "matches regex '{}'".format(url, self.build_regex.pattern))
+
             with self._fetch_lock:
                 lst.append((index, data))
 

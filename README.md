@@ -22,6 +22,11 @@ For more information see:
 
 https://mozilla.github.io/mozregression/
 
+## Issue Tracking
+
+Found a bug in mozregression? We track issues [here](https://bugzilla.mozilla.org/buglist.cgi?quicksearch=product%3ATesting%20component%3Amozregression&list_id=14890897).
+You can file a new bug [here](https://bugzilla.mozilla.org/enter_bug.cgi?product=Testing&component=mozregression).
+
 ## Building And Developing mozregression
 
 Want to hack on mozregression ? Cool!

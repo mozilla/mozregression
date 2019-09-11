@@ -1,3 +1,4 @@
+dist: trusty  # xenial seems to have some weird ssl error with python2
 matrix:
   include:
     - env: python2-linux

@@ -64,7 +64,7 @@ class JsonPushes(object):
         Basically issue a raw request to the server.
         """
         base_url = '%s/json-pushes?' % self.repo_url
-        url = base_url + '&'.join("%s=%s" % kv for kv in six.iteritems(kwargs))
+        url = base_url + '&'.join(sorted("%s=%s" % kv for kv in six.iteritems(kwargs)))
         LOG.debug("Using url: %s" % url)
 
         response = retry_get(url)

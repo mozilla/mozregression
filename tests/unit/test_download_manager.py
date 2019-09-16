@@ -55,7 +55,7 @@ class TestDownload(unittest.TestCase):
         mock_response(self.session_response, data, wait)
 
     def test_download(self):
-        self.create_response('1234' * 4, 0.01)
+        self.create_response(b'1234' * 4, 0.01)
 
         # no file present yet
         self.assertFalse(os.path.exists(self.tempfile))
@@ -71,7 +71,7 @@ class TestDownload(unittest.TestCase):
             self.assertEqual(f.read(), '1234' * 4)
 
     def test_download_cancel(self):
-        self.create_response('1234' * 1000, wait=0.01)
+        self.create_response(b'1234' * 1000, wait=0.01)
 
         start = time.time()
         self.dl.start()
@@ -98,7 +98,7 @@ class TestDownload(unittest.TestCase):
         def update_progress(_dl, current, total):
             data.append((_dl, current, total))
 
-        self.create_response('1234' * 4)
+        self.create_response(b'1234' * 4)
 
         self.dl.set_progress(update_progress)
         self.dl.start()
@@ -132,7 +132,7 @@ class TestDownload(unittest.TestCase):
     def test_wait_does_not_block_on_exception(self):
         # this test the case when a user may hit CTRL-C for example
         # during a dl.wait() call.
-        self.create_response('1234' * 1000, wait=0.01)
+        self.create_response(b'1234' * 1000, wait=0.01)
 
         original_join = self.dl.thread.join
         it = iter('123')
@@ -178,17 +178,17 @@ class TestDownloadManager(unittest.TestCase):
         return self.dl_manager.download(url, fname)
 
     def test_download(self):
-        dl1 = self.do_download('http://foo', 'foo', 'hello' * 4, wait=0.02)
+        dl1 = self.do_download('http://foo', 'foo', b'hello' * 4, wait=0.02)
         self.assertIsInstance(dl1, download_manager.Download)
         self.assertTrue(dl1.is_running())
 
         # with the same fname, no new download is started. The same instance
         # is returned since the download is running.
-        dl2 = self.do_download('http://bar', 'foo', 'hello2' * 4, wait=0.02)
+        dl2 = self.do_download('http://bar', 'foo', b'hello2' * 4, wait=0.02)
         self.assertEqual(dl1, dl2)
 
         # starting a download with another fname will trigger a new download
-        dl3 = self.do_download('http://bar', 'foo2', 'hello you' * 4)
+        dl3 = self.do_download('http://bar', 'foo2', b'hello you' * 4)
         self.assertIsInstance(dl3, download_manager.Download)
         self.assertNotEqual(dl3, dl1)
 
@@ -197,7 +197,7 @@ class TestDownloadManager(unittest.TestCase):
         dl1.wait()
 
         # now if we try to download a fname that exists, None is returned
-        dl4 = self.do_download('http://bar', 'foo', 'hello2' * 4, wait=0.02)
+        dl4 = self.do_download('http://bar', 'foo', b'hello2' * 4, wait=0.02)
         self.assertIsNone(dl4)
 
         # downloaded files are what is expected
@@ -211,9 +211,9 @@ class TestDownloadManager(unittest.TestCase):
         self.assertEqual(self.dl_manager._downloads, {})
 
     def test_cancel(self):
-        dl1 = self.do_download('http://foo', 'foo', 'foo' * 50000, wait=0.02)
-        dl2 = self.do_download('http://foo', 'bar', 'bar' * 50000, wait=0.02)
-        dl3 = self.do_download('http://foo', 'foobar', 'foobar' * 4)
+        dl1 = self.do_download('http://foo', 'foo', b'foo' * 50000, wait=0.02)
+        dl2 = self.do_download('http://foo', 'bar', b'bar' * 50000, wait=0.02)
+        dl3 = self.do_download('http://foo', 'foobar', b'foobar' * 4)
 
         # let's cancel only one
         def cancel_if(dl):

@@ -163,7 +163,7 @@ class Download(object):
                 # https://bugzilla.mozilla.org/show_bug.cgi?id=1185756
                 with tempfile.NamedTemporaryFile(
                         delete=False,
-                        mode='w',
+                        mode='wb',
                         suffix='.tmp',
                         dir=os.path.dirname(dest)) as temp:
                     for chunk in response.iter_content(chunk_size):

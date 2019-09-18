@@ -16,7 +16,7 @@ Build status:
  - Linux:
    [![Linux Build Status](https://travis-ci.org/mozilla/mozregression.svg?branch=master)](https://travis-ci.org/mozilla/mozregression)
    [![Coverage Status](https://img.shields.io/coveralls/mozilla/mozregression.svg)](https://coveralls.io/r/mozilla/mozregression)
- - Windows: [![Windows Build status](https://ci.appveyor.com/api/projects/status/ukv1ariar1jboxar/branch/master?svg=true)](https://ci.appveyor.com/project/wlach/mozregression/branch/master)
+ - Windows: [![Windows Build status](https://ci.appveyor.com/api/projects/status/bcg7t1pt2bahggdr?svg=true)](https://ci.appveyor.com/project/wlach/mozregression/branch/master)
 
 For more information see:
 

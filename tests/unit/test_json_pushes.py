@@ -35,7 +35,7 @@ def test_push(mocker):
 
 def test_push_404_error(mocker):
     retry_get = mocker.patch('mozregression.json_pushes.retry_get')
-    response = Mock(status_code=404)
+    response = Mock(status_code=404, json=Mock(return_value={"error": "unknown revision"}))
     retry_get.return_value = response
 
     jpushes = JsonPushes()

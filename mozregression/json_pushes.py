@@ -3,7 +3,7 @@ import datetime
 
 from mozlog import get_proxy_logger
 
-from mozregression.errors import MozRegressionError, EmptyPushlogError
+from mozregression.errors import EmptyPushlogError
 from mozregression.network import retry_get
 from mozregression import branches
 from mozregression.dates import is_date_or_datetime
@@ -68,18 +68,22 @@ class JsonPushes(object):
         LOG.debug("Using url: %s" % url)
 
         response = retry_get(url)
-        if response.status_code == 404:
-            raise MozRegressionError(
-                "The url %r returned a 404 error. Please check the"
-                " validity of the url." % url
+        data = response.json()
+
+        if (response.status_code == 404 and data is not None and
+                "error" in data and "unknown revision" in data["error"]):
+            raise EmptyPushlogError(
+                "The url %r returned a 404 error because the push is not"
+                " in this repo (e.g., not merged yet)." % url
             )
         response.raise_for_status()
-        data = response.json()
+
         if not data:
             raise EmptyPushlogError(
                 "The url %r contains no pushlog. Maybe use another range ?"
                 % url
             )
+
         pushlog = []
         for key in sorted(data):
             pushlog.append(Push(key, data[key]))

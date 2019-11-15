@@ -137,33 +137,25 @@ class TestInboundInfoFetcher(unittest.TestCase):
                                                    'x86_64')
         self.info_fetcher = fetch_build_info.InboundInfoFetcher(fetch_config)
 
-    def test_find_build_info(self):
-        # patch task cluster related stuff
-
-        def find_task(route):
-            return {'taskId': 'task1'}
-
-        def status(task_id):
-            return {"status": {"runs": [{
+    @patch('taskcluster.Index')
+    @patch('taskcluster.Queue')
+    def test_find_build_info(self, Queue, Index):
+        Index.return_value.findTask.return_value = {'taskId': 'task1'}
+        Queue.return_value.status.return_value = {
+            "status": {"runs": [{
                 "state": "completed",
                 "runId": 0,
                 "resolved": '2015-06-01T22:13:02.115Z'
-            }]}}
-
-        def list_artifacts(taskid, run_id):
-            return {"artifacts": [
+            }]}
+        }
+        Queue.return_value.listArtifacts.return_value = {
+            "artifacts": [
                 # return two valid artifact names
                 {'name': 'firefox-42.0a1.en-US.linux-x86_64.tar.bz2'},
                 {'name': 'firefox-42.0a1.en-US.linux-x86_64.txt'},
-            ]}
-
-        def build_url(method_name, task_id, run_id, name):
-            return 'http://' + name
-
-        self.info_fetcher.index.findTask = find_task
-        self.info_fetcher.queue.status = status
-        self.info_fetcher.queue.listArtifacts = list_artifacts
-        self.info_fetcher.queue.buildUrl = build_url
+            ]
+        }
+        Queue.return_value.buildUrl.return_value = 'http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2'
         self.info_fetcher._fetch_txt_info = \
             Mock(return_value={'changeset': '123456789'})
 
@@ -174,15 +166,18 @@ class TestInboundInfoFetcher(unittest.TestCase):
         self.assertEqual(result.changeset, '123456789')
         self.assertEqual(result.build_type, "inbound")
 
-    def test_find_build_info_no_task(self):
-        self.info_fetcher.index.findTask = Mock(
+    @patch('taskcluster.Index')
+    def test_find_build_info_no_task(self, Index):
+        Index.findTask = Mock(
             side_effect=fetch_build_info.TaskclusterFailure
         )
         with self.assertRaises(errors.BuildInfoNotFound):
             self.info_fetcher.find_build_info(
                 create_push('123456789', 1))
 
-    def test_get_valid_build_no_artifacts(self):
+    @patch('taskcluster.Index')
+    @patch('taskcluster.Queue')
+    def test_get_valid_build_no_artifacts(self, Queue, Index):
         def find_task(route):
             return {'taskId': 'task1'}
 
@@ -196,9 +191,9 @@ class TestInboundInfoFetcher(unittest.TestCase):
         def list_artifacts(taskid, run_id):
             return {"artifacts": []}
 
-        self.info_fetcher.index.findTask = find_task
-        self.info_fetcher.queue.status = status
-        self.info_fetcher.queue.listArtifacts = list_artifacts
+        Index.findTask = find_task
+        Queue.status = status
+        Queue.listArtifacts = list_artifacts
 
         with self.assertRaises(errors.BuildInfoNotFound):
             self.info_fetcher.find_build_info(

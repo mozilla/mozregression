@@ -4,8 +4,9 @@ import re
 import unittest
 import datetime
 from mock import patch, Mock
+import time
 
-from mozregression import fetch_build_info, fetch_configs, errors
+from mozregression import config, fetch_build_info, fetch_configs, errors
 from .test_fetch_configs import create_push
 
 
@@ -155,16 +156,28 @@ class TestInboundInfoFetcher(unittest.TestCase):
                 {'name': 'firefox-42.0a1.en-US.linux-x86_64.txt'},
             ]
         }
-        Queue.return_value.buildUrl.return_value = 'http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2'
+        Queue.return_value.buildUrl.return_value = (
+            'http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2'
+        )
         self.info_fetcher._fetch_txt_info = \
             Mock(return_value={'changeset': '123456789'})
 
-        result = self.info_fetcher.find_build_info(
-            create_push('123456789', 1))
-        self.assertEqual(result.build_url,
-                         'http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2')
-        self.assertEqual(result.changeset, '123456789')
-        self.assertEqual(result.build_type, "inbound")
+        # test that we start searching using the correct tc root url
+        for push_timestamp in [
+                0,
+                time.mktime(
+                    config.TC_ROOT_URL_MIGRATION_FLAG_DATE.timetuple()) + 100
+        ]:
+            result = self.info_fetcher.find_build_info(
+                create_push('123456789', push_timestamp))
+            if push_timestamp == 0:
+                Index.assert_called_with({'rootUrl': config.OLD_TC_ROOT_URL})
+            else:
+                Index.assert_called_with({'rootUrl': config.TC_ROOT_URL})
+            self.assertEqual(result.build_url,
+                             'http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2')
+            self.assertEqual(result.changeset, '123456789')
+            self.assertEqual(result.build_type, "inbound")
 
     @patch('taskcluster.Index')
     def test_find_build_info_no_task(self, Index):

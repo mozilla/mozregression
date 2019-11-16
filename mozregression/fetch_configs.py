@@ -373,12 +373,12 @@ class InboundConfigMixin(six.with_metaclass(ABCMeta)):
         """
         self._tk_credentials = creds
 
-    def tk_options(self):
+    def tk_options(self, root_url):
         """
         Returns the takcluster options, including the credentials required to
         download private artifacts.
         """
-        tk_options = {'rootUrl': 'https://taskcluster.net'}
+        tk_options = {'rootUrl': root_url}
         if self.tk_needs_auth():
             tk_options.update({'credentials': self._tk_credentials})
         return tk_options

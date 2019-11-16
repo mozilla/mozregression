@@ -3,7 +3,6 @@ import unittest
 import datetime
 import re
 import pytest
-from mock import Mock
 
 from mozregression.dates import to_utc_timestamp
 from mozregression.json_pushes import Push
@@ -19,7 +18,10 @@ TIMESTAMP_TEST = to_utc_timestamp(
 
 
 def create_push(chset, timestamp):
-    return Mock(changeset=chset, timestamp=timestamp, spec=Push)
+    return Push(1, {
+        'changesets': [chset],
+        'date': timestamp
+    })
 
 
 class TestFirefoxConfigLinux64(unittest.TestCase):

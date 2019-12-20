@@ -7,7 +7,7 @@ mozfile==2.0.0
 mozinfo==1.1.0
 mozinstall==2.0.0
 mozlog==4.0
-mozprocess==1.0.0
+mozprocess==1.1.0
 mozprofile==2.2.0
 mozrunner==7.4.0
 mozversion==2.1.0

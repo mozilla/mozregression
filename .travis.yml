@@ -75,6 +75,7 @@ deploy:
       condition:
         - $TRAVIS_OS_NAME == osx
 
+  # Broken: see https://bugzilla.mozilla.org/show_bug.cgi?id=1466111
   - provider: releases
     api-key:
        secure: VxxmZhovtqrV7I/DXvePslX+Egpj9+iwJnY/sdIfJ8ZpUttHmqbxfZ+0iCS8DUtLs0TBY2nz7Q20XxZfaPuQUnmgQk4w2RLkiPal/pwU04Q3M60NCAk8Cj7564b7slOqXAMgiE5QO+QA3w+wH2kXL21Sx1Q9Oj/2ROvl5Qh8tGg=
@@ -84,3 +85,4 @@ deploy:
       tags: true
       condition:
         - $TRAVIS_OS_NAME == linux
+        - $NEVER_TRUE == 1

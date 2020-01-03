@@ -4,6 +4,7 @@ from PyQt4.QtGui import QFileDialog, QWidget
 from mozprofile.prefs import Preferences
 
 from mozregui.ui.pref_editor import Ui_PrefEditor
+import six
 
 
 class PreferencesModel(QAbstractTableModel):
@@ -30,7 +31,7 @@ class PreferencesModel(QAbstractTableModel):
             if index.column() == 0:
                 return name
             else:
-                if isinstance(value, basestring):
+                if isinstance(value, six.string_types):
                     return '"' + value + '"'
                 else:
                     return value
@@ -39,7 +40,7 @@ class PreferencesModel(QAbstractTableModel):
         return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
 
     def setData(self, index, new_value, role=Qt.EditRole):
-        new_value = unicode(new_value.toString())
+        new_value = six.text_type(new_value.toString())
         name, value = self.prefs[index.row()]
         if index.column() == 0:
             # change pref name
@@ -62,7 +63,7 @@ class PreferencesModel(QAbstractTableModel):
             nb_prefs = len(self.prefs)
             self.beginInsertRows(QModelIndex(), nb_prefs,
                                  nb_prefs + len(prefs) - 1)
-            self.prefs.extend(prefs.items())
+            self.prefs.extend(list(prefs.items()))
             self.endInsertRows()
 
     def remove_pref(self, row):
@@ -99,7 +100,7 @@ class PreferencesWidgetEditor(QWidget):
             filter="pref file (*.json *.ini)",
         )
         if fname:
-            self.pref_model.add_prefs_from_file(unicode(fname))
+            self.pref_model.add_prefs_from_file(six.text_type(fname))
 
     @Slot()
     def remove_selected_prefs(self):

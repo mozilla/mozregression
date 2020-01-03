@@ -3,6 +3,7 @@ from PyQt4.QtCore import QAbstractTableModel, QModelIndex, Qt,\
     pyqtSlot as Slot, pyqtSignal as Signal, QUrl
 
 from mozregression.bisector import NightlyHandler
+import six
 
 # Custom colors
 GRAY_WHITE = QColor(243, 243, 243)
@@ -322,7 +323,7 @@ class BuildInfoTextBrowser(QTextBrowser):
             v = item.data[k]
             if v is not None:
                 html += '<strong>%s</strong>: ' % k
-                if isinstance(v, basestring):
+                if isinstance(v, six.string_types):
                     url = QUrl(v)
                     if url.isValid() and url.scheme():
                         v = '<a href="%s">%s</a>' % (v, v)

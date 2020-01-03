@@ -71,7 +71,7 @@ class GuiTestRunner(QObject):
             self.launcher = create_launcher(build_info)
             self.launcher.start(**self.launcher_kwargs)
             build_info.update_from_app_info(self.launcher.get_app_info())
-        except Exception, exc:
+        except Exception as exc:
             self.run_error = True
             self.evaluate_started.emit(str(exc))
         else:

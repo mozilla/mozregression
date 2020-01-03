@@ -19,7 +19,7 @@ IS_MAC = sys.platform == 'darwin'
 
 
 def call(*args, **kwargs):
-    print 'Executing `%s`' % ' '.join(pipes.quote(a) for a in args)
+    print('Executing `%s`' % ' '.join(pipes.quote(a) for a in args))
     subprocess.check_call(args, **kwargs)
 
 
@@ -38,7 +38,7 @@ def do_uic(options, force=False):
         pyfile = os.path.splitext(uifile)[0] + '.py'
         if force or not os.path.isfile(pyfile) or \
                 (os.path.getmtime(uifile) > os.path.getmtime(pyfile)):
-            print "uic'ing %s -> %s" % (uifile, pyfile)
+            print("uic'ing %s -> %s" % (uifile, pyfile))
             with open(pyfile, 'w') as f:
                 compileUi(uifile, f, False, 4, False)
 
@@ -53,7 +53,7 @@ def do_rcc(options, force=False):
         pyrcc4 = os.path.join(lib_path, pyrcc4)
     if force or not os.path.isfile(pyfile) or \
             (os.path.getmtime(rccfile) > os.path.getmtime(pyfile)):
-        print "rcc'ing %s -> %s" % (rccfile, pyfile)
+        print("rcc'ing %s -> %s" % (rccfile, pyfile))
         call(pyrcc4, '-o', pyfile, rccfile)
 
 
@@ -171,7 +171,7 @@ def main():
     options = parse_args()
     try:
         options.func(options)
-    except Exception, e:
+    except Exception as e:
         sys.exit('ERROR: %s' % e)
 
 

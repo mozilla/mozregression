@@ -201,6 +201,16 @@ class TestFennecConfig(unittest.TestCase):
         self.assertTrue(regex.match('fennec-36.0a1.multi.android-arm.txt'))
 
 
+class TestFennecX86Config(unittest.TestCase):
+    def setUp(self):
+        self.conf = create_config('fennec', 'linux', 64, 'x86')
+
+    def test_get_nightly_repo_regex(self):
+        regex = self.conf.get_nightly_repo_regex(datetime.date(2017,
+                                                               8, 30))
+        self.assertIn("mozilla-central-android-x86", regex)
+
+
 class TestFennec23Config(unittest.TestCase):
     def setUp(self):
         self.conf = create_config('fennec-2.3', 'linux', 64, None)
@@ -324,6 +334,8 @@ CHSET12 = "47856a214918"
     ("firefox", 'linux', 64, 'x86_64', 'try', TIMESTAMP_TEST,
      'gecko.v2.try.shippable.revision.%s.firefox.linux64-opt' % CHSET),
     # fennec
+    ("fennec", None, None, 'aarch64', None, TIMESTAMP_TEST,
+     'gecko.v2.autoland.revision.%s.mobile.android-aarch64-opt' % CHSET),
     ("fennec", None, None, None, None, TIMESTAMP_FENNEC_API_15 - 1,
      'gecko.v2.autoland.revision.%s.mobile.android-api-11-opt' % CHSET),
     ("fennec", None, None, None, None, TIMESTAMP_FENNEC_API_15,
@@ -332,6 +344,13 @@ CHSET12 = "47856a214918"
      'gecko.v2.autoland.revision.%s.mobile.android-api-16-opt' % CHSET),
     ("fennec-2.3", None, None, None, 'm-i', TIMESTAMP_TEST,
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-9-opt' % CHSET),
+    # gve
+    ("gve", None, None, 'aarch64', None, TIMESTAMP_TEST,
+     'gecko.v2.autoland.revision.%s.mobile.android-aarch64-opt' % CHSET),
+    ("gve", None, None, 'x86', None, TIMESTAMP_TEST,
+     'gecko.v2.autoland.revision.%s.mobile.android-x86-opt' % CHSET),
+    ("gve", None, None, 'x86_64', None, TIMESTAMP_TEST,
+     'gecko.v2.autoland.revision.%s.mobile.android-x86_64-opt' % CHSET),
     # thunderbird
     ('thunderbird', 'win', 32, 'x86_64', 'comm-central', TIMESTAMP_TEST,
      'comm.v2.comm-central.revision.%s.thunderbird.win32-opt' % CHSET),

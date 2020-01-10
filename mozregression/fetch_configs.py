@@ -315,7 +315,13 @@ class FennecNightlyConfigMixin(NightlyConfigMixin):
     def get_nightly_repo_regex(self, date):
         repo = self.get_nightly_repo(date)
         if repo in ('mozilla-central',):
-            if date < datetime.date(2014, 12, 6):
+            if self.processor == 'aarch64':
+                repo += "-android-aarch64"
+            elif self.processor == 'x86':
+                repo += "-android-x86"
+            elif self.processor == 'x86_64':
+                repo += "-android-x86_64"
+            elif date < datetime.date(2014, 12, 6):
                 repo += "-android"
             elif date < datetime.date(2014, 12, 13):
                 repo += "-android-api-10"
@@ -415,8 +421,6 @@ class FirefoxInboundConfigMixin(InboundConfigMixin):
 
 
 class FennecInboundConfigMixin(InboundConfigMixin):
-    tk_name = 'android-api-11'
-
     def tk_inbound_routes(self, push):
         tk_name = self.tk_name
         if tk_name == 'android-api-11':
@@ -459,8 +463,8 @@ def create_config(name, os, bits, processor):
     :param os: os name, e.g 'linux', 'win' or 'mac'
     :param bits: the bit of the os as an int, e.g 32 or 64. Can be None
                  if the bits do not make sense (e.g. fennec)
-    :param processor: processor family, e.g 'x86', 'x86_86', 'ppc', 'ppc64' or
-                      'aarch64'
+    :param processor: processor family, e.g 'x86', 'x86_86', 'ppc', 'ppc64',
+                      'arm' or 'aarch64'
     """
     return REGISTRY.get(name)(os, bits, processor)
 
@@ -500,6 +504,17 @@ class FennecConfig(CommonConfig,
                    FennecInboundConfigMixin):
     BUILD_TYPES = ('opt', 'debug')
 
+    def __init__(self, os, bits, processor):
+        super(FennecConfig, self).__init__(os, bits, processor)
+        if processor == 'aarch64':
+            self.tk_name = 'android-aarch64'
+        elif processor == 'x86':
+            self.tk_name = 'android-x86'
+        elif processor == 'x86_64':
+            self.tk_name = 'android-x86_64'
+        else:
+            self.tk_name = 'android-api-11'
+
     def build_regex(self):
         return r'(target|fennec-.*)\.apk'
 
@@ -515,6 +530,17 @@ class GeckoViewExampleConfig(CommonConfig,
                              FennecNightlyConfigMixin,
                              FennecInboundConfigMixin):
     BUILD_TYPES = ('opt', 'debug')
+
+    def __init__(self, os, bits, processor):
+        super(GeckoViewExampleConfig, self).__init__(os, bits, processor)
+        if processor == 'aarch64':
+            self.tk_name = 'android-aarch64'
+        elif processor == 'x86':
+            self.tk_name = 'android-x86'
+        elif processor == 'x86_64':
+            self.tk_name = 'android-x86_64'
+        else:
+            self.tk_name = 'android-api-16'
 
     def build_regex(self):
         return r'geckoview_example\.apk'
@@ -532,7 +558,9 @@ class GeckoViewExampleConfig(CommonConfig,
 
 @REGISTRY.register('fennec-2.3', attr_value='fennec')
 class Fennec23Config(FennecConfig):
-    tk_name = 'android-api-9'
+    def __init__(self, os, bits, processor):
+        super(Fennec23Config, self).__init__(os, bits, None)
+        self.tk_name = 'android-api-9'
 
     def get_nightly_repo_regex(self, date):
         repo = self.get_nightly_repo(date)

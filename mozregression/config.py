@@ -44,6 +44,7 @@ DEFAULTS = {
     'adb-profile-dir': None,
     'app': 'firefox',
     'approx-policy': 'auto',
+    'arch': None,
     'archive-base-url': ARCHIVE_BASE_URL,
     'background-dl-policy': 'cancel',
     'bits': None,

@@ -294,6 +294,13 @@ def create_parser(defaults):
     parser.add_argument('--debug', '-d', action='store_true',
                         help='Show the debug output.')
 
+    parser.add_argument("--arch",
+                        choices=("aarch64", "arm", "x86", "x86_64"),
+                        default=defaults['arch'],
+                        help=("CPU architecture of package."
+                              " Default: %s."
+                              % (defaults['arch'] or mozinfo.processor)))
+
     return parser
 
 
@@ -446,8 +453,9 @@ class Configuration(object):
 
         user_defined_bits = options.bits is not None
         options.bits = parse_bits(options.bits or mozinfo.bits)
+        options.arch = options.arch or mozinfo.processor
         fetch_config = create_config(options.app, mozinfo.os, options.bits,
-                                     mozinfo.processor)
+                                     options.arch)
         if options.build_type:
             try:
                 fetch_config.set_build_type(options.build_type)

@@ -48,14 +48,14 @@ If you are **really sure** that you only want to hack on the mozregression comma
   With virtualenvwrapper:
 
   ```bash
-  mkvirtualenv -p /usr/bin/python2 mozregression
+  mkvirtualenv -p /usr/bin/python3 mozregression
   pip install -r requirements-dev.txt
   ```
 
   Or with virtualenv: ::
 
   ```bash
-  virtualenv -p /usr/bin/python2 venv
+  virtualenv -p /usr/bin/python3 venv
   source venv/bin/activate
   pip install -r requirements-dev.txt
   ```

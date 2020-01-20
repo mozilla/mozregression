@@ -6,8 +6,8 @@ import os
 
 from mock import Mock, patch
 from . import wait_signal
-from PyQt4.QtCore import QObject, QThread, pyqtSignal as Signal, \
-    pyqtSlot as Slot
+from PySide2.QtCore import QObject, QThread, Signal, \
+    Slot
 
 from mozregui import build_runner
 from mozregression.persist_limit import PersistLimit

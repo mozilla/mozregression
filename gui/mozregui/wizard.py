@@ -1,9 +1,9 @@
 from __future__ import absolute_import
 import mozinfo
 import datetime
-from PyQt4.QtGui import (QWizard, QWizardPage, QStringListModel, QMessageBox,
+from PySide2.QtGui import (QWizard, QWizardPage, QStringListModel, QMessageBox,
                          QCompleter, QApplication)
-from PyQt4.QtCore import QString, QDate, pyqtSlot as Slot, Qt, SIGNAL
+from PySide2.QtCore import QString, QDate, Slot, Qt, SIGNAL
 
 from .ui.intro import Ui_Intro
 from .ui.build_selection import Ui_BuildSelectionPage

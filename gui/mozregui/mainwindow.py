@@ -4,8 +4,8 @@ import mozregui
 import mozfile
 
 from tempfile import mkdtemp
-from PyQt4.QtGui import QMainWindow, QMessageBox
-from PyQt4.QtCore import pyqtSlot as Slot, QSettings
+from PySide2.QtCore import Slot, QSettings
+from PySide2.QtWidgets import QMainWindow, QMessageBox
 
 from mozregui.ui.mainwindow import Ui_MainWindow
 from mozregui.wizard import BisectionWizard, SingleRunWizard

@@ -4,7 +4,7 @@ import mozfile
 import os
 import mozinfo
 
-from PyQt4.QtCore import Qt, QString
+from PySide2.QtCore import Qt, QString
 from mock import patch
 from mozregui.pref_editor import PreferencesWidgetEditor
 

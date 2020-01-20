@@ -1,6 +1,6 @@
 import pytest
 
-from PyQt4.QtCore import QDate
+from PySide2.QtCore import QDate
 
 from mozregression.fetch_configs import CommonConfig
 

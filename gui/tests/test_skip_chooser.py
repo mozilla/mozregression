@@ -1,7 +1,7 @@
 import pytest
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QCloseEvent, QMessageBox
+from PySide2.QtCore import Qt
+from PySide2.QtGui import QCloseEvent, QMessageBox
 from mozregression.build_range import BuildRange, FutureBuildInfo
 from mozregui.skip_chooser import SkipDialog
 
@@ -70,7 +70,7 @@ def test_dbl_click_btn(qtbot, dialog_builder):
 @pytest.mark.parametrize("close", [True, False])
 def test_close_event(mocker, dialog_builder, close):
     dialog = dialog_builder.build(5)
-    warning = mocker.patch("PyQt4.QtGui.QMessageBox.warning")
+    warning = mocker.patch("PySide2.QtGui.QMessageBox.warning")
     warning.return_value = (QMessageBox.Yes if close
                             else QMessageBox.No)
     evt = QCloseEvent()

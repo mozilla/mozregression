@@ -33,14 +33,12 @@ def py_script(script_name):
 
 
 def do_uic(options, force=False):
-    from PyQt4.uic import compileUi
     for uifile in glob.glob('mozregui/ui/*.ui'):
         pyfile = os.path.splitext(uifile)[0] + '.py'
         if force or not os.path.isfile(pyfile) or \
                 (os.path.getmtime(uifile) > os.path.getmtime(pyfile)):
             print("uic'ing %s -> %s" % (uifile, pyfile))
-            with open(pyfile, 'w') as f:
-                compileUi(uifile, f, False, 4, False)
+            os.system('pyside2-uic {} > {}'.format(uifile, pyfile))
 
 
 def do_rcc(options, force=False):
@@ -48,8 +46,8 @@ def do_rcc(options, force=False):
     pyfile = 'resources_rc.py'
     pyrcc4 = 'pyrcc4'
     if IS_WIN:
-        import PyQt4
-        lib_path = os.path.dirname(os.path.realpath(PyQt4.__file__))
+        import PySide2
+        lib_path = os.path.dirname(os.path.realpath(PySide2.__file__))
         pyrcc4 = os.path.join(lib_path, pyrcc4)
     if force or not os.path.isfile(pyfile) or \
             (os.path.getmtime(rccfile) > os.path.getmtime(pyfile)):

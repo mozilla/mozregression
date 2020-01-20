@@ -1,4 +1,4 @@
-from PyQt4.QtCore import Qt
+from PySide2.QtCore import Qt
 from mock import Mock
 
 from mozregression.build_info import NightlyBuildInfo

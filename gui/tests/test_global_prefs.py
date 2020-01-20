@@ -2,7 +2,7 @@ import pytest
 import os
 import tempfile
 
-from PyQt4.QtGui import QDialog
+from PySide2.QtGui import QDialog
 from mock import Mock
 
 from mozregui import global_prefs

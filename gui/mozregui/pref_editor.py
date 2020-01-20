@@ -1,6 +1,6 @@
-from PyQt4.QtCore import QAbstractTableModel, QModelIndex, Qt, \
-    pyqtSlot as Slot
-from PyQt4.QtGui import QFileDialog, QWidget
+from PySide2.QtCore import QAbstractTableModel, QModelIndex, Qt, \
+    Slot
+from PySide2.QtGui import QFileDialog, QWidget
 from mozprofile.prefs import Preferences
 
 from mozregui.ui.pref_editor import Ui_PrefEditor
@@ -116,7 +116,7 @@ class PreferencesWidgetEditor(QWidget):
 
 
 if __name__ == '__main__':
-    from PyQt4.QtGui import QApplication
+    from PySide2.QtGui import QApplication
 
     app = QApplication([])
     view = PreferencesWidgetEditor()

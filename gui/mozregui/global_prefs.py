@@ -1,5 +1,5 @@
 import os
-from PyQt4.QtGui import QDialog
+from PySide2.QtGui import QDialog
 
 from mozregui.ui.global_prefs import Ui_GlobalPrefs
 from mozregui import patch_requests

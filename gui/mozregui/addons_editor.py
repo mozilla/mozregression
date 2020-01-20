@@ -1,6 +1,6 @@
-from PyQt4.QtCore import QAbstractListModel, QModelIndex, Qt, \
-    pyqtSlot as Slot
-from PyQt4.QtGui import QWidget, QFileDialog
+from PySide2.QtCore import QAbstractListModel, QModelIndex, Qt, \
+    Slot
+from PySide2.QtGui import QWidget, QFileDialog
 from mozregui.ui.addons_editor import Ui_AddonsEditor
 import six
 
@@ -75,7 +75,7 @@ class AddonsWidgetEditor(QWidget):
 
 
 if __name__ == '__main__':
-    from PyQt4.QtGui import QApplication
+    from PySide2.QtGui import QApplication
 
     app = QApplication([])
     view = AddonsWidgetEditor()

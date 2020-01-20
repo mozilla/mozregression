@@ -1,6 +1,6 @@
-from PyQt4.QtGui import QStyledItemDelegate, QStyleOptionProgressBarV2, \
+from PySide2.QtGui import QStyledItemDelegate, QStyleOptionProgressBarV2, \
     QApplication, QStyle, QWidget, QPainter, QIcon, QPixmap
-from PyQt4.QtCore import Qt, QRect, pyqtSignal as Signal
+from PySide2.QtCore import Qt, QRect, Signal
 
 from mozregui.ui.ask_verdict import Ui_AskVerdict
 from mozregui.report import VERDICT_TO_ROW_COLORS

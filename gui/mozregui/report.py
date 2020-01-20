@@ -1,6 +1,7 @@
-from PyQt4.QtGui import QTextBrowser, QTableView, QDesktopServices, QColor
-from PyQt4.QtCore import QAbstractTableModel, QModelIndex, Qt,\
-    pyqtSlot as Slot, pyqtSignal as Signal, QUrl
+from PySide2.QtCore import (QAbstractTableModel, QModelIndex, Qt,
+    Slot, Signal, QUrl)
+from PySide2.QtGui import QDesktopServices, QColor
+from PySide2.QtWidgets import QTableView, QTextBrowser
 
 from mozregression.bisector import NightlyHandler
 import six

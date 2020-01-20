@@ -272,17 +272,17 @@
   <customwidget>
    <class>ReportView</class>
    <extends>QTableView</extends>
-   <header>mozregui.report</header>
+   <header>report</header>
   </customwidget>
   <customwidget>
    <class>BuildInfoTextBrowser</class>
    <extends>QTextBrowser</extends>
-   <header>mozregui.report</header>
+   <header>report</header>
   </customwidget>
   <customwidget>
    <class>LogView</class>
    <extends>QPlainTextEdit</extends>
-   <header>mozregui.log_report</header>
+   <header>log_report</header>
   </customwidget>
  </customwidgets>
  <resources>

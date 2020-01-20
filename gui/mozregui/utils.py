@@ -1,5 +1,5 @@
-from PyQt4.QtCore import QDir
-from PyQt4.QtGui import QLineEdit, QPushButton, QWidget, QHBoxLayout, \
+from PySide2.QtCore import QDir
+from PySide2.QtGui import QLineEdit, QPushButton, QWidget, QHBoxLayout, \
     QFileDialog, QFileSystemModel, QCompleter
 
 from mozregression.releases import date_of_release, releases

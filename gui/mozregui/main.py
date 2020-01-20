@@ -1,18 +1,17 @@
 # first thing, patch requests lib if required
-from mozregui import patch_requests
-patch_requests.patch()
+# from mozregui import patch_requests
+# patch_requests.patch()
 
-# Import PyQt4 classes
-import sys  # noqa
-from PyQt4.QtGui import QApplication  # noqa
+import sys
+from PySide2.QtWidgets import QApplication
 
-from mozlog.structuredlog import set_default_logger, StructuredLogger  # noqa
+from mozlog.structuredlog import set_default_logger, StructuredLogger
 
-from mozregui.log_report import LogModel  # noqa
-from mozregui.check_release import CheckRelease  # noqa
-from mozregui.crash_reporter import CrashReporter  # noqa
-from mozregui.mainwindow import MainWindow  # noqa
-from mozregui.global_prefs import set_default_prefs  # noqa
+from .log_report import LogModel
+from .check_release import CheckRelease
+from .crash_reporter import CrashReporter
+from .mainwindow import MainWindow
+from .global_prefs import set_default_prefs
 
 
 def main():

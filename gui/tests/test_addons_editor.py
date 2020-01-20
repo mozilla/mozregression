@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import mozfile
 
-from PyQt4.QtCore import Qt, QStringList
+from PySide2.QtCore import Qt, QStringList
 from mock import patch
 from mozregui.addons_editor import AddonsWidgetEditor
 

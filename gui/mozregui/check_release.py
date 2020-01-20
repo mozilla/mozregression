@@ -1,8 +1,10 @@
-from PyQt4.QtCore import QObject, QThread, pyqtSlot as Slot, Qt, QUrl
-from PyQt4.QtGui import QLabel, QDesktopServices
+from PySide2.QtCore import QObject, QThread, Slot, Qt, QUrl
+from PySide2.QtGui import QDesktopServices
+from PySide2.QtWidgets import QLabel
 from mozregression.network import retry_get
-from mozregui import __version__
-from mozregui.patch_requests import cacert_path
+
+from . import __version__
+from .patch_requests import cacert_path
 
 
 class CheckReleaseThread(QThread):

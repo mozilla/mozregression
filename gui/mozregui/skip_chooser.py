@@ -1,5 +1,5 @@
-from PyQt4.QtCore import Qt, pyqtSignal as Signal
-from PyQt4.QtGui import (QGraphicsRectItem, QGraphicsScene, QGraphicsView,
+from PySide2.QtCore import Qt, Signal
+from PySide2.QtGui import (QGraphicsRectItem, QGraphicsScene, QGraphicsView,
                          QBrush, QToolTip, QDialog, QMessageBox)
 from six.moves import range
 
@@ -133,7 +133,7 @@ if __name__ == '__main__':
 
     build_range = BuildRange(None, [FInfo(None, i) for i in range(420)])
 
-    from PyQt4.QtGui import QApplication, QMainWindow
+    from PySide2.QtGui import QApplication, QMainWindow
     app = QApplication([])
     win = QMainWindow()
 

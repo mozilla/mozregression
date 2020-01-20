@@ -1,5 +1,5 @@
-from PyQt4.QtCore import QObject, QThread, pyqtSignal as Signal, \
-    pyqtSlot as Slot, QTimer
+from PySide2.QtCore import QObject, QThread, Signal, \
+    Slot, QTimer
 
 from mozregui.global_prefs import get_prefs, apply_prefs
 from mozregression.download_manager import BuildDownloadManager

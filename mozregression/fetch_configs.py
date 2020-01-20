@@ -332,7 +332,7 @@ class InboundConfigMixin(six.with_metaclass(ABCMeta)):
     """
     Define the inbound-related required configuration.
     """
-    default_inbound_branch = 'mozilla-inbound'
+    default_inbound_branch = 'autoland'
     _tk_credentials = None
 
     @property

@@ -31,7 +31,7 @@ def read_only(klass):
         defaults.extend([('repo_name', 'mozilla-central'),
                          ('build_type', 'nightly')])
     else:
-        defaults.extend([('repo_name', 'mozilla-inbound'),
+        defaults.extend([('repo_name', 'autoland'),
                          ('build_type', 'inbound')])
     return [(klass, attr, value) for attr, value in defaults]
 
@@ -107,7 +107,7 @@ def test_to_dict(klass):
     # same but for inbound
     (build_info.InboundBuildInfo,
      {},
-     '12ab12ab12ab-shippable--mozilla-inbound--url'),
+     '12ab12ab12ab-shippable--autoland--url'),
 ])
 def test_persist_filename(klass, extra, result):
     persist_part = extra.pop('persist_part', None)

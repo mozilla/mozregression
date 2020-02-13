@@ -53,7 +53,7 @@ class JsonPushes(object):
     """
     Find pushlog Push objects from a mozilla hg json-pushes api.
     """
-    def __init__(self, branch='autoland'):
+    def __init__(self, branch='mozilla-central'):
         self.branch = branch
         self.repo_url = branches.get_url(branch)
 

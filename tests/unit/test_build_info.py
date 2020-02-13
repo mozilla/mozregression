@@ -31,7 +31,7 @@ def read_only(klass):
         defaults.extend([('repo_name', 'mozilla-central'),
                          ('build_type', 'nightly')])
     else:
-        defaults.extend([('repo_name', 'autoland'),
+        defaults.extend([('repo_name', 'mozilla-central'),
                          ('build_type', 'integration')])
     return [(klass, attr, value) for attr, value in defaults]
 
@@ -107,7 +107,7 @@ def test_to_dict(klass):
     # same but for integration
     (build_info.IntegrationBuildInfo,
      {},
-     '12ab12ab12ab-shippable--autoland--url'),
+     '12ab12ab12ab-shippable--mozilla-central--url'),
 ])
 def test_persist_filename(klass, extra, result):
     persist_part = extra.pop('persist_part', None)

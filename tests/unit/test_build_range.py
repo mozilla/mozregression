@@ -188,7 +188,7 @@ def test_get_integration_range(mocker):
 
     b_range = build_range.get_integration_range(fetch_config, 'a', 'e')
 
-    jpush_class.assert_called_once_with(branch='autoland')
+    jpush_class.assert_called_once_with(branch='mozilla-central')
     jpush.pushes_within_changes.assert_called_once_with('a', 'e')
     assert isinstance(b_range, build_range.BuildRange)
     assert len(b_range) == 3

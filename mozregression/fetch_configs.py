@@ -316,7 +316,7 @@ class IntegrationConfigMixin(six.with_metaclass(ABCMeta)):
     """
     Define the integration-related required configuration.
     """
-    default_integration_branch = 'autoland'
+    default_integration_branch = 'mozilla-central'
     _tk_credentials = None
 
     @property

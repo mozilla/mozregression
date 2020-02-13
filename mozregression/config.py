@@ -50,7 +50,6 @@ DEFAULTS = {
     'build-type': '',
     'cmdargs': [],
     'http-timeout': 30.0,
-    'inbound-branch': None,
     'mode': 'classic',
     'no-background-dl': '',
     'persist': None,

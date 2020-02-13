@@ -14,7 +14,7 @@ from mock import patch, Mock, MagicMock, ANY
 from mozregression import main, errors, __version__, config
 from mozregression.test_runner import ManualTestRunner, CommandTestRunner
 from mozregression.download_manager import BuildDownloadManager
-from mozregression.bisector import Bisector, Bisection, InboundHandler, \
+from mozregression.bisector import Bisector, Bisection, IntegrationHandler, \
     NightlyHandler
 from six.moves import range
 
@@ -90,12 +90,10 @@ def test_app_get_bisector(create_app):
     assert isinstance(app.bisector, Bisector)
 
 
-@pytest.mark.parametrize("can_go_inbound", [True, False])
-def test_app_bisect_nightlies_finished(create_app, mocker, can_go_inbound):
+def test_app_bisect_nightlies_finished(create_app, mocker):
     app = create_app(['-g=2015-06-01', '-b=2015-06-02'])
-    app.fetch_config.can_go_inbound = Mock(return_value=can_go_inbound)
     app.bisector.bisect = Mock(return_value=Bisection.FINISHED)
-    app._bisect_inbounds = Mock(return_value=0)
+    app._bisect_integration = Mock(return_value=0)
     NightlyHandler = mocker.patch(
         "mozregression.main.NightlyHandler"
     )
@@ -111,9 +109,8 @@ def test_app_bisect_nightlies_finished(create_app, mocker, can_go_inbound):
     assert create_app.find_in_log(
         "Got as far as we can go bisecting nightlies..."
     )
-    if can_go_inbound:
-        app._bisect_inbounds.assert_called_once_with(
-            'c1', 'c2', expand=config.DEFAULT_EXPAND)
+    app._bisect_integration.assert_called_once_with(
+        'c1', 'c2', expand=config.DEFAULT_EXPAND)
 
 
 def test_app_bisect_nightlies_no_data(create_app):
@@ -127,15 +124,15 @@ def test_app_bisect_nightlies_no_data(create_app):
 
 
 @pytest.mark.parametrize("same_chsets", [True, False])
-def test_app_bisect_inbounds_finished(create_app, same_chsets):
+def test_app_bisect_integration_finished(create_app, same_chsets):
     argv = [
         '--good=c1',
         '--bad=%s' % ('c1' if same_chsets else 'c2')
     ]
     app = create_app(argv)
     app.bisector.bisect = Mock(return_value=Bisection.FINISHED)
-    assert app.bisect_inbounds() == 0
-    assert create_app.find_in_log("No more inbound revisions, bisection finished.")
+    assert app.bisect_integration() == 0
+    assert create_app.find_in_log("No more integration revisions, bisection finished.")
     if same_chsets:
         assert create_app.find_in_log("It seems that you used two changesets"
                                       " that are in the same push.", False)
@@ -170,26 +167,26 @@ def test_app_bisect_nightlies_user_exit(create_app, argv, expected_log,
     assert create_app.find_in_log("--repo=mozilla-central", False)
 
 
-def test_app_bisect_inbounds_user_exit(create_app, mocker):
-    Handler = mocker.patch("mozregression.main.InboundHandler")
+def test_app_bisect_integration_user_exit(create_app, mocker):
+    Handler = mocker.patch("mozregression.main.IntegrationHandler")
     Handler.return_value = Mock(build_range=[Mock(repo_name="autoland")],
                                 good_revision='c1',
                                 bad_revision='c2',
-                                spec=InboundHandler)
+                                spec=IntegrationHandler)
 
     app = create_app(['--good=c1', '--bad=c2'])
     app.bisector.bisect = Mock(return_value=Bisection.USER_EXIT)
-    assert app.bisect_inbounds() == 0
+    assert app.bisect_integration() == 0
     assert create_app.find_in_log("To resume, run:")
     assert create_app.find_in_log("--repo=autoland", False)
 
 
-def test_app_bisect_inbounds_no_data(create_app):
+def test_app_bisect_integration_no_data(create_app):
     app = create_app(['--good=c1', '--bad=c2'])
     app.bisector.bisect = Mock(return_value=Bisection.NO_DATA)
-    assert app.bisect_inbounds() == 1
+    assert app.bisect_integration() == 1
     assert create_app.find_in_log(
-        "There are no build artifacts on inbound for these changesets",
+        "There are no build artifacts for these changesets",
         False
     )
 
@@ -282,11 +279,11 @@ class TestMain(unittest.TestCase):
         # we exited with the return value of bisect_nightlies
         self.assertEqual(exitcode, 0)
 
-    def test_bisect_inbounds(self):
-        self.app.bisect_inbounds.return_value = 0
+    def test_bisect_integration(self):
+        self.app.bisect_integration.return_value = 0
         exitcode = self.do_cli(['--good=a1', '--bad=b5'])
         self.assertEqual(exitcode, 0)
-        self.app.bisect_inbounds.assert_called_with()
+        self.app.bisect_integration.assert_called_with()
 
     def test_handle_keyboard_interrupt(self):
         # KeyboardInterrupt is handled with a nice error message.

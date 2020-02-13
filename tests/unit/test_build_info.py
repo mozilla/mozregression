@@ -32,13 +32,13 @@ def read_only(klass):
                          ('build_type', 'nightly')])
     else:
         defaults.extend([('repo_name', 'autoland'),
-                         ('build_type', 'inbound')])
+                         ('build_type', 'integration')])
     return [(klass, attr, value) for attr, value in defaults]
 
 
 @pytest.mark.parametrize('klass, attr, value',
                          read_only(build_info.NightlyBuildInfo) +
-                         read_only(build_info.InboundBuildInfo))
+                         read_only(build_info.IntegrationBuildInfo))
 def test_read_only_attrs(klass, attr, value):
     binfo = create_build_info(klass)
     assert getattr(binfo, attr) == value
@@ -49,7 +49,7 @@ def test_read_only_attrs(klass, attr, value):
 
 @pytest.mark.parametrize('klass, attr, value', [
     (build_info.NightlyBuildInfo, 'build_file', '/build/file'),
-    (build_info.InboundBuildInfo, 'build_file', '/build/file'),
+    (build_info.IntegrationBuildInfo, 'build_file', '/build/file'),
 ])
 def test_writable_attrs(klass, attr, value):
     binfo = create_build_info(klass)
@@ -59,7 +59,7 @@ def test_writable_attrs(klass, attr, value):
 
 @pytest.mark.parametrize('klass', [
     build_info.NightlyBuildInfo,
-    build_info.InboundBuildInfo
+    build_info.IntegrationBuildInfo
 ])
 def test_update_from_app_info(klass):
     app_info = {
@@ -85,7 +85,7 @@ def test_update_from_app_info(klass):
 
 @pytest.mark.parametrize('klass', [
     build_info.NightlyBuildInfo,
-    build_info.InboundBuildInfo
+    build_info.IntegrationBuildInfo
 ])
 def test_to_dict(klass):
     binfo = create_build_info(klass)
@@ -104,8 +104,8 @@ def test_to_dict(klass):
     (build_info.NightlyBuildInfo,
      {'build_date': datetime(2015, 11, 16, 10, 2, 5)},
      '2015-11-16-10-02-05--mozilla-central--url'),
-    # same but for inbound
-    (build_info.InboundBuildInfo,
+    # same but for integration
+    (build_info.IntegrationBuildInfo,
      {},
      '12ab12ab12ab-shippable--autoland--url'),
 ])
@@ -114,5 +114,5 @@ def test_persist_filename(klass, extra, result):
     binfo = create_build_info(klass, **extra)
     if persist_part:
         # fake that the fetch config should return the persist_part
-        binfo._fetch_config.inbound_persist_part = lambda: persist_part
+        binfo._fetch_config.integration_persist_part = lambda: persist_part
     assert binfo.persist_filename == result

@@ -34,8 +34,6 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
     build_info_examples = ['firefox-38.0a1.en-US.linux-x86_64.txt']
 
     instance_type = FirefoxConfig
-    is_nightly = True
-    is_inbound = True
 
     def setUp(self):
         self.conf = create_config(self.app_name, self.os, self.bits,
@@ -43,8 +41,6 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
 
     def test_instance(self):
         self.assertIsInstance(self.conf, self.instance_type)
-        self.assertEqual(self.is_nightly, self.conf.is_nightly())
-        self.assertEqual(self.is_inbound, self.conf.is_inbound())
 
     def test_build_regex(self):
         for example in self.build_examples:
@@ -91,9 +87,6 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008,
                                                                     6, 27))
         self.assertEqual(repo_regex, '^2008-06-27-[\\d-]+mozilla-central/$')
-
-    def test_can_go_inbound(self):
-        self.assertTrue(self.conf.can_go_inbound())
 
 
 class TestFirefoxConfigLinux32(TestFirefoxConfigLinux64):
@@ -274,7 +267,7 @@ class TestFallbacksConfig(TestFirefoxConfigLinux64):
         assert self.conf.build_type == 'opt'
 
     def test_fallback_routes(self):
-        routes = list(self.conf.tk_inbound_routes(
+        routes = list(self.conf.tk_routes(
             create_push('1a', TIMESTAMP_TEST)
         ))
         assert len(routes) == 3
@@ -338,10 +331,10 @@ CHSET12 = "47856a214918"
     ('thunderbird', 'linux', 64, 'x86_64', 'comm-beta', TIMESTAMP_TEST,
      'comm.v2.comm-beta.revision.%s.thunderbird.linux64-opt' % CHSET),
 ])
-def test_tk_inbound_route(app, os, bits, processor, repo, push_date, expected):
+def test_tk_route(app, os, bits, processor, repo, push_date, expected):
     conf = create_config(app, os, bits, processor)
     conf.set_repo(repo)
-    result = conf.tk_inbound_route(create_push(CHSET, push_date))
+    result = conf.tk_route(create_push(CHSET, push_date))
     assert result == expected
 
 
@@ -353,11 +346,11 @@ def test_tk_inbound_route(app, os, bits, processor, repo, push_date, expected):
      'gecko.v2.autoland.shippable.revision.%s.firefox.linux64-opt'
      % CHSET),
 ])
-def test_tk_inbound_route_with_build_type(app, os, bits, processor, build_type,
-                                          expected):
+def test_tk_route_with_build_type(app, os, bits, processor, build_type,
+                                  expected):
     conf = create_config(app, os, bits, processor)
     conf.set_build_type(build_type)
-    result = conf.tk_inbound_route(
+    result = conf.tk_route(
         create_push(CHSET, TIMESTAMP_TEST))
     assert result == expected
 
@@ -415,7 +408,7 @@ def test_set_firefox_build_type_pgo(os, bits, processor, tc_suffix):
             conf.set_build_type('pgo')
     else:
         conf.set_build_type('pgo')
-        assert conf.tk_inbound_route(
+        assert conf.tk_route(
             create_push(CHSET, TIMESTAMP_TEST)) \
             .endswith('.' + tc_suffix)
 

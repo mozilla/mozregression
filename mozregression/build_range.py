@@ -17,7 +17,7 @@ from mozlog import get_proxy_logger
 from mozregression.dates import to_date, is_date_or_datetime, \
     to_datetime
 from mozregression.errors import BuildInfoNotFound
-from mozregression.fetch_build_info import (InboundInfoFetcher,
+from mozregression.fetch_build_info import (IntegrationInfoFetcher,
                                             NightlyInfoFetcher)
 from six.moves import range
 
@@ -267,12 +267,12 @@ def tc_range_before(future_tc, size):
     return _tc_build_range(future_tc, p_id - size, p_id)
 
 
-def range_for_inbounds(fetch_config, start_rev, end_rev, time_limit=None,
-                       expand=0, interrupt=None):
+def get_integration_range(fetch_config, start_rev, end_rev, time_limit=None,
+                          expand=0, interrupt=None):
     """
-    Creates a BuildRange for inbounds builds.
+    Creates a BuildRange for integration builds.
     """
-    info_fetcher = InboundInfoFetcher(fetch_config)
+    info_fetcher = IntegrationInfoFetcher(fetch_config)
     jpushes = info_fetcher.jpushes
 
     time_limit = time_limit or (datetime.datetime.now() +
@@ -302,10 +302,10 @@ def range_for_inbounds(fetch_config, start_rev, end_rev, time_limit=None,
     return br
 
 
-def range_for_nightlies(fetch_config, start_date, end_date, expand=0,
-                        interrupt=None):
+def get_nightly_range(fetch_config, start_date, end_date, expand=0,
+                      interrupt=None):
     """
-    Creates a BuildRange for inbounds nightlies.
+    Creates a BuildRange for nightlies.
     """
     info_fetcher = NightlyInfoFetcher(fetch_config)
     futures_builds = []

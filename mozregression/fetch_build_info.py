@@ -2,7 +2,7 @@
 This module offers an API to get information for one build.
 
 The public API is composed of two classes, :class:`NightlyInfoFetcher` and
-:class:`InboundInfoFetcher`, able to return
+:class:`IntegrationInfoFetcher`, able to return
 :class:`mozregression.build_info.BuildInfo` instances.
 """
 
@@ -20,7 +20,7 @@ from mozregression.config import (OLD_TC_ROOT_URL, TC_ROOT_URL,
                                   TC_ROOT_URL_MIGRATION_FLAG_DATE)
 from mozregression.network import url_links, retry_get
 from mozregression.errors import BuildInfoNotFound, MozRegressionError
-from mozregression.build_info import NightlyBuildInfo, InboundBuildInfo
+from mozregression.build_info import NightlyBuildInfo, IntegrationBuildInfo
 from mozregression.json_pushes import JsonPushes, Push
 
 LOG = get_proxy_logger(__name__)
@@ -79,21 +79,21 @@ class InfoFetcher(object):
         raise NotImplementedError
 
 
-class InboundInfoFetcher(InfoFetcher):
+class IntegrationInfoFetcher(InfoFetcher):
     def __init__(self, fetch_config):
         InfoFetcher.__init__(self, fetch_config)
-        self.jpushes = JsonPushes(branch=fetch_config.inbound_branch)
+        self.jpushes = JsonPushes(branch=fetch_config.integration_branch)
 
     def find_build_info(self, push):
         """
-        Find build info for an inbound build, given a Push, a changeset or a
+        Find build info for an integration build, given a Push, a changeset or a
         date/datetime.
 
         if `push` is not an instance of Push (e.g. it is a date, datetime, or
         string representing the changeset), a query to json pushes will be
         done.
 
-        Return a :class:`InboundBuildInfo` instance.
+        Return a :class:`IntegrationBuildInfo` instance.
         """
         if not isinstance(push, Push):
             try:
@@ -119,7 +119,7 @@ class InboundInfoFetcher(InfoFetcher):
                 options = self.fetch_config.tk_options(tc_root_url)
                 tc_index = taskcluster.Index(options)
                 tc_queue = taskcluster.Queue(options)
-                tk_routes = self.fetch_config.tk_inbound_routes(push)
+                tk_routes = self.fetch_config.tk_routes(push)
                 stored_failure = None
                 for tk_route in tk_routes:
                     LOG.debug('using taskcluster route %r' % tk_route)
@@ -139,7 +139,7 @@ class InboundInfoFetcher(InfoFetcher):
         except TaskclusterFailure:
             raise BuildInfoNotFound("Unable to find build info using the"
                                     " taskcluster route %r" %
-                                    self.fetch_config.tk_inbound_route(push))
+                                    self.fetch_config.tk_route(push))
 
         # find a completed run for that task
         run_id, build_date = None, None
@@ -168,7 +168,7 @@ class InboundInfoFetcher(InfoFetcher):
         if build_url is None:
             raise BuildInfoNotFound("unable to find a build url for the"
                                     " changeset %r" % changeset)
-        return InboundBuildInfo(
+        return IntegrationBuildInfo(
             self.fetch_config,
             build_url=build_url,
             build_date=build_date,

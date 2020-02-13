@@ -5,7 +5,7 @@ from PyQt4.QtCore import QObject, pyqtSignal as Signal, pyqtSlot as Slot, \
 from PyQt4.QtGui import QMessageBox
 
 from mozregression.bisector import Bisector, Bisection, NightlyHandler, \
-    InboundHandler, IndexPromise
+    IntegrationHandler, IndexPromise
 from mozregression.errors import MozRegressionError
 from mozregression.dates import is_date_or_datetime
 from mozregression.approx_persist import ApproxPersistChooser
@@ -66,7 +66,7 @@ class GuiBisector(QObject, Bisector):
         self.started.emit()
         handler = self.bisection.handler
         try:
-            nhandler = InboundHandler(find_fix=self.bisection.handler.find_fix)
+            nhandler = IntegrationHandler(find_fix=self.bisection.handler.find_fix)
             Bisector.bisect(self, nhandler, handler.good_revision,
                             handler.bad_revision, expand=DEFAULT_EXPAND,
                             interrupt=self.should_stop.is_set)
@@ -211,10 +211,10 @@ class BisectRunner(AbstractBuildRunner):
 
         good, bad = options.pop('good'), options.pop('bad')
         if is_date_or_datetime(good) and is_date_or_datetime(bad) \
-                and not fetch_config.should_use_taskcluster():
+                and fetch_config.should_use_archive():
             handler = NightlyHandler(find_fix=options['find_fix'])
         else:
-            handler = InboundHandler(find_fix=options['find_fix'])
+            handler = IntegrationHandler(find_fix=options['find_fix'])
 
         self.worker._bisect_args = (handler, good, bad)
         self.worker.download_in_background = \
@@ -276,8 +276,7 @@ class BisectRunner(AbstractBuildRunner):
             dialog = QMessageBox.critical
         else:
             fetch_config = self.worker.fetch_config
-            if fetch_config.can_go_inbound() and not \
-                    getattr(bisection, 'no_more_merge', False):
+            if not getattr(bisection, 'no_more_merge', False):
                 if isinstance(bisection.handler, NightlyHandler):
                     handler = bisection.handler
                     fetch_config.set_repo(

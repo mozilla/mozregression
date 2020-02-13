@@ -183,7 +183,7 @@ SOME_OLDER_DATE = TODAY + datetime.timedelta(days=-10)
 def test_use_taskcluster_bisection_method(params, good, bad):
     config = do_cli(*params)
 
-    assert config.action == 'bisect_inbounds'  # meaning taskcluster usage
+    assert config.action == 'bisect_integration'  # meaning taskcluster usage
     # compare dates using the representation, as we may have
     # date / datetime instances
     assert config.options.good.strftime('%Y-%m-%d') \
@@ -220,8 +220,8 @@ def test_with_releases():
 @pytest.mark.parametrize('args,action,value', [
     (['--launch=34'], 'launch_nightlies', cli.parse_date(releases()[34])),
     (['--launch=2015-11-01'], 'launch_nightlies', datetime.date(2015, 11, 1)),
-    (['--launch=abc123'], 'launch_inbound', 'abc123'),
-    (['--launch=2015-11-01', '--repo=m-i'], 'launch_inbound',
+    (['--launch=abc123'], 'launch_integration', 'abc123'),
+    (['--launch=2015-11-01', '--repo=m-i'], 'launch_integration',
      datetime.date(2015, 11, 1)),
 ])
 def test_launch(args, action, value):
@@ -258,10 +258,10 @@ def test_good_date_later_than_bad():
     assert "you wanted to use the --find-fix" in str(exc.value)
 
 
-def test_basic_inbound():
+def test_basic_integration():
     config = do_cli('--good=c1', '--bad=c5')
     assert config.fetch_config.app_name == 'firefox'
-    assert config.action == 'bisect_inbounds'
+    assert config.action == 'bisect_integration'
     assert config.options.good == 'c1'
     assert config.options.bad == 'c5'
 

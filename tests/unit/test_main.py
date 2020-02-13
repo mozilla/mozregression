@@ -169,7 +169,7 @@ def test_app_bisect_nightlies_user_exit(create_app, argv, expected_log,
 
 def test_app_bisect_integration_user_exit(create_app, mocker):
     Handler = mocker.patch("mozregression.main.IntegrationHandler")
-    Handler.return_value = Mock(build_range=[Mock(repo_name="autoland")],
+    Handler.return_value = Mock(build_range=[Mock(repo_name="mozilla-central")],
                                 good_revision='c1',
                                 bad_revision='c2',
                                 spec=IntegrationHandler)
@@ -178,7 +178,7 @@ def test_app_bisect_integration_user_exit(create_app, mocker):
     app.bisector.bisect = Mock(return_value=Bisection.USER_EXIT)
     assert app.bisect_integration() == 0
     assert create_app.find_in_log("To resume, run:")
-    assert create_app.find_in_log("--repo=autoland", False)
+    assert create_app.find_in_log("--repo=mozilla-central", False)
 
 
 def test_app_bisect_integration_no_data(create_app):

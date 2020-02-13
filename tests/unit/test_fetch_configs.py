@@ -272,10 +272,10 @@ class TestFallbacksConfig(TestFirefoxConfigLinux64):
         ))
         assert len(routes) == 3
         assert routes[0] == (
-            'gecko.v2.autoland.revision.1a.firefox.linux64-opt'
+            'gecko.v2.mozilla-central.revision.1a.firefox.linux64-opt'
         )
         assert routes[2] == (
-            'gecko.v2.autoland.revision.1a.firefox.linux64-fallback'
+            'gecko.v2.mozilla-central.revision.1a.firefox.linux64-fallback'
         )
 
 
@@ -318,11 +318,11 @@ CHSET12 = "47856a214918"
      'gecko.v2.try.shippable.revision.%s.firefox.linux64-opt' % CHSET),
     # fennec
     ("fennec", None, None, None, None, TIMESTAMP_FENNEC_API_15 - 1,
-     'gecko.v2.autoland.revision.%s.mobile.android-api-11-opt' % CHSET),
+     'gecko.v2.mozilla-central.revision.%s.mobile.android-api-11-opt' % CHSET),
     ("fennec", None, None, None, None, TIMESTAMP_FENNEC_API_15,
-     'gecko.v2.autoland.revision.%s.mobile.android-api-15-opt' % CHSET),
+     'gecko.v2.mozilla-central.revision.%s.mobile.android-api-15-opt' % CHSET),
     ("fennec", None, None, None, None, TIMESTAMP_FENNEC_API_16,
-     'gecko.v2.autoland.revision.%s.mobile.android-api-16-opt' % CHSET),
+     'gecko.v2.mozilla-central.revision.%s.mobile.android-api-16-opt' % CHSET),
     ("fennec-2.3", None, None, None, 'm-i', TIMESTAMP_TEST,
      'gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-9-opt' % CHSET),
     # thunderbird
@@ -341,9 +341,9 @@ def test_tk_route(app, os, bits, processor, repo, push_date, expected):
 @pytest.mark.parametrize("app,os,bits,processor,build_type,expected", [
     # firefox
     ("firefox", 'linux', 64, 'x86_64', "asan",
-     'gecko.v2.autoland.revision.%s.firefox.linux64-asan' % CHSET),
+     'gecko.v2.mozilla-central.revision.%s.firefox.linux64-asan' % CHSET),
     ("firefox", 'linux', 64, 'x86_64', 'shippable',
-     'gecko.v2.autoland.shippable.revision.%s.firefox.linux64-opt'
+     'gecko.v2.mozilla-central.shippable.revision.%s.firefox.linux64-opt'
      % CHSET),
 ])
 def test_tk_route_with_build_type(app, os, bits, processor, build_type,

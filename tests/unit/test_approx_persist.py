@@ -17,7 +17,7 @@ def create_build_range(values):
 
 
 def build_firefox_name(chset):
-    return ('%s-shippable--autoland--firefox-38.0a1.en-US.linux-x86_64.tar.bz2'
+    return ('%s-shippable--mozilla-central--firefox-38.0a1.en-US.linux-x86_64.tar.bz2'
             % chset)
 
 

@@ -8,7 +8,7 @@ import math
 import threading
 from mozlog import get_proxy_logger
 
-from mozregression.build_range import range_for_inbounds, range_for_nightlies
+from mozregression.build_range import get_integration_range, get_nightly_range
 from mozregression.dates import to_datetime
 from mozregression.errors import LauncherError, MozRegressionError, \
     GoodBadExpectationError, EmptyPushlogError
@@ -69,7 +69,7 @@ class BisectorHandler(six.with_metaclass(ABCMeta)):
 
         This will only be called if there is some build data.
         """
-        # these values could be missing for old inbound builds
+        # these values could be missing for old integration builds
         # until we tried the builds
         repo = self.build_range[-1].repo_url
         if repo is not None:
@@ -140,7 +140,7 @@ class BisectorHandler(six.with_metaclass(ABCMeta)):
 
 
 class NightlyHandler(BisectorHandler):
-    create_range = staticmethod(range_for_nightlies)
+    create_range = staticmethod(get_nightly_range)
     good_date = None
     bad_date = None
 
@@ -213,11 +213,11 @@ class NightlyHandler(BisectorHandler):
                     % (self.found_repo, start, end))
 
 
-class InboundHandler(BisectorHandler):
-    create_range = staticmethod(range_for_inbounds)
+class IntegrationHandler(BisectorHandler):
+    create_range = staticmethod(get_integration_range)
 
     def _print_progress(self, new_data):
-        LOG.info("Narrowed inbound regression window from [%s, %s]"
+        LOG.info("Narrowed integration regression window from [%s, %s]"
                  " (%d builds) to [%s, %s] (%d builds)"
                  " (~%d steps left)"
                  % (self.build_range[0].short_changeset,
@@ -230,9 +230,9 @@ class InboundHandler(BisectorHandler):
 
     def user_exit(self, mid):
         words = self._reverse_if_find_fix('Newest', 'Oldest')
-        LOG.info('%s known good inbound revision: %s'
+        LOG.info('%s known good integration revision: %s'
                  % (words[0], self.good_revision))
-        LOG.info('%s known bad inbound revision: %s'
+        LOG.info('%s known bad integration revision: %s'
                  % (words[1], self.bad_revision))
 
     def _choose_integration_branch(self, changeset):

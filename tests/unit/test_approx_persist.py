@@ -53,7 +53,7 @@ def build_firefox_names(chsets):
 ])
 def test_approx_index(bdata, mid, around, fnames, result):
     # this is always a firefox 64 linux build info
-    binfo = create_build_info(build_info.InboundBuildInfo)
+    binfo = create_build_info(build_info.IntegrationBuildInfo)
     brange = create_build_range(bdata)
     brange.index = lambda _: mid or len(bdata) // 2
     approx = approx_persist.ApproxPersistChooser(around)

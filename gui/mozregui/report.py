@@ -48,7 +48,7 @@ class StartItem(ReportItem):
         if isinstance(handler, NightlyHandler):
             self.build_type = "nightly"
         else:
-            self.build_type = "inbound"
+            self.build_type = "integration"
         if self.build_type == 'nightly':
             self.first, self.last = handler.get_date_range()
         else:

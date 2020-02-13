@@ -7,7 +7,7 @@ import unittest
 from mock import patch, Mock, call, MagicMock
 import datetime
 
-from mozregression.bisector import (NightlyHandler, InboundHandler, Bisector,
+from mozregression.bisector import (NightlyHandler, IntegrationHandler, Bisector,
                                     Bisection, BisectorHandler)
 from mozregression import build_range
 from mozregression.errors import LauncherError, MozRegressionError
@@ -166,9 +166,9 @@ class TestNightlyHandler(unittest.TestCase):
                       log[2])
 
 
-class TestInboundHandler(unittest.TestCase):
+class TestIntegrationHandler(unittest.TestCase):
     def setUp(self):
-        self.handler = InboundHandler()
+        self.handler = IntegrationHandler()
 
     @patch('mozregression.bisector.LOG')
     def test_print_progress(self, logger):
@@ -197,8 +197,8 @@ class TestInboundHandler(unittest.TestCase):
         self.handler.good_revision = '3'
         self.handler.bad_revision = '1'
         self.handler.user_exit(0)
-        self.assertEqual('Newest known good inbound revision: 3', log[0])
-        self.assertEqual('Oldest known bad inbound revision: 1', log[1])
+        self.assertEqual('Newest known good integration revision: 3', log[0])
+        self.assertEqual('Oldest known bad integration revision: 1', log[1])
 
 
 class MyBuildData(build_range.BuildRange):

@@ -1,5 +1,5 @@
 """
-This module defines the configuration needed for nightly and inbound
+This module defines the configuration needed for nightly and integration
 fetching for each application. This configuration is a base block
 for everything done in mozregression since it holds information
 about how to get information about builds for a given application.
@@ -7,7 +7,7 @@ about how to get information about builds for a given application.
 The public entry point in there is :func:`create_config`, which
 creates an returns a fetch configuration. the configuration will
 be an instance of :class:`CommonConfig`, possibly using the mixins
-:class:`NightlyConfigMixin` and/or :class:`InboundConfigMixin`.
+:class:`NightlyConfigMixin` and/or :class:`IntegrationConfigMixin`.
 <
 Example to create a configuration for firefox on linux 64: ::
 
@@ -90,7 +90,7 @@ def get_build_regex(name, os, bits, processor, psuffix='', with_ext=True):
 
 class CommonConfig(object):
     """
-    Define the configuration for both nightly and inbound fetching.
+    Define the configuration for both nightly and integration fetching.
     """
     BUILD_TYPES = ('opt',)  # only opt allowed by default
     BUILD_TYPE_FALLBACKS = {}
@@ -137,18 +137,6 @@ class CommonConfig(object):
         return get_build_regex(self.app_name, self.os, self.bits,
                                self.processor, with_ext=False) + r'\.txt$'
 
-    def is_nightly(self):
-        """
-        Returns True if the configuration can be used for nightly fetching.
-        """
-        return isinstance(self, NightlyConfigMixin)
-
-    def is_inbound(self):
-        """
-        Returns True if the configuration can be used for inbound fetching.
-        """
-        return isinstance(self, InboundConfigMixin)
-
     def available_bits(self):
         """
         Returns the no. of bits of the OS for which the application should
@@ -194,21 +182,23 @@ class CommonConfig(object):
         Allow to define the repo name.
 
         If not set or set to None, default repos would be used (see
-        :meth:`get_nightly_repo` and :attr:`inbound_branch`)
+        :meth:`get_nightly_repo` and :attr:`integration_branch`)
         """
         self.repo = branches.get_name(repo) if repo else None
 
-    def should_use_taskcluster(self):
+    def should_use_archive(self):
         """
-        Returns True if taskcluster should be used as the bisection method.
+        Returns True if we should use the archive as an initial bisection
+        method (archive.mozilla.org has a much longer retention period than
+        taskcluster).
 
         Note that this method relies on the repo and build type defined.
         """
-        return (branches.get_category(self.repo) in
-                ('integration', 'try', 'releases') or
-                # we can find the asan builds (firefox and jsshell) in
-                # archives.m.o
-                self.build_type not in ('opt', 'asan', 'shippable'))
+        return not (branches.get_category(self.repo) in
+                    ('integration', 'try', 'releases') or
+                    # we can find the asan builds (firefox and jsshell) in
+                    # archives.m.o
+                    self.build_type not in ('opt', 'asan', 'shippable'))
 
 
 class NightlyConfigMixin(six.with_metaclass(ABCMeta)):
@@ -272,14 +262,8 @@ class NightlyConfigMixin(six.with_metaclass(ABCMeta)):
         return (r'^%04d-%02d-%02d-[\d-]+%s/$'
                 % (date.year, date.month, date.day, repo))
 
-    def can_go_inbound(self):
-        """
-        Indicate if we can bisect inbound from this nightly config.
-        """
-        return self.is_inbound()
 
-
-class FireFoxNightlyConfigMixin(NightlyConfigMixin):
+class FirefoxNightlyConfigMixin(NightlyConfigMixin):
     def _get_nightly_repo(self, date):
         if date < datetime.date(2008, 6, 17):
             return "trunk"
@@ -328,31 +312,31 @@ class FennecNightlyConfigMixin(NightlyConfigMixin):
         return self._get_nightly_repo_regex(date, repo)
 
 
-class InboundConfigMixin(six.with_metaclass(ABCMeta)):
+class IntegrationConfigMixin(six.with_metaclass(ABCMeta)):
     """
-    Define the inbound-related required configuration.
+    Define the integration-related required configuration.
     """
-    default_inbound_branch = 'autoland'
+    default_integration_branch = 'autoland'
     _tk_credentials = None
 
     @property
-    def inbound_branch(self):
-        return self.repo or self.default_inbound_branch
+    def integration_branch(self):
+        return self.repo or self.default_integration_branch
 
-    def tk_inbound_route(self, push):
+    def tk_route(self, push):
         """
         Returns the first taskcluster route for a specific changeset
         """
-        return next(self.tk_inbound_routes(push))
+        return next(self.tk_routes(push))
 
     @abstractmethod
-    def tk_inbound_routes(self, push):
+    def tk_routes(self, push):
         """
         Returns a generator of taskcluster routes for a specific changeset.
         """
         raise NotImplementedError
 
-    def inbound_persist_part(self):
+    def integration_persist_part(self):
         """
         Allow to add a part in the generated persist file name to distinguish
         builds. Returns an empty string by default, or 'debug' if build type
@@ -384,27 +368,27 @@ class InboundConfigMixin(six.with_metaclass(ABCMeta)):
         return tk_options
 
 
-def _common_tk_part(inbound_conf):
+def _common_tk_part(integration_conf):
     # private method to avoid copy/paste for building taskcluster route part.
-    if inbound_conf.os == 'linux':
+    if integration_conf.os == 'linux':
         part = 'linux'
-        if inbound_conf.bits == 64:
-            part += str(inbound_conf.bits)
-    elif inbound_conf.os == 'mac':
+        if integration_conf.bits == 64:
+            part += str(integration_conf.bits)
+    elif integration_conf.os == 'mac':
         part = 'macosx64'
     else:
         # windows
-        part = '{}{}'.format(inbound_conf.os, inbound_conf.bits)
-        if inbound_conf.processor == 'aarch64' and inbound_conf.bits == 64:
+        part = '{}{}'.format(integration_conf.os, integration_conf.bits)
+        if integration_conf.processor == 'aarch64' and integration_conf.bits == 64:
             part += '-aarch64'
     return part
 
 
-class FirefoxInboundConfigMixin(InboundConfigMixin):
-    def tk_inbound_routes(self, push):
+class FirefoxIntegrationConfigMixin(IntegrationConfigMixin):
+    def tk_routes(self, push):
         for build_type in self.build_types:
             yield 'gecko.v2.{}{}.revision.{}.firefox.{}-{}'.format(
-                self.inbound_branch,
+                self.integration_branch,
                 '.shippable' if build_type == 'shippable' else '',
                 push.changeset,
                 _common_tk_part(self),
@@ -414,10 +398,10 @@ class FirefoxInboundConfigMixin(InboundConfigMixin):
         return
 
 
-class FennecInboundConfigMixin(InboundConfigMixin):
+class FennecIntegrationConfigMixin(IntegrationConfigMixin):
     tk_name = 'android-api-11'
 
-    def tk_inbound_routes(self, push):
+    def tk_routes(self, push):
         tk_name = self.tk_name
         if tk_name == 'android-api-11':
             if push.timestamp >= TIMESTAMP_FENNEC_API_16:
@@ -426,20 +410,20 @@ class FennecInboundConfigMixin(InboundConfigMixin):
                 tk_name = 'android-api-15'
         for build_type in self.build_types:
             yield 'gecko.v2.{}.revision.{}.mobile.{}-{}'.format(
-                self.inbound_branch, push.changeset, tk_name,
+                self.integration_branch, push.changeset, tk_name,
                 build_type
             )
             self._inc_used_build()
             return
 
 
-class ThunderbirdInboundConfigMixin(InboundConfigMixin):
-    default_inbound_branch = 'comm-central'
+class ThunderbirdIntegrationConfigMixin(IntegrationConfigMixin):
+    default_integration_branch = 'comm-central'
 
-    def tk_inbound_routes(self, push):
+    def tk_routes(self, push):
         for build_type in self.build_types:
             yield 'comm.v2.{}.revision.{}.thunderbird.{}-{}'.format(
-                self.inbound_branch, push.changeset, _common_tk_part(self),
+                self.integration_branch, push.changeset, _common_tk_part(self),
                 build_type
             )
             self._inc_used_build()
@@ -467,8 +451,8 @@ def create_config(name, os, bits, processor):
 
 @REGISTRY.register('firefox')
 class FirefoxConfig(CommonConfig,
-                    FireFoxNightlyConfigMixin,
-                    FirefoxInboundConfigMixin):
+                    FirefoxNightlyConfigMixin,
+                    FirefoxIntegrationConfigMixin):
     BUILD_TYPES = ('shippable', 'opt', 'pgo[linux32,linux64,win32,win64]',
                    'debug', 'asan[linux64]', 'asan-debug[linux64]')
     BUILD_TYPE_FALLBACKS = {
@@ -490,14 +474,14 @@ class FirefoxConfig(CommonConfig,
 @REGISTRY.register('thunderbird')
 class ThunderbirdConfig(CommonConfig,
                         ThunderbirdNightlyConfigMixin,
-                        ThunderbirdInboundConfigMixin):
+                        ThunderbirdIntegrationConfigMixin):
     pass
 
 
 @REGISTRY.register('fennec')
 class FennecConfig(CommonConfig,
                    FennecNightlyConfigMixin,
-                   FennecInboundConfigMixin):
+                   FennecIntegrationConfigMixin):
     BUILD_TYPES = ('opt', 'debug')
 
     def build_regex(self):
@@ -513,7 +497,7 @@ class FennecConfig(CommonConfig,
 @REGISTRY.register('gve')
 class GeckoViewExampleConfig(CommonConfig,
                              FennecNightlyConfigMixin,
-                             FennecInboundConfigMixin):
+                             FennecIntegrationConfigMixin):
     BUILD_TYPES = ('opt', 'debug')
 
     def build_regex(self):
@@ -525,9 +509,9 @@ class GeckoViewExampleConfig(CommonConfig,
     def available_bits(self):
         return ()
 
-    def should_use_taskcluster(self):
+    def should_use_archive(self):
         # GVE is not on archive.mozilla.org, only on taskcluster
-        return True
+        return False
 
 
 @REGISTRY.register('fennec-2.3', attr_value='fennec')

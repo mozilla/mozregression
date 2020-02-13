@@ -4,7 +4,7 @@ from PyQt4.QtGui import QMessageBox
 from mozregression.errors import MozRegressionError
 from mozregression.dates import is_date_or_datetime
 from mozregression.fetch_build_info import (NightlyInfoFetcher,
-                                            InboundInfoFetcher)
+                                            IntegrationInfoFetcher)
 
 from mozregui.build_runner import AbstractBuildRunner
 
@@ -39,8 +39,8 @@ class SingleBuildWorker(QObject):
         self._find_build_info(NightlyInfoFetcher)
 
     @Slot()
-    def launch_inbounds(self):
-        self._find_build_info(InboundInfoFetcher)
+    def launch_integration(self):
+        self._find_build_info(IntegrationInfoFetcher)
 
     @Slot(object, str)
     def _on_downloaded(self, dl, dest):
@@ -65,10 +65,10 @@ class SingleBuildRunner(AbstractBuildRunner):
         self.test_runner.evaluate_started.connect(self.on_error)
         self.worker.error.connect(self.on_error)
         if is_date_or_datetime(self.worker.launch_arg) and \
-           not fetch_config.should_use_taskcluster():
+           fetch_config.should_use_archive():
             return self.worker.launch_nightlies
         else:
-            return self.worker.launch_inbounds
+            return self.worker.launch_integration
 
     @Slot(object)
     def on_error(self, error):

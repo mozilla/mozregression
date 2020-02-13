@@ -22,7 +22,7 @@ from mozregression import __version__
 from mozregression.config import TC_CREDENTIALS_FNAME, DEFAULT_EXPAND
 from mozregression.cli import cli
 from mozregression.errors import MozRegressionError, GoodBadExpectationError
-from mozregression.bisector import (Bisector, NightlyHandler, InboundHandler,
+from mozregression.bisector import (Bisector, NightlyHandler, IntegrationHandler,
                                     Bisection)
 from mozregression.launchers import REGISTRY as APP_REGISTRY
 from mozregression.network import set_http_session
@@ -31,7 +31,7 @@ from mozregression.test_runner import ManualTestRunner, CommandTestRunner
 from mozregression.download_manager import BuildDownloadManager
 from mozregression.persist_limit import PersistLimit
 from mozregression.fetch_build_info import (NightlyInfoFetcher,
-                                            InboundInfoFetcher)
+                                            IntegrationInfoFetcher)
 from mozregression.json_pushes import JsonPushes
 from mozregression.bugzilla import find_bugids_in_push, bug_url
 from mozregression.approx_persist import ApproxPersistChooser
@@ -134,13 +134,12 @@ class Application(object):
         if result == Bisection.FINISHED:
             LOG.info("Got as far as we can go bisecting nightlies...")
             handler.print_range()
-            if self.fetch_config.can_go_inbound():
-                LOG.info("Switching bisection method to taskcluster")
-                self.fetch_config.set_repo(
-                    self.fetch_config.get_nightly_repo(handler.bad_date))
-                return self._bisect_inbounds(handler.good_revision,
-                                             handler.bad_revision,
-                                             expand=DEFAULT_EXPAND)
+            LOG.info("Switching bisection method to taskcluster")
+            self.fetch_config.set_repo(
+                self.fetch_config.get_nightly_repo(handler.bad_date))
+            return self._bisect_integration(handler.good_revision,
+                                            handler.bad_revision,
+                                            expand=DEFAULT_EXPAND)
         elif result == Bisection.USER_EXIT:
             self._print_resume_info(handler)
         else:
@@ -151,22 +150,22 @@ class Application(object):
             return 1
         return 0
 
-    def bisect_inbounds(self):
-        return self._bisect_inbounds(
+    def bisect_integration(self):
+        return self._bisect_integration(
             self.options.good,
             self.options.bad,
             ensure_good_and_bad=self.options.mode != 'no-first-check',
         )
 
-    def _bisect_inbounds(self, good_rev, bad_rev, ensure_good_and_bad=False,
-                         expand=0):
+    def _bisect_integration(self, good_rev, bad_rev, ensure_good_and_bad=False,
+                            expand=0):
         LOG.info("Getting %s builds between %s and %s"
-                 % (self.fetch_config.inbound_branch, good_rev, bad_rev))
-        handler = InboundHandler(find_fix=self.options.find_fix,
-                                 ensure_good_and_bad=ensure_good_and_bad)
+                 % (self.fetch_config.integration_branch, good_rev, bad_rev))
+        handler = IntegrationHandler(find_fix=self.options.find_fix,
+                                     ensure_good_and_bad=ensure_good_and_bad)
         result = self._do_bisect(handler, good_rev, bad_rev, expand=expand)
         if result == Bisection.FINISHED:
-            LOG.info("No more inbound revisions, bisection finished.")
+            LOG.info("No more integration revisions, bisection finished.")
             handler.print_range()
             if handler.good_revision == handler.bad_revision:
                 LOG.warning(
@@ -180,8 +179,8 @@ class Application(object):
                 if result:
                     branch, good_rev, bad_rev = result
                     self.fetch_config.set_repo(branch)
-                    return self._bisect_inbounds(good_rev, bad_rev,
-                                                 expand=DEFAULT_EXPAND)
+                    return self._bisect_integration(good_rev, bad_rev,
+                                                    expand=DEFAULT_EXPAND)
                 else:
                     # This code is broken, it prints out the message even when
                     # there are multiple bug numbers or commits in the range.
@@ -209,11 +208,10 @@ class Application(object):
         elif result == Bisection.USER_EXIT:
             self._print_resume_info(handler)
         else:
-            # NO_DATA. With inbounds, this can not happen if changesets
+            # NO_DATA. With integration branches, this can not happen if changesets
             # are incorrect - so builds are probably too old
             LOG.info(
-                'There are no build artifacts on inbound for these'
-                ' changesets (they are probably too old).')
+                'There are no build artifacts for these changesets (they are probably too old).')
             return 1
         return 0
 
@@ -275,8 +273,8 @@ class Application(object):
     def launch_nightlies(self):
         self._launch(NightlyInfoFetcher)
 
-    def launch_inbound(self):
-        self._launch(InboundInfoFetcher)
+    def launch_integration(self):
+        self._launch(IntegrationInfoFetcher)
 
 
 def pypi_latest_version():

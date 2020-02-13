@@ -176,7 +176,7 @@ def test_index(range_creator):
     assert mid == build_range.index(5)
 
 
-def test_range_for_inbounds(mocker):
+def test_get_integration_range(mocker):
     fetch_config = create_config('firefox', 'linux', 64, 'x86_64')
     jpush_class = mocker.patch('mozregression.fetch_build_info.JsonPushes')
     pushes = [create_push('b', 1), create_push('d', 2), create_push('f', 3)]
@@ -186,7 +186,7 @@ def test_range_for_inbounds(mocker):
     )
     jpush_class.return_value = jpush
 
-    b_range = build_range.range_for_inbounds(fetch_config, 'a', 'e')
+    b_range = build_range.get_integration_range(fetch_config, 'a', 'e')
 
     jpush_class.assert_called_once_with(branch='autoland')
     jpush.pushes_within_changes.assert_called_once_with('a', 'e')
@@ -201,7 +201,7 @@ def test_range_for_inbounds(mocker):
     b_range.future_build_infos[0].date_or_changeset() == 'b'
 
 
-def test_range_for_inbounds_with_expand(mocker):
+def test_get_integration_range_with_expand(mocker):
     fetch_config = create_config('firefox', 'linux', 64, 'x86_64')
     jpush_class = mocker.patch('mozregression.fetch_build_info.JsonPushes')
     pushes = [create_push('b', 1), create_push('d', 2), create_push('f', 3)]
@@ -214,7 +214,7 @@ def test_range_for_inbounds_with_expand(mocker):
     check_expand = mocker.patch(
         'mozregression.build_range.BuildRange.check_expand')
 
-    build_range.range_for_inbounds(fetch_config, 'a', 'e', expand=10)
+    build_range.get_integration_range(fetch_config, 'a', 'e', expand=10)
 
     check_expand.assert_called_once_with(
         10, build_range.tc_range_before, build_range.tc_range_after,
@@ -232,8 +232,8 @@ DATE_TOO_OLD = DATE_YEAR_BEFORE + timedelta(days=-5)
     # if a date is older than last year, it won't be honored
     (DATE_TOO_OLD, DATE_NOW, DATE_YEAR_BEFORE, DATE_NOW),
 ])
-def test_range_for_inbounds_with_dates(mocker, start_date, end_date,
-                                       start_call, end_call):
+def test_get_integration_range_with_dates(mocker, start_date, end_date,
+                                          start_call, end_call):
     fetch_config = create_config('firefox', 'linux', 64, 'x86_64')
     jpush_class = mocker.patch('mozregression.fetch_build_info.JsonPushes')
     jpush = mocker.Mock(
@@ -242,16 +242,16 @@ def test_range_for_inbounds_with_dates(mocker, start_date, end_date,
     )
     jpush_class.return_value = jpush
 
-    build_range.range_for_inbounds(fetch_config, start_date, end_date,
-                                   time_limit=DATE_YEAR_BEFORE)
+    build_range.get_integration_range(fetch_config, start_date, end_date,
+                                      time_limit=DATE_YEAR_BEFORE)
 
     jpush.pushes_within_changes.assert_called_once_with(start_call, end_call)
 
 
-def test_range_for_nightlies():
+def test_get_nightly_range():
     fetch_config = create_config('firefox', 'linux', 64, 'x86_64')
 
-    b_range = build_range.range_for_nightlies(
+    b_range = build_range.get_nightly_range(
         fetch_config,
         date(2015, 0o1, 0o1),
         date(2015, 0o1, 0o3)
@@ -272,10 +272,10 @@ def test_range_for_nightlies():
     (datetime(2015, 11, 16, 10, 2, 5),
      datetime(2015, 11, 20, 11, 4, 9), 5),
 ])
-def test_range_for_nightlies_datetime(start, end, range_size):
+def test_get_nightly_range_datetime(start, end, range_size):
     fetch_config = create_config('firefox', 'linux', 64, 'x86_64')
 
-    b_range = build_range.range_for_nightlies(fetch_config, start, end)
+    b_range = build_range.get_nightly_range(fetch_config, start, end)
 
     assert isinstance(b_range, build_range.BuildRange)
     assert len(b_range) == range_size

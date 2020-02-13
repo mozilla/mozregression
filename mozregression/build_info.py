@@ -42,7 +42,7 @@ class BuildInfo(object):
     @export
     def build_type(self):
         """
-        Either 'nightly' or 'inbound'
+        Either 'nightly' or 'integration'
         """
         return self._build_type
 
@@ -156,7 +156,7 @@ class BuildInfo(object):
             persist_part = ''
         else:
             prefix = str(data[:12])
-            persist_part = self._fetch_config.inbound_persist_part()
+            persist_part = self._fetch_config.integration_persist_part()
         if persist_part:
             persist_part = '-' + persist_part
         full_prefix = '{}{}--{}--'.format(prefix, persist_part, self.repo_name)
@@ -194,10 +194,10 @@ class NightlyBuildInfo(BuildInfo):
                            fetch_config.get_nightly_repo(build_date))
 
 
-class InboundBuildInfo(BuildInfo):
+class IntegrationBuildInfo(BuildInfo):
     def __init__(self, fetch_config, build_url, build_date, changeset,
                  repo_url, task_id=None):
-        BuildInfo.__init__(self, fetch_config, 'inbound', build_url,
+        BuildInfo.__init__(self, fetch_config, 'integration', build_url,
                            build_date, changeset, repo_url,
-                           fetch_config.inbound_branch,
+                           fetch_config.integration_branch,
                            task_id=task_id)

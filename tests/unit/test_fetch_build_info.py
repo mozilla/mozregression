@@ -132,11 +132,11 @@ bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/',
             self.info_fetcher.find_build_info(datetime.date(2014, 11, 15))
 
 
-class TestInboundInfoFetcher(unittest.TestCase):
+class TestIntegrationInfoFetcher(unittest.TestCase):
     def setUp(self):
         fetch_config = fetch_configs.create_config('firefox', 'linux', 64,
                                                    'x86_64')
-        self.info_fetcher = fetch_build_info.InboundInfoFetcher(fetch_config)
+        self.info_fetcher = fetch_build_info.IntegrationInfoFetcher(fetch_config)
 
     @patch('taskcluster.Index')
     @patch('taskcluster.Queue')
@@ -177,7 +177,7 @@ class TestInboundInfoFetcher(unittest.TestCase):
             self.assertEqual(result.build_url,
                              'http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2')
             self.assertEqual(result.changeset, '123456789')
-            self.assertEqual(result.build_type, "inbound")
+            self.assertEqual(result.build_type, "integration")
 
     @patch('taskcluster.Index')
     def test_find_build_info_no_task(self, Index):

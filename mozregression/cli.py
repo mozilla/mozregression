@@ -373,7 +373,7 @@ class Configuration(object):
     :attr logger: the mozlog logger, created using the command line options
     :attr options: the raw command line options
     :attr action: the action that the user want to do. This is a string
-                  ("bisect_inbounds" or "bisect_nightlies")
+                  ("bisect_integration" or "bisect_nightlies")
     :attr fetch_config: the fetch_config instance, required to find
                         information about a build
     """
@@ -458,8 +458,7 @@ class Configuration(object):
         self.fetch_config = fetch_config
 
         fetch_config.set_repo(options.repo)
-        if fetch_config.is_nightly():
-            fetch_config.set_base_url(options.archive_base_url)
+        fetch_config.set_base_url(options.archive_base_url)
 
         if not user_defined_bits and \
                 options.bits == 64 and \
@@ -472,16 +471,16 @@ class Configuration(object):
             self.logger.info("only 64-bit builds available for mac, using "
                              "64-bit builds")
 
-        if fetch_config.is_inbound() and fetch_config.tk_needs_auth():
+        if fetch_config.tk_needs_auth():
             creds = tc_authenticate(self.logger)
             fetch_config.set_tk_credentials(creds)
 
         # set action for just use changset or data to bisect
         if options.launch:
             options.launch = self._convert_to_bisect_arg(options.launch)
-            self.action = "launch_inbound"
+            self.action = "launch_integration"
             if is_date_or_datetime(options.launch) and \
-                    not fetch_config.should_use_taskcluster():
+                    fetch_config.should_use_archive():
                 self.action = "launch_nightlies"
         else:
             # define good/bad default values if required
@@ -503,7 +502,7 @@ class Configuration(object):
             else:
                 options.good = self._convert_to_bisect_arg(options.good)
 
-            self.action = "bisect_inbounds"
+            self.action = "bisect_integration"
             if is_date_or_datetime(options.good) and \
                     is_date_or_datetime(options.bad):
                 if not options.find_fix and \
@@ -518,12 +517,8 @@ class Configuration(object):
                         ("Bad date %s is later than good date %s."
                          " You should not use the --find-fix flag"
                          " in this case...") % (options.bad, options.good))
-                if not fetch_config.should_use_taskcluster():
+                if fetch_config.should_use_archive():
                     self.action = "bisect_nightlies"
-        if self.action in ('launch_inbound', 'bisect_inbounds')\
-                and not fetch_config.is_inbound():
-            raise MozRegressionError('Unable to bisect inbound for `%s`'
-                                     % fetch_config.app_name)
         options.preferences = preferences(options.prefs_files, options.prefs, self.logger)
         # convert GiB to bytes.
         options.persist_size_limit = \

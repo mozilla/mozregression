@@ -1,6 +1,6 @@
 from PySide2.QtCore import QAbstractListModel, QModelIndex, Qt, \
     Slot
-from PySide2.QtGui import QWidget, QFileDialog
+from PySide2.QtWidgets import QWidget, QFileDialog
 from mozregui.ui.addons_editor import Ui_AddonsEditor
 import six
 

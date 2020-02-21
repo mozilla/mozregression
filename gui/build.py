@@ -44,7 +44,7 @@ def do_uic(options, force=False):
 def do_rcc(options, force=False):
     rccfile = 'resources.qrc'
     pyfile = 'resources_rc.py'
-    pyrcc4 = 'pyrcc4'
+    pyrcc4 = 'pyside2-rcc'
     if IS_WIN:
         import PySide2
         lib_path = os.path.dirname(os.path.realpath(PySide2.__file__))

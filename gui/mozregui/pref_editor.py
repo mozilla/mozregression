@@ -1,6 +1,6 @@
 from PySide2.QtCore import QAbstractTableModel, QModelIndex, Qt, \
     Slot
-from PySide2.QtGui import QFileDialog, QWidget
+from PySide2.QtWidgets import QFileDialog, QWidget
 from mozprofile.prefs import Preferences
 
 from mozregui.ui.pref_editor import Ui_PrefEditor

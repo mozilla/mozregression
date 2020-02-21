@@ -1,6 +1,5 @@
 from PySide2.QtCore import QDir
-from PySide2.QtGui import QLineEdit, QPushButton, QWidget, QHBoxLayout, \
-    QFileDialog, QFileSystemModel, QCompleter
+from PySide2.QtWidgets import QCompleter, QLineEdit, QPushButton, QHBoxLayout, QFileDialog, QFileSystemModel, QWidget
 
 from mozregression.releases import date_of_release, releases
 from mozregression.dates import parse_date
@@ -69,7 +68,7 @@ class BuildSelection(QWidget):
     def get_value(self):
         currentw = self.ui.stackedWidget.currentWidget()
         if currentw == self.ui.s_date:
-            return self.ui.date.date().toPyDate()
+            return self.ui.date.date().toPython()
         elif currentw == self.ui.s_release:
             return parse_date(
                 date_of_release(str(self.ui.release.currentText())))

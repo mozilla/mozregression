@@ -1,9 +1,8 @@
 from __future__ import absolute_import
 import mozinfo
 import datetime
-from PySide2.QtGui import (QWizard, QWizardPage, QStringListModel, QMessageBox,
-                         QCompleter, QApplication)
-from PySide2.QtCore import QString, QDate, Slot, Qt, SIGNAL
+from PySide2.QtWidgets import (QApplication, QCompleter, QWizard, QWizardPage, QMessageBox)
+from PySide2.QtCore import QStringListModel, QDate, Slot, Qt, SIGNAL
 
 from .ui.intro import Ui_Intro
 from .ui.build_selection import Ui_BuildSelectionPage
@@ -48,10 +47,7 @@ class WizardPage(QWizardPage):
         attribute.
         """
         for fieldname in self.FIELDS:
-            value = self.field(fieldname).toPyObject()
-            if isinstance(value, QString):
-                value = six.text_type(value)
-            options[fieldname] = value
+            options[fieldname] = self.field(fieldname)
 
 
 class IntroPage(WizardPage):

@@ -1,8 +1,7 @@
 import sys
 import threading
-from PySide2.QtCore import QObject, Signal, Slot, \
-    QTimer
-from PySide2.QtGui import QMessageBox
+from PySide2.QtCore import QObject, Signal, Slot, QTimer
+from PySide2.QtWidgets import QMessageBox
 
 from mozregression.bisector import Bisector, Bisection, NightlyHandler, \
     IntegrationHandler, IndexPromise

@@ -292,8 +292,9 @@ class ReportView(QTableView):
         self._model.dataChanged.connect(self.on_item_changed)
 
     def currentChanged(self, current, previous):
-        item = self._model.items[current.row()]
-        self.step_report_changed.emit(item)
+        if current.row() >= 0:
+            item = self._model.items[current.row()]
+            self.step_report_changed.emit(item)
 
     @Slot(QModelIndex, QModelIndex)
     def on_item_changed(self, top_left, bottom_right):
@@ -328,10 +329,7 @@ class BuildInfoTextBrowser(QTextBrowser):
                     url = QUrl(v)
                     if url.isValid() and url.scheme():
                         v = '<a href="%s">%s</a>' % (v, v)
-                # I thought these values were always supposed to be ascii,
-                # but apparently not:
-                # https://bugzilla.mozilla.org/show_bug.cgi?id=1507293
-                html += '%s<br>' % str(v).decode('ascii', 'ignore')
+                html += '{}<br>'.format(v)
         self.setHtml(html)
 
     @Slot(QUrl)

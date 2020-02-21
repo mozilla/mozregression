@@ -4,7 +4,7 @@ from mozregui import __version__
 
 
 if sys.version_info < (3, 5):
-    sys.exit("mozregression- requires either python >= 3.5")
+    sys.exit("mozregression-gui requires python >= 3.5")
 
 # we pin these dependencies in the requirements files -- all of these
 # should be python 3 compatible

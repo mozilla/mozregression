@@ -1,6 +1,7 @@
 from PySide2.QtCore import Qt, Signal
-from PySide2.QtGui import (QGraphicsRectItem, QGraphicsScene, QGraphicsView,
-                         QBrush, QToolTip, QDialog, QMessageBox)
+from PySide2.QtGui import QBrush
+from PySide2.QtWidgets import (QGraphicsRectItem, QGraphicsScene, QGraphicsView,
+                               QToolTip, QDialog, QMessageBox)
 from six.moves import range
 
 

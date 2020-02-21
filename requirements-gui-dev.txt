@@ -1,8 +1,11 @@
 -r requirements-dev.txt
 
+# Qt bindings for python
+PySide2==5.14.1
+
 # for testing
 pytest-qt == 2.0.0
 pytest-mock == 1.2
 
 # for bundling standalone executable
-cx_Freeze == 5.1.1
+cx_Freeze == 6.1

@@ -2,7 +2,7 @@ build: false
 environment:
   NSIS_ROOT: C:\nsis
   matrix:
-    - PYTHON: "C:\\Python38"
+    - PYTHON: "C:\\Python37"
 init:
   - "ECHO %PYTHON%"
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"

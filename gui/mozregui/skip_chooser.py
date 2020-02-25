@@ -134,7 +134,7 @@ if __name__ == '__main__':
 
     build_range = BuildRange(None, [FInfo(None, i) for i in range(420)])
 
-    from PySide2.QtGui import QApplication, QMainWindow
+    from PySide2.QtWidgets import QApplication, QMainWindow
     app = QApplication([])
     win = QMainWindow()
 

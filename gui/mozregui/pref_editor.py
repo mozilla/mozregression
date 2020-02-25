@@ -116,7 +116,7 @@ class PreferencesWidgetEditor(QWidget):
 
 
 if __name__ == '__main__':
-    from PySide2.QtGui import QApplication
+    from PySide2.QtWidgets import QApplication
 
     app = QApplication([])
     view = PreferencesWidgetEditor()

@@ -4,7 +4,7 @@ import mozfile
 import os
 import mozinfo
 
-from PySide2.QtCore import Qt, QString
+from PySide2.QtCore import Qt
 from mock import patch
 from mozregui.pref_editor import PreferencesWidgetEditor
 
@@ -84,7 +84,7 @@ def pref_file(request):
 
 def test_add_prefs_using_file(qtbot, pref_editor, pref_file):
     with patch("mozregui.pref_editor.QFileDialog") as dlg:
-        dlg.getOpenFileName.return_value = QString(pref_file)
+        dlg.getOpenFileName.return_value = pref_file
         qtbot.mouseClick(
             pref_editor.ui.add_prefs_from_file,
             Qt.LeftButton

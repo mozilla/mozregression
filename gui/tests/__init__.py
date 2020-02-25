@@ -1,4 +1,4 @@
-from PySide2.QtGui import QApplication
+from PySide2.QtWidgets import QApplication
 from PySide2.QtCore import QEventLoop, QTimer
 from contextlib import contextmanager
 

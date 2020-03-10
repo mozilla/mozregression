@@ -65,7 +65,7 @@ class TestGuiBuildDownloadManager(unittest.TestCase):
         # signals have been emitted
         self.assertEqual(self.signals['download_started'].call_count, 1)
         self.assertEqual(self.signals['download_finished'].call_count, 1)
-        self.assertTrue(self.signals['download_progress'].call_count >= 2)
+        self.assertGreater(self.signals['download_progress'].call_count, 0)
 
         # well, file has been downloaded finally
         self.assertTrue(os.path.isfile(build_info.build_file))

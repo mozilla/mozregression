@@ -45,10 +45,8 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
         # build if any)
         self.cancel(cancel_if=lambda dl: dest != dl.get_dest())
 
-        dl = self.download(build_url, fname)
-        if dl:
-            dl.set_progress(self.download_progress.emit)
-        else:
+        dl = self.download(build_url, fname, progress=self.download_progress.emit)
+        if not dl:
             # file already downloaded.
             # emit the finished signal so bisection goes on
             self.download_finished.emit(None, dest)

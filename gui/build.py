@@ -73,8 +73,6 @@ def do_test(options):
 def call_cx_freeze():
     args = []
     if IS_WIN:
-        # cxfreeze on windows is just a 'cxfreeze' python file in the
-        # Scripts dir
         args.append('cxfreeze')
         args.append('--icon=wininst/app_icon.ico')
         args.append('--base-name=Win32GUI')
@@ -101,8 +99,10 @@ def do_bundle(options):
         if os.path.isdir(dirname):
             shutil.rmtree(dirname)
     # freeze the application
-    call_cx_freeze()
+    # call_cx_freeze()
     # create an installer
+    call('pyinstaller', 'gui/mozregui/main.py')
+    return
     if IS_WIN:
         makensis_path = os.path.join(options.nsis_path, "makensis.exe")
         call(makensis_path, 'wininst.nsi', cwd='wininst')

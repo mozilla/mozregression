@@ -9,7 +9,6 @@ init:
 install:
   # install mozregression code and test dependencies
   - "pip install -r requirements-gui-dev.txt"
-  - "pip install git+https://github.com/anthony-tuininga/cx_Freeze"
 test_script:
   # - "python setup.py test"
   # - "python gui\\build.py test"

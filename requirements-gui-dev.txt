@@ -7,4 +7,5 @@ PySide2==5.14.1
 pytest-qt == 3.3.0
 
 # for bundling standalone executable
+pyinstaller
 #cx_Freeze == git+https://github.com/anthony-tuininga/cx_Freeze

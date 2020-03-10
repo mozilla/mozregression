@@ -1,4 +1,4 @@
-dist: xenial
+dist: bionic
 matrix:
   include:
     - name: python2-linux
@@ -16,7 +16,6 @@ matrix:
     - name: python3-linux
       env: PYTHON=python3.5
       os: linux
-      dist: xenial
       services:
         - xvfb
       language: python

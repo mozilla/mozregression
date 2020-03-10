@@ -37,10 +37,10 @@ class TestGuiBuildDownloadManager(unittest.TestCase):
     def setUp(self):
         self.session, self.session_response = mock_session()
         tmpdir = tempfile.mkdtemp()
-        tpersist_size = PersistLimit(10 * 1073741824)
+        tpersist = PersistLimit(10 * 1073741824)
         self.addCleanup(shutil.rmtree, tmpdir)
         self.dl_manager = \
-            build_runner.GuiBuildDownloadManager(tmpdir, tpersist_size)
+            build_runner.GuiBuildDownloadManager(tmpdir, tpersist)
         self.dl_manager.session = self.session
         self.signals = {}
         for sig in ('download_progress', 'download_started',

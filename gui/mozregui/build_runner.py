@@ -18,7 +18,6 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
 
     def __init__(self, destdir, persist_limit, **kwargs):
         QObject.__init__(self)
-        persist_limit = PersistLimit(persist_limit)
         BuildDownloadManager.__init__(self, destdir,
                                       session=get_http_session(),
                                       persist_limit=persist_limit,
@@ -132,8 +131,9 @@ class AbstractBuildRunner(QObject):
         download_dir = global_prefs['persist']
         if not download_dir:
             download_dir = self.mainwindow.persist
-        persist_limit = int(abs(global_prefs['persist_size_limit']) *
-                            1073741824)
+        persist_limit = PersistLimit(
+            abs(global_prefs['persist_size_limit']) * 1073741824
+        )
         self.download_manager = GuiBuildDownloadManager(download_dir,
                                                         persist_limit)
         self.test_runner = GuiTestRunner()

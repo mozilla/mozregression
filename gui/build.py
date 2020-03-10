@@ -72,7 +72,6 @@ def do_test(options):
 
 def call_cx_freeze():
     args = []
-    venv_path = os.path.dirname(sys.executable)
     if IS_WIN:
         # cxfreeze on windows is just a 'cxfreeze' python file in the
         # Scripts dir
@@ -83,18 +82,6 @@ def call_cx_freeze():
     else:
         args.append('cxfreeze')
         args.append('--target-name=mozregression-gui')
-
-    # determine python paths needed for cxfreeze
-    paths = []
-    for p in sys.path:
-        # put the system python path in first, because somwhere there
-        # is a dependency to distutils - and distutils get patched
-        # in the virtualenv
-        if p.startswith(venv_path):
-            paths.append(p)
-        else:
-            paths.insert(0, p)
-    args.append('--include-path=%s' % os.pathsep.join(['.', '..'] + paths))
 
     args.append('--target-dir=dist')
     args.append('mozregui/main.py')

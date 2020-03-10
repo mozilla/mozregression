@@ -9,12 +9,13 @@ init:
 install:
   # install mozregression code and test dependencies
   - "pip install -r requirements-gui-dev.txt"
+  - "pip install git+https://github.com/anthony-tuininga/cx_Freeze"
 test_script:
-  - "python setup.py test"
-  - "python gui\\build.py test"
-  - cxfreeze
+  # - "python setup.py test"
+  # - "python gui\\build.py test"
   # bundle the application
   - "python gui\\build.py bundle --nsis-path \"C:\\Program Files (x86)\\NSIS\""
+  - "cxfreeze --icon=wininst/app_icon.ico --base-name=Win32GUI --target-name=mozregression-gui.exe --target-dir=dist mozregui/main.py"
 
 # section required for deploy
 artifacts:

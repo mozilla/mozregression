@@ -76,9 +76,7 @@ def call_cx_freeze():
     if IS_WIN:
         # cxfreeze on windows is just a 'cxfreeze' python file in the
         # Scripts dir
-        args.append(sys.executable)
-        args.append(os.path.join(venv_path, "Scripts", 'cxfreeze'))
-
+        args.append('cxfreeze')
         args.append('--icon=wininst/app_icon.ico')
         args.append('--base-name=Win32GUI')
         args.append('--target-name=mozregression-gui.exe')

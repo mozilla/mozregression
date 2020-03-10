@@ -63,5 +63,5 @@ If you are **really sure** that you only want to hack on the mozregression comma
 3. run tests (be sure that your virtualenv is activated):
 
   ```bash
-  python setup.py test
+  pytest tests
   ```

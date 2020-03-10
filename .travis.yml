@@ -10,7 +10,7 @@ matrix:
         system_site_packages: true
       script:
         - pip install -r requirements-gui-dev.txt
-        - coverage run setup.py test && mv .coverage .coverage.core
+        - coverage run -m pytest tests && mv .coverage .coverage.core
         - coverage run gui/build.py test && mv .coverage .coverage.gui
         - coverage combine
         - pip install coveralls; coveralls
@@ -21,7 +21,7 @@ matrix:
       language: python
       python: '3.5'
       script:
-        - coverage run setup.py test && mv .coverage .coverage.core
+        - coverage run -m pytest tests && mv .coverage .coverage.core
         - coverage combine
         - pip install coveralls; coveralls
     - name: python2-linters

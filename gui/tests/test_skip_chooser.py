@@ -35,7 +35,7 @@ def test_skip_dialog_init(qtbot, dialog_builder):
     dialog = dialog_builder.build(79)
     assert len(dialog.scene.items()) == 79
     mid_item = dialog.scene.mid_build
-    assert dialog.build_index(mid_item) == 79 / 2
+    assert dialog.build_index(mid_item) == int(79 / 2)
     assert dialog.scene.selectedItems() == [mid_item]
 
 

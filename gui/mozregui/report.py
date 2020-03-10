@@ -1,5 +1,5 @@
 from PySide2.QtCore import (QAbstractTableModel, QModelIndex, Qt,
-    Slot, Signal, QUrl)
+                            Slot, Signal, QUrl)
 from PySide2.QtGui import QDesktopServices, QColor
 from PySide2.QtWidgets import QTableView, QTextBrowser
 

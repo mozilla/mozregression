@@ -1,5 +1,7 @@
 from PySide2.QtCore import QDir
-from PySide2.QtWidgets import QCompleter, QLineEdit, QPushButton, QHBoxLayout, QFileDialog, QFileSystemModel, QWidget
+from PySide2.QtWidgets import (QCompleter, QLineEdit, QPushButton,
+                               QHBoxLayout, QFileDialog,
+                               QFileSystemModel, QWidget)
 
 from mozregression.releases import date_of_release, releases
 from mozregression.dates import parse_date

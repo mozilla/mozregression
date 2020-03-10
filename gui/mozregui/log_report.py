@@ -1,7 +1,7 @@
 from PySide2.QtCore import (QObject, Slot, Signal)
 from PySide2.QtWidgets import (QAction, QActionGroup, QMenu, QPlainTextEdit)
 from PySide2.QtGui import (QTextCursor, QColor,
-                           QTextCharFormat, 
+                           QTextCharFormat,
                            QTextBlockUserData)
 from datetime import datetime
 from mozlog.structuredlog import log_levels

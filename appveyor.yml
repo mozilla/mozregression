@@ -12,6 +12,7 @@ install:
 test_script:
   - "python setup.py test"
   - "python gui\\build.py test"
+  - cxfreeze
   # bundle the application
   - "python gui\\build.py bundle --nsis-path \"C:\\Program Files (x86)\\NSIS\""
 

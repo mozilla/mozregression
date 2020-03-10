@@ -77,7 +77,7 @@ def test_remove_pref(qtbot, pref_editor):
 def pref_file(request):
     # create a temp file with prefs
     with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as f:
-        f.write('{ "browser.tabs.remote.autostart": false, "toto": 1 }')
+        f.write(b'{ "browser.tabs.remote.autostart": false, "toto": 1 }')
     request.addfinalizer(lambda: mozfile.remove(f.name))
     return f.name
 

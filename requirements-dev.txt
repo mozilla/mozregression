@@ -18,8 +18,8 @@ six==1.12.0
 
 # dev dependencies
 coverage==4.2
-mock==3.0.5
-pytest==4.6.9
+mock==3.0.5 # last version compatible with python2.7
+pytest==4.6.9 # last version compatible with python2.7
 # peg flake8 + deps so code doesn't suddenly violate validation expectations unexpectedly
 flake8==3.2.1
 mccabe==0.5.3

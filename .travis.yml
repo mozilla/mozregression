@@ -16,6 +16,11 @@ matrix:
     - name: python3-linux
       env: PYTHON=python3.5
       os: linux
+      addons:
+        apt:
+          packages:
+            - x11-utils
+            - libxkbcommon-x11-0
       services:
         - xvfb
       language: python

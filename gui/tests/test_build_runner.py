@@ -52,7 +52,7 @@ class TestGuiBuildDownloadManager(unittest.TestCase):
         'mozregui.build_runner.GuiBuildDownloadManager._extract_download_info')
     def test_focus_download(self, extract_info):
         extract_info.return_value = ('http://foo', 'foo')
-        mock_response(self.session_response, 'this is some data' * 10000, 0.01)
+        mock_response(self.session_response, b'this is some data' * 10000, 0.01)
         build_info = Mock()
 
         with wait_signal(self.dl_manager.download_finished):

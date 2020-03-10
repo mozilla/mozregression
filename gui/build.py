@@ -44,15 +44,10 @@ def do_uic(options, force=False):
 def do_rcc(options, force=False):
     rccfile = 'resources.qrc'
     pyfile = 'resources_rc.py'
-    pyrcc4 = 'pyside2-rcc'
-    if IS_WIN:
-        import PySide2
-        lib_path = os.path.dirname(os.path.realpath(PySide2.__file__))
-        pyrcc4 = os.path.join(lib_path, pyrcc4)
     if force or not os.path.isfile(pyfile) or \
             (os.path.getmtime(rccfile) > os.path.getmtime(pyfile)):
         print("rcc'ing %s -> %s" % (rccfile, pyfile))
-        call(pyrcc4, '-o', pyfile, rccfile)
+        call('pyside2-rcc', '-o', pyfile, rccfile)
 
 
 def do_run(options):

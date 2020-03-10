@@ -15,7 +15,6 @@ test_script:
   # - "python gui\\build.py test"
   # bundle the application
   - "python gui\\build.py bundle --nsis-path \"C:\\Program Files (x86)\\NSIS\""
-  - "cxfreeze --icon=wininst/app_icon.ico --base-name=Win32GUI --target-name=mozregression-gui.exe --target-dir=dist mozregui/main.py"
 
 # section required for deploy
 artifacts:

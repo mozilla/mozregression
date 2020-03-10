@@ -28,14 +28,7 @@ matrix:
         - coverage combine
         - pip install coveralls; coveralls
         - python gui/build.py bundle
-    - name: python2-linters
-      env: PYTHON=python2
-      os: linux
-      language: python
-      python: '2.7'
-      script:
-        - flake8 mozregression tests setup.py
-    - name: python3-linters
+    - name: linters
       env: PYTHON=python3.5
       os: linux
       language: python

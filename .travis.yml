@@ -9,21 +9,21 @@ matrix:
       virtualenv:
         system_site_packages: true
       script:
-        - pip install -r requirements-gui-dev.txt
         - coverage run -m pytest tests && mv .coverage .coverage.core
-        - coverage run gui/build.py test && mv .coverage .coverage.gui
         - coverage combine
         - pip install coveralls; coveralls
-        - python gui/build.py bundle
     - name: python3-linux
       env: PYTHON=python3.5
       os: linux
       language: python
       python: '3.5'
       script:
+        - pip install -r requirements-gui-dev.txt
         - coverage run -m pytest tests && mv .coverage .coverage.core
+        - coverage run gui/build.py test && mv .coverage .coverage.gui
         - coverage combine
         - pip install coveralls; coveralls
+        - python gui/build.py bundle
     - name: python2-linters
       env: PYTHON=python2
       os: linux
@@ -31,7 +31,6 @@ matrix:
       python: '2.7'
       script:
         - flake8 mozregression tests setup.py
-        - flake8 gui/mozregui gui/build.py gui/tests
     - name: python3-linters
       env: PYTHON=python3.5
       os: linux
@@ -40,6 +39,7 @@ matrix:
       script:
         - python3 -m compileall -q tests mozregression
         - flake8 mozregression tests setup.py
+        - flake8 gui/mozregui gui/build.py gui/tests
 
 install:
     - if [ "$TRAVIS_OS_NAME" == "linux" ]; then

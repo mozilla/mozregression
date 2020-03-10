@@ -46,7 +46,7 @@ class LogView(QPlainTextEdit):
         current_block = QTextCursor(self.document()).block()
         while current_block.isValid and current_block.text():
             yield current_block
-            current_block = next(current_block)
+            current_block = current_block.next()
 
     @Slot(dict)
     def on_log_received(self, data):

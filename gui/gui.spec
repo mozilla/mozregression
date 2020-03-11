@@ -32,5 +32,5 @@ exe = EXE(pyz,
           console=False )
 app = BUNDLE(exe,
              name='mozregression-gui.app',
-             icon=None,
+             icon='icons/app_icon.icns',
              bundle_identifier=None)

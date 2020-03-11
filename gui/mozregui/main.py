@@ -20,7 +20,7 @@ def main():
     # Create a Qt application
     log_model = LogModel()
     logger.add_handler(log_model)
-    argv = [sys.argv[0].replace("main.py", "mozregression")] + sys.argv[1:]
+    argv = [sys.argv[0].replace("mozregression-gui.py", "mozregression")] + sys.argv[1:]
     app = QApplication(argv)
     crash_reporter = CrashReporter(app)
     crash_reporter.install()

@@ -2,7 +2,6 @@ import os
 from PySide2.QtWidgets import QDialog
 
 from mozregui.ui.global_prefs import Ui_GlobalPrefs
-from mozregui import patch_requests
 
 from mozregression.network import set_http_session
 from mozregression.config import (DEFAULT_CONF_FNAME, get_defaults,

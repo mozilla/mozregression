@@ -1,5 +1,4 @@
 import os
-import unittest
 from mock import patch
 from PySide2.QtCore import QTimer
 from . import APP

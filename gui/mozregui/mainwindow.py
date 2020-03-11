@@ -86,7 +86,6 @@ class MainWindow(QMainWindow):
 
     def read_settings(self):
         settings = QSettings()
-        print(settings.value("mainWin/geometry"))
         self.restoreGeometry(settings.value("mainWin/geometry"))
         self.restoreState(settings.value("mainWin/windowState"))
 

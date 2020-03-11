@@ -1,7 +1,3 @@
-# first thing, patch requests lib if required
-# from mozregui import patch_requests
-# patch_requests.patch()
-
 import sys
 from PySide2.QtWidgets import QApplication
 

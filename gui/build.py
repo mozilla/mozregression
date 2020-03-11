@@ -111,7 +111,17 @@ def do_bundle(options):
             shutil.rmtree(dirname)
 
     # create a bundle for the application
-    call("pyinstaller", "gui.spec")
+    # UPX_EXCLUDE = ["vcruntime140.dll", "python36.dll"]
+    call(
+        "pyinstaller",
+        "--upx-exclude",
+        "vcruntime140.dll",
+        "--upx-exclude",
+        "python38.dll",
+        "--upx-dir",
+        options.upx_path,
+        "gui.spec",
+    )
 
     # remove any pyside2 files we don't need
     unwanted_re = "|".join(UNWANTED_PYSIDE_LIBRARIES)
@@ -169,6 +179,7 @@ def parse_args():
             default="C:\\NSIS",
             help="your NSIS path on the" " system(default: %(default)r)",
         )
+        bundle.add_argument("--upx-path", default=os.path.curdir, help="Path to upx executable")
 
     bundle.set_defaults(func=do_bundle)
 

@@ -70,26 +70,6 @@ def do_test(options):
     sys.exit(pytest.main(['tests', '-v']))
 
 
-def call_cx_freeze():
-    args = []
-    if IS_WIN:
-        args.append('cxfreeze')
-        args.append('--icon=wininst/app_icon.ico')
-        args.append('--base-name=Win32GUI')
-        args.append('--target-name=mozregression-gui.exe')
-    else:
-        args.append('cxfreeze')
-        args.append('--target-name=mozregression-gui')
-
-    args.append('--target-dir=dist')
-    args.append('mozregui/main.py')
-    call(*args)
-
-    # copy the required cacert.pem file for requests library
-    import requests.certs
-    shutil.copy(requests.certs.where(), "dist/cacert.pem")
-
-
 def do_bundle(options):
     do_uic(options, True)
     do_rcc(options, True)
@@ -98,11 +78,9 @@ def do_bundle(options):
     for dirname in ('build', 'dist'):
         if os.path.isdir(dirname):
             shutil.rmtree(dirname)
-    # freeze the application
-    # call_cx_freeze()
+    # create a bundle for the application
+    call('pyinstaller', 'gui.spec')
     # create an installer
-    call('pyinstaller', 'gui/mozregui/main.py')
-    return
     if IS_WIN:
         makensis_path = os.path.join(options.nsis_path, "makensis.exe")
         call(makensis_path, 'wininst.nsi', cwd='wininst')

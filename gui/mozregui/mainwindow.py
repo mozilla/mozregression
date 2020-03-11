@@ -86,9 +86,9 @@ class MainWindow(QMainWindow):
 
     def read_settings(self):
         settings = QSettings()
-        # FIXME: this ain't working...
-        # self.restoreGeometry(settings.value("mainWin/geometry").toByteArray())
-        # self.restoreState(settings.value("mainWin/windowState").toByteArray())
+        print(settings.value("mainWin/geometry"))
+        self.restoreGeometry(settings.value("mainWin/geometry"))
+        self.restoreState(settings.value("mainWin/windowState"))
 
     def closeEvent(self, evt):
         settings = QSettings()

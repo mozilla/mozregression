@@ -1,9 +1,5 @@
 # -*- mode: python -*-
 
-import distutils
-if distutils.distutils_path.endswith('__init__.py'):
-    distutils.distutils_path = os.path.dirname(distutils.distutils_path)
-
 block_cipher = None
 
 
@@ -23,18 +19,14 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
+          a.binaries,
+          a.zipfiles,
+          a.datas,
           [],
-          exclude_binaries=True,
           name='gui',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
+          runtime_tmpdir=None,
           console=True )
-coll = COLLECT(exe,
-               a.binaries,
-               a.zipfiles,
-               a.datas,
-               strip=False,
-               upx=True,
-               name='gui')

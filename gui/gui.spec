@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['gui.py'],
+a = Analysis(['mozregression-gui.py'],
              pathex=['/Users/wlach/src/mozregression/gui'],
              binaries=[],
              datas=[],
@@ -23,7 +23,7 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='gui',
+          name='mozregression-gui',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,

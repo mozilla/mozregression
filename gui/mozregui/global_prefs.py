@@ -65,7 +65,6 @@ def set_default_prefs():
 def apply_prefs(options):
     set_http_session(get_defaults={
         "timeout": options['http_timeout'],
-        "verify": patch_requests.cacert_path()
     })
     # persist options have to be passed in the bisection, not handled here.
 

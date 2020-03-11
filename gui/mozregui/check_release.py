@@ -4,7 +4,6 @@ from PySide2.QtWidgets import QLabel
 from mozregression.network import retry_get
 
 from . import __version__
-from .patch_requests import cacert_path
 
 
 class CheckReleaseThread(QThread):
@@ -18,8 +17,7 @@ class CheckReleaseThread(QThread):
         self.release_url = None
 
     def run(self):
-        data = retry_get(self.GITHUB_LATEST_RELEASE_URL,
-                         verify=cacert_path()).json()
+        data = retry_get(self.GITHUB_LATEST_RELEASE_URL).json()
         self.tag_name = data['tag_name']
         self.release_url = data['html_url']
 

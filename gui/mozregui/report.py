@@ -4,7 +4,6 @@ from PySide2.QtGui import QDesktopServices, QColor
 from PySide2.QtWidgets import QTableView, QTextBrowser
 
 from mozregression.bisector import NightlyHandler
-import six
 
 # Custom colors
 GRAY_WHITE = QColor(243, 243, 243)
@@ -325,7 +324,7 @@ class BuildInfoTextBrowser(QTextBrowser):
             v = item.data[k]
             if v is not None:
                 html += '<strong>%s</strong>: ' % k
-                if isinstance(v, six.string_types):
+                if isinstance(v, str):
                     url = QUrl(v)
                     if url.isValid() and url.scheme():
                         v = '<a href="%s">%s</a>' % (v, v)

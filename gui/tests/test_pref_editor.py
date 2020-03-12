@@ -97,7 +97,7 @@ def test_add_prefs_using_file(qtbot, pref_editor, pref_file):
 
     # check prefs
     assert pref_editor.pref_model.rowCount() == 2
-    assert pref_editor.get_prefs() == [
+    assert set(pref_editor.get_prefs()) == set([
         ("browser.tabs.remote.autostart", False),
         ("toto", 1)
-    ]
+    ])

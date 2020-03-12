@@ -139,4 +139,3 @@ if __name__ == '__main__':
     win = QMainWindow()
 
     dlg = SkipDialog(build_range)
-    print(dlg.choose_next_build())

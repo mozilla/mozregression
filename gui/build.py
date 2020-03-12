@@ -53,13 +53,7 @@ def do_rcc(options, force=False):
 def do_run(options):
     do_uic(options)
     do_rcc(options)
-    env = dict(os.environ)
-    # update PYTHONPATH so python can find mozregui package
-    if env.get('PYTHONPATH'):
-        env['PYTHONPATH'] = '.' + os.pathsep + env['PYTHONPATH']
-    else:
-        env['PYTHONPATH'] = '.'
-    call(sys.executable, 'mozregression-gui.py', env=env)
+    call(sys.executable, 'mozregression-gui.py')
 
 
 def do_test(options):

@@ -59,7 +59,7 @@ def do_run(options):
         env['PYTHONPATH'] = '.' + os.pathsep + env['PYTHONPATH']
     else:
         env['PYTHONPATH'] = '.'
-    call(sys.executable, 'mozregui/main.py', env=env)
+    call(sys.executable, 'mozregression-gui.py', env=env)
 
 
 def do_test(options):

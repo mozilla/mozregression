@@ -253,8 +253,12 @@ class MozRunnerLauncher(Launcher):
                     print()
                     LOG.warning('Process exited with code %s' % exitcode)
 
+        # we don't need stdin, and GUI will not work in Windowed mode if set
+        # see: https://stackoverflow.com/a/40108817
+        devnull = open(os.devnull, 'wb')
         self.runner.process_args = {
             'processOutputLine': [get_default_logger("process").info],
+            'stdin': devnull,
             'onFinish': _on_exit,
         }
         self.runner.start()

@@ -14,6 +14,7 @@ from mozregression.launchers import REGISTRY as LAUNCHER_REGISTRY
 from mozregression.errors import LauncherNotRunnable, DateFormatError
 from mozregression.dates import to_datetime
 from mozregression.branches import get_branches
+import six
 
 
 def resolve_obj_name(obj, name):
@@ -35,7 +36,7 @@ class WizardPage(QWizardPage):
         self.setSubTitle(self.SUBTITLE)
         self.ui = self.UI_CLASS()
         self.ui.setupUi(self)
-        for name, widget_name in self.FIELDS.items():
+        for name, widget_name in six.iteritems(self.FIELDS):
             self.registerField(name, resolve_obj_name(self.ui, widget_name))
 
     def set_options(self, options):
@@ -184,7 +185,7 @@ class ProfilePage(WizardPage):
         return self.ui.addons_widget.get_addons()
 
     def get_profile_persistence(self):
-        return self.ui.profile_persistence_combo.currentText()
+        return six.text_type(self.ui.profile_persistence_combo.currentText())
 
 
 class BuildSelectionPage(WizardPage):
@@ -225,14 +226,14 @@ class BuildSelectionPage(WizardPage):
 
     def validatePage(self):
         start, end = self.get_start(), self.get_end()
-        if isinstance(start, str) or isinstance(end, str):
+        if isinstance(start, six.string_types) or isinstance(end, six.string_types):
             # do not check revisions
             return True
         try:
             start_date = to_datetime(start)
             end_date = to_datetime(end)
         except DateFormatError as exc:
-            QMessageBox.critical(self, "Error", str(exc))
+            QMessageBox.critical(self, "Error", six.text_type(exc))
             return False
         current = datetime.datetime.now()
         if start_date < end_date:

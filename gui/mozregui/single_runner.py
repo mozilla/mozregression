@@ -7,7 +7,6 @@ from mozregression.fetch_build_info import (NightlyInfoFetcher,
                                             IntegrationInfoFetcher)
 
 from mozregui.build_runner import AbstractBuildRunner
-import six
 
 
 class SingleBuildWorker(QObject):
@@ -75,4 +74,4 @@ class SingleBuildRunner(AbstractBuildRunner):
     def on_error(self, error):
         if error:
             self.stop(wait=False)
-            QMessageBox.critical(self.mainwindow, "Error", six.text_type(error))
+            QMessageBox.critical(self.mainwindow, "Error", str(error))

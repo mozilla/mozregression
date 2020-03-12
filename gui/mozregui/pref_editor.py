@@ -4,7 +4,6 @@ from PySide2.QtWidgets import QFileDialog, QWidget
 from mozprofile.prefs import Preferences
 
 from mozregui.ui.pref_editor import Ui_PrefEditor
-import six
 
 
 class PreferencesModel(QAbstractTableModel):
@@ -31,7 +30,7 @@ class PreferencesModel(QAbstractTableModel):
             if index.column() == 0:
                 return name
             else:
-                if isinstance(value, six.string_types):
+                if isinstance(value, str):
                     return '"' + value + '"'
                 else:
                     return value
@@ -99,7 +98,7 @@ class PreferencesWidgetEditor(QWidget):
             filter="pref file (*.json *.ini)",
         )
         if fname:
-            self.pref_model.add_prefs_from_file(six.text_type(fname))
+            self.pref_model.add_prefs_from_file(fname)
 
     @Slot()
     def remove_selected_prefs(self):

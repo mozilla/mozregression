@@ -20,6 +20,8 @@ import mozversion
 import mozinstall
 import zipfile
 import mozinfo
+import six
+import sys
 import stat
 from subprocess import call
 from abc import ABCMeta, abstractmethod
@@ -28,7 +30,6 @@ from threading import Thread
 from mozregression.class_registry import ClassRegistry
 from mozregression.errors import LauncherNotRunnable, LauncherError
 from mozregression.tempdir import safe_mkdtemp
-import six
 
 LOG = get_proxy_logger("Test Runner")
 
@@ -55,10 +56,10 @@ class Launcher(six.with_metaclass(ABCMeta)):
 
         try:
             self._install(dest)
-        except Exception:
-            msg = "Unable to install %r" % dest
-            LOG.error(msg, exc_info=True)
-            raise LauncherError(msg)
+        except Exception as e:
+            msg = "Unable to install {} (error: {})".format(dest, e)
+            LOG.error(msg)
+            six.reraise(LauncherError, LauncherError(msg), sys.exc_info()[2])
 
     def start(self, **kwargs):
         """
@@ -67,10 +68,10 @@ class Launcher(six.with_metaclass(ABCMeta)):
         if not self._running:
             try:
                 self._start(**kwargs)
-            except Exception:
-                msg = "Unable to start the application"
-                LOG.error(msg, exc_info=True)
-                raise LauncherError(msg)
+            except Exception as e:
+                msg = "Unable to start the application (error: {})".format(e)
+                LOG.error(msg)
+                six.reraise(LauncherError, LauncherError(msg), sys.exc_info()[2])
             self._running = True
 
     def wait(self):
@@ -91,10 +92,10 @@ class Launcher(six.with_metaclass(ABCMeta)):
             self._stopping = True
             try:
                 self._stop()
-            except Exception:
-                msg = "Unable to stop the application"
-                LOG.error(msg, exc_info=True)
-                raise LauncherError(msg)
+            except Exception as e:
+                msg = "Unable to stop the application (error: {})".format(e)
+                LOG.error(msg)
+                six.reraise(LauncherError, LauncherError(msg), sys.exc_info()[2])
             self._running = False
             self._stopping = False
 

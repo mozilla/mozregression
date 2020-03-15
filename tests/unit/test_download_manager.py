@@ -312,8 +312,6 @@ class TestBuildDownloadManager(unittest.TestCase):
         build_info = Mock(build='info')
         result = self.dl_manager.focus_download(build_info)
 
-        curent_download.set_progress.assert_called_with(
-            download_manager.download_progress)
         self.assertFalse(curent_download.is_canceled())
         curent_download.wait.assert_called_with()
 

@@ -1,7 +1,7 @@
 import pytest
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QApplication, QPushButton
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QApplication, QPushButton
 from mozregui.crash_reporter import CrashReporter, CrashDialog
 
 

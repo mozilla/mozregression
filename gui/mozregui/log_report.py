@@ -1,7 +1,8 @@
-from PyQt4.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
-from PyQt4.QtGui import (QPlainTextEdit, QTextCursor, QColor,
-                         QTextCharFormat, QMenu, QAction,
-                         QTextBlockUserData, QActionGroup)
+from PySide2.QtCore import (QObject, Slot, Signal)
+from PySide2.QtWidgets import (QAction, QActionGroup, QMenu, QPlainTextEdit)
+from PySide2.QtGui import (QTextCursor, QColor,
+                           QTextCharFormat,
+                           QTextBlockUserData)
 from datetime import datetime
 from mozlog.structuredlog import log_levels
 
@@ -89,7 +90,7 @@ class LogView(QPlainTextEdit):
                 current_block.setVisible(True)
             else:
                 current_block.setVisible(False)
-            current_block = current_block.next()
+            current_block = next(current_block)
         self.viewport().update()
 
 

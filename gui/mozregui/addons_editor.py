@@ -1,6 +1,6 @@
-from PyQt4.QtCore import QAbstractListModel, QModelIndex, Qt, \
-    pyqtSlot as Slot
-from PyQt4.QtGui import QWidget, QFileDialog
+from PySide2.QtCore import QAbstractListModel, QModelIndex, Qt, \
+    Slot
+from PySide2.QtWidgets import QWidget, QFileDialog
 from mozregui.ui.addons_editor import Ui_AddonsEditor
 
 
@@ -58,7 +58,7 @@ class AddonsWidgetEditor(QWidget):
         )
         if paths:
             for path in paths:
-                self.list_model.add_addon(unicode(path))
+                self.list_model.add_addon(str(path))
 
     @Slot()
     def remove_selected_addons(self):
@@ -74,7 +74,7 @@ class AddonsWidgetEditor(QWidget):
 
 
 if __name__ == '__main__':
-    from PyQt4.QtGui import QApplication
+    from PySide2.QtWidgets import QApplication
 
     app = QApplication([])
     view = AddonsWidgetEditor()

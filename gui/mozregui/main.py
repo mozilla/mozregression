@@ -1,28 +1,13 @@
-# first thing, patch requests lib if required
-from mozregui import patch_requests
-patch_requests.patch()
+import sys
+from PySide2.QtWidgets import QApplication
 
-# Import PyQt4 classes
-import sys  # noqa
-from PyQt4.QtGui import QApplication  # noqa
+from mozlog.structuredlog import set_default_logger, StructuredLogger
 
-from mozlog.structuredlog import set_default_logger, StructuredLogger  # noqa
-
-from mozregui.log_report import LogModel  # noqa
-from mozregui.check_release import CheckRelease  # noqa
-from mozregui.crash_reporter import CrashReporter  # noqa
-from mozregui.mainwindow import MainWindow  # noqa
-from mozregui.global_prefs import set_default_prefs  # noqa
-
-# stupid hacks to make sure various deps get bundled despite some bug in
-# cx_Freeze (see: https://github.com/anthony-tuininga/cx_Freeze/issues/393)
-import os  # noqa
-if os.name == 'nt':
-    import mozprocess.winprocess
-    mywinprocess = mozprocess.winprocess
-import idna.idnadata  # noqa
-import SocketServer  # noqa
-import ConfigParser  # noqa
+from .log_report import LogModel
+from .check_release import CheckRelease
+from .crash_reporter import CrashReporter
+from .mainwindow import MainWindow
+from .global_prefs import set_default_prefs
 
 
 def main():
@@ -31,7 +16,7 @@ def main():
     # Create a Qt application
     log_model = LogModel()
     logger.add_handler(log_model)
-    argv = [sys.argv[0].replace("main.py", "mozregression")] + sys.argv[1:]
+    argv = [sys.argv[0].replace("mozregression-gui.py", "mozregression")] + sys.argv[1:]
     app = QApplication(argv)
     crash_reporter = CrashReporter(app)
     crash_reporter.install()

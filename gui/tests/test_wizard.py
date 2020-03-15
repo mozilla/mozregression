@@ -1,6 +1,6 @@
 import pytest
 
-from PyQt4.QtCore import QDate
+from PySide2.QtCore import QDate
 
 from mozregression.fetch_configs import CommonConfig
 
@@ -50,7 +50,7 @@ def test_wizard(mocker, qtbot, os, bits, wizard_class, pages):
 
     assert options['profile'] == ''
     if isinstance(wizard, SingleRunWizard):
-        assert options['launch'] == now.addDays(-3).toPyDate()
+        assert options['launch'] == now.addDays(-3).toPython()
     else:
-        assert options['good'] == now.addYears(-1).toPyDate()
-        assert options['bad'] == now.toPyDate()
+        assert options['good'] == now.addYears(-1).toPython()
+        assert options['bad'] == now.toPython()

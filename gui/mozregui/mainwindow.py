@@ -4,8 +4,8 @@ import mozregui
 import mozfile
 
 from tempfile import mkdtemp
-from PyQt4.QtGui import QMainWindow, QMessageBox
-from PyQt4.QtCore import pyqtSlot as Slot, QSettings
+from PySide2.QtCore import Slot, QSettings
+from PySide2.QtWidgets import QMainWindow, QMessageBox
 
 from mozregui.ui.mainwindow import Ui_MainWindow
 from mozregui.wizard import BisectionWizard, SingleRunWizard
@@ -86,8 +86,8 @@ class MainWindow(QMainWindow):
 
     def read_settings(self):
         settings = QSettings()
-        self.restoreGeometry(settings.value("mainWin/geometry").toByteArray())
-        self.restoreState(settings.value("mainWin/windowState").toByteArray())
+        self.restoreGeometry(settings.value("mainWin/geometry"))
+        self.restoreState(settings.value("mainWin/windowState"))
 
     def closeEvent(self, evt):
         settings = QSettings()

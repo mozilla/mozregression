@@ -1,8 +1,7 @@
 import os
-from PyQt4.QtGui import QDialog
+from PySide2.QtWidgets import QDialog
 
 from mozregui.ui.global_prefs import Ui_GlobalPrefs
-from mozregui import patch_requests
 
 from mozregression.network import set_http_session
 from mozregression.config import (DEFAULT_CONF_FNAME, get_defaults,
@@ -65,7 +64,6 @@ def set_default_prefs():
 def apply_prefs(options):
     set_http_session(get_defaults={
         "timeout": options['http_timeout'],
-        "verify": patch_requests.cacert_path()
     })
     # persist options have to be passed in the bisection, not handled here.
 

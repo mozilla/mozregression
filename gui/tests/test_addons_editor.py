@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import mozfile
 
-from PyQt4.QtCore import Qt, QStringList
+from PySide2.QtCore import Qt
 from mock import patch
 from mozregui.addons_editor import AddonsWidgetEditor
 
@@ -36,7 +36,7 @@ def addons_file(request):
 def test_add_addon(qtbot, addons_editor, addons_file):
     with patch("mozregui.addons_editor.QFileDialog") as dlg:
         filePath = addons_file
-        dlg.getOpenFileNames.return_value = QStringList(filePath)
+        dlg.getOpenFileNames.return_value = [filePath]
         qtbot.mouseClick(
             addons_editor.ui.add_addon,
             Qt.LeftButton
@@ -49,7 +49,7 @@ def test_add_addon(qtbot, addons_editor, addons_file):
 
         # check addons
         assert addons_editor.list_model.rowCount() == len(
-            QStringList(filePath))
+            [filePath])
         assert addons_editor.get_addons() == [filePath]
 
 

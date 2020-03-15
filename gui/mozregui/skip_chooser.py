@@ -1,6 +1,7 @@
-from PyQt4.QtCore import Qt, pyqtSignal as Signal
-from PyQt4.QtGui import (QGraphicsRectItem, QGraphicsScene, QGraphicsView,
-                         QBrush, QToolTip, QDialog, QMessageBox)
+from PySide2.QtCore import Qt, Signal
+from PySide2.QtGui import QBrush
+from PySide2.QtWidgets import (QGraphicsRectItem, QGraphicsScene, QGraphicsView,
+                               QToolTip, QDialog, QMessageBox)
 
 
 class BuildItem(QGraphicsRectItem):
@@ -132,9 +133,8 @@ if __name__ == '__main__':
 
     build_range = BuildRange(None, [FInfo(None, i) for i in range(420)])
 
-    from PyQt4.QtGui import QApplication, QMainWindow
+    from PySide2.QtWidgets import QApplication, QMainWindow
     app = QApplication([])
     win = QMainWindow()
 
     dlg = SkipDialog(build_range)
-    print dlg.choose_next_build()

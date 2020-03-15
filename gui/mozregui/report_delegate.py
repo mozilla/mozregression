@@ -1,6 +1,7 @@
-from PyQt4.QtGui import QStyledItemDelegate, QStyleOptionProgressBarV2, \
-    QApplication, QStyle, QWidget, QPainter, QIcon, QPixmap
-from PyQt4.QtCore import Qt, QRect, pyqtSignal as Signal
+from PySide2.QtGui import QIcon, QPainter, QPixmap
+from PySide2.QtWidgets import QStyledItemDelegate, QStyleOptionProgressBar, \
+    QApplication, QStyle, QWidget
+from PySide2.QtCore import Qt, QRect, Signal
 
 from mozregui.ui.ask_verdict import Ui_AskVerdict
 from mozregui.report import VERDICT_TO_ROW_COLORS
@@ -83,7 +84,7 @@ class ReportItemDelegate(QStyledItemDelegate):
         item = index.model().get_item(index)
         if item and item.downloading:
             # Draw progress bar
-            progressBarOption = QStyleOptionProgressBarV2()
+            progressBarOption = QStyleOptionProgressBar()
             progressBarHeight = option.rect.height() / 4
             progressBarOption.rect = QRect(
                 option.rect.x(),

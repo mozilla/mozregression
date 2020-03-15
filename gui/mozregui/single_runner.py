@@ -1,5 +1,5 @@
-from PyQt4.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
-from PyQt4.QtGui import QMessageBox
+from PySide2.QtCore import QObject, Slot, Signal
+from PySide2.QtWidgets import QMessageBox
 
 from mozregression.errors import MozRegressionError
 from mozregression.dates import is_date_or_datetime
@@ -74,4 +74,4 @@ class SingleBuildRunner(AbstractBuildRunner):
     def on_error(self, error):
         if error:
             self.stop(wait=False)
-            QMessageBox.critical(self.mainwindow, "Error", unicode(error))
+            QMessageBox.critical(self.mainwindow, "Error", str(error))

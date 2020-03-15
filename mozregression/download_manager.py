@@ -54,9 +54,9 @@ class Download(object):
         self._lock = threading.Lock()
         self.__url = url
         self.__dest = dest
-        self.__progress = progress
         self.__canceled = False
         self.__error = None
+        self.set_progress(progress)
 
     def start(self):
         """
@@ -263,7 +263,7 @@ class DownloadManager(object):
         for download in self._downloads.values():
             download.wait(raise_if_error=raise_if_error)
 
-    def download(self, url, fname):
+    def download(self, url, fname, progress=None):
         """
         Returns a started download instance, or None if fname is already
         present in destdir.
@@ -285,7 +285,8 @@ class DownloadManager(object):
         with self._lock:
             download = Download(url, dest,
                                 session=self.session,
-                                finished_callback=self._download_finished)
+                                finished_callback=self._download_finished,
+                                progress=progress)
             self._downloads[dest] = download
             download.start()
             self._download_started(download)
@@ -362,10 +363,9 @@ class BuildDownloadManager(DownloadManager):
         if self.background_dl_policy == 'cancel':
             self.cancel(cancel_if=lambda dl: dest != dl.get_dest())
 
-        dl = self.download(build_url, fname)
+        dl = self.download(build_url, fname, progress=download_progress)
         if dl:
             LOG.info("Downloading build from: %s" % build_url)
-            dl.set_progress(download_progress)
             try:
                 dl.wait()
             finally:

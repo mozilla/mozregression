@@ -1,5 +1,5 @@
-from PyQt4.QtCore import QObject, QThread, pyqtSignal as Signal, \
-    pyqtSlot as Slot, QTimer
+from PySide2.QtCore import QObject, QThread, Signal, \
+    Slot, QTimer
 
 from mozregui.global_prefs import get_prefs, apply_prefs
 from mozregression.download_manager import BuildDownloadManager
@@ -18,7 +18,6 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
 
     def __init__(self, destdir, persist_limit, **kwargs):
         QObject.__init__(self)
-        persist_limit = PersistLimit(persist_limit)
         BuildDownloadManager.__init__(self, destdir,
                                       session=get_http_session(),
                                       persist_limit=persist_limit,
@@ -46,10 +45,8 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
         # build if any)
         self.cancel(cancel_if=lambda dl: dest != dl.get_dest())
 
-        dl = self.download(build_url, fname)
-        if dl:
-            dl.set_progress(self.download_progress.emit)
-        else:
+        dl = self.download(build_url, fname, progress=self.download_progress.emit)
+        if not dl:
             # file already downloaded.
             # emit the finished signal so bisection goes on
             self.download_finished.emit(None, dest)
@@ -71,7 +68,7 @@ class GuiTestRunner(QObject):
             self.launcher = create_launcher(build_info)
             self.launcher.start(**self.launcher_kwargs)
             build_info.update_from_app_info(self.launcher.get_app_info())
-        except Exception, exc:
+        except Exception as exc:
             self.run_error = True
             self.evaluate_started.emit(str(exc))
         else:
@@ -132,8 +129,9 @@ class AbstractBuildRunner(QObject):
         download_dir = global_prefs['persist']
         if not download_dir:
             download_dir = self.mainwindow.persist
-        persist_limit = int(abs(global_prefs['persist_size_limit']) *
-                            1073741824)
+        persist_limit = PersistLimit(
+            abs(global_prefs['persist_size_limit']) * 1073741824
+        )
         self.download_manager = GuiBuildDownloadManager(download_dir,
                                                         persist_limit)
         self.test_runner = GuiTestRunner()

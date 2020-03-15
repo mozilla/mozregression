@@ -1,6 +1,6 @@
-from PyQt4.QtCore import QAbstractTableModel, QModelIndex, Qt, \
-    pyqtSlot as Slot
-from PyQt4.QtGui import QFileDialog, QWidget
+from PySide2.QtCore import QAbstractTableModel, QModelIndex, Qt, \
+    Slot
+from PySide2.QtWidgets import QFileDialog, QWidget
 from mozprofile.prefs import Preferences
 
 from mozregui.ui.pref_editor import Ui_PrefEditor
@@ -30,7 +30,7 @@ class PreferencesModel(QAbstractTableModel):
             if index.column() == 0:
                 return name
             else:
-                if isinstance(value, basestring):
+                if isinstance(value, str):
                     return '"' + value + '"'
                 else:
                     return value
@@ -39,7 +39,6 @@ class PreferencesModel(QAbstractTableModel):
         return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
 
     def setData(self, index, new_value, role=Qt.EditRole):
-        new_value = unicode(new_value.toString())
         name, value = self.prefs[index.row()]
         if index.column() == 0:
             # change pref name
@@ -62,7 +61,7 @@ class PreferencesModel(QAbstractTableModel):
             nb_prefs = len(self.prefs)
             self.beginInsertRows(QModelIndex(), nb_prefs,
                                  nb_prefs + len(prefs) - 1)
-            self.prefs.extend(prefs.items())
+            self.prefs.extend(list(prefs.items()))
             self.endInsertRows()
 
     def remove_pref(self, row):
@@ -99,7 +98,7 @@ class PreferencesWidgetEditor(QWidget):
             filter="pref file (*.json *.ini)",
         )
         if fname:
-            self.pref_model.add_prefs_from_file(unicode(fname))
+            self.pref_model.add_prefs_from_file(fname)
 
     @Slot()
     def remove_selected_prefs(self):
@@ -115,7 +114,7 @@ class PreferencesWidgetEditor(QWidget):
 
 
 if __name__ == '__main__':
-    from PyQt4.QtGui import QApplication
+    from PySide2.QtWidgets import QApplication
 
     app = QApplication([])
     view = PreferencesWidgetEditor()

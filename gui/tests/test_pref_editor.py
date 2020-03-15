@@ -4,7 +4,7 @@ import mozfile
 import os
 import mozinfo
 
-from PyQt4.QtCore import Qt, QString
+from PySide2.QtCore import Qt
 from mock import patch
 from mozregui.pref_editor import PreferencesWidgetEditor
 
@@ -77,14 +77,14 @@ def test_remove_pref(qtbot, pref_editor):
 def pref_file(request):
     # create a temp file with prefs
     with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as f:
-        f.write('{ "browser.tabs.remote.autostart": false, "toto": 1 }')
+        f.write(b'{ "browser.tabs.remote.autostart": false, "toto": 1 }')
     request.addfinalizer(lambda: mozfile.remove(f.name))
     return f.name
 
 
 def test_add_prefs_using_file(qtbot, pref_editor, pref_file):
     with patch("mozregui.pref_editor.QFileDialog") as dlg:
-        dlg.getOpenFileName.return_value = QString(pref_file)
+        dlg.getOpenFileName.return_value = pref_file
         qtbot.mouseClick(
             pref_editor.ui.add_prefs_from_file,
             Qt.LeftButton
@@ -97,7 +97,7 @@ def test_add_prefs_using_file(qtbot, pref_editor, pref_file):
 
     # check prefs
     assert pref_editor.pref_model.rowCount() == 2
-    assert pref_editor.get_prefs() == [
+    assert set(pref_editor.get_prefs()) == set([
         ("browser.tabs.remote.autostart", False),
         ("toto", 1)
-    ]
+    ])

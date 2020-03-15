@@ -19,7 +19,7 @@ IS_MAC = sys.platform == 'darwin'
 
 
 def call(*args, **kwargs):
-    print 'Executing `%s`' % ' '.join(pipes.quote(a) for a in args)
+    print('Executing `%s`' % ' '.join(pipes.quote(a) for a in args))
     subprocess.check_call(args, **kwargs)
 
 
@@ -33,40 +33,27 @@ def py_script(script_name):
 
 
 def do_uic(options, force=False):
-    from PyQt4.uic import compileUi
     for uifile in glob.glob('mozregui/ui/*.ui'):
         pyfile = os.path.splitext(uifile)[0] + '.py'
         if force or not os.path.isfile(pyfile) or \
                 (os.path.getmtime(uifile) > os.path.getmtime(pyfile)):
-            print "uic'ing %s -> %s" % (uifile, pyfile)
-            with open(pyfile, 'w') as f:
-                compileUi(uifile, f, False, 4, False)
+            print("uic'ing %s -> %s" % (uifile, pyfile))
+            os.system('pyside2-uic {} > {}'.format(uifile, pyfile))
 
 
 def do_rcc(options, force=False):
     rccfile = 'resources.qrc'
     pyfile = 'resources_rc.py'
-    pyrcc4 = 'pyrcc4'
-    if IS_WIN:
-        import PyQt4
-        lib_path = os.path.dirname(os.path.realpath(PyQt4.__file__))
-        pyrcc4 = os.path.join(lib_path, pyrcc4)
     if force or not os.path.isfile(pyfile) or \
             (os.path.getmtime(rccfile) > os.path.getmtime(pyfile)):
-        print "rcc'ing %s -> %s" % (rccfile, pyfile)
-        call(pyrcc4, '-o', pyfile, rccfile)
+        print("rcc'ing %s -> %s" % (rccfile, pyfile))
+        call('pyside2-rcc', '-o', pyfile, rccfile)
 
 
 def do_run(options):
     do_uic(options)
     do_rcc(options)
-    env = dict(os.environ)
-    # update PYTHONPATH so python can find mozregui package
-    if env.get('PYTHONPATH'):
-        env['PYTHONPATH'] = '.' + os.pathsep + env['PYTHONPATH']
-    else:
-        env['PYTHONPATH'] = '.'
-    call(sys.executable, 'mozregui/main.py', env=env)
+    call(sys.executable, 'mozregression-gui.py')
 
 
 def do_test(options):
@@ -77,43 +64,6 @@ def do_test(options):
     sys.exit(pytest.main(['tests', '-v']))
 
 
-def call_cx_freeze():
-    args = []
-    venv_path = os.path.dirname(sys.executable)
-    if IS_WIN:
-        # cxfreeze on windows is just a 'cxfreeze' python file in the
-        # Scripts dir
-        args.append(sys.executable)
-        args.append(os.path.join(venv_path, "Scripts", 'cxfreeze'))
-
-        args.append('--icon=wininst/app_icon.ico')
-        args.append('--base-name=Win32GUI')
-        args.append('--target-name=mozregression-gui.exe')
-    else:
-        args.append('cxfreeze')
-        args.append('--target-name=mozregression-gui')
-
-    # determine python paths needed for cxfreeze
-    paths = []
-    for p in sys.path:
-        # put the system python path in first, because somwhere there
-        # is a dependency to distutils - and distutils get patched
-        # in the virtualenv
-        if p.startswith(venv_path):
-            paths.append(p)
-        else:
-            paths.insert(0, p)
-    args.append('--include-path=%s' % os.pathsep.join(['.', '..'] + paths))
-
-    args.append('--target-dir=dist')
-    args.append('mozregui/main.py')
-    call(*args)
-
-    # copy the required cacert.pem file for requests library
-    import requests.certs
-    shutil.copy(requests.certs.where(), "dist/cacert.pem")
-
-
 def do_bundle(options):
     do_uic(options, True)
     do_rcc(options, True)
@@ -122,8 +72,8 @@ def do_bundle(options):
     for dirname in ('build', 'dist'):
         if os.path.isdir(dirname):
             shutil.rmtree(dirname)
-    # freeze the application
-    call_cx_freeze()
+    # create a bundle for the application
+    call('pyinstaller', 'gui.spec')
     # create an installer
     if IS_WIN:
         makensis_path = os.path.join(options.nsis_path, "makensis.exe")
@@ -171,7 +121,7 @@ def main():
     options = parse_args()
     try:
         options.func(options)
-    except Exception, e:
+    except Exception as e:
         sys.exit('ERROR: %s' % e)
 
 

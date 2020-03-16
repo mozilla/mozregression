@@ -56,6 +56,7 @@ DEFAULTS = {
     "repo": None,
     "taskcluster-accesstoken": None,
     "taskcluster-clientid": None,
+    "enable-telemetry": True,
 }
 
 

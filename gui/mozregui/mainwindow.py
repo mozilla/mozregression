@@ -4,9 +4,10 @@ import mozfile
 from PySide2.QtCore import QSettings, Slot
 from PySide2.QtWidgets import QMainWindow, QMessageBox
 
-import mozregression
+from mozregression import __version__ as mozregression_version
+from mozregression.telemetry import initialize_telemetry
 from mozregui.bisection import BisectRunner
-from mozregui.global_prefs import change_prefs_dialog
+from mozregui.global_prefs import change_prefs_dialog, get_prefs
 from mozregui.report_delegate import ReportItemDelegate
 from mozregui.single_runner import SingleBuildRunner
 from mozregui.ui.mainwindow import Ui_MainWindow
@@ -26,7 +27,7 @@ from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a>
 and licensed under <a href="http://creativecommons.org/licenses/by/3.0/"
                       title="Creative Commons BY 3.0">CC BY 3.0</a></p>
 """ % (
-    mozregression.__version__
+    mozregression_version
 )
 
 
@@ -63,6 +64,8 @@ class MainWindow(QMainWindow):
         self.persist = mkdtemp()
 
         self.read_settings()
+
+        initialize_telemetry(get_prefs()["enable_telemetry"])
 
         # Make sure the toolbar and logviews are visible (in case
         # the user manually turned them off in a previous release

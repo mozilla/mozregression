@@ -4,12 +4,13 @@
 
 from __future__ import absolute_import, print_function
 
+import tempfile
 import unittest
 from datetime import date
 
 import pytest
 import requests
-from mock import ANY, MagicMock, Mock, patch
+from mock import ANY, MagicMock, Mock, call, patch
 from six.moves import range
 
 from mozregression import __version__, config, errors, main
@@ -227,13 +228,22 @@ class TestMain(unittest.TestCase):
         self.app = Mock()
         self.logger = Mock()
 
+    @patch("mozregression.main.send_telemetry_ping_oop")
     @patch("mozregression.main.LOG")
     @patch("mozregression.main.check_mozregression_version")
     @patch("mozlog.structured.commandline.setup_logging")
     @patch("mozregression.main.set_http_session")
     @patch("mozregression.main.Application")
     def do_cli(
-        self, argv, Application, set_http_session, setup_logging, check_mozregression_version, log,
+        self,
+        argv,
+        Application,
+        set_http_session,
+        setup_logging,
+        check_mozregression_version,
+        log,
+        send_telemetry_ping_oop,
+        telemetry_enabled=True,
     ):
         self.logger = log
 
@@ -244,8 +254,17 @@ class TestMain(unittest.TestCase):
 
         Application.side_effect = create_app
         try:
-            main.main(argv)
+            with tempfile.NamedTemporaryFile("wt", delete=False) as tf:
+                tf.write("enable-telemetry = {}\n".format("yes" if telemetry_enabled else "no"))
+                tf.flush()
+                # Use `func_defaults` in Python2.x and `__defaults__` in Python3.x.
+                with patch.object(main.cli, "__defaults__", (None, tf.name, None)):
+                    main.main(argv)
         except SystemExit as exc:
+            self.assertEqual(send_telemetry_ping_oop.call_count, 1)
+            self.assertEqual(
+                send_telemetry_ping_oop.call_args, call("console", "firefox", telemetry_enabled)
+            )
             return exc.code
         else:
             self.fail("mozregression.main.cli did not call sys.exit")
@@ -275,6 +294,11 @@ class TestMain(unittest.TestCase):
         exitcode = self.do_cli(["--good=a1", "--bad=b5"])
         self.assertEqual(exitcode, 0)
         self.app.bisect_integration.assert_called_with()
+
+    def test_disable_telemetry(self):
+        self.app.bisect_integration.return_value = 0
+        exitcode = self.do_cli(["--good=a1", "--bad=b5"], telemetry_enabled=False)
+        self.assertEqual(exitcode, 0)
 
     def test_handle_keyboard_interrupt(self):
         # KeyboardInterrupt is handled with a nice error message.

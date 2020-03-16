@@ -32,6 +32,7 @@ from mozregression.json_pushes import JsonPushes
 from mozregression.launchers import REGISTRY as APP_REGISTRY
 from mozregression.network import set_http_session
 from mozregression.persist_limit import PersistLimit
+from mozregression.telemetry import send_telemetry_ping_oop
 from mozregression.tempdir import safe_mkdtemp
 from mozregression.test_runner import CommandTestRunner, ManualTestRunner
 
@@ -308,7 +309,7 @@ def check_mozregression_version():
         )
 
 
-def main(argv=None, namespace=None, check_new_version=True):
+def main(argv=None, namespace=None, check_new_version=True, mozregression_variant="console"):
     """
     main entry point of mozregression command line.
     """
@@ -331,7 +332,11 @@ def main(argv=None, namespace=None, check_new_version=True):
             check_mozregression_version()
         config.validate()
         set_http_session(get_defaults={"timeout": config.options.http_timeout})
+
         app = Application(config.fetch_config, config.options)
+        send_telemetry_ping_oop(
+            mozregression_variant, config.fetch_config.app_name, config.options.enable_telemetry
+        )
 
         method = getattr(app, config.action)
         sys.exit(method())

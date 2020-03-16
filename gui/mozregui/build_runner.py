@@ -4,6 +4,7 @@ from mozregression.download_manager import BuildDownloadManager
 from mozregression.errors import LauncherError
 from mozregression.network import get_http_session
 from mozregression.persist_limit import PersistLimit
+from mozregression.telemetry import send_telemetry_ping
 from mozregression.test_runner import create_launcher
 from mozregui.global_prefs import apply_prefs, get_prefs
 from mozregui.log_report import log
@@ -164,6 +165,11 @@ class AbstractBuildRunner(QObject):
         self.thread.start()
         # this will be called in the worker thread.
         QTimer.singleShot(0, action)
+        # an action = instance of mozregression usage, so send
+        # a usage ping (if telemetry is enabled)
+        if get_prefs()["enable_telemetry"]:
+            send_telemetry_ping("gui", fetch_config.app_name)
+
         self.stopped = False
         self.running_state_changed.emit(True)
 

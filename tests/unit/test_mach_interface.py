@@ -41,5 +41,7 @@ def test_run(mocker):
     main = mocker.patch("mozregression.mach_interface.main")
     run({"persist": "foo", "bits": 64})
     main.assert_called_once_with(
-        check_new_version=False, namespace=Namespace(bits=64, persist="foo")
+        check_new_version=False,
+        mozregression_variant="mach",
+        namespace=Namespace(bits=64, persist="foo"),
     )

@@ -44,6 +44,11 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        # Make sure the toolbar and logviews are visible (in case
+        # the user manually turned them off in a previous revision)
+        self.ui.toolBar.setVisible(True)
+        self.ui.log_view.setVisible(True)
+
         self.bisect_runner = BisectRunner(self)
         self.single_runner = SingleBuildRunner(self)
         self.current_runner = None

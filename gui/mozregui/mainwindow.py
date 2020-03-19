@@ -77,7 +77,8 @@ class MainWindow(QMainWindow):
         self.read_settings()
 
         # Make sure the toolbar and logviews are visible (in case
-        # the user manually turned them off in a previous revision)
+        # the user manually turned them off in a previous release
+        # where this was possible)
         self.ui.toolBar.setVisible(True)
         self.ui.log_view.setVisible(True)
 

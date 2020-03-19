@@ -119,16 +119,6 @@ class ReportModel(QAbstractTableModel):
                           'finished')
         downloader_slots = ('download_progress', )
 
-        if self.bisector:
-            _bulk_action_slots('disconnect',
-                               bisector_slots,
-                               self.bisector,
-                               self)
-            _bulk_action_slots('disconnect',
-                               downloader_slots,
-                               self.bisector.download_manager,
-                               self)
-
         if bisector:
             self.attach_single_runner(None)
             _bulk_action_slots('connect',
@@ -146,12 +136,6 @@ class ReportModel(QAbstractTableModel):
     def attach_single_runner(self, single_runner):
         sr_slots = ('started', 'step_build_found', 'step_testing')
         downloader_slots = ('download_progress', )
-
-        if self.single_runner:
-            _bulk_action_slots('disconnect', sr_slots, self.single_runner,
-                               self)
-            _bulk_action_slots('disconnect', downloader_slots,
-                               self.single_runner.download_manager, self)
 
         if single_runner:
             self.attach_bisector(None)

@@ -104,11 +104,14 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
-   <property name="minimumSize">
-    <size>
-     <width>320</width>
-     <height>24</height>
-    </size>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="contextMenuPolicy">
     <enum>Qt::NoContextMenu</enum>

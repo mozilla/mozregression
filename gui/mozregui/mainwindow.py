@@ -44,10 +44,6 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        # Init MenuViews
-        self.ui.actionLogView.setChecked(self.ui.logDockWidget.isVisible())
-        self.ui.actionToolBar.setChecked(self.ui.toolBar.isVisible())
-
         self.bisect_runner = BisectRunner(self)
         self.single_runner = SingleBuildRunner(self)
         self.current_runner = None
@@ -79,6 +75,12 @@ class MainWindow(QMainWindow):
         self.persist = mkdtemp()
 
         self.read_settings()
+
+        # Make sure the toolbar and logviews are visible (in case
+        # the user manually turned them off in a previous release
+        # where this was possible)
+        self.ui.toolBar.setVisible(True)
+        self.ui.log_view.setVisible(True)
 
     @Slot()
     def clear(self):

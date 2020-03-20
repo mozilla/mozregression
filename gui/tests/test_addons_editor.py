@@ -36,7 +36,7 @@ def addons_file(request):
 def test_add_addon(qtbot, addons_editor, addons_file):
     with patch("mozregui.addons_editor.QFileDialog") as dlg:
         filePath = addons_file
-        dlg.getOpenFileNames.return_value = [filePath]
+        dlg.getOpenFileNames.return_value = ([filePath], "addon file (*.xpi)")
         qtbot.mouseClick(
             addons_editor.ui.add_addon,
             Qt.LeftButton

@@ -84,7 +84,7 @@ def pref_file(request):
 
 def test_add_prefs_using_file(qtbot, pref_editor, pref_file):
     with patch("mozregui.pref_editor.QFileDialog") as dlg:
-        dlg.getOpenFileName.return_value = pref_file
+        dlg.getOpenFileName.return_value = (pref_file, 'pref file (*.json *.ini)')
         qtbot.mouseClick(
             pref_editor.ui.add_prefs_from_file,
             Qt.LeftButton

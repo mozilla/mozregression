@@ -92,13 +92,13 @@ class PreferencesWidgetEditor(QWidget):
 
     @Slot()
     def add_prefs_from_file(self):
-        fname = QFileDialog.getOpenFileName(
+        (fileName, _) = QFileDialog.getOpenFileName(
             self,
             "Choose a preference file",
             filter="pref file (*.json *.ini)",
         )
-        if fname:
-            self.pref_model.add_prefs_from_file(fname)
+        if fileName:
+            self.pref_model.add_prefs_from_file(fileName)
 
     @Slot()
     def remove_selected_prefs(self):

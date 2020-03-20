@@ -51,14 +51,13 @@ class AddonsWidgetEditor(QWidget):
 
     @Slot()
     def add_addon(self):
-        paths = QFileDialog.getOpenFileNames(
+        (fileNames, _) = QFileDialog.getOpenFileNames(
             self,
             "Choose one or more addon files",
             filter="addon file (*.xpi)",
         )
-        if paths:
-            for path in paths:
-                self.list_model.add_addon(str(path))
+        for fileName in fileNames:
+                self.list_model.add_addon(fileName)
 
     @Slot()
     def remove_selected_addons(self):

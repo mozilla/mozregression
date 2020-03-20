@@ -39,7 +39,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>455</width>
+        <width>545</width>
         <height>346</height>
        </rect>
       </property>
@@ -97,21 +97,21 @@
      <item>
       <widget class="QPushButton" name="add_pref">
        <property name="text">
-        <string>Add preference</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="add_prefs_from_file">
-       <property name="text">
-        <string>Add preferences from file</string>
+        <string>Add</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="remove_selected_prefs">
        <property name="text">
-        <string>remove selected preferences</string>
+        <string>Remove</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="add_prefs_from_file">
+       <property name="text">
+        <string>Add from File</string>
        </property>
       </widget>
      </item>

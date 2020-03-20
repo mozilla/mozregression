@@ -51,7 +51,7 @@
       </size>
      </property>
      <property name="text">
-      <string>good</string>
+      <string>Good</string>
      </property>
     </widget>
    </item>
@@ -64,7 +64,7 @@
       </size>
      </property>
      <property name="text">
-      <string>bad</string>
+      <string>Bad</string>
      </property>
     </widget>
    </item>

@@ -56,7 +56,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Bisection progress</string>
+         <string>Progress</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -66,7 +66,7 @@
       <item row="0" column="1">
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Bisection informations</string>
+         <string>Build Info</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -139,7 +139,7 @@
   </widget>
   <widget class="QDockWidget" name="logDockWidget">
    <property name="windowTitle">
-    <string>Log view</string>
+    <string>Log</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
@@ -178,7 +178,7 @@
     <string>Ctrl+R</string>
    </property>
    <property name="iconVisibleInMenu">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionQuit">

@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sorry, mozregression GUI encountered an error...&lt;/p&gt;&lt;p&gt;Please consider &lt;a href=&quot;https://wiki.mozilla.org/Auto-tools/Projects/Mozregression#Issue_.2F_feature_tracking&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;filing a bug&lt;/span&gt;&lt;/a&gt;, and in this case please copy paste the following information:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sorry, the mozregression GUI encountered an error...&lt;/p&gt;&lt;p&gt;Please consider &lt;a href=&quot;https://wiki.mozilla.org/Auto-tools/Projects/Mozregression#Issue_.2F_feature_tracking&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;filing a bug&lt;/span&gt;&lt;/a&gt; with the following information:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>

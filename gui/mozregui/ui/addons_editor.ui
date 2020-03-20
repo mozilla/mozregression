@@ -39,7 +39,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>492</width>
+        <width>586</width>
         <height>352</height>
        </rect>
       </property>
@@ -84,14 +84,14 @@
      <item>
       <widget class="QPushButton" name="add_addon">
        <property name="text">
-        <string>Add addon</string>
+        <string>Add</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="remove_addon">
        <property name="text">
-        <string>Remove selected addons</string>
+        <string>Remove</string>
        </property>
       </widget>
      </item>

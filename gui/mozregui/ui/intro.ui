@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Application:</string>
+      <string>Application</string>
      </property>
     </widget>
    </item>
@@ -27,7 +27,7 @@
    <item row="1" column="0">
     <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>Bits:</string>
+      <string>Bits</string>
      </property>
     </widget>
    </item>
@@ -37,7 +37,7 @@
    <item row="2" column="0">
     <widget class="QLabel" name="label_5">
      <property name="text">
-      <string>Build Type:</string>
+      <string>Build Type</string>
      </property>
     </widget>
    </item>
@@ -54,7 +54,7 @@
       <string>you can choose a specific repository name here</string>
      </property>
      <property name="text">
-      <string>Repository:</string>
+      <string>Repository</string>
      </property>
     </widget>
    </item>
@@ -74,7 +74,7 @@
       <string>enter a URL to pass to the app</string>
      </property>
      <property name="text">
-      <string>URL:</string>
+      <string>URL</string>
      </property>
     </widget>
    </item>

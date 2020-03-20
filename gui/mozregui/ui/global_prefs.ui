@@ -25,7 +25,7 @@
         <string>The directory in which downloaded files are to persist.</string>
        </property>
        <property name="text">
-        <string>persist directory:</string>
+        <string>Persist Directory</string>
        </property>
       </widget>
      </item>
@@ -38,7 +38,7 @@
         <string>Size limit of the persist directory, in GiB. 0 means no limit.</string>
        </property>
        <property name="text">
-        <string>persist size limit:</string>
+        <string>Persist Size Limit</string>
        </property>
       </widget>
      </item>
@@ -52,13 +52,30 @@
        </property>
       </widget>
      </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="toolTip">
+        <string>reuse approximate persistent builds instead of downloading the accurate ones.</string>
+       </property>
+       <property name="text">
+        <string>Approximative Builds</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QCheckBox" name="approx">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
      <item row="3" column="0">
       <widget class="QLabel" name="label_3">
        <property name="toolTip">
         <string>Timeout in seconds to abort requests when there is no activity from the server. Default to 30.0 seconds - increase this if you are under a really slow network.</string>
        </property>
        <property name="text">
-        <string>http timeout:</string>
+        <string>HTTP timeout</string>
        </property>
       </widget>
      </item>
@@ -75,29 +92,12 @@
         <string>If checked, background downloads of the next builds will start while you are evaluating a build.</string>
        </property>
        <property name="text">
-        <string>background downloads:</string>
+        <string>Background Downloads</string>
        </property>
       </widget>
      </item>
      <item row="4" column="1">
       <widget class="QCheckBox" name="bg_downloads">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="toolTip">
-        <string>reuse approximate persistent builds instead of downloading the accurate ones.</string>
-       </property>
-       <property name="text">
-        <string>approximative builds:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QCheckBox" name="approx">
        <property name="text">
         <string/>
        </property>
@@ -109,7 +109,7 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Base url used to find the archived builds. You can set it blank to revert to the default value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
-        <string>Archives url:</string>
+        <string>Archives URL</string>
        </property>
       </widget>
      </item>

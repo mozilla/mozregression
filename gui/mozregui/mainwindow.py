@@ -22,6 +22,7 @@ nightly and inbound builds.</p>
 <p><a href="http://mozilla.github.io/mozregression/">\
 http://mozilla.github.io/mozregression/</a></p>
 <p><b>Using mozregression version: %s</b></p>
+<p>mozregression logo by <a href="https://mozillians.org/en-US/u/victoria/">Victoria Wang</a></p>
 <p>All application icons are made by <a href="http://www.freepik.com"
                               title="Freepik">Freepik</a>
 from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a>

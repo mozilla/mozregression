@@ -19,20 +19,15 @@ ABOUT_TEXT = """\
 <p><strong>mozregression-gui</strong> is a desktop interface for
 <strong>mozregression</strong>, a regression range finder for Mozilla
 nightly and inbound builds.</p>
-<br>
-<a href="http://mozilla.github.io/mozregression/">\
-http://mozilla.github.io/mozregression/</a>
-<br>
-<ul>
-<li>Version: %s</li>
-<li>Using mozregression version: %s</li>
-</ul>
-<div>All icons are made by <a href="http://www.freepik.com"
+<p><a href="http://mozilla.github.io/mozregression/">\
+http://mozilla.github.io/mozregression/</a></p>
+<p><b>Using mozregression version: %s</b></p>
+<p>All application icons are made by <a href="http://www.freepik.com"
                               title="Freepik">Freepik</a>
 from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a>
 and licensed under <a href="http://creativecommons.org/licenses/by/3.0/"
-                      title="Creative Commons BY 3.0">CC BY 3.0</a></div>
-""" % (mozregui.__version__, mozregression.__version__)
+                      title="Creative Commons BY 3.0">CC BY 3.0</a></p>
+""" % (mozregression.__version__)
 
 
 class MainWindow(QMainWindow):

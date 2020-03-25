@@ -1,6 +1,6 @@
 import pytest
 
-from mozregui import __version__
+from mozregression import __version__
 from mozregui.main import MainWindow
 from mozregui.check_release import CheckRelease, QLabel, QUrl
 
@@ -45,7 +45,7 @@ def test_check_release_no_update(qtbot, mocker, mainwindow):
     retry_get = mocker.patch("mozregui.check_release.retry_get")
     retry_get.return_value = mocker.Mock(
         json=lambda *a: {
-            'tag_name': 'gui-' + __version__,
+            'tag_name': __version__,
             'html_url': 'url'
         }
     )

@@ -3,7 +3,7 @@ from PySide2.QtGui import QDesktopServices
 from PySide2.QtWidgets import QLabel
 from mozregression.network import retry_get
 
-from . import __version__
+from mozregression import __version__ as mozregression_version
 
 
 class CheckReleaseThread(QThread):
@@ -39,8 +39,8 @@ class CheckRelease(QObject):
 
     @Slot()
     def on_release_found(self):
-        release_name = self.thread.tag_name.replace('gui-', '')
-        if release_name == __version__:
+        release_name = self.thread.tag_name
+        if release_name == mozregression_version:
             return
 
         self.label.setText(

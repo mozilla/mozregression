@@ -2,7 +2,6 @@ import sys
 import traceback
 import platform
 import mozregression
-from . import __version__
 
 from PySide2.QtCore import QObject, Slot, Signal, Qt
 from PySide2.QtWidgets import QDialog
@@ -13,7 +12,6 @@ class CrashDialog(QDialog):
     ERR_TEMPLATE = """\
 platform: %(platform)s
 python: %(python)s (%(arch)s)
-mozregui: %(mozregui)s
 mozregression: %(mozregression)s
 message: %(message)s
 traceback: %(traceback)s
@@ -27,7 +25,6 @@ traceback: %(traceback)s
     def set_exception(self, type, value, tb):
         frozen = ' FROZEN' if getattr(sys, 'frozen', False) else ''
         self.ui.information.setPlainText(self.ERR_TEMPLATE % dict(
-            mozregui=__version__,
             mozregression=mozregression.__version__,
             message="%s: %s" % (type.__name__, value),
             traceback=''.join(traceback.format_tb(tb)) if tb else 'NONE',

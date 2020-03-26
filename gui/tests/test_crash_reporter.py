@@ -1,8 +1,8 @@
 import pytest
-
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QApplication, QPushButton
-from mozregui.crash_reporter import CrashReporter, CrashDialog
+
+from mozregui.crash_reporter import CrashDialog, CrashReporter
 
 
 class CrashDlgTest(CrashDialog):
@@ -46,4 +46,4 @@ def test_report_exception(crash_reporter, qtbot, mocker):
     dlg = CrashDlgTest.INSTANCE
     qtbot.waitForWindowShown(dlg)
     text = str(dlg.ui.information.toPlainText())
-    assert 'oh, no!' in text
+    assert "oh, no!" in text

@@ -3,14 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from __future__ import absolute_import
+
 import os
 import stat
-import mozfile
-from glob import glob
 from collections import namedtuple
+from glob import glob
 
+import mozfile
 
-File = namedtuple('File', ('path', 'stat'))
+File = namedtuple("File", ("path", "stat"))
 
 
 class PersistLimit(object):
@@ -25,6 +26,7 @@ class PersistLimit(object):
     :param file_limit: even if the size limit is reached, this force
                        to keep at least *file_limit* files.
     """
+
     def __init__(self, size_limit, file_limit=5):
         self.size_limit = size_limit
         self.file_limit = file_limit
@@ -60,8 +62,7 @@ class PersistLimit(object):
             return
         # sort by creation time, oldest first
         files = sorted(self.files, key=lambda f: f.stat.st_atime)
-        while len(files) > self.file_limit and \
-                self._files_size >= self.size_limit:
+        while len(files) > self.file_limit and self._files_size >= self.size_limit:
             f = files.pop(0)
             mozfile.remove(f.path)
             self._files_size -= f.stat.st_size

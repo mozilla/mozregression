@@ -1,13 +1,14 @@
 from __future__ import absolute_import
+
 import datetime
 
+import six
 from mozlog import get_proxy_logger
 
-from mozregression.errors import EmptyPushlogError
-from mozregression.network import retry_get
 from mozregression import branches
 from mozregression.dates import is_date_or_datetime
-import six
+from mozregression.errors import EmptyPushlogError
+from mozregression.network import retry_get
 
 LOG = get_proxy_logger("JsonPushes")
 
@@ -16,7 +17,8 @@ class Push(object):
     """
     Simple wrapper around a json push object from json-pushes API.
     """
-    __slots__ = ('_data', '_push_id')  # to save memory usage
+
+    __slots__ = ("_data", "_push_id")  # to save memory usage
 
     def __init__(self, push_id, data):
         self._data = data
@@ -28,18 +30,18 @@ class Push(object):
 
     @property
     def changesets(self):
-        return self._data['changesets']
+        return self._data["changesets"]
 
     @property
     def changeset(self):
         """
         Returns the last changeset in the push (the most interesting for us)
         """
-        return self._data['changesets'][-1]
+        return self._data["changesets"][-1]
 
     @property
     def timestamp(self):
-        return self._data['date']
+        return self._data["date"]
 
     @property
     def utc_date(self):
@@ -53,7 +55,8 @@ class JsonPushes(object):
     """
     Find pushlog Push objects from a mozilla hg json-pushes api.
     """
-    def __init__(self, branch='mozilla-central'):
+
+    def __init__(self, branch="mozilla-central"):
         self.branch = branch
         self.repo_url = branches.get_url(branch)
 
@@ -63,15 +66,19 @@ class JsonPushes(object):
 
         Basically issue a raw request to the server.
         """
-        base_url = '%s/json-pushes?' % self.repo_url
-        url = base_url + '&'.join(sorted("%s=%s" % kv for kv in six.iteritems(kwargs)))
+        base_url = "%s/json-pushes?" % self.repo_url
+        url = base_url + "&".join(sorted("%s=%s" % kv for kv in six.iteritems(kwargs)))
         LOG.debug("Using url: %s" % url)
 
         response = retry_get(url)
         data = response.json()
 
-        if (response.status_code == 404 and data is not None and
-                "error" in data and "unknown revision" in data["error"]):
+        if (
+            response.status_code == 404
+            and data is not None
+            and "error" in data
+            and "unknown revision" in data["error"]
+        ):
             raise EmptyPushlogError(
                 "The url %r returned a 404 error because the push is not"
                 " in this repo (e.g., not merged yet)." % url
@@ -80,8 +87,7 @@ class JsonPushes(object):
 
         if not data:
             raise EmptyPushlogError(
-                "The url %r contains no pushlog. Maybe use another range ?"
-                % url
+                "The url %r contains no pushlog. Maybe use another range ?" % url
             )
 
         pushlog = []
@@ -89,8 +95,7 @@ class JsonPushes(object):
             pushlog.append(Push(key, data[key]))
         return pushlog
 
-    def pushes_within_changes(self, fromchange, tochange, verbose=True,
-                              **kwargs):
+    def pushes_within_changes(self, fromchange, tochange, verbose=True, **kwargs):
         """
         Returns a list of Push objects, including fromchange and tochange.
 
@@ -105,17 +110,18 @@ class JsonPushes(object):
             # the first changeset is not taken into account in the result.
             # let's add it directly with this request
             chsets = self.pushes(changeset=fromchange)
-            kwargs['fromchange'] = fromchange
+            kwargs["fromchange"] = fromchange
         else:
             chsets = []
-            kwargs['startdate'] = fromchange.strftime('%Y-%m-%d')
+            kwargs["startdate"] = fromchange.strftime("%Y-%m-%d")
 
         if not to_is_date:
-            kwargs['tochange'] = tochange
+            kwargs["tochange"] = tochange
         else:
             # add one day to take the last day in account
-            kwargs['enddate'] = (
-                tochange + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+            kwargs["enddate"] = (tochange + datetime.timedelta(days=1)).strftime(
+                "%Y-%m-%d"
+            )
 
         # now fetch all remaining changesets
         chsets.extend(self.pushes(**kwargs))
@@ -123,12 +129,18 @@ class JsonPushes(object):
         log = LOG.info if verbose else LOG.debug
         if from_is_date:
             first = chsets[0]
-            log("Using {} (pushed on {}) for date {}".format(
-                first.changeset, first.utc_date, fromchange))
+            log(
+                "Using {} (pushed on {}) for date {}".format(
+                    first.changeset, first.utc_date, fromchange
+                )
+            )
         if to_is_date:
             last = chsets[-1]
-            log("Using {} (pushed on {}) for date {}".format(
-                last.changeset, last.utc_date, tochange))
+            log(
+                "Using {} (pushed on {}) for date {}".format(
+                    last.changeset, last.utc_date, tochange
+                )
+            )
 
         return chsets
 
@@ -140,9 +152,9 @@ class JsonPushes(object):
         """
         if is_date_or_datetime(changeset):
             try:
-                return self.pushes_within_changes(changeset,
-                                                  changeset,
-                                                  verbose=False)[-1]
+                return self.pushes_within_changes(changeset, changeset, verbose=False)[
+                    -1
+                ]
             except EmptyPushlogError:
                 raise EmptyPushlogError(
                     "No pushes available for the date %s on %s."

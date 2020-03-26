@@ -1,11 +1,12 @@
-import pytest
-import tempfile
-import mozfile
 import os
-import mozinfo
+import tempfile
 
-from PySide2.QtCore import Qt
+import mozfile
+import mozinfo
+import pytest
 from mock import patch
+from PySide2.QtCore import Qt
+
 from mozregui.pref_editor import PreferencesWidgetEditor
 
 
@@ -54,7 +55,7 @@ def test_add_empty_pref_then_fill_it(qtbot, pref_editor):
         # under TRAVIS and mac, the edition fail somewhere. not sure
         # why, since on my ubuntu it works well even with Xvfb.
         # TODO: look at this later
-        assert pref_editor.get_prefs() == [('hello', 'world')]
+        assert pref_editor.get_prefs() == [("hello", "world")]
 
 
 def test_remove_pref(qtbot, pref_editor):
@@ -76,7 +77,7 @@ def test_remove_pref(qtbot, pref_editor):
 @pytest.fixture
 def pref_file(request):
     # create a temp file with prefs
-    with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as f:
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
         f.write(b'{ "browser.tabs.remote.autostart": false, "toto": 1 }')
     request.addfinalizer(lambda: mozfile.remove(f.name))
     return f.name
@@ -84,20 +85,14 @@ def pref_file(request):
 
 def test_add_prefs_using_file(qtbot, pref_editor, pref_file):
     with patch("mozregui.pref_editor.QFileDialog") as dlg:
-        dlg.getOpenFileName.return_value = (pref_file, 'pref file (*.json *.ini)')
-        qtbot.mouseClick(
-            pref_editor.ui.add_prefs_from_file,
-            Qt.LeftButton
-        )
+        dlg.getOpenFileName.return_value = (pref_file, "pref file (*.json *.ini)")
+        qtbot.mouseClick(pref_editor.ui.add_prefs_from_file, Qt.LeftButton)
     dlg.getOpenFileName.assert_called_once_with(
-        pref_editor,
-        "Choose a preference file",
-        filter="pref file (*.json *.ini)"
+        pref_editor, "Choose a preference file", filter="pref file (*.json *.ini)"
     )
 
     # check prefs
     assert pref_editor.pref_model.rowCount() == 2
-    assert set(pref_editor.get_prefs()) == set([
-        ("browser.tabs.remote.autostart", False),
-        ("toto", 1)
-    ])
+    assert set(pref_editor.get_prefs()) == set(
+        [("browser.tabs.remote.autostart", False), ("toto", 1)]
+    )

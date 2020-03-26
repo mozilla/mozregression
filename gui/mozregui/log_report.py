@@ -1,19 +1,17 @@
-from PySide2.QtCore import (QObject, Slot, Signal)
-from PySide2.QtWidgets import (QAction, QActionGroup, QMenu, QPlainTextEdit)
-from PySide2.QtGui import (QTextCursor, QColor,
-                           QTextCharFormat,
-                           QTextBlockUserData)
 from datetime import datetime
-from mozlog.structuredlog import log_levels
 
 from mozlog import get_default_logger
+from mozlog.structuredlog import log_levels
+from PySide2.QtCore import QObject, Signal, Slot
+from PySide2.QtGui import QColor, QTextBlockUserData, QTextCharFormat, QTextCursor
+from PySide2.QtWidgets import QAction, QActionGroup, QMenu, QPlainTextEdit
 
 COLORS = {
-    'DEBUG': QColor(6, 146, 6),  # green
-    'INFO': QColor(250, 184, 4),  # deep yellow
-    'WARNING': QColor(255, 0, 0, 127),  # red
-    'CRITICAL': QColor(255, 0, 0, 127),
-    'ERROR': QColor(255, 0, 0, 127),
+    "DEBUG": QColor(6, 146, 6),  # green
+    "INFO": QColor(250, 184, 4),  # deep yellow
+    "WARNING": QColor(255, 0, 0, 127),  # red
+    "CRITICAL": QColor(255, 0, 0, 127),
+    "ERROR": QColor(255, 0, 0, 127),
 }
 
 
@@ -29,16 +27,17 @@ class LogView(QPlainTextEdit):
         self.setMaximumBlockCount(1000)
 
         self.group = QActionGroup(self)
-        self.actions = [QAction(log_lvl, self.group) for log_lvl in
-                        ["Debug", "Info", "Warning", "Error", "Critical"]]
+        self.actions = [
+            QAction(log_lvl, self.group)
+            for log_lvl in ["Debug", "Info", "Warning", "Error", "Critical"]
+        ]
 
         for action in self.actions:
             action.setCheckable(True)
             action.triggered.connect(self.on_log_filter)
         self.actions[0].setChecked(True)
 
-        self.customContextMenuRequested.connect(
-            self.on_custom_context_menu_requested)
+        self.customContextMenuRequested.connect(self.on_custom_context_menu_requested)
 
         self.log_lvl = log_levels["INFO"]
 
@@ -50,24 +49,24 @@ class LogView(QPlainTextEdit):
 
     @Slot(dict)
     def on_log_received(self, data):
-        time_info = datetime.fromtimestamp((data['time'] / 1000)).isoformat()
-        log_message = '%s: %s : %s' % (
-            time_info, data['level'], data['message'])
+        time_info = datetime.fromtimestamp((data["time"] / 1000)).isoformat()
+        log_message = "%s: %s : %s" % (time_info, data["level"], data["message"])
         message_document = self.document()
         cursor_to_add = QTextCursor(message_document)
         cursor_to_add.movePosition(cursor_to_add.End)
-        cursor_to_add.insertText(log_message + '\n')
+        cursor_to_add.insertText(log_message + "\n")
 
-        if data['level'] in COLORS:
+        if data["level"] in COLORS:
             fmt = QTextCharFormat()
-            fmt.setForeground(COLORS[data['level']])
+            fmt.setForeground(COLORS[data["level"]])
             cursor_to_add.movePosition(cursor_to_add.PreviousBlock)
-            log_lvl_data = LogLevelData(log_levels[data['level'].upper()])
+            log_lvl_data = LogLevelData(log_levels[data["level"].upper()])
             cursor_to_add.block().setUserData(log_lvl_data)
-            cursor_to_add_fmt = message_document.find(data['level'],
-                                                      cursor_to_add.position())
+            cursor_to_add_fmt = message_document.find(
+                data["level"], cursor_to_add.position()
+            )
             cursor_to_add_fmt.mergeCharFormat(fmt)
-            if log_levels[data['level']] > self.log_lvl:
+            if log_levels[data["level"]] > self.log_lvl:
                 cursor_to_add.block().setVisible(False)
         self.ensureCursorVisible()
 
@@ -103,11 +102,12 @@ class LogModel(QObject):
 
 def log(text, log=True, status_bar=True, status_bar_timeout=2.0):
     if log:
-        logger = get_default_logger('mozregui')
+        logger = get_default_logger("mozregui")
         if logger:
             logger.info(text)
     if status_bar:
         from mozregui.mainwindow import MainWindow
+
         mw = MainWindow.INSTANCE
         if mw:
             mw.ui.status_bar.showMessage(text, int(status_bar_timeout * 1000))

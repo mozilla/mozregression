@@ -3,7 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from __future__ import absolute_import
+
 import re
+
 from six.moves import range
 
 
@@ -27,6 +29,7 @@ class ApproxPersistChooser(object):
     2015-07-9
     2015-07-11
     """
+
     def __init__(self, one_every):
         self.one_every = abs(one_every)
 

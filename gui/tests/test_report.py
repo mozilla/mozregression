@@ -1,5 +1,5 @@
-from PySide2.QtCore import Qt
 from mock import Mock
+from PySide2.QtCore import Qt
 
 from mozregression.build_info import NightlyBuildInfo
 from mozregui.report import ReportView
@@ -24,30 +24,25 @@ def test_report_basic(qtbot):
     assert index.isValid()
 
     # simulate a build found
-    data = dict(build_type='nightly', build_date='date',
-                repo_name='mozilla-central')
-    build_infos = Mock(
-        spec=NightlyBuildInfo,
-        to_dict=lambda: data,
-        **data
-    )
-    bisection = Mock(build_range=[Mock(repo_name='mozilla-central')])
+    data = dict(build_type="nightly", build_date="date", repo_name="mozilla-central")
+    build_infos = Mock(spec=NightlyBuildInfo, to_dict=lambda: data, **data)
+    bisection = Mock(build_range=[Mock(repo_name="mozilla-central")])
     bisection.handler.find_fix = False
-    bisection.handler.get_range.return_value = ('1', '2')
+    bisection.handler.get_range.return_value = ("1", "2")
     view.model().step_build_found(bisection, build_infos)
     # now we have two rows
     assert view.model().rowCount() == 2
     # data is updated
     index2 = view.model().index(1, 0)
-    assert '[1 - 2]' in view.model().data(index)
-    assert 'mozilla-central' in view.model().data(index2)
+    assert "[1 - 2]" in view.model().data(index)
+    assert "mozilla-central" in view.model().data(index2)
 
     # simulate a build evaluation
-    view.model().step_finished(None, 'g')
+    view.model().step_finished(None, "g")
     # still two rows
     assert view.model().rowCount() == 2
     # data is updated
-    assert 'g' in view.model().data(index2)
+    assert "g" in view.model().data(index2)
 
     # let's click on the index
     view.scrollTo(index)

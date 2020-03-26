@@ -1,9 +1,11 @@
 import os
+
 from mock import patch
 from PySide2.QtCore import QTimer
-from . import APP
 
 from mozregui import main  # noqa
+
+from . import APP
 
 
 @patch("mozregui.main.QApplication")

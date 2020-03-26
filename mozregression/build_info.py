@@ -6,10 +6,11 @@
 The BuildInfo classes, that are used to store information a build.
 """
 from __future__ import absolute_import
-import re
-import datetime
-from six.moves.urllib.parse import urlparse
 
+import datetime
+import re
+
+from six.moves.urllib.parse import urlparse
 
 FIELDS = []
 
@@ -26,8 +27,18 @@ class BuildInfo(object):
     a BuildInfo is built by calling
     :meth:`mozregression.fetch_build_info.FetchBuildInfo.find_build_info`.
     """
-    def __init__(self, fetch_config, build_type, build_url, build_date,
-                 changeset, repo_url, repo_name, task_id=None):
+
+    def __init__(
+        self,
+        fetch_config,
+        build_type,
+        build_url,
+        build_date,
+        changeset,
+        repo_url,
+        repo_name,
+        task_id=None,
+    ):
         self._fetch_config = fetch_config
         self._build_type = build_type
         self._build_url = build_url
@@ -130,9 +141,9 @@ class BuildInfo(object):
         This helps to build the pushlog url for old nightlies.
         """
         if self._changeset is None:
-            self._changeset = app_info.get('application_changeset')
+            self._changeset = app_info.get("application_changeset")
         if self._repo_url is None:
-            self._repo_url = app_info.get('application_repository')
+            self._repo_url = app_info.get("application_repository")
 
     def persist_filename_for(self, data, regex=True):
         """
@@ -148,32 +159,31 @@ class BuildInfo(object):
 
         '2015-01-11--mozilla-central--firefox.*linux-x86_64\.tar.bz2$'
         """
-        if self.build_type == 'nightly':
+        if self.build_type == "nightly":
             if isinstance(data, datetime.datetime):
                 prefix = data.strftime("%Y-%m-%d-%H-%M-%S")
             else:
                 prefix = str(data)
-            persist_part = ''
+            persist_part = ""
         else:
             prefix = str(data[:12])
             persist_part = self._fetch_config.integration_persist_part()
         if persist_part:
-            persist_part = '-' + persist_part
-        full_prefix = '{}{}--{}--'.format(prefix, persist_part, self.repo_name)
+            persist_part = "-" + persist_part
+        full_prefix = "{}{}--{}--".format(prefix, persist_part, self.repo_name)
         if regex:
             full_prefix = re.escape(full_prefix)
             appname = self._fetch_config.build_regex()
         else:
-            appname = urlparse(self.build_url). \
-                path.replace('%2F', '/').split('/')[-1]
-        return '{}{}'.format(full_prefix, appname)
+            appname = urlparse(self.build_url).path.replace("%2F", "/").split("/")[-1]
+        return "{}{}".format(full_prefix, appname)
 
     @property
     def persist_filename(self):
         """
         Compute and return the persist filename to use to store this build.
         """
-        if self.build_type == 'nightly':
+        if self.build_type == "nightly":
             data = self.build_date
         else:
             data = self.changeset
@@ -187,17 +197,31 @@ class BuildInfo(object):
 
 
 class NightlyBuildInfo(BuildInfo):
-    def __init__(self, fetch_config, build_url, build_date, changeset,
-                 repo_url):
-        BuildInfo.__init__(self, fetch_config, 'nightly', build_url,
-                           build_date, changeset, repo_url,
-                           fetch_config.get_nightly_repo(build_date))
+    def __init__(self, fetch_config, build_url, build_date, changeset, repo_url):
+        BuildInfo.__init__(
+            self,
+            fetch_config,
+            "nightly",
+            build_url,
+            build_date,
+            changeset,
+            repo_url,
+            fetch_config.get_nightly_repo(build_date),
+        )
 
 
 class IntegrationBuildInfo(BuildInfo):
-    def __init__(self, fetch_config, build_url, build_date, changeset,
-                 repo_url, task_id=None):
-        BuildInfo.__init__(self, fetch_config, 'integration', build_url,
-                           build_date, changeset, repo_url,
-                           fetch_config.integration_branch,
-                           task_id=task_id)
+    def __init__(
+        self, fetch_config, build_url, build_date, changeset, repo_url, task_id=None
+    ):
+        BuildInfo.__init__(
+            self,
+            fetch_config,
+            "integration",
+            build_url,
+            build_date,
+            changeset,
+            repo_url,
+            fetch_config.integration_branch,
+            task_id=task_id,
+        )

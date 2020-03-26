@@ -3,10 +3,10 @@ Representation of the bisection history.
 """
 
 from __future__ import absolute_import
+
 from collections import namedtuple
 
-
-BisectionStep = namedtuple('BisectionStep', 'build_range, index, verdict')
+BisectionStep = namedtuple("BisectionStep", "build_range, index, verdict")
 
 
 class BisectionHistory(list):
@@ -20,5 +20,6 @@ class BisectionHistory(list):
     since it only store steps for one handler - e.g only for
     one branch.
     """
+
     def add(self, build_range, index, verdict):
         self.append(BisectionStep(build_range, index, verdict))

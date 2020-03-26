@@ -8,18 +8,17 @@ objects that are loaded on demand. A BuildRange is used for bisecting builds.
 """
 
 from __future__ import absolute_import
+
 import copy
 import datetime
-
 from threading import Thread
-from mozlog import get_proxy_logger
 
-from mozregression.dates import to_date, is_date_or_datetime, \
-    to_datetime
-from mozregression.errors import BuildInfoNotFound
-from mozregression.fetch_build_info import (IntegrationInfoFetcher,
-                                            NightlyInfoFetcher)
+from mozlog import get_proxy_logger
 from six.moves import range
+
+from mozregression.dates import is_date_or_datetime, to_date, to_datetime
+from mozregression.errors import BuildInfoNotFound
+from mozregression.fetch_build_info import IntegrationInfoFetcher, NightlyInfoFetcher
 
 LOG = get_proxy_logger("Bisector")
 
@@ -76,6 +75,7 @@ class BuildRange(object):
      - build_range[0:5]  # slice operation, return a new build_range object
      - build_range.deleted(5)  # return a new build_range without item 5
     """
+
     def __init__(self, build_info_fetcher, future_build_infos):
         self.build_info_fetcher = build_info_fetcher
         self._future_build_infos = future_build_infos
@@ -90,35 +90,36 @@ class BuildRange(object):
     def __getitem__(self, item):
         if isinstance(item, slice):
             if item.step not in (1, None):
-                raise ValueError('only step=1 supported')
+                raise ValueError("only step=1 supported")
             new_range = copy.copy(self)
-            new_range._future_build_infos = self._future_build_infos[item.start:item.stop]
+            new_range._future_build_infos = self._future_build_infos[
+                item.start : item.stop
+            ]
             return new_range
 
         return self._future_build_infos[item].build_info
 
     def deleted(self, pos, count=1):
         new_range = copy.copy(self)
-        new_range._future_build_infos = \
-            self._future_build_infos[:pos] + \
-            self._future_build_infos[pos + count:]
+        new_range._future_build_infos = (
+            self._future_build_infos[:pos] + self._future_build_infos[pos + count :]
+        )
         return new_range
 
     def filter_invalid_builds(self):
         """
         Remove items that were unable to load BuildInfos.
         """
-        self._future_build_infos = \
-            [b for b in self._future_build_infos if b.is_valid()]
+        self._future_build_infos = [b for b in self._future_build_infos if b.is_valid()]
 
     def _fetch(self, indexes):
         indexes = set(indexes)
-        need_fetch = any(not self._future_build_infos[i].is_available()
-                         for i in indexes)
+        need_fetch = any(
+            not self._future_build_infos[i].is_available() for i in indexes
+        )
         if not need_fetch:
             return
-        threads = [Thread(target=self.__getitem__, args=(i,))
-                   for i in indexes]
+        threads = [Thread(target=self.__getitem__, args=(i,)) for i in indexes]
         for thread in threads:
             thread.daemon = True
             thread.start()
@@ -206,23 +207,25 @@ class BuildRange(object):
         if self.get_future(0) != first:
             new_first = search_last(range_before(first, expand))
             if new_first:
-                LOG.info(
-                    "Expanding lower limit of the range to %s" % new_first)
+                LOG.info("Expanding lower limit of the range to %s" % new_first)
                 self._future_build_infos.insert(0, new_first)
             else:
-                LOG.critical("First build %s is missing, but mozregression"
-                             " can't find a build before - so it is excluded,"
-                             " but it could contain the regression!" % first)
+                LOG.critical(
+                    "First build %s is missing, but mozregression"
+                    " can't find a build before - so it is excluded,"
+                    " but it could contain the regression!" % first
+                )
         if self.get_future(-1) != last:
             new_last = search_first(range_after(last, expand))
             if new_last:
-                LOG.info(
-                    "Expanding higher limit of the range to %s" % new_last)
+                LOG.info("Expanding higher limit of the range to %s" % new_last)
                 self._future_build_infos.append(new_last)
             else:
-                LOG.critical("Last build %s is missing, but mozregression"
-                             " can't find a build after - so it is excluded,"
-                             " but it could contain the regression!" % last)
+                LOG.critical(
+                    "Last build %s is missing, but mozregression"
+                    " can't find a build after - so it is excluded,"
+                    " but it could contain the regression!" % last
+                )
 
     def index(self, build_info):
         """
@@ -257,8 +260,9 @@ def _tc_build_range(future_tc, start_id, end_id):
 
 def tc_range_after(future_tc, size):
     """Create a build range after a TCFutureBuildInfo"""
-    return _tc_build_range(future_tc, future_tc.data.push_id,
-                           int(future_tc.data.push_id) + size)
+    return _tc_build_range(
+        future_tc, future_tc.data.push_id, int(future_tc.data.push_id) + size
+    )
 
 
 def tc_range_before(future_tc, size):
@@ -267,24 +271,23 @@ def tc_range_before(future_tc, size):
     return _tc_build_range(future_tc, p_id - size, p_id)
 
 
-def get_integration_range(fetch_config, start_rev, end_rev, time_limit=None,
-                          expand=0, interrupt=None):
+def get_integration_range(
+    fetch_config, start_rev, end_rev, time_limit=None, expand=0, interrupt=None
+):
     """
     Creates a BuildRange for integration builds.
     """
     info_fetcher = IntegrationInfoFetcher(fetch_config)
     jpushes = info_fetcher.jpushes
 
-    time_limit = time_limit or (datetime.datetime.now() +
-                                datetime.timedelta(days=-365))
+    time_limit = time_limit or (datetime.datetime.now() + datetime.timedelta(days=-365))
 
     def _check_date(obj):
         if is_date_or_datetime(obj):
             if to_datetime(obj) < time_limit:
                 LOG.info(
                     "TaskCluster only keeps builds for one year."
-                    " Using %s instead of %s."
-                    % (time_limit, obj)
+                    " Using %s instead of %s." % (time_limit, obj)
                 )
                 obj = time_limit
         return obj
@@ -292,18 +295,17 @@ def get_integration_range(fetch_config, start_rev, end_rev, time_limit=None,
     start_rev = _check_date(start_rev)
     end_rev = _check_date(end_rev)
 
-    futures_builds = [TCFutureBuildInfo(info_fetcher, push)
-                      for push in jpushes.pushes_within_changes(start_rev,
-                                                                end_rev)]
+    futures_builds = [
+        TCFutureBuildInfo(info_fetcher, push)
+        for push in jpushes.pushes_within_changes(start_rev, end_rev)
+    ]
     br = BuildRange(info_fetcher, futures_builds)
     if expand > 0:
-        br.check_expand(expand, tc_range_before, tc_range_after,
-                        interrupt=interrupt)
+        br.check_expand(expand, tc_range_before, tc_range_after, interrupt=interrupt)
     return br
 
 
-def get_nightly_range(fetch_config, start_date, end_date, expand=0,
-                      interrupt=None):
+def get_nightly_range(fetch_config, start_date, end_date, expand=0, interrupt=None):
     """
     Creates a BuildRange for nightlies.
     """
@@ -313,10 +315,7 @@ def get_nightly_range(fetch_config, start_date, end_date, expand=0,
     sd = to_date(start_date)
     for i in range((to_date(end_date) - sd).days + 1):
         futures_builds.append(
-            FutureBuildInfo(
-                info_fetcher,
-                sd + datetime.timedelta(days=i)
-            )
+            FutureBuildInfo(info_fetcher, sd + datetime.timedelta(days=i))
         )
     # and now put back the real start and end dates
     # in case they were datetime instances (coming from buildid)

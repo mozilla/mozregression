@@ -23,8 +23,10 @@ pytest==4.6.9 # last version compatible with python2.7
 pytest-mock == 2.0.0
 # peg flake8 + deps so code doesn't suddenly violate validation expectations unexpectedly
 flake8==3.2.1
-mccabe==0.5.3
-pyflakes==1.3.0
+flake8-black==0.1.1
+isort==4.3.21
+mccabe==0.6.1
+pyflakes==2.1.1
 
 # install mozregression
 -e .

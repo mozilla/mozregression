@@ -3,26 +3,27 @@ Access to mozilla branches information.
 """
 
 from __future__ import absolute_import
+
 import re
 from collections import defaultdict
 
+import six
 from mozlog import get_proxy_logger
 
 from mozregression.errors import MozRegressionError
-import six
 
-LOG = get_proxy_logger('Branches')
+LOG = get_proxy_logger("Branches")
 
 
 class Branches(object):
-    DEFAULT_REPO_URL = 'https://hg.mozilla.org/'
+    DEFAULT_REPO_URL = "https://hg.mozilla.org/"
 
     def __init__(self):
         self._branches = {}
         self._aliases = {}
         self._categories = defaultdict(list)
 
-    def set_branch(self, name, path, category='default'):
+    def set_branch(self, name, path, category="default"):
         assert name not in self._branches, "branch %s already defined" % name
         self._branches[name] = self.DEFAULT_REPO_URL + path
         self._categories[category].append(name)
@@ -41,8 +42,7 @@ class Branches(object):
         try:
             return self._branches[self.get_name(branch_name_or_alias)]
         except KeyError:
-            raise MozRegressionError(
-                "No such branch '%s'." % branch_name_or_alias)
+            raise MozRegressionError("No such branch '%s'." % branch_name_or_alias)
 
     def get_name(self, branch_name_or_alias):
         return self._aliases.get(branch_name_or_alias) or branch_name_or_alias
@@ -62,22 +62,21 @@ def create_branches():
 
     # integration branches
     for name in ("autoland", "mozilla-inbound"):
-        branches.set_branch(name, "integration/%s" % name,
-                            category='integration')
+        branches.set_branch(name, "integration/%s" % name, category="integration")
 
     # release branches
-    for name in ("comm-beta", "comm-release",
-                 "mozilla-beta", "mozilla-release"):
-        branches.set_branch(name, "releases/%s" % name, category='releases')
+    for name in ("comm-beta", "comm-release", "mozilla-beta", "mozilla-release"):
+        branches.set_branch(name, "releases/%s" % name, category="releases")
 
-    branches.set_branch('try', 'try', category='try')
+    branches.set_branch("try", "try", category="try")
 
     # aliases
     for name, aliases in (
-            ("mozilla-central", ("m-c", "central")),
-            ("mozilla-inbound", ("m-i", "inbound", "mozilla inbound")),
-            ("mozilla-beta", ("m-b", "beta")),
-            ("mozilla-release", ("m-r", "release"))):
+        ("mozilla-central", ("m-c", "central")),
+        ("mozilla-inbound", ("m-i", "inbound", "mozilla inbound")),
+        ("mozilla-beta", ("m-b", "beta")),
+        ("mozilla-release", ("m-r", "release")),
+    ):
         for alias in aliases:
             branches.set_alias(alias, name)
     return branches

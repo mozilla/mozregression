@@ -1,12 +1,11 @@
 import os
+
+from configobj import ConfigObj
 from PySide2.QtWidgets import QDialog
 
-from mozregui.ui.global_prefs import Ui_GlobalPrefs
-
+from mozregression.config import ARCHIVE_BASE_URL, DEFAULT_CONF_FNAME, get_defaults
 from mozregression.network import set_http_session
-from mozregression.config import (DEFAULT_CONF_FNAME, get_defaults,
-                                  ARCHIVE_BASE_URL)
-from configobj import ConfigObj
+from mozregui.ui.global_prefs import Ui_GlobalPrefs
 
 
 def get_prefs():
@@ -15,14 +14,15 @@ def get_prefs():
     """
     settings = get_defaults(DEFAULT_CONF_FNAME)
     options = dict()
-    options['persist'] = settings['persist']
-    options['http_timeout'] = float(settings['http-timeout'])
-    options['persist_size_limit'] = float(settings['persist-size-limit'])
-    options['background_downloads'] = \
-        False if settings.get('background_downloads') == 'no' else True
-    options['approx_policy'] = settings['approx-policy'] == 'auto'
-    options['archive_base_url'] = settings["archive-base-url"]
-    options['cmdargs'] = settings['cmdargs']
+    options["persist"] = settings["persist"]
+    options["http_timeout"] = float(settings["http-timeout"])
+    options["persist_size_limit"] = float(settings["persist-size-limit"])
+    options["background_downloads"] = (
+        False if settings.get("background_downloads") == "no" else True
+    )
+    options["approx_policy"] = settings["approx-policy"] == "auto"
+    options["archive_base_url"] = settings["archive-base-url"]
+    options["cmdargs"] = settings["cmdargs"]
     return options
 
 
@@ -31,23 +31,23 @@ def save_prefs(options):
     if not os.path.isdir(conf_dir):
         os.makedirs(conf_dir)
     settings = ConfigObj(DEFAULT_CONF_FNAME)
-    settings.update({
-        'persist': options['persist'] or '',
-        'http-timeout': options['http_timeout'],
-        'persist-size-limit': options['persist_size_limit'],
-        'background_downloads':
-            'yes' if options['background_downloads'] else 'no',
-        'approx-policy': 'auto' if options['approx_policy'] else 'none',
-    })
+    settings.update(
+        {
+            "persist": options["persist"] or "",
+            "http-timeout": options["http_timeout"],
+            "persist-size-limit": options["persist_size_limit"],
+            "background_downloads": "yes" if options["background_downloads"] else "no",
+            "approx-policy": "auto" if options["approx_policy"] else "none",
+        }
+    )
     # only save base url in the file if it differs from the default.
-    if options['archive_base_url'] and \
-       options['archive_base_url'] != ARCHIVE_BASE_URL:
-        settings['archive-base-url'] = options['archive_base_url']
-    elif 'archive-base-url' in settings:
-        del settings['archive-base-url']
+    if options["archive_base_url"] and options["archive_base_url"] != ARCHIVE_BASE_URL:
+        settings["archive-base-url"] = options["archive_base_url"]
+    elif "archive-base-url" in settings:
+        del settings["archive-base-url"]
     # likewise only save args if it has a value
-    if 'cmdargs' in settings and not settings['cmdargs']:
-        del settings['cmdargs']
+    if "cmdargs" in settings and not settings["cmdargs"]:
+        del settings["cmdargs"]
     settings.write()
 
 
@@ -55,16 +55,17 @@ def set_default_prefs():
     """Set the default prefs for a first launch of the application."""
     if not os.path.isfile(DEFAULT_CONF_FNAME):
         options = get_prefs()
-        options["persist"] = os.path.join(os.path.dirname(DEFAULT_CONF_FNAME),
-                                          "persist")
+        options["persist"] = os.path.join(
+            os.path.dirname(DEFAULT_CONF_FNAME), "persist"
+        )
         options["persist_size_limit"] = 2.0
         save_prefs(options)
 
 
 def apply_prefs(options):
-    set_http_session(get_defaults={
-        "timeout": options['http_timeout'],
-    })
+    set_http_session(
+        get_defaults={"timeout": options["http_timeout"],}
+    )
     # persist options have to be passed in the bisection, not handled here.
 
 
@@ -76,12 +77,12 @@ class ChangePrefsDialog(QDialog):
 
         # set default values
         options = get_prefs()
-        self.ui.persist.line_edit.setText(options['persist'] or '')
-        self.ui.http_timeout.setValue(options['http_timeout'])
-        self.ui.persist_size_limit.setValue(options['persist_size_limit'])
-        self.ui.bg_downloads.setChecked(options['background_downloads'])
-        self.ui.approx.setChecked(options['approx_policy'])
-        self.ui.archive_base_url.setText(options['archive_base_url'])
+        self.ui.persist.line_edit.setText(options["persist"] or "")
+        self.ui.http_timeout.setValue(options["http_timeout"])
+        self.ui.persist_size_limit.setValue(options["persist_size_limit"])
+        self.ui.bg_downloads.setChecked(options["background_downloads"])
+        self.ui.approx.setChecked(options["approx_policy"])
+        self.ui.archive_base_url.setText(options["archive_base_url"])
         self.ui.advanced_options.setText("Show Advanced Options")
         self.toggle_visibility(False)
         self.ui.advanced_options.clicked.connect(self.toggle_adv_options)
@@ -106,12 +107,12 @@ class ChangePrefsDialog(QDialog):
         options = get_prefs()
         ui = self.ui
 
-        options['persist'] = str(ui.persist.line_edit.text()) or None
-        options['http_timeout'] = ui.http_timeout.value()
-        options['persist_size_limit'] = ui.persist_size_limit.value()
-        options['background_downloads'] = ui.bg_downloads.isChecked()
-        options['approx_policy'] = ui.approx.isChecked()
-        options['archive_base_url'] = str(ui.archive_base_url.text())
+        options["persist"] = str(ui.persist.line_edit.text()) or None
+        options["http_timeout"] = ui.http_timeout.value()
+        options["persist_size_limit"] = ui.persist_size_limit.value()
+        options["background_downloads"] = ui.bg_downloads.isChecked()
+        options["approx_policy"] = ui.approx.isChecked()
+        options["archive_base_url"] = str(ui.archive_base_url.text())
         save_prefs(options)
 
 

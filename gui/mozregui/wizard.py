@@ -1,23 +1,31 @@
 from __future__ import absolute_import
-import mozinfo
-import datetime
-from PySide2.QtWidgets import (QApplication, QCompleter, QWizard, QWizardPage, QMessageBox)
-from PySide2.QtCore import QStringListModel, QDate, Slot, Qt, SIGNAL
 
-from .ui.intro import Ui_Intro
+import datetime
+
+import mozinfo
+from PySide2.QtCore import SIGNAL, QDate, QStringListModel, Qt, Slot
+from PySide2.QtWidgets import (
+    QApplication,
+    QCompleter,
+    QMessageBox,
+    QWizard,
+    QWizardPage,
+)
+
+from mozregression.branches import get_branches
+from mozregression.dates import to_datetime
+from mozregression.errors import DateFormatError, LauncherNotRunnable
+from mozregression.fetch_configs import REGISTRY, create_config
+from mozregression.launchers import REGISTRY as LAUNCHER_REGISTRY
+
 from .ui.build_selection import Ui_BuildSelectionPage
+from .ui.intro import Ui_Intro
 from .ui.profile import Ui_Profile
 from .ui.single_build_selection import Ui_SingleBuildSelectionPage
 
-from mozregression.fetch_configs import create_config, REGISTRY
-from mozregression.launchers import REGISTRY as LAUNCHER_REGISTRY
-from mozregression.errors import LauncherNotRunnable, DateFormatError
-from mozregression.dates import to_datetime
-from mozregression.branches import get_branches
-
 
 def resolve_obj_name(obj, name):
-    names = name.split('.')
+    names = name.split(".")
     while names:
         obj = getattr(obj, names.pop(0))
     return obj
@@ -25,8 +33,8 @@ def resolve_obj_name(obj, name):
 
 class WizardPage(QWizardPage):
     UI_CLASS = None
-    TITLE = ''
-    SUBTITLE = ''
+    TITLE = ""
+    SUBTITLE = ""
     FIELDS = {}
 
     def __init__(self):
@@ -52,27 +60,34 @@ class WizardPage(QWizardPage):
 class IntroPage(WizardPage):
     UI_CLASS = Ui_Intro
     TITLE = "Basic configuration"
-    SUBTITLE = ("Please choose an application and other options to specify"
-                " what you want to test.")
-    FIELDS = {'application': 'app_combo', "repository": "repository",
-              'bits': 'bits_combo', "build_type": "build_type", "url": "url"}
+    SUBTITLE = (
+        "Please choose an application and other options to specify"
+        " what you want to test."
+    )
+    FIELDS = {
+        "application": "app_combo",
+        "repository": "repository",
+        "bits": "bits_combo",
+        "build_type": "build_type",
+        "url": "url",
+    }
 
     def __init__(self):
         WizardPage.__init__(self)
         self.fetch_config = None
         self.app_model = QStringListModel(
-            REGISTRY.names(
-                lambda klass: not getattr(klass, 'disable_in_gui', None)))
+            REGISTRY.names(lambda klass: not getattr(klass, "disable_in_gui", None))
+        )
         self.ui.app_combo.setModel(self.app_model)
         if mozinfo.bits == 64:
-            if mozinfo.os == 'mac':
-                self.bits_model = QStringListModel(['64'])
+            if mozinfo.os == "mac":
+                self.bits_model = QStringListModel(["64"])
                 bits_index = 0
             else:
-                self.bits_model = QStringListModel(['32', '64'])
+                self.bits_model = QStringListModel(["32", "64"])
                 bits_index = 1
         elif mozinfo.bits == 32:
-            self.bits_model = QStringListModel(['32'])
+            self.bits_model = QStringListModel(["32"])
             bits_index = 0
         self.ui.bits_combo.setModel(self.bits_model)
         self.ui.bits_combo.setCurrentIndex(bits_index)
@@ -80,8 +95,7 @@ class IntroPage(WizardPage):
 
         self.ui.app_combo.currentIndexChanged.connect(self._set_fetch_config)
         self.ui.bits_combo.currentIndexChanged.connect(self._set_fetch_config)
-        self.ui.app_combo.setCurrentIndex(
-            self.ui.app_combo.findText("firefox"))
+        self.ui.app_combo.setCurrentIndex(self.ui.app_combo.findText("firefox"))
 
         self.ui.repository.textChanged.connect(self._on_repo_changed)
 
@@ -91,13 +105,12 @@ class IntroPage(WizardPage):
         QApplication.instance().focusChanged.connect(self._on_focus_changed)
 
     def _on_repo_changed(self, text):
-        enable_release = (not text or text == 'mozilla-central')
+        enable_release = not text or text == "mozilla-central"
         build_select_page = self.wizard().page(2)
         if type(build_select_page) == SingleBuildSelectionPage:
             build_menus = [build_select_page.ui.build]
         else:
-            build_menus = [build_select_page.ui.start,
-                           build_select_page.ui.end]
+            build_menus = [build_select_page.ui.start, build_select_page.ui.end]
         for menu in build_menus:
             menu.ui.combo_helper.model().item(1).setEnabled(enable_release)
             if menu.ui.combo_helper.currentIndex() == 1:
@@ -112,11 +125,11 @@ class IntroPage(WizardPage):
         app_name = str(self.ui.app_combo.currentText())
         bits = int(self.ui.bits_combo.currentText())
 
-        self.fetch_config = create_config(app_name, mozinfo.os, bits,
-                                          mozinfo.processor)
+        self.fetch_config = create_config(app_name, mozinfo.os, bits, mozinfo.processor)
 
         self.build_type_model = QStringListModel(
-            self.fetch_config.available_build_types())
+            self.fetch_config.available_build_types()
+        )
         self.ui.build_type.setModel(self.build_type_model)
 
         if not self.fetch_config.available_bits():
@@ -127,7 +140,7 @@ class IntroPage(WizardPage):
             self.ui.label_4.show()
 
         # URL doesn't make sense for Thunderbird
-        if app_name == 'thunderbird':
+        if app_name == "thunderbird":
             self.ui.url.hide()
             self.ui.url_label.hide()
         else:
@@ -141,41 +154,37 @@ class IntroPage(WizardPage):
             launcher_class.check_is_runnable()
             return True
         except LauncherNotRunnable as exc:
-            QMessageBox.critical(
-                self,
-                "%s is not runnable" % app_name,
-                str(exc)
-            )
+            QMessageBox.critical(self, "%s is not runnable" % app_name, str(exc))
             return False
 
 
 class ProfilePage(WizardPage):
     UI_CLASS = Ui_Profile
     TITLE = "Profile selection"
-    SUBTITLE = ("Choose a specific profile. You can choose an existing profile"
-                ", or let this blank to use a new one.")
-    FIELDS = {"profile": "profile_widget.line_edit",
-              "profile_persistence": "profile_persistence_combo"}
+    SUBTITLE = (
+        "Choose a specific profile. You can choose an existing profile"
+        ", or let this blank to use a new one."
+    )
+    FIELDS = {
+        "profile": "profile_widget.line_edit",
+        "profile_persistence": "profile_persistence_combo",
+    }
 
     def __init__(self):
         WizardPage.__init__(self)
-        profile_persistence_options = ["clone",
-                                       "clone-first",
-                                       "reuse"]
-        self.profile_persistence_model = \
-            QStringListModel(profile_persistence_options)
-        self.ui.profile_persistence_combo.setModel(
-            self.profile_persistence_model)
+        profile_persistence_options = ["clone", "clone-first", "reuse"]
+        self.profile_persistence_model = QStringListModel(profile_persistence_options)
+        self.ui.profile_persistence_combo.setModel(self.profile_persistence_model)
         self.ui.profile_persistence_combo.setCurrentIndex(0)
 
     def set_options(self, options):
         WizardPage.set_options(self, options)
         # get the prefs
-        options['preferences'] = self.get_prefs()
+        options["preferences"] = self.get_prefs()
         # get the addons
-        options['addons'] = self.get_addons()
+        options["addons"] = self.get_addons()
         # get the profile-persistence
-        options['profile_persistence'] = self.get_profile_persistence()
+        options["profile_persistence"] = self.get_profile_persistence()
 
     def get_prefs(self):
         return self.ui.pref_widget.get_prefs()
@@ -190,8 +199,8 @@ class ProfilePage(WizardPage):
 class BuildSelectionPage(WizardPage):
     UI_CLASS = Ui_BuildSelectionPage
     TITLE = "Build selection"
-    SUBTITLE = ("Select the range to bisect.")
-    FIELDS = {'find_fix': 'find_fix'}
+    SUBTITLE = "Select the range to bisect."
+    FIELDS = {"find_fix": "find_fix"}
 
     def __init__(self):
         WizardPage.__init__(self)
@@ -202,10 +211,10 @@ class BuildSelectionPage(WizardPage):
 
     def set_options(self, options):
         WizardPage.set_options(self, options)
-        options['good'] = self.get_start()
-        options['bad'] = self.get_end()
-        if options['find_fix']:
-            options['good'], options['bad'] = options['bad'], options['good']
+        options["good"] = self.get_start()
+        options["bad"] = self.get_end()
+        if options["find_fix"]:
+            options["good"], options["bad"] = options["bad"], options["good"]
 
     @Slot()
     def change_labels(self):
@@ -240,14 +249,12 @@ class BuildSelectionPage(WizardPage):
                 return True
             else:
                 QMessageBox.critical(
-                    self,
-                    "Error",
-                    "You can't define a date in the future.")
+                    self, "Error", "You can't define a date in the future."
+                )
         else:
             QMessageBox.critical(
-                self,
-                "Error",
-                "The first date must be earlier than the second one.")
+                self, "Error", "The first date must be earlier than the second one."
+            )
 
         return False
 
@@ -259,8 +266,9 @@ class Wizard(QWizard):
         self.resize(800, 600)
 
         # associate current text to comboboxes fields instead of current index
-        self.setDefaultProperty("QComboBox", "currentText",
-                                SIGNAL('currentIndexChanged(QString)'))
+        self.setDefaultProperty(
+            "QComboBox", "currentText", SIGNAL("currentIndexChanged(QString)")
+        )
 
         for klass in class_pages:
             self.addPage(klass())
@@ -271,32 +279,36 @@ class Wizard(QWizard):
             self.page(page_id).set_options(options)
 
         fetch_config = self.page(self.pageIds()[0]).fetch_config
-        fetch_config.set_repo(options['repository'])
-        fetch_config.set_build_type(options['build_type'])
+        fetch_config.set_repo(options["repository"])
+        fetch_config.set_build_type(options["build_type"])
 
         # create a profile if required
         launcher_class = LAUNCHER_REGISTRY.get(fetch_config.app_name)
-        if options['profile_persistence'] in ('clone-first', 'reuse'):
-            options['profile'] = launcher_class.create_profile(
-                profile=options['profile'],
-                addons=options['addons'],
-                preferences=options['preferences'],
-                clone=options['profile_persistence'] == 'clone-first')
+        if options["profile_persistence"] in ("clone-first", "reuse"):
+            options["profile"] = launcher_class.create_profile(
+                profile=options["profile"],
+                addons=options["addons"],
+                preferences=options["preferences"],
+                clone=options["profile_persistence"] == "clone-first",
+            )
 
         return fetch_config, options
 
 
 class BisectionWizard(Wizard):
     def __init__(self, parent=None):
-        Wizard.__init__(self, "Bisection wizard",
-                        (IntroPage, ProfilePage, BuildSelectionPage),
-                        parent=parent)
+        Wizard.__init__(
+            self,
+            "Bisection wizard",
+            (IntroPage, ProfilePage, BuildSelectionPage),
+            parent=parent,
+        )
 
 
 class SingleBuildSelectionPage(WizardPage):
     UI_CLASS = Ui_SingleBuildSelectionPage
     TITLE = "Build selection"
-    SUBTITLE = ("Select the build you want to run.")
+    SUBTITLE = "Select the build you want to run."
 
     def __init__(self):
         WizardPage.__init__(self)
@@ -305,11 +317,14 @@ class SingleBuildSelectionPage(WizardPage):
 
     def set_options(self, options):
         WizardPage.set_options(self, options)
-        options['launch'] = self.ui.build.get_value()
+        options["launch"] = self.ui.build.get_value()
 
 
 class SingleRunWizard(Wizard):
     def __init__(self, parent=None):
-        Wizard.__init__(self, "Single run wizard",
-                        (IntroPage, ProfilePage, SingleBuildSelectionPage),
-                        parent=parent)
+        Wizard.__init__(
+            self,
+            "Single run wizard",
+            (IntroPage, ProfilePage, SingleBuildSelectionPage),
+            parent=parent,
+        )

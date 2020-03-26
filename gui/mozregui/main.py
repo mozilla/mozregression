@@ -1,17 +1,17 @@
 import sys
+
+from mozlog.structuredlog import StructuredLogger, set_default_logger
 from PySide2.QtWidgets import QApplication
 
-from mozlog.structuredlog import set_default_logger, StructuredLogger
-
-from .log_report import LogModel
 from .check_release import CheckRelease
 from .crash_reporter import CrashReporter
-from .mainwindow import MainWindow
 from .global_prefs import set_default_prefs
+from .log_report import LogModel
+from .mainwindow import MainWindow
 
 
 def main():
-    logger = StructuredLogger('mozregression-gui')
+    logger = StructuredLogger("mozregression-gui")
     set_default_logger(logger)
     # Create a Qt application
     log_model = LogModel()
@@ -20,9 +20,9 @@ def main():
     app = QApplication(argv)
     crash_reporter = CrashReporter(app)
     crash_reporter.install()
-    app.setOrganizationName('mozilla')
-    app.setOrganizationDomain('mozilla.org')
-    app.setApplicationName('mozregression-gui')
+    app.setOrganizationName("mozilla")
+    app.setOrganizationDomain("mozilla.org")
+    app.setApplicationName("mozregression-gui")
     set_default_prefs()
     # Create the main window and show it
     win = MainWindow()
@@ -37,5 +37,5 @@ def main():
     sys.exit(app.exec_())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

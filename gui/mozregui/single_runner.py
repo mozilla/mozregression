@@ -1,11 +1,9 @@
-from PySide2.QtCore import QObject, Slot, Signal
+from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtWidgets import QMessageBox
 
-from mozregression.errors import MozRegressionError
 from mozregression.dates import is_date_or_datetime
-from mozregression.fetch_build_info import (NightlyInfoFetcher,
-                                            IntegrationInfoFetcher)
-
+from mozregression.errors import MozRegressionError
+from mozregression.fetch_build_info import IntegrationInfoFetcher, NightlyInfoFetcher
 from mozregui.build_runner import AbstractBuildRunner
 
 
@@ -58,14 +56,15 @@ class SingleBuildRunner(AbstractBuildRunner):
 
     def init_worker(self, fetch_config, options):
         AbstractBuildRunner.init_worker(self, fetch_config, options)
-        self.download_manager.download_finished.connect(
-            self.worker._on_downloaded)
-        self.worker.launch_arg = options.pop('launch')
+        self.download_manager.download_finished.connect(self.worker._on_downloaded)
+        self.worker.launch_arg = options.pop("launch")
         # evaluate_started will be called if we have an error
         self.test_runner.evaluate_started.connect(self.on_error)
         self.worker.error.connect(self.on_error)
-        if is_date_or_datetime(self.worker.launch_arg) and \
-           fetch_config.should_use_archive():
+        if (
+            is_date_or_datetime(self.worker.launch_arg)
+            and fetch_config.should_use_archive()
+        ):
             return self.worker.launch_nightlies
         else:
             return self.worker.launch_integration

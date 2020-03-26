@@ -6,29 +6,30 @@
 Define the launcher classes, responsible of running the tested applications.
 """
 
-from __future__ import absolute_import
-from __future__ import print_function
+from __future__ import absolute_import, print_function
+
 import json
 import os
-import time
-from mozlog.structured import get_default_logger, get_proxy_logger
-from mozprofile import ThunderbirdProfile, Profile
-from mozrunner import Runner
-from mozfile import remove
-from mozdevice import ADBAndroid, ADBHost, ADBError
-import mozversion
-import mozinstall
-import zipfile
-import mozinfo
-import six
-import sys
 import stat
-from subprocess import call
+import sys
+import time
+import zipfile
 from abc import ABCMeta, abstractmethod
+from subprocess import call
 from threading import Thread
 
+import mozinfo
+import mozinstall
+import mozversion
+import six
+from mozdevice import ADBAndroid, ADBError, ADBHost
+from mozfile import remove
+from mozlog.structured import get_default_logger, get_proxy_logger
+from mozprofile import Profile, ThunderbirdProfile
+from mozrunner import Runner
+
 from mozregression.class_registry import ClassRegistry
-from mozregression.errors import LauncherNotRunnable, LauncherError
+from mozregression.errors import LauncherError, LauncherNotRunnable
 from mozregression.tempdir import safe_mkdtemp
 
 LOG = get_proxy_logger("Test Runner")
@@ -39,6 +40,7 @@ class Launcher(six.with_metaclass(ABCMeta)):
     Handle the logic of downloading a build file, installing and
     running an application.
     """
+
     profile_class = Profile
 
     @classmethod
@@ -134,17 +136,16 @@ class Launcher(six.with_metaclass(ABCMeta)):
         if isinstance(profile, Profile):
             return profile
         else:
-            return self.create_profile(profile=profile, addons=addons,
-                                       preferences=preferences)
+            return self.create_profile(
+                profile=profile, addons=addons, preferences=preferences
+            )
 
     @classmethod
-    def create_profile(cls, profile=None, addons=(), preferences=None,
-                       clone=True):
+    def create_profile(cls, profile=None, addons=(), preferences=None, clone=True):
         if profile:
             if not os.path.exists(profile):
                 LOG.warning(
-                    "Creating directory '%s' to put the profile in there"
-                    % profile
+                    "Creating directory '%s' to put the profile in there" % profile
                 )
                 os.makedirs(profile)
                 # since the user gave an empty dir for the profile,
@@ -155,14 +156,15 @@ class Launcher(six.with_metaclass(ABCMeta)):
                 # be undone. Let's clone the profile to not have side effect
                 # on existing profile.
                 # see https://bugzilla.mozilla.org/show_bug.cgi?id=999009
-                profile = cls.profile_class.clone(profile, addons=addons,
-                                                  preferences=preferences)
+                profile = cls.profile_class.clone(
+                    profile, addons=addons, preferences=preferences
+                )
             else:
-                profile = cls.profile_class(profile, addons=addons,
-                                            preferences=preferences)
+                profile = cls.profile_class(
+                    profile, addons=addons, preferences=preferences
+                )
         elif len(addons):
-            profile = cls.profile_class(addons=addons,
-                                        preferences=preferences)
+            profile = cls.profile_class(addons=addons, preferences=preferences)
         else:
             profile = cls.profile_class(preferences=preferences)
         return profile
@@ -181,52 +183,48 @@ def safe_get_version(**kwargs):
 class MozRunnerLauncher(Launcher):
     tempdir = None
     runner = None
-    app_name = 'undefined'
+    app_name = "undefined"
     binary = None
 
     def _install(self, dest):
         self.tempdir = safe_mkdtemp()
         try:
             self.binary = mozinstall.get_binary(
-                mozinstall.install(src=dest, dest=self.tempdir),
-                self.app_name
+                mozinstall.install(src=dest, dest=self.tempdir), self.app_name
             )
         except Exception:
             remove(self.tempdir)
             raise
 
     def _disableUpdateByPolicy(self):
-        updatePolicy = {
-            'policies': {
-                'DisableAppUpdate': True
-            }
-        }
+        updatePolicy = {"policies": {"DisableAppUpdate": True}}
         installdir = os.path.dirname(self.binary)
-        if mozinfo.os == 'mac':
+        if mozinfo.os == "mac":
             # macOS has the following filestructure:
             # binary at:
             #     PackageName.app/Contents/MacOS/firefox
             # we need policies.json in:
             #     PackageName.app/Contents/Resources/distribution
-            installdir = os.path.normpath(
-                os.path.join(installdir, '..', 'Resources')
-            )
-        os.mkdir(os.path.join(installdir, 'distribution'))
-        policyFile = os.path.join(
-            installdir, 'distribution', 'policies.json'
-        )
-        with open(policyFile, 'w') as fp:
+            installdir = os.path.normpath(os.path.join(installdir, "..", "Resources"))
+        os.mkdir(os.path.join(installdir, "distribution"))
+        policyFile = os.path.join(installdir, "distribution", "policies.json")
+        with open(policyFile, "w") as fp:
             json.dump(updatePolicy, fp, indent=2)
 
-    def _start(self, profile=None, addons=(), cmdargs=(), preferences=None,
-               adb_profile_dir=None):
-        profile = self._create_profile(profile=profile, addons=addons,
-                                       preferences=preferences)
+    def _start(
+        self,
+        profile=None,
+        addons=(),
+        cmdargs=(),
+        preferences=None,
+        adb_profile_dir=None,
+    ):
+        profile = self._create_profile(
+            profile=profile, addons=addons, preferences=preferences
+        )
 
         LOG.info("Launching %s" % self.binary)
-        self.runner = Runner(binary=self.binary,
-                             cmdargs=cmdargs,
-                             profile=profile)
+        self.runner = Runner(binary=self.binary, cmdargs=cmdargs, profile=profile)
 
         def _on_exit():
             # if we are stopping the process do not log anything.
@@ -244,22 +242,22 @@ class MozRunnerLauncher(Launcher):
                     print()
                     LOG.error(
                         "Error while waiting process, consider filing a bug.",
-                        exc_info=True
+                        exc_info=True,
                     )
                     return
                 if exitcode != 0:
                     # first print a blank line, to be sure we don't
                     # write on an already printed line without EOL.
                     print()
-                    LOG.warning('Process exited with code %s' % exitcode)
+                    LOG.warning("Process exited with code %s" % exitcode)
 
         # we don't need stdin, and GUI will not work in Windowed mode if set
         # see: https://stackoverflow.com/a/40108817
-        devnull = open(os.devnull, 'wb')
+        devnull = open(os.devnull, "wb")
         self.runner.process_args = {
-            'processOutputLine': [get_default_logger("process").info],
-            'stdin': devnull,
-            'onFinish': _on_exit,
+            "processOutputLine": [get_default_logger("process").info],
+            "stdin": devnull,
+            "onFinish": _on_exit,
         }
         self.runner.start()
 
@@ -267,7 +265,7 @@ class MozRunnerLauncher(Launcher):
         return self.runner.wait()
 
     def _stop(self):
-        if mozinfo.os == "win" and self.app_name == 'firefox':
+        if mozinfo.os == "win" and self.app_name == "firefox":
             # for some reason, stopping the runner may hang on windows. For
             # example restart the browser in safe mode, it will hang for a
             # couple of minutes. As a workaround, we call that in a thread and
@@ -294,7 +292,7 @@ class MozRunnerLauncher(Launcher):
         return safe_get_version(binary=self.binary)
 
 
-REGISTRY = ClassRegistry('app_name')
+REGISTRY = ClassRegistry("app_name")
 
 
 def create_launcher(buildinfo):
@@ -302,8 +300,7 @@ def create_launcher(buildinfo):
     Create and returns an instance launcher for the given buildinfo.
     """
     return REGISTRY.get(buildinfo.app_name)(
-        buildinfo.build_file,
-        task_id=buildinfo.task_id
+        buildinfo.build_file, task_id=buildinfo.task_id
     )
 
 
@@ -317,39 +314,38 @@ class FirefoxRegressionProfile(Profile):
     preferences = {
         # Don't automatically update the application (only works on older
         # versions of Firefox)
-        'app.update.enabled': False,
+        "app.update.enabled": False,
         # On newer versions of Firefox (where disabling automatic updates
         # is impossible, at least don't update automatically)
-        'app.update.auto': False,
+        "app.update.auto": False,
         # Don't automatically download the update (this pref is specific to
         # some versions of Fennec)
-        'app.update.autodownload': 'disabled',
+        "app.update.autodownload": "disabled",
         # Don't restore the last open set of tabs
         # if the browser has crashed
-        'browser.sessionstore.resume_from_crash': False,
+        "browser.sessionstore.resume_from_crash": False,
         # Don't check for the default web browser during startup
-        'browser.shell.checkDefaultBrowser': False,
+        "browser.shell.checkDefaultBrowser": False,
         # Don't warn on exit when multiple tabs are open
-        'browser.tabs.warnOnClose': False,
+        "browser.tabs.warnOnClose": False,
         # Don't warn when exiting the browser
-        'browser.warnOnQuit': False,
+        "browser.warnOnQuit": False,
         # Don't send Firefox health reports to the production
         # server
-        'datareporting.healthreport.uploadEnabled': False,
-        'datareporting.healthreport.documentServerURI':
-        'http://%(server)s/healthreport/',
+        "datareporting.healthreport.uploadEnabled": False,
+        "datareporting.healthreport.documentServerURI": "http://%(server)s/healthreport/",
         # Don't show tab with privacy notice on every launch
-        'datareporting.policy.dataSubmissionPolicyBypassNotification': True,
+        "datareporting.policy.dataSubmissionPolicyBypassNotification": True,
         # Don't report telemetry information
-        'toolkit.telemetry.enabled': False,
+        "toolkit.telemetry.enabled": False,
         # Allow sideloading extensions
-        'extensions.autoDisableScopes': 0,
+        "extensions.autoDisableScopes": 0,
         # Disable what's new page
-        'browser.startup.homepage_override.mstone': 'ignore',
+        "browser.startup.homepage_override.mstone": "ignore",
     }
 
 
-@REGISTRY.register('firefox')
+@REGISTRY.register("firefox")
 class FirefoxLauncher(MozRunnerLauncher):
     profile_class = FirefoxRegressionProfile
 
@@ -357,11 +353,21 @@ class FirefoxLauncher(MozRunnerLauncher):
         super(FirefoxLauncher, self)._install(dest)
         self._disableUpdateByPolicy()
 
-    def _start(self, profile=None, addons=(), cmdargs=(), preferences=None,
-               adb_profile_dir=None):
-        super(FirefoxLauncher, self)._start(profile, addons,
-                                            ['--allow-downgrade'] + cmdargs,
-                                            preferences, adb_profile_dir)
+    def _start(
+        self,
+        profile=None,
+        addons=(),
+        cmdargs=(),
+        preferences=None,
+        adb_profile_dir=None,
+    ):
+        super(FirefoxLauncher, self)._start(
+            profile,
+            addons,
+            ["--allow-downgrade"] + cmdargs,
+            preferences,
+            adb_profile_dir,
+        )
 
 
 class ThunderbirdRegressionProfile(ThunderbirdProfile):
@@ -371,12 +377,12 @@ class ThunderbirdRegressionProfile(ThunderbirdProfile):
 
     preferences = {
         # Don't automatically update the application
-        'app.update.enabled': False,
-        'app.update.auto': False,
+        "app.update.enabled": False,
+        "app.update.auto": False,
     }
 
 
-@REGISTRY.register('thunderbird')
+@REGISTRY.register("thunderbird")
 class ThunderbirdLauncher(MozRunnerLauncher):
     profile_class = ThunderbirdRegressionProfile
 
@@ -403,39 +409,46 @@ class AndroidLauncher(Launcher):
         except ADBError as adb_error:
             raise LauncherNotRunnable(str(adb_error))
         if not devices:
-            raise LauncherNotRunnable("No android device connected."
-                                      " Connect a device and try again.")
+            raise LauncherNotRunnable(
+                "No android device connected." " Connect a device and try again."
+            )
 
     def _install(self, dest):
         # get info now, as dest may be removed
         self.app_info = safe_get_version(binary=dest)
-        self.package_name = self.app_info.get("package_name",
-                                              self._get_package_name())
+        self.package_name = self.app_info.get("package_name", self._get_package_name())
         self.adb = ADBAndroid(require_root=False)
         try:
             self.adb.uninstall_app(self.package_name)
         except ADBError as msg:
             LOG.warning(
                 "Failed to uninstall %s (%s)\nThis is normal if it is the"
-                " first time the application is installed."
-                % (self.package_name, msg)
+                " first time the application is installed." % (self.package_name, msg)
             )
         self.adb.install_app(dest)
 
-    def _start(self, profile=None, addons=(), cmdargs=(), preferences=None,
-               adb_profile_dir=None):
+    def _start(
+        self,
+        profile=None,
+        addons=(),
+        cmdargs=(),
+        preferences=None,
+        adb_profile_dir=None,
+    ):
         # for now we don't handle addons on the profile for fennec
-        profile = self._create_profile(profile=profile,
-                                       preferences=preferences)
+        profile = self._create_profile(profile=profile, preferences=preferences)
         # send the profile on the device
         if not adb_profile_dir:
             adb_profile_dir = self.adb.test_root
-        self.remote_profile = "/".join([adb_profile_dir,
-                                       os.path.basename(profile.profile)])
+        self.remote_profile = "/".join(
+            [adb_profile_dir, os.path.basename(profile.profile)]
+        )
         if self.adb.exists(self.remote_profile):
             self.adb.rm(self.remote_profile, recursive=True)
-        LOG.debug("Pushing profile to device (%s -> %s)" % (
-            profile.profile, self.remote_profile))
+        LOG.debug(
+            "Pushing profile to device (%s -> %s)"
+            % (profile.profile, self.remote_profile)
+        )
         self.adb.push(profile.profile, self.remote_profile)
         self._launch()
 
@@ -452,31 +465,34 @@ class AndroidLauncher(Launcher):
         return self.app_info
 
 
-@REGISTRY.register('fennec')
+@REGISTRY.register("fennec")
 class FennecLauncher(AndroidLauncher):
     def _get_package_name(self):
         return "org.mozilla.fennec"
 
     def _launch(self):
         LOG.debug("Launching fennec")
-        self.adb.launch_fennec(self.package_name,
-                               extra_args=["-profile", self.remote_profile])
+        self.adb.launch_fennec(
+            self.package_name, extra_args=["-profile", self.remote_profile]
+        )
 
 
-@REGISTRY.register('gve')
+@REGISTRY.register("gve")
 class GeckoViewExampleLauncher(AndroidLauncher):
     def _get_package_name(self):
         return "org.mozilla.geckoview_example"
 
     def _launch(self):
         LOG.debug("Launching geckoview_example")
-        self.adb.launch_activity(self.package_name,
-                                 activity_name="GeckoViewActivity",
-                                 extra_args=["-profile", self.remote_profile],
-                                 e10s=True)
+        self.adb.launch_activity(
+            self.package_name,
+            activity_name="GeckoViewActivity",
+            extra_args=["-profile", self.remote_profile],
+            e10s=True,
+        )
 
 
-@REGISTRY.register('jsshell')
+@REGISTRY.register("jsshell")
 class JsShellLauncher(Launcher):
     temp_dir = None
 
@@ -486,8 +502,7 @@ class JsShellLauncher(Launcher):
             with zipfile.ZipFile(dest, "r") as z:
                 z.extractall(self.tempdir)
             self.binary = os.path.join(
-                self.tempdir,
-                'js' if mozinfo.os != 'win' else 'js.exe'
+                self.tempdir, "js" if mozinfo.os != "win" else "js.exe"
             )
             # set the file executable
             os.chmod(self.binary, os.stat(self.binary).st_mode | stat.S_IEXEC)
@@ -499,7 +514,7 @@ class JsShellLauncher(Launcher):
         LOG.info("Launching %s" % self.binary)
         res = call([self.binary], cwd=self.tempdir)
         if res != 0:
-            LOG.warning('jsshell exited with code %d.' % res)
+            LOG.warning("jsshell exited with code %d." % res)
 
     def _wait(self):
         pass

@@ -7,34 +7,38 @@ Entry point for the mozregression command line.
 """
 
 from __future__ import absolute_import
-import os
-import sys
-import requests
-import atexit
-import pipes
-import mozfile
-import colorama
 
+import atexit
+import os
+import pipes
+import sys
+
+import colorama
+import mozfile
+import requests
 from mozlog import get_proxy_logger
-from requests.exceptions import RequestException, HTTPError
+from requests.exceptions import HTTPError, RequestException
 
 from mozregression import __version__
-from mozregression.config import TC_CREDENTIALS_FNAME, DEFAULT_EXPAND
+from mozregression.approx_persist import ApproxPersistChooser
+from mozregression.bisector import (
+    Bisection,
+    Bisector,
+    IntegrationHandler,
+    NightlyHandler,
+)
+from mozregression.bugzilla import bug_url, find_bugids_in_push
 from mozregression.cli import cli
-from mozregression.errors import MozRegressionError, GoodBadExpectationError
-from mozregression.bisector import (Bisector, NightlyHandler, IntegrationHandler,
-                                    Bisection)
+from mozregression.config import DEFAULT_EXPAND, TC_CREDENTIALS_FNAME
+from mozregression.download_manager import BuildDownloadManager
+from mozregression.errors import GoodBadExpectationError, MozRegressionError
+from mozregression.fetch_build_info import IntegrationInfoFetcher, NightlyInfoFetcher
+from mozregression.json_pushes import JsonPushes
 from mozregression.launchers import REGISTRY as APP_REGISTRY
 from mozregression.network import set_http_session
-from mozregression.tempdir import safe_mkdtemp
-from mozregression.test_runner import ManualTestRunner, CommandTestRunner
-from mozregression.download_manager import BuildDownloadManager
 from mozregression.persist_limit import PersistLimit
-from mozregression.fetch_build_info import (NightlyInfoFetcher,
-                                            IntegrationInfoFetcher)
-from mozregression.json_pushes import JsonPushes
-from mozregression.bugzilla import find_bugids_in_push, bug_url
-from mozregression.approx_persist import ApproxPersistChooser
+from mozregression.tempdir import safe_mkdtemp
+from mozregression.test_runner import CommandTestRunner, ManualTestRunner
 
 LOG = get_proxy_logger("main")
 
@@ -55,16 +59,16 @@ class Application(object):
         launcher_class.check_is_runnable()
         # init global profile if required
         self._global_profile = None
-        if options.profile_persistence in ('clone-first', 'reuse'):
+        if options.profile_persistence in ("clone-first", "reuse"):
             self._global_profile = launcher_class.create_profile(
                 profile=options.profile,
                 addons=options.addons,
                 preferences=options.preferences,
-                clone=options.profile_persistence == 'clone-first'
+                clone=options.profile_persistence == "clone-first",
             )
-            options.cmdargs = options.cmdargs + ['--allow-downgrade']
+            options.cmdargs = options.cmdargs + ["--allow-downgrade"]
         elif options.profile:
-            options.cmdargs = options.cmdargs + ['--allow-downgrade']
+            options.cmdargs = options.cmdargs + ["--allow-downgrade"]
 
     def clear(self):
         if self._build_download_manager:
@@ -79,21 +83,22 @@ class Application(object):
                 # https://bugzilla.mozilla.org/show_bug.cgi?id=1231745
                 self._build_download_manager.wait(raise_if_error=False)
             mozfile.remove(self._download_dir)
-        if self._global_profile \
-           and self.options.profile_persistence == 'clone-first':
+        if self._global_profile and self.options.profile_persistence == "clone-first":
             self._global_profile.cleanup()
 
     @property
     def test_runner(self):
         if self._test_runner is None:
             if self.options.command is None:
-                self._test_runner = ManualTestRunner(launcher_kwargs=dict(
-                    addons=self.options.addons,
-                    profile=self._global_profile or self.options.profile,
-                    cmdargs=self.options.cmdargs,
-                    preferences=self.options.preferences,
-                    adb_profile_dir=self.options.adb_profile_dir,
-                ))
+                self._test_runner = ManualTestRunner(
+                    launcher_kwargs=dict(
+                        addons=self.options.addons,
+                        profile=self._global_profile or self.options.profile,
+                        cmdargs=self.options.cmdargs,
+                        preferences=self.options.preferences,
+                        adb_profile_dir=self.options.adb_profile_dir,
+                    )
+                )
             else:
                 self._test_runner = CommandTestRunner(self.options.command)
         return self._test_runner
@@ -102,11 +107,15 @@ class Application(object):
     def bisector(self):
         if self._bisector is None:
             self._bisector = Bisector(
-                self.fetch_config, self.test_runner,
+                self.fetch_config,
+                self.test_runner,
                 self.build_download_manager,
                 dl_in_background=self.options.background_dl,
-                approx_chooser=(None if self.options.approx_policy != 'auto'
-                                else ApproxPersistChooser(7)),
+                approx_chooser=(
+                    None
+                    if self.options.approx_policy != "auto"
+                    else ApproxPersistChooser(7)
+                ),
             )
         return self._bisector
 
@@ -120,7 +129,7 @@ class Application(object):
             self._build_download_manager = BuildDownloadManager(
                 self._download_dir,
                 background_dl_policy=background_dl_policy,
-                persist_limit=PersistLimit(self.options.persist_size_limit)
+                persist_limit=PersistLimit(self.options.persist_size_limit),
             )
         return self._build_download_manager
 
@@ -128,7 +137,7 @@ class Application(object):
         good_date, bad_date = self.options.good, self.options.bad
         handler = NightlyHandler(
             find_fix=self.options.find_fix,
-            ensure_good_and_bad=self.options.mode != 'no-first-check',
+            ensure_good_and_bad=self.options.mode != "no-first-check",
         )
         result = self._do_bisect(handler, good_date, bad_date)
         if result == Bisection.FINISHED:
@@ -136,17 +145,20 @@ class Application(object):
             handler.print_range()
             LOG.info("Switching bisection method to taskcluster")
             self.fetch_config.set_repo(
-                self.fetch_config.get_nightly_repo(handler.bad_date))
-            return self._bisect_integration(handler.good_revision,
-                                            handler.bad_revision,
-                                            expand=DEFAULT_EXPAND)
+                self.fetch_config.get_nightly_repo(handler.bad_date)
+            )
+            return self._bisect_integration(
+                handler.good_revision, handler.bad_revision, expand=DEFAULT_EXPAND
+            )
         elif result == Bisection.USER_EXIT:
             self._print_resume_info(handler)
         else:
             # NO_DATA
-            LOG.info("Unable to get valid builds within the given"
-                     " range. You should try to launch mozregression"
-                     " again with a larger date range.")
+            LOG.info(
+                "Unable to get valid builds within the given"
+                " range. You should try to launch mozregression"
+                " again with a larger date range."
+            )
             return 1
         return 0
 
@@ -154,15 +166,19 @@ class Application(object):
         return self._bisect_integration(
             self.options.good,
             self.options.bad,
-            ensure_good_and_bad=self.options.mode != 'no-first-check',
+            ensure_good_and_bad=self.options.mode != "no-first-check",
         )
 
-    def _bisect_integration(self, good_rev, bad_rev, ensure_good_and_bad=False,
-                            expand=0):
-        LOG.info("Getting %s builds between %s and %s"
-                 % (self.fetch_config.integration_branch, good_rev, bad_rev))
-        handler = IntegrationHandler(find_fix=self.options.find_fix,
-                                     ensure_good_and_bad=ensure_good_and_bad)
+    def _bisect_integration(
+        self, good_rev, bad_rev, ensure_good_and_bad=False, expand=0
+    ):
+        LOG.info(
+            "Getting %s builds between %s and %s"
+            % (self.fetch_config.integration_branch, good_rev, bad_rev)
+        )
+        handler = IntegrationHandler(
+            find_fix=self.options.find_fix, ensure_good_and_bad=ensure_good_and_bad
+        )
         result = self._do_bisect(handler, good_rev, bad_rev, expand=expand)
         if result == Bisection.FINISHED:
             LOG.info("No more integration revisions, bisection finished.")
@@ -179,8 +195,9 @@ class Application(object):
                 if result:
                     branch, good_rev, bad_rev = result
                     self.fetch_config.set_repo(branch)
-                    return self._bisect_integration(good_rev, bad_rev,
-                                                    expand=DEFAULT_EXPAND)
+                    return self._bisect_integration(
+                        good_rev, bad_rev, expand=DEFAULT_EXPAND
+                    )
                 else:
                     # This code is broken, it prints out the message even when
                     # there are multiple bug numbers or commits in the range.
@@ -191,38 +208,44 @@ class Application(object):
                     # just missing the builds for some intermediate builds)
                     # (2) there is only one bug number in that push
                     jp = JsonPushes(handler.build_range[1].repo_name)
-                    num_pushes = len(jp.pushes_within_changes(
-                        handler.build_range[0].changeset,
-                        handler.build_range[1].changeset))
+                    num_pushes = len(
+                        jp.pushes_within_changes(
+                            handler.build_range[0].changeset,
+                            handler.build_range[1].changeset,
+                        )
+                    )
                     if num_pushes == 2:
                         bugids = find_bugids_in_push(
                             handler.build_range[1].repo_name,
-                            handler.build_range[1].changeset
+                            handler.build_range[1].changeset,
                         )
                         if len(bugids) == 1:
-                            word = 'fix' if handler.find_fix else 'regression'
-                            LOG.info("Looks like the following bug has the "
-                                     " changes which introduced the"
-                                     " {}:\n{}".format(word,
-                                                       bug_url(bugids[0])))
+                            word = "fix" if handler.find_fix else "regression"
+                            LOG.info(
+                                "Looks like the following bug has the "
+                                " changes which introduced the"
+                                " {}:\n{}".format(word, bug_url(bugids[0]))
+                            )
         elif result == Bisection.USER_EXIT:
             self._print_resume_info(handler)
         else:
             # NO_DATA. With integration branches, this can not happen if changesets
             # are incorrect - so builds are probably too old
             LOG.info(
-                'There are no build artifacts for these changesets (they are probably too old).')
+                "There are no build artifacts for these changesets (they are probably too old)."
+            )
             return 1
         return 0
 
     def _do_bisect(self, handler, good, bad, **kwargs):
         try:
             return self.bisector.bisect(handler, good, bad, **kwargs)
-        except (KeyboardInterrupt, MozRegressionError,
-                RequestException) as exc:
-            if handler.good_revision is not None and \
-                    handler.bad_revision is not None and \
-                    not isinstance(exc, GoodBadExpectationError):
+        except (KeyboardInterrupt, MozRegressionError, RequestException) as exc:
+            if (
+                handler.good_revision is not None
+                and handler.bad_revision is not None
+                and not isinstance(exc, GoodBadExpectationError)
+            ):
                 atexit.register(self._on_exit_print_resume_info, handler)
             raise
 
@@ -230,8 +253,7 @@ class Application(object):
         # copy sys.argv, remove every --good/--bad/--repo related argument,
         # then add our own
         argv = sys.argv[:]
-        args = ('--good', '--bad', '-g', '-b', '--good-rev', '--bad-rev',
-                '--repo')
+        args = ("--good", "--bad", "-g", "-b", "--good-rev", "--bad-rev", "--repo")
         indexes_to_remove = []
         for i, arg in enumerate(argv):
             if i in indexes_to_remove:
@@ -241,24 +263,24 @@ class Application(object):
                     # handle '--good 2015-01-01'
                     indexes_to_remove.extend((i, i + 1))
                     break
-                elif arg.startswith(karg + '='):
+                elif arg.startswith(karg + "="):
                     # handle '--good=2015-01-01'
                     indexes_to_remove.append(i)
                     break
         for i in reversed(indexes_to_remove):
             del argv[i]
 
-        argv.append('--repo=%s' % handler.build_range[0].repo_name)
+        argv.append("--repo=%s" % handler.build_range[0].repo_name)
 
-        if hasattr(handler, 'good_date'):
-            argv.append('--good=%s' % handler.good_date)
-            argv.append('--bad=%s' % handler.bad_date)
+        if hasattr(handler, "good_date"):
+            argv.append("--good=%s" % handler.good_date)
+            argv.append("--bad=%s" % handler.bad_date)
         else:
-            argv.append('--good=%s' % handler.good_revision)
-            argv.append('--bad=%s' % handler.bad_revision)
+            argv.append("--good=%s" % handler.good_revision)
+            argv.append("--bad=%s" % handler.bad_revision)
 
-        LOG.info('To resume, run:')
-        LOG.info(' '.join([pipes.quote(arg) for arg in argv]))
+        LOG.info("To resume, run:")
+        LOG.info(" ".join([pipes.quote(arg) for arg in argv]))
 
     def _on_exit_print_resume_info(self, handler):
         handler.print_range()
@@ -279,7 +301,7 @@ class Application(object):
 
 def pypi_latest_version():
     url = "https://pypi.python.org/pypi/mozregression/json"
-    return requests.get(url, timeout=10).json()['info']['version']
+    return requests.get(url, timeout=10).json()["info"]["version"]
 
 
 def check_mozregression_version():
@@ -290,12 +312,15 @@ def check_mozregression_version():
         return
 
     if __version__ != mozregression_version:
-        LOG.warning("You are using mozregression version %s, "
-                    "however version %s is available."
-                    % (__version__, mozregression_version))
+        LOG.warning(
+            "You are using mozregression version %s, "
+            "however version %s is available." % (__version__, mozregression_version)
+        )
 
-        LOG.warning("You should consider upgrading via the 'pip install"
-                    " --upgrade mozregression' command.")
+        LOG.warning(
+            "You should consider upgrading via the 'pip install"
+            " --upgrade mozregression' command."
+        )
 
 
 def main(argv=None, namespace=None, check_new_version=True):
@@ -303,7 +328,7 @@ def main(argv=None, namespace=None, check_new_version=True):
     main entry point of mozregression command line.
     """
     # terminal color support on windows
-    if os.name == 'nt':
+    if os.name == "nt":
         colorama.init()
 
     if sys.version_info <= (2, 7, 9):
@@ -311,6 +336,7 @@ def main(argv=None, namespace=None, check_new_version=True):
         # of warnings that we do not want. See
         # https://bugzilla.mozilla.org/show_bug.cgi?id=1199020
         import logging
+
         logging.captureWarnings(True)
 
     config, app = None, None

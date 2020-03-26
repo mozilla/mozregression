@@ -3,11 +3,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from __future__ import absolute_import
+
 import json
+
 from taskcluster import utils as tc_utils
 
-from mozregression.config import (get_defaults, DEFAULT_CONF_FNAME,
-                                  TC_CREDENTIALS_FNAME)
+from mozregression.config import DEFAULT_CONF_FNAME, TC_CREDENTIALS_FNAME, get_defaults
 
 
 def tc_authenticate(logger):
@@ -16,8 +17,8 @@ def tc_authenticate(logger):
     """
     # first, try to load credentials from mozregression config file
     defaults = get_defaults(DEFAULT_CONF_FNAME)
-    client_id = defaults.get('taskcluster-clientid')
-    access_token = defaults.get('taskcluster-accesstoken')
+    client_id = defaults.get("taskcluster-clientid")
+    access_token = defaults.get("taskcluster-accesstoken")
     if client_id and access_token:
         return dict(clientId=client_id, accessToken=access_token)
 
@@ -25,7 +26,7 @@ def tc_authenticate(logger):
         # else, try to load a valid certificate locally
         with open(TC_CREDENTIALS_FNAME) as f:
             creds = json.load(f)
-        if not tc_utils.isExpired(creds['certificate']):
+        if not tc_utils.isExpired(creds["certificate"]):
             return creds
     except Exception:
         pass
@@ -41,6 +42,6 @@ def tc_authenticate(logger):
     creds = tc_utils.authenticate("mozregression private build access")
 
     # save the credentials and the certificate for later use
-    with open(TC_CREDENTIALS_FNAME, 'w') as f:
+    with open(TC_CREDENTIALS_FNAME, "w") as f:
         json.dump(creds, f)
     return creds

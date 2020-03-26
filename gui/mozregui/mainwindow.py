@@ -1,6 +1,5 @@
 
 import mozregression
-import mozregui
 import mozfile
 
 from tempfile import mkdtemp

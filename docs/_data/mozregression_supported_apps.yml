@@ -1,0 +1,11 @@
+# first value is the default for mozregression
+
+- name: firefox
+  url: https://www.mozilla.org/firefox/
+
+- name: thunderbird
+  url: https://www.mozilla.org/thunderbird/
+
+- name: fennec
+  url: https://wiki.mozilla.org/Mobile/Fennec
+  description: Firefox for Android

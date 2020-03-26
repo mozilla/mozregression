@@ -1,0 +1,14 @@
+# Site settings
+title: mozregression
+sub_title: regression range finder for Firefox
+github_url: https://github.com/mozilla/mozregression
+# description of the web site
+# It will appear in your document head meta (for Google search results)
+description: Regression range finder for Firefox
+baseurl: "/mozregression" # the subpath of your site, e.g. /blog/
+url: "https://mozilla.github.io" # the base hostname & protocol for your site
+
+# Build settings
+markdown: kramdown
+
+exclude: [vendor]

@@ -1,0 +1,131 @@
+/**
+ * Site header
+ */
+.site-header {
+    min-height: 200px;
+
+    // Positioning context for the mobile navigation icon
+    position: relative;
+}
+
+.site-title {
+    font-size: 2.5em;
+    font-weight: bold;
+    line-height: 56px;
+    letter-spacing: -1px;
+    margin-bottom: 0;
+    float: left;
+    text-shadow: -1px 0 black, 0 2px black, 2px 0 black, 0 -1px black;
+}
+
+.site-title a {
+    &,
+    &:visited {
+        color: $grey-color-light;
+    }
+}
+
+.site-sub-title {
+    font-size: 18px;
+    color: #999;
+    font-weight: bold;
+}
+
+.page-link {
+    line-height: $base-line-height;
+    padding: 4px 10px;
+}
+
+.page-link:hover {
+    &:not(.current) {
+        background-color: $background-color;
+        color: $orange-color;
+        border-radius: 5px;
+    }
+}
+
+.current {
+    background-color: $yellow-color;
+    color: $background-color;
+    border-radius: 5px;
+    border-top: 1px solid white;
+    border-left: 1px solid white;
+}
+
+.site-nav {
+    float: right;
+    line-height: 56px;
+
+    .menu-icon {
+        display: none;
+    }
+
+    @include media-query($on-palm) {
+        position: absolute;
+        top: 9px;
+        right: 30px;
+        background-color: $background-color;
+        border: 1px solid $grey-color-light;
+        border-radius: 5px;
+        text-align: right;
+
+        .menu-icon {
+            display: block;
+            float: right;
+            width: 36px;
+            height: 26px;
+            line-height: 0;
+            padding-top: 10px;
+            text-align: center;
+
+            > svg {
+                width: 18px;
+                height: 15px;
+
+                path {
+                    fill: $grey-color-dark;
+                }
+            }
+        }
+
+        .trigger {
+            clear: both;
+            display: none;
+        }
+
+        &:hover .trigger {
+            display: block;
+            padding-bottom: 5px;
+        }
+
+        .page-link {
+            display: block;
+            padding: 5px 10px;
+        }
+    }
+}
+
+h2 {
+    background-color: #9e2812;
+    background-image: linear-gradient(to bottom, #9e2812 0%, #6f0d0d 100%);
+    border-radius: 5px;
+    padding: 0 7px;
+    display: inline-block;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5);
+}
+
+#doc-backward {
+    float: right;
+    display: block;
+}
+
+@include media-query($on-palm) {
+    .hide-on-palm {
+        display: none;
+    }
+}
+
+.post-meta {
+    font-size: $small-font-size;
+    color: $grey-color;
+}

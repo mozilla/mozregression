@@ -5,6 +5,7 @@ exclude = "gui/mozregui/ui"
 [tool.isort]
 line_length = 100
 skip_glob = "**/gui/mozregui/ui/*"
+known_first_party = "mozregression,mozregui"
 # For compatibility with black:
 multi_line_output = 3
 include_trailing_comma = "True"

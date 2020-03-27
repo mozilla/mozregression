@@ -48,7 +48,7 @@ matrix:
       python: '3.7'
       script:
         - pip install -r requirements/linters.txt
-        - ./bin/lint-check.sh || echo "Lint fix results:" && ./bin/lint-fix.sh && git diff && false
+        - ./bin/lint-check.sh || (echo "Lint fix results:" && ./bin/lint-fix.sh && git diff && false)
 
 install:
     - if [ "$TRAVIS_OS_NAME" == "osx" ]; then

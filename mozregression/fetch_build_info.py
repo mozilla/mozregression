@@ -13,15 +13,15 @@ import re
 from datetime import datetime
 from threading import Lock, Thread
 
+# Fix intermittent bug due to strptime first call not being thread safe
+# see https://bugzilla.mozilla.org/show_bug.cgi?id=1200270
+# and http://bugs.python.org/issue7980
+import _strptime  # noqa
 import taskcluster
 from mozlog import get_proxy_logger
 from requests import HTTPError
 from taskcluster.exceptions import TaskclusterFailure
 
-# Fix intermittent bug due to strptime first call not being thread safe
-# see https://bugzilla.mozilla.org/show_bug.cgi?id=1200270
-# and http://bugs.python.org/issue7980
-import _strptime  # noqa
 from mozregression.build_info import IntegrationBuildInfo, NightlyBuildInfo
 from mozregression.config import OLD_TC_ROOT_URL, TC_ROOT_URL, TC_ROOT_URL_MIGRATION_FLAG_DATE
 from mozregression.errors import BuildInfoNotFound, MozRegressionError

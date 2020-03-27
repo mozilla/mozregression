@@ -40,10 +40,10 @@ matrix:
         - pip install coveralls; coveralls
         - python gui/build.py bundle
     - name: linters
-      env: PYTHON=python3.6
+      env: PYTHON=python3.7
       os: linux
       language: python
-      python: '3.6'
+      python: '3.7'
       script:
         - pip install -r requirements/linters.txt
         - ./bin/lint-check.sh

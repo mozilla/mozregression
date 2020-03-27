@@ -17,11 +17,7 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
     def __init__(self, destdir, persist_limit, **kwargs):
         QObject.__init__(self)
         BuildDownloadManager.__init__(
-            self,
-            destdir,
-            session=get_http_session(),
-            persist_limit=persist_limit,
-            **kwargs
+            self, destdir, session=get_http_session(), persist_limit=persist_limit, **kwargs
         )
 
     def _download_started(self, task):
@@ -131,9 +127,7 @@ class AbstractBuildRunner(QObject):
         download_dir = global_prefs["persist"]
         if not download_dir:
             download_dir = self.mainwindow.persist
-        persist_limit = PersistLimit(
-            abs(global_prefs["persist_size_limit"]) * 1073741824
-        )
+        persist_limit = PersistLimit(abs(global_prefs["persist_size_limit"]) * 1073741824)
         self.download_manager = GuiBuildDownloadManager(download_dir, persist_limit)
         self.test_runner = GuiTestRunner()
         self.thread = QThread()
@@ -150,23 +144,14 @@ class AbstractBuildRunner(QObject):
         launcher_kwargs["addons"] = options["addons"]
         self.test_runner.launcher_kwargs = launcher_kwargs
 
-        if (
-            options["profile_persistence"] in ("clone-first", "reuse")
-            or options["profile"]
-        ):
-            launcher_kwargs["cmdargs"] = launcher_kwargs.get("cmdargs", []) + [
-                "--allow-downgrade"
-            ]
+        if options["profile_persistence"] in ("clone-first", "reuse") or options["profile"]:
+            launcher_kwargs["cmdargs"] = launcher_kwargs.get("cmdargs", []) + ["--allow-downgrade"]
 
         # Thunderbird will fail to start if passed an URL arg
         if "url" in options and fetch_config.app_name != "thunderbird":
-            launcher_kwargs["cmdargs"] = launcher_kwargs.get("cmdargs", []) + [
-                options["url"]
-            ]
+            launcher_kwargs["cmdargs"] = launcher_kwargs.get("cmdargs", []) + [options["url"]]
 
-        self.worker = self.worker_class(
-            fetch_config, self.test_runner, self.download_manager
-        )
+        self.worker = self.worker_class(fetch_config, self.test_runner, self.download_manager)
         # Move self.bisector in the thread. This will
         # allow to the self.bisector slots (connected after the move)
         # to be automatically called in the thread.
@@ -186,10 +171,7 @@ class AbstractBuildRunner(QObject):
     def stop(self, wait=True):
         self.stopped = True
         if self.options:
-            if (
-                self.options["profile"]
-                and self.options["profile_persistence"] == "clone-first"
-            ):
+            if self.options["profile"] and self.options["profile_persistence"] == "clone-first":
                 self.options["profile"].cleanup()
         if self.download_manager:
             self.download_manager.cancel()

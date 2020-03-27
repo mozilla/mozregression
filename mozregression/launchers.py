@@ -136,17 +136,13 @@ class Launcher(six.with_metaclass(ABCMeta)):
         if isinstance(profile, Profile):
             return profile
         else:
-            return self.create_profile(
-                profile=profile, addons=addons, preferences=preferences
-            )
+            return self.create_profile(profile=profile, addons=addons, preferences=preferences)
 
     @classmethod
     def create_profile(cls, profile=None, addons=(), preferences=None, clone=True):
         if profile:
             if not os.path.exists(profile):
-                LOG.warning(
-                    "Creating directory '%s' to put the profile in there" % profile
-                )
+                LOG.warning("Creating directory '%s' to put the profile in there" % profile)
                 os.makedirs(profile)
                 # since the user gave an empty dir for the profile,
                 # let's keep it on the disk in any case.
@@ -156,13 +152,9 @@ class Launcher(six.with_metaclass(ABCMeta)):
                 # be undone. Let's clone the profile to not have side effect
                 # on existing profile.
                 # see https://bugzilla.mozilla.org/show_bug.cgi?id=999009
-                profile = cls.profile_class.clone(
-                    profile, addons=addons, preferences=preferences
-                )
+                profile = cls.profile_class.clone(profile, addons=addons, preferences=preferences)
             else:
-                profile = cls.profile_class(
-                    profile, addons=addons, preferences=preferences
-                )
+                profile = cls.profile_class(profile, addons=addons, preferences=preferences)
         elif len(addons):
             profile = cls.profile_class(addons=addons, preferences=preferences)
         else:
@@ -212,16 +204,9 @@ class MozRunnerLauncher(Launcher):
             json.dump(updatePolicy, fp, indent=2)
 
     def _start(
-        self,
-        profile=None,
-        addons=(),
-        cmdargs=(),
-        preferences=None,
-        adb_profile_dir=None,
+        self, profile=None, addons=(), cmdargs=(), preferences=None, adb_profile_dir=None,
     ):
-        profile = self._create_profile(
-            profile=profile, addons=addons, preferences=preferences
-        )
+        profile = self._create_profile(profile=profile, addons=addons, preferences=preferences)
 
         LOG.info("Launching %s" % self.binary)
         self.runner = Runner(binary=self.binary, cmdargs=cmdargs, profile=profile)
@@ -241,8 +226,7 @@ class MozRunnerLauncher(Launcher):
                 except Exception:
                     print()
                     LOG.error(
-                        "Error while waiting process, consider filing a bug.",
-                        exc_info=True,
+                        "Error while waiting process, consider filing a bug.", exc_info=True,
                     )
                     return
                 if exitcode != 0:
@@ -299,9 +283,7 @@ def create_launcher(buildinfo):
     """
     Create and returns an instance launcher for the given buildinfo.
     """
-    return REGISTRY.get(buildinfo.app_name)(
-        buildinfo.build_file, task_id=buildinfo.task_id
-    )
+    return REGISTRY.get(buildinfo.app_name)(buildinfo.build_file, task_id=buildinfo.task_id)
 
 
 class FirefoxRegressionProfile(Profile):
@@ -354,19 +336,10 @@ class FirefoxLauncher(MozRunnerLauncher):
         self._disableUpdateByPolicy()
 
     def _start(
-        self,
-        profile=None,
-        addons=(),
-        cmdargs=(),
-        preferences=None,
-        adb_profile_dir=None,
+        self, profile=None, addons=(), cmdargs=(), preferences=None, adb_profile_dir=None,
     ):
         super(FirefoxLauncher, self)._start(
-            profile,
-            addons,
-            ["--allow-downgrade"] + cmdargs,
-            preferences,
-            adb_profile_dir,
+            profile, addons, ["--allow-downgrade"] + cmdargs, preferences, adb_profile_dir,
         )
 
 
@@ -428,27 +401,17 @@ class AndroidLauncher(Launcher):
         self.adb.install_app(dest)
 
     def _start(
-        self,
-        profile=None,
-        addons=(),
-        cmdargs=(),
-        preferences=None,
-        adb_profile_dir=None,
+        self, profile=None, addons=(), cmdargs=(), preferences=None, adb_profile_dir=None,
     ):
         # for now we don't handle addons on the profile for fennec
         profile = self._create_profile(profile=profile, preferences=preferences)
         # send the profile on the device
         if not adb_profile_dir:
             adb_profile_dir = self.adb.test_root
-        self.remote_profile = "/".join(
-            [adb_profile_dir, os.path.basename(profile.profile)]
-        )
+        self.remote_profile = "/".join([adb_profile_dir, os.path.basename(profile.profile)])
         if self.adb.exists(self.remote_profile):
             self.adb.rm(self.remote_profile, recursive=True)
-        LOG.debug(
-            "Pushing profile to device (%s -> %s)"
-            % (profile.profile, self.remote_profile)
-        )
+        LOG.debug("Pushing profile to device (%s -> %s)" % (profile.profile, self.remote_profile))
         self.adb.push(profile.profile, self.remote_profile)
         self._launch()
 
@@ -472,9 +435,7 @@ class FennecLauncher(AndroidLauncher):
 
     def _launch(self):
         LOG.debug("Launching fennec")
-        self.adb.launch_fennec(
-            self.package_name, extra_args=["-profile", self.remote_profile]
-        )
+        self.adb.launch_fennec(self.package_name, extra_args=["-profile", self.remote_profile])
 
 
 @REGISTRY.register("gve")
@@ -501,9 +462,7 @@ class JsShellLauncher(Launcher):
         try:
             with zipfile.ZipFile(dest, "r") as z:
                 z.extractall(self.tempdir)
-            self.binary = os.path.join(
-                self.tempdir, "js" if mozinfo.os != "win" else "js.exe"
-            )
+            self.binary = os.path.join(self.tempdir, "js" if mozinfo.os != "win" else "js.exe")
             # set the file executable
             os.chmod(self.binary, os.stat(self.binary).st_mode | stat.S_IEXEC)
         except Exception:

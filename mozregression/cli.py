@@ -41,11 +41,7 @@ from mozregression.tc_authenticate import tc_authenticate
 class _StopAction(Action):
     def __init__(self, option_strings, dest=SUPPRESS, default=SUPPRESS, help=None):
         super(_StopAction, self).__init__(
-            option_strings=option_strings,
-            dest=dest,
-            default=default,
-            nargs=0,
-            help=help,
+            option_strings=option_strings, dest=dest, default=default, nargs=0, help=help,
         )
 
     def __call__(self, parser, namespace, values, option_string=None):
@@ -134,9 +130,7 @@ def create_parser(defaults):
     )
 
     parser.add_argument(
-        "--list-releases",
-        action=ListReleasesAction,
-        help="list all known releases and exit",
+        "--list-releases", action=ListReleasesAction, help="list all known releases and exit",
     )
 
     parser.add_argument(
@@ -158,9 +152,7 @@ def create_parser(defaults):
     )
 
     parser.add_argument(
-        "--find-fix",
-        action="store_true",
-        help="Search for a bug fix instead of a regression.",
+        "--find-fix", action="store_true", help="Search for a bug fix instead of a regression.",
     )
 
     parser.add_argument(
@@ -295,8 +287,7 @@ def create_parser(defaults):
         "--persist",
         default=defaults["persist"],
         help=(
-            "the directory in which downloaded files are"
-            " to persist. Defaults to %(default)r."
+            "the directory in which downloaded files are" " to persist. Defaults to %(default)r."
         ),
     )
 
@@ -332,8 +323,7 @@ def create_parser(defaults):
         dest="background_dl",
         default=(defaults["no-background-dl"].lower() not in ("1", "yes", "true")),
         help=(
-            "Do not download next builds in the background"
-            " while evaluating the current build."
+            "Do not download next builds in the background" " while evaluating the current build."
         ),
     )
 
@@ -370,10 +360,7 @@ def create_parser(defaults):
     parser.add_argument(
         "--launch",
         metavar="DATE|BUILDID|RELEASE|CHANGESET",
-        help=(
-            "Launch only one specific build. Same possible"
-            " values as the --bad option."
-        ),
+        help=("Launch only one specific build. Same possible" " values as the --bad option."),
     )
 
     parser.add_argument(
@@ -407,14 +394,10 @@ def create_parser(defaults):
     )
 
     parser.add_argument(
-        "--write-config",
-        action=WriteConfigAction,
-        help="Helps to write the configuration file.",
+        "--write-config", action=WriteConfigAction, help="Helps to write the configuration file.",
     )
 
-    parser.add_argument(
-        "--debug", "-d", action="store_true", help="Show the debug output."
-    )
+    parser.add_argument("--debug", "-d", action="store_true", help="Show the debug output.")
 
     return parser
 
@@ -449,9 +432,7 @@ def preferences(prefs_files, prefs_args, logger):
             if separator not in pref:
                 if logger:
                     if "=" in pref:
-                        logger.warning(
-                            'Pref %s has an "=", did you mean to use ":"?' % pref
-                        )
+                        logger.warning('Pref %s has an "=", did you mean to use ":"?' % pref)
                     logger.info('Dropping pref %s for missing separator ":"' % pref)
                 continue
             cli_prefs.append(pref.split(separator, 1))
@@ -556,9 +537,7 @@ class Configuration(object):
                     value = new_value
                 else:
                     new_value = parse_date(date_of_release(value))
-                    self.logger.info(
-                        "Using date %s for release %s" % (new_value, value)
-                    )
+                    self.logger.info("Using date %s for release %s" % (new_value, value))
                     value = new_value
             except UnavailableRelease:
                 self.logger.info("%s is not a release, assuming it's a hash..." % value)
@@ -573,16 +552,12 @@ class Configuration(object):
 
         user_defined_bits = options.bits is not None
         options.bits = parse_bits(options.bits or mozinfo.bits)
-        fetch_config = create_config(
-            options.app, mozinfo.os, options.bits, mozinfo.processor
-        )
+        fetch_config = create_config(options.app, mozinfo.os, options.bits, mozinfo.processor)
         if options.build_type:
             try:
                 fetch_config.set_build_type(options.build_type)
             except MozRegressionError as msg:
-                self.logger.warning(
-                    "%s (Defaulting to %r)" % (msg, fetch_config.build_type)
-                )
+                self.logger.warning("%s (Defaulting to %r)" % (msg, fetch_config.build_type))
         self.fetch_config = fetch_config
 
         fetch_config.set_repo(options.repo)
@@ -598,9 +573,7 @@ class Configuration(object):
             self.logger.info("bits option not specified, using 64-bit builds.")
 
         if options.bits == 32 and mozinfo.os == "mac":
-            self.logger.info(
-                "only 64-bit builds available for mac, using " "64-bit builds"
-            )
+            self.logger.info("only 64-bit builds available for mac, using " "64-bit builds")
 
         if fetch_config.tk_needs_auth():
             creds = tc_authenticate(self.logger)
@@ -610,10 +583,7 @@ class Configuration(object):
         if options.launch:
             options.launch = self._convert_to_bisect_arg(options.launch)
             self.action = "launch_integration"
-            if (
-                is_date_or_datetime(options.launch)
-                and fetch_config.should_use_archive()
-            ):
+            if is_date_or_datetime(options.launch) and fetch_config.should_use_archive():
                 self.action = "launch_nightlies"
         else:
             # define good/bad default values if required
@@ -636,9 +606,7 @@ class Configuration(object):
 
             self.action = "bisect_integration"
             if is_date_or_datetime(options.good) and is_date_or_datetime(options.bad):
-                if not options.find_fix and to_datetime(options.good) > to_datetime(
-                    options.bad
-                ):
+                if not options.find_fix and to_datetime(options.good) > to_datetime(options.bad):
                     raise MozRegressionError(
                         (
                             "Good date %s is later than bad date %s."
@@ -647,9 +615,7 @@ class Configuration(object):
                         )
                         % (options.good, options.bad)
                     )
-                elif options.find_fix and to_datetime(options.good) < to_datetime(
-                    options.bad
-                ):
+                elif options.find_fix and to_datetime(options.good) < to_datetime(options.bad):
                     raise MozRegressionError(
                         (
                             "Bad date %s is later than good date %s."
@@ -660,13 +626,9 @@ class Configuration(object):
                     )
                 if fetch_config.should_use_archive():
                     self.action = "bisect_nightlies"
-        options.preferences = preferences(
-            options.prefs_files, options.prefs, self.logger
-        )
+        options.preferences = preferences(options.prefs_files, options.prefs, self.logger)
         # convert GiB to bytes.
-        options.persist_size_limit = int(
-            abs(float(options.persist_size_limit)) * 1073741824
-        )
+        options.persist_size_limit = int(abs(float(options.persist_size_limit)) * 1073741824)
 
 
 def cli(argv=None, conf_file=DEFAULT_CONF_FNAME, namespace=None):

@@ -69,9 +69,7 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008, 6, 27))
         self.assertEqual(repo_regex, "^2008-06-27-[\\d-]+mozilla-central/$")
         # test with a datetime instance (buildid)
-        repo_regex = self.conf.get_nightly_repo_regex(
-            datetime.datetime(2015, 11, 27, 6, 5, 58)
-        )
+        repo_regex = self.conf.get_nightly_repo_regex(datetime.datetime(2015, 11, 27, 6, 5, 58))
         self.assertEqual(repo_regex, "^2015-11-27-06-05-58-mozilla-central/$")
 
     def test_set_repo(self):
@@ -197,13 +195,11 @@ class TestFennec23Config(unittest.TestCase):
 class TestGetBuildUrl(unittest.TestCase):
     def test_for_linux(self):
         self.assertEqual(
-            get_build_regex("test", "linux", 32, "x86"),
-            r"(target|test.*linux-i686)\.tar.bz2",
+            get_build_regex("test", "linux", 32, "x86"), r"(target|test.*linux-i686)\.tar.bz2",
         )
 
         self.assertEqual(
-            get_build_regex("test", "linux", 64, "x86_64"),
-            r"(target|test.*linux-x86_64)\.tar.bz2",
+            get_build_regex("test", "linux", 64, "x86_64"), r"(target|test.*linux-x86_64)\.tar.bz2",
         )
 
         self.assertEqual(
@@ -212,12 +208,9 @@ class TestGetBuildUrl(unittest.TestCase):
         )
 
     def test_for_win(self):
+        self.assertEqual(get_build_regex("test", "win", 32, "x86"), r"(target|test.*win32)\.zip")
         self.assertEqual(
-            get_build_regex("test", "win", 32, "x86"), r"(target|test.*win32)\.zip"
-        )
-        self.assertEqual(
-            get_build_regex("test", "win", 64, "x86_64"),
-            r"(target|test.*win64(-x86_64)?)\.zip",
+            get_build_regex("test", "win", 64, "x86_64"), r"(target|test.*win64(-x86_64)?)\.zip",
         )
         self.assertEqual(
             get_build_regex("test", "win", 64, "x86_64", with_ext=False),
@@ -227,20 +220,14 @@ class TestGetBuildUrl(unittest.TestCase):
             get_build_regex("test", "win", 32, "aarch64"), r"(target|test.*win32)\.zip"
         )
         self.assertEqual(
-            get_build_regex("test", "win", 64, "aarch64"),
-            r"(target|test.*win64-aarch64)\.zip",
+            get_build_regex("test", "win", 64, "aarch64"), r"(target|test.*win64-aarch64)\.zip",
         )
 
     def test_for_mac(self):
+        self.assertEqual(get_build_regex("test", "mac", 32, "x86"), r"(target|test.*mac.*)\.dmg")
+        self.assertEqual(get_build_regex("test", "mac", 64, "x86_64"), r"(target|test.*mac.*)\.dmg")
         self.assertEqual(
-            get_build_regex("test", "mac", 32, "x86"), r"(target|test.*mac.*)\.dmg"
-        )
-        self.assertEqual(
-            get_build_regex("test", "mac", 64, "x86_64"), r"(target|test.*mac.*)\.dmg"
-        )
-        self.assertEqual(
-            get_build_regex("test", "mac", 64, "x86_64", with_ext=False),
-            r"(target|test.*mac.*)",
+            get_build_regex("test", "mac", 64, "x86_64", with_ext=False), r"(target|test.*mac.*)",
         )
 
     def test_unknown_os(self):
@@ -268,9 +255,7 @@ class TestFallbacksConfig(TestFirefoxConfigLinux64):
         routes = list(self.conf.tk_routes(create_push("1a", TIMESTAMP_TEST)))
         assert len(routes) == 3
         assert routes[0] == ("gecko.v2.mozilla-central.revision.1a.firefox.linux64-opt")
-        assert routes[2] == (
-            "gecko.v2.mozilla-central.revision.1a.firefox.linux64-fallback"
-        )
+        assert routes[2] == ("gecko.v2.mozilla-central.revision.1a.firefox.linux64-fallback")
 
 
 class TestAarch64AvailableBuildTypes(unittest.TestCase):
@@ -310,8 +295,7 @@ CHSET12 = "47856a214918"
             "aarch64",
             "m-i",
             TIMESTAMP_TEST,
-            "gecko.v2.mozilla-inbound.shippable.revision.%s.firefox.win64-aarch64-opt"
-            % CHSET,
+            "gecko.v2.mozilla-inbound.shippable.revision.%s.firefox.win64-aarch64-opt" % CHSET,
         ),
         (
             "firefox",
@@ -329,8 +313,7 @@ CHSET12 = "47856a214918"
             "x86_64",
             "m-i",
             TIMESTAMP_TEST,
-            "gecko.v2.mozilla-inbound.shippable.revision.%s.firefox.macosx64-opt"
-            % CHSET,
+            "gecko.v2.mozilla-inbound.shippable.revision.%s.firefox.macosx64-opt" % CHSET,
         ),
         (
             "firefox",
@@ -339,8 +322,7 @@ CHSET12 = "47856a214918"
             "x86_64",
             "m-i",
             TIMESTAMP_TEST,
-            "gecko.v2.mozilla-inbound.shippable.revision.%s.firefox.linux64-opt"
-            % CHSET,
+            "gecko.v2.mozilla-inbound.shippable.revision.%s.firefox.linux64-opt" % CHSET,
         ),
         (
             "firefox",
@@ -434,8 +416,7 @@ def test_tk_route(app, os, bits, processor, repo, push_date, expected):
             64,
             "x86_64",
             "shippable",
-            "gecko.v2.mozilla-central.shippable.revision.%s.firefox.linux64-opt"
-            % CHSET,
+            "gecko.v2.mozilla-central.shippable.revision.%s.firefox.linux64-opt" % CHSET,
         ),
     ],
 )
@@ -504,9 +485,7 @@ def test_set_firefox_build_type_pgo(os, bits, processor, tc_suffix):
             conf.set_build_type("pgo")
     else:
         conf.set_build_type("pgo")
-        assert conf.tk_route(create_push(CHSET, TIMESTAMP_TEST)).endswith(
-            "." + tc_suffix
-        )
+        assert conf.tk_route(create_push(CHSET, TIMESTAMP_TEST)).endswith("." + tc_suffix)
 
 
 if __name__ == "__main__":

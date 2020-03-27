@@ -36,10 +36,9 @@ matrix:
       env: PYTHON=python3.5
       os: linux
       language: python
-      python: '3.5'
+      python: '3.6'
       script:
-        - flake8 mozregression tests setup.py
-        - flake8 gui/mozregui gui/build.py gui/tests
+        - ./bin/lint-check.sh
 
 install:
     - if [ "$TRAVIS_OS_NAME" == "osx" ]; then

@@ -157,7 +157,7 @@ class BuildInfo(object):
         The pattern only allows the build name to be different, by using
         the fetch_config.build_regex() value. For example, it can return:
 
-        '2015-01-11--mozilla-central--firefox.*linux-x86_64\.tar.bz2$'
+        '2015-01-11--mozilla-central--firefox.*linux-x86_64\\.tar.bz2$'
         """
         if self.build_type == "nightly":
             if isinstance(data, datetime.datetime):
@@ -211,9 +211,7 @@ class NightlyBuildInfo(BuildInfo):
 
 
 class IntegrationBuildInfo(BuildInfo):
-    def __init__(
-        self, fetch_config, build_url, build_date, changeset, repo_url, task_id=None
-    ):
+    def __init__(self, fetch_config, build_url, build_date, changeset, repo_url, task_id=None):
         BuildInfo.__init__(
             self,
             fetch_config,

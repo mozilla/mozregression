@@ -35,10 +35,7 @@ def create_launcher(build_info):
         else:
             desc = "for %s" % build_info.build_date
     else:
-        desc = "built on %s, revision %s" % (
-            build_info.build_date,
-            build_info.short_changeset,
-        )
+        desc = "built on %s, revision %s" % (build_info.build_date, build_info.short_changeset,)
     LOG.info("Running %s build %s" % (build_info.repo_name, desc))
 
     return mozlauncher(build_info)
@@ -108,15 +105,12 @@ class ManualTestRunner(TestRunner):
         # allow user to just type one letter
         allowed_inputs = options + [o[0] for o in options]
         # format options to nice printing
-        formatted_options = (
-            ", ".join(["'%s'" % o for o in options[:-1]]) + " or '%s'" % options[-1]
-        )
+        formatted_options = ", ".join(["'%s'" % o for o in options[:-1]]) + " or '%s'" % options[-1]
         verdict = ""
         while verdict not in allowed_inputs:
             verdict = input(
                 "Was this %s build good, bad, or broken?"
-                " (type %s and press Enter): "
-                % (build_info.build_type, formatted_options)
+                " (type %s and press Enter): " % (build_info.build_type, formatted_options)
             )
 
         if verdict == "back":
@@ -218,12 +212,9 @@ class CommandTestRunner(TestRunner):
             except IndexError:
                 _raise_command_error("Empty command")
             except OSError as exc:
-                _raise_command_error(
-                    exc, " (%s not found or not executable)" % cmdlist[0]
-                )
+                _raise_command_error(exc, " (%s not found or not executable)" % cmdlist[0])
         LOG.info(
-            "Test command result: %d (build is %s)"
-            % (retcode, "good" if retcode == 0 else "bad")
+            "Test command result: %d (build is %s)" % (retcode, "good" if retcode == 0 else "bad")
         )
         return "g" if retcode == 0 else "b"
 

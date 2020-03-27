@@ -11,7 +11,7 @@ from mozregression.json_pushes import JsonPushes, Push
 
 
 def test_push(mocker):
-    pushlog = {"1": {"changesets": ["a", "b", "c"], "date": 123456,}}
+    pushlog = {"1": {"changesets": ["a", "b", "c"], "date": 123456}}
     retry_get = mocker.patch("mozregression.json_pushes.retry_get")
     response = Mock(json=Mock(return_value=pushlog))
     retry_get.return_value = response
@@ -32,9 +32,7 @@ def test_push(mocker):
 
 def test_push_404_error(mocker):
     retry_get = mocker.patch("mozregression.json_pushes.retry_get")
-    response = Mock(
-        status_code=404, json=Mock(return_value={"error": "unknown revision"})
-    )
+    response = Mock(status_code=404, json=Mock(return_value={"error": "unknown revision"}))
     retry_get.return_value = response
 
     jpushes = JsonPushes()
@@ -52,9 +50,7 @@ def test_push_nothing_found(mocker):
         jpushes.push("invalid_changeset")
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 0), reason="fails on python 2 for some unknown reason"
-)
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="fails on python 2 for some unknown reason")
 def test_pushes_within_changes(mocker):
     push_first = {"1": {"changesets": ["a"]}}
     other_pushes = {"2": {"changesets": ["b"]}, "3": {"changesets": ["c"]}}
@@ -75,10 +71,7 @@ def test_pushes_within_changes(mocker):
 
     retry_get.assert_has_calls(
         [
-            call(
-                "https://hg.mozilla.org/mozilla-central/json-pushes"
-                "?changeset=fromchset"
-            ),
+            call("https://hg.mozilla.org/mozilla-central/json-pushes" "?changeset=fromchset"),
             call(
                 "https://hg.mozilla.org/mozilla-central/json-pushes"
                 "?fromchange=fromchset&tochange=tochset"

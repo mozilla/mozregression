@@ -7,9 +7,7 @@ from mozregression.network import retry_get
 
 
 class CheckReleaseThread(QThread):
-    GITHUB_LATEST_RELEASE_URL = (
-        "https://api.github.com/repos/mozilla/mozregression/releases/latest"
-    )
+    GITHUB_LATEST_RELEASE_URL = "https://api.github.com/repos/mozilla/mozregression/releases/latest"
 
     def __init__(self):
         QThread.__init__(self)

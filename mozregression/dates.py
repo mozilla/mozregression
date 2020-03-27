@@ -25,9 +25,7 @@ def parse_date(date_string):
     matched = regex.match(date_string)
     if not matched:
         raise DateFormatError(date_string)
-    return datetime.date(
-        int(matched.group(1)), int(matched.group(2)), int(matched.group(3))
-    )
+    return datetime.date(int(matched.group(1)), int(matched.group(2)), int(matched.group(3)))
 
 
 def to_datetime(date):

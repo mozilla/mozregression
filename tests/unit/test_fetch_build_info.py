@@ -117,11 +117,9 @@ bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/",
             # say only the last build url is invalid
             if url in get_urls.return_value[:-1]:
                 return
-            lst.append((index, {"build_txt_url": url, "build_url": url,}))
+            lst.append((index, {"build_txt_url": url, "build_url": url}))
 
-        self.info_fetcher._fetch_build_info_from_url = Mock(
-            side_effect=my_find_build_info
-        )
+        self.info_fetcher._fetch_build_info_from_url = Mock(side_effect=my_find_build_info)
         self.info_fetcher._fetch_txt_info = Mock(return_value={})
         result = self.info_fetcher.find_build_info(datetime.date(2014, 11, 15))
         # we must have found the last build url valid
@@ -144,13 +142,7 @@ class TestIntegrationInfoFetcher(unittest.TestCase):
         Index.return_value.findTask.return_value = {"taskId": "task1"}
         Queue.return_value.status.return_value = {
             "status": {
-                "runs": [
-                    {
-                        "state": "completed",
-                        "runId": 0,
-                        "resolved": "2015-06-01T22:13:02.115Z",
-                    }
-                ]
+                "runs": [{"state": "completed", "runId": 0, "resolved": "2015-06-01T22:13:02.115Z"}]
             }
         }
         Queue.return_value.listArtifacts.return_value = {
@@ -163,25 +155,19 @@ class TestIntegrationInfoFetcher(unittest.TestCase):
         Queue.return_value.buildUrl.return_value = (
             "http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2"
         )
-        self.info_fetcher._fetch_txt_info = Mock(
-            return_value={"changeset": "123456789"}
-        )
+        self.info_fetcher._fetch_txt_info = Mock(return_value={"changeset": "123456789"})
 
         # test that we start searching using the correct tc root url
         for push_timestamp in [
             0,
             time.mktime(config.TC_ROOT_URL_MIGRATION_FLAG_DATE.timetuple()) + 100,
         ]:
-            result = self.info_fetcher.find_build_info(
-                create_push("123456789", push_timestamp)
-            )
+            result = self.info_fetcher.find_build_info(create_push("123456789", push_timestamp))
             if push_timestamp == 0:
                 Index.assert_called_with({"rootUrl": config.OLD_TC_ROOT_URL})
             else:
                 Index.assert_called_with({"rootUrl": config.TC_ROOT_URL})
-            self.assertEqual(
-                result.build_url, "http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2"
-            )
+            self.assertEqual(result.build_url, "http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2")
             self.assertEqual(result.changeset, "123456789")
             self.assertEqual(result.build_type, "integration")
 
@@ -201,11 +187,7 @@ class TestIntegrationInfoFetcher(unittest.TestCase):
             return {
                 "status": {
                     "runs": [
-                        {
-                            "state": "completed",
-                            "runId": 0,
-                            "resolved": "2015-06-01T22:13:02.115Z",
-                        }
+                        {"state": "completed", "runId": 0, "resolved": "2015-06-01T22:13:02.115Z"}
                     ]
                 }
             }

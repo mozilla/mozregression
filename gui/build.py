@@ -85,12 +85,7 @@ def do_bundle(options):
         call(makensis_path, "wininst.nsi", cwd="wininst")
     elif IS_MAC:
         call(
-            "hdiutil",
-            "create",
-            "dist/mozregression-gui.dmg",
-            "-srcfolder",
-            "dist/",
-            "-ov",
+            "hdiutil", "create", "dist/mozregression-gui.dmg", "-srcfolder", "dist/", "-ov",
         )
     else:
         with tarfile.open("mozregression-gui.tar.gz", "w:gz") as tar:

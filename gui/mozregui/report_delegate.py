@@ -98,6 +98,4 @@ class ReportItemDelegate(QStyledItemDelegate):
 
             progressBarOption.progress = item.progress
 
-            QApplication.style().drawControl(
-                QStyle.CE_ProgressBar, progressBarOption, painter
-            )
+            QApplication.style().drawControl(QStyle.CE_ProgressBar, progressBarOption, painter)

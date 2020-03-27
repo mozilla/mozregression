@@ -62,9 +62,7 @@ class LogView(QPlainTextEdit):
             cursor_to_add.movePosition(cursor_to_add.PreviousBlock)
             log_lvl_data = LogLevelData(log_levels[data["level"].upper()])
             cursor_to_add.block().setUserData(log_lvl_data)
-            cursor_to_add_fmt = message_document.find(
-                data["level"], cursor_to_add.position()
-            )
+            cursor_to_add_fmt = message_document.find(data["level"], cursor_to_add.position())
             cursor_to_add_fmt.mergeCharFormat(fmt)
             if log_levels[data["level"]] > self.log_lvl:
                 cursor_to_add.block().setVisible(False)

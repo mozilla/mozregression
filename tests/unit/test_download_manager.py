@@ -271,9 +271,7 @@ class TestDownloadProgress(unittest.TestCase):
 class TestBuildDownloadManager(unittest.TestCase):
     def setUp(self):
         self.session, self.session_response = mock_session()
-        self.dl_manager = download_manager.BuildDownloadManager(
-            "dest", session=self.session
-        )
+        self.dl_manager = download_manager.BuildDownloadManager("dest", session=self.session)
         self.dl_manager.logger = Mock()
 
     def test__extract_download_info(self):
@@ -288,9 +286,7 @@ class TestBuildDownloadManager(unittest.TestCase):
         self.assertEqual(url, "http://some/thing")
         self.assertEqual(fname, "2015-01-03--my-repo--thing")
 
-    @patch(
-        "mozregression.download_manager.BuildDownloadManager." "_extract_download_info"
-    )
+    @patch("mozregression.download_manager.BuildDownloadManager." "_extract_download_info")
     @patch("mozregression.download_manager.BuildDownloadManager.download")
     def test_download_in_background(self, download, extract):
         extract.return_value = ("http://foo/bar", "myfile")
@@ -304,9 +300,7 @@ class TestBuildDownloadManager(unittest.TestCase):
         self.assertEqual(result, ANY)
 
     @patch("mozregression.download_manager.LOG")
-    @patch(
-        "mozregression.download_manager.BuildDownloadManager." "_extract_download_info"
-    )
+    @patch("mozregression.download_manager.BuildDownloadManager." "_extract_download_info")
     def _test_focus_download(self, other_canceled, extract, log):
         extract.return_value = ("http://foo/bar", "myfile")
         current_dest = os.path.join("dest", "myfile")
@@ -344,9 +338,7 @@ class TestBuildDownloadManager(unittest.TestCase):
         self._test_focus_download(False)
 
     @patch("mozregression.download_manager.LOG")
-    @patch(
-        "mozregression.download_manager.BuildDownloadManager." "_extract_download_info"
-    )
+    @patch("mozregression.download_manager.BuildDownloadManager." "_extract_download_info")
     @patch("mozregression.download_manager.BuildDownloadManager.download")
     def test_focus_download_file_already_exists(self, download, extract, log):
         extract.return_value = ("http://foo/bar", "myfile")
@@ -359,9 +351,7 @@ class TestBuildDownloadManager(unittest.TestCase):
         result = self.dl_manager.focus_download(build_info)
 
         dest_file = os.path.join("dest", "myfile")
-        log.info.assert_called_with(
-            "Using local file: %s (downloaded in background)" % dest_file
-        )
+        log.info.assert_called_with("Using local file: %s (downloaded in background)" % dest_file)
 
         self.assertEqual(result, dest_file)
         self.assertEqual(result, build_info.build_file)

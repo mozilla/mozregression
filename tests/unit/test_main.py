@@ -13,12 +13,7 @@ from mock import ANY, MagicMock, Mock, patch
 from six.moves import range
 
 from mozregression import __version__, config, errors, main
-from mozregression.bisector import (
-    Bisection,
-    Bisector,
-    IntegrationHandler,
-    NightlyHandler,
-)
+from mozregression.bisector import Bisection, Bisector, IntegrationHandler, NightlyHandler
 from mozregression.download_manager import BuildDownloadManager
 from mozregression.test_runner import CommandTestRunner, ManualTestRunner
 
@@ -106,22 +101,16 @@ def test_app_bisect_nightlies_finished(create_app, mocker):
     nh = Mock(bad_date=date.today(), good_revision="c1", bad_revision="c2")
     NightlyHandler.return_value = nh
     assert app.bisect_nightlies() == 0
-    app.bisector.bisect.assert_called_once_with(
-        ANY, date(2015, 0o6, 0o1), date(2015, 0o6, 0o2)
-    )
+    app.bisector.bisect.assert_called_once_with(ANY, date(2015, 0o6, 0o1), date(2015, 0o6, 0o2))
     assert create_app.find_in_log("Got as far as we can go bisecting nightlies...")
-    app._bisect_integration.assert_called_once_with(
-        "c1", "c2", expand=config.DEFAULT_EXPAND
-    )
+    app._bisect_integration.assert_called_once_with("c1", "c2", expand=config.DEFAULT_EXPAND)
 
 
 def test_app_bisect_nightlies_no_data(create_app):
     app = create_app(["-g=2015-06-01", "-b=2015-06-02"])
     app.bisector.bisect = Mock(return_value=Bisection.NO_DATA)
     assert app.bisect_nightlies() == 1
-    assert create_app.find_in_log(
-        "Unable to get valid builds within the given range.", False
-    )
+    assert create_app.find_in_log("Unable to get valid builds within the given range.", False)
 
 
 @pytest.mark.parametrize("same_chsets", [True, False])
@@ -188,9 +177,7 @@ def test_app_bisect_integration_no_data(create_app):
     app = create_app(["--good=c1", "--bad=c2"])
     app.bisector.bisect = Mock(return_value=Bisection.NO_DATA)
     assert app.bisect_integration() == 1
-    assert create_app.find_in_log(
-        "There are no build artifacts for these changesets", False
-    )
+    assert create_app.find_in_log("There are no build artifacts for these changesets", False)
 
 
 def test_app_bisect_ctrl_c_exit(create_app, mocker):
@@ -246,13 +233,7 @@ class TestMain(unittest.TestCase):
     @patch("mozregression.main.set_http_session")
     @patch("mozregression.main.Application")
     def do_cli(
-        self,
-        argv,
-        Application,
-        set_http_session,
-        setup_logging,
-        check_mozregression_version,
-        log,
+        self, argv, Application, set_http_session, setup_logging, check_mozregression_version, log,
     ):
         self.logger = log
 

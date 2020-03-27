@@ -53,9 +53,7 @@ persist-size-limit = 2.5
     assert global_prefs.get_prefs().get("persist") == "/path/to"
 
 
-@pytest.mark.parametrize(
-    "dlg_result,saved", [(QDialog.Accepted, True), (QDialog.Rejected, False),]
-)
+@pytest.mark.parametrize("dlg_result,saved", [(QDialog.Accepted, True), (QDialog.Rejected, False)])
 def test_change_prefs_dialog_saves_prefs(dlg_result, saved, mocker):
     Dlg = mocker.patch("mozregui.global_prefs.ChangePrefsDialog")
     dlg = Mock()

@@ -44,20 +44,14 @@ def test_log_report_sets_correct_user_data(log_view):
     # Inserts a log message for each log user level
     for log_level in log_report.log_levels.keys():
         log_view.log_model(
-            {
-                "message": "%s message" % log_level,
-                "level": "%s" % log_level,
-                "time": time.time(),
-            }
+            {"message": "%s message" % log_level, "level": "%s" % log_level, "time": time.time()}
         )
     # Checks each log level message to make sure the correct
     # user data is entered
     for current_block in log_view.text_blocks():
         for log_level in log_report.log_levels.keys():
             if log_level in current_block.text():
-                assert (
-                    current_block.userData().log_lvl == log_report.log_levels[log_level]
-                )
+                assert current_block.userData().log_lvl == log_report.log_levels[log_level]
 
 
 def test_log_report_filters_data_below_current_log_level(log_view):
@@ -67,11 +61,7 @@ def test_log_report_filters_data_below_current_log_level(log_view):
     # Inserts a log message for each log user level
     for log_level in log_report.log_levels.keys():
         log_view.log_model(
-            {
-                "message": "%s message" % log_level,
-                "level": "%s" % log_level,
-                "time": time.time(),
-            }
+            {"message": "%s message" % log_level, "level": "%s" % log_level, "time": time.time()}
         )
     # Check that log messages above the current log level are visible
     # and log messages below the log level are invisible

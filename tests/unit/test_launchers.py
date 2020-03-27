@@ -130,9 +130,7 @@ profile_class",
     def test_start_with_addons(self, Runner):
         with self.launcher:
             self.launcher_start(addons=["my-addon"], preferences="my-prefs")
-            self.profile_class.assert_called_once_with(
-                addons=["my-addon"], preferences="my-prefs"
-            )
+            self.profile_class.assert_called_once_with(addons=["my-addon"], preferences="my-prefs")
             # runner is started
             self.launcher.runner.start.assert_called_once_with()
             self.launcher.stop()
@@ -190,9 +188,7 @@ def test_firefox_install(mocker):
 
     installer_file = "firefox.{}".format(install_ext)
 
-    installer = os.path.abspath(
-        os.path.join("tests", "unit", "installer_stubs", installer_file)
-    )
+    installer = os.path.abspath(os.path.join("tests", "unit", "installer_stubs", installer_file))
     assert os.path.isfile(installer)
     with launchers.FirefoxLauncher(installer) as fx:
         assert os.path.isdir(fx.tempdir)
@@ -211,9 +207,7 @@ class TestFennecLauncher(unittest.TestCase):
     def setUp(self):
         self.profile = Profile()
         self.addCleanup(self.profile.cleanup)
-        self.remote_profile_path = (
-            self.test_root + "/" + os.path.basename(self.profile.profile)
-        )
+        self.remote_profile_path = self.test_root + "/" + os.path.basename(self.profile.profile)
 
     @patch("mozregression.launchers.mozversion.get_version")
     @patch("mozregression.launchers.ADBAndroid")
@@ -238,9 +232,7 @@ class TestFennecLauncher(unittest.TestCase):
         launcher.start(profile="my_profile")
         self.adb.exists.assert_called_once_with(self.remote_profile_path)
         self.adb.rm.assert_called_once_with(self.remote_profile_path, recursive=True)
-        self.adb.push.assert_called_once_with(
-            self.profile.profile, self.remote_profile_path
-        )
+        self.adb.push.assert_called_once_with(self.profile.profile, self.remote_profile_path)
         self.adb.launch_fennec.assert_called_once_with(
             "org.mozilla.fennec", extra_args=["-profile", self.remote_profile_path]
         )
@@ -278,15 +270,11 @@ class TestFennecLauncher(unittest.TestCase):
 
         # exception raised if there is no device
         devices.return_value = False
-        self.assertRaises(
-            LauncherNotRunnable, launchers.FennecLauncher.check_is_runnable
-        )
+        self.assertRaises(LauncherNotRunnable, launchers.FennecLauncher.check_is_runnable)
 
         # or if ADBHost().devices() raise an unexpected IOError
         devices.side_effect = ADBError()
-        self.assertRaises(
-            LauncherNotRunnable, launchers.FennecLauncher.check_is_runnable
-        )
+        self.assertRaises(LauncherNotRunnable, launchers.FennecLauncher.check_is_runnable)
 
     @patch("time.sleep")
     @patch("mozregression.launchers.FennecLauncher._create_profile")
@@ -325,9 +313,7 @@ class Zipfile(object):
             f.write("1")
 
 
-@pytest.mark.parametrize(
-    "mos,binary_name", [("win", "js.exe"), ("linux", "js"), ("mac", "js"),]
-)
+@pytest.mark.parametrize("mos,binary_name", [("win", "js.exe"), ("linux", "js"), ("mac", "js")])
 def test_jsshell_install(mocker, mos, binary_name):
     zipfile = mocker.patch("mozregression.launchers.zipfile")
     zipfile.ZipFile = Zipfile

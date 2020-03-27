@@ -13,9 +13,6 @@ from six.moves import range
 
 from mozregression import build_info, errors, test_runner
 
-# useful fixture
-from .test_build_range import range_creator  # noqa
-
 
 def mockinfo(**kwargs):
     return Mock(spec=build_info.BuildInfo, **kwargs)
@@ -61,9 +58,7 @@ class TestManualTestRunner(unittest.TestCase):
         )
         result_launcher = test_runner.create_launcher(info)
         mozlauncher.assert_called_with(info)
-        log.info.assert_called_with(
-            "Running mozilla-central build for buildid 20151106050403"
-        )
+        log.info.assert_called_with("Running mozilla-central build for buildid 20151106050403")
 
         self.assertEqual(result_launcher, launcher)
 
@@ -166,12 +161,7 @@ class TestCommandTestRunner(unittest.TestCase):
     @patch("mozregression.test_runner.create_launcher")
     @patch("subprocess.call")
     def evaluate(
-        self,
-        call,
-        create_launcher,
-        build_info={},
-        retcode=0,
-        subprocess_call_effect=None,
+        self, call, create_launcher, build_info={}, retcode=0, subprocess_call_effect=None,
     ):
         build_info["app_name"] = "myapp"
         call.return_value = retcode
@@ -222,20 +212,14 @@ class TestCommandTestRunner(unittest.TestCase):
         # in case the command line is empty,
         # subprocess.call will raise IndexError
         self.assertRaisesRegex(
-            errors.TestCommandError,
-            "Empty",
-            self.evaluate,
-            subprocess_call_effect=IndexError,
+            errors.TestCommandError, "Empty", self.evaluate, subprocess_call_effect=IndexError,
         )
 
     def test_command_missing_error(self):
         # in case the command is missing or not executable,
         # subprocess.call will raise IOError
         self.assertRaisesRegex(
-            errors.TestCommandError,
-            "not found",
-            self.evaluate,
-            subprocess_call_effect=OSError,
+            errors.TestCommandError, "not found", self.evaluate, subprocess_call_effect=OSError,
         )
 
     def test_run_once(self):
@@ -258,9 +242,7 @@ class TestCommandTestRunner(unittest.TestCase):
         (list(range(3)), Exception("input called, it should not happen"), None, 1),
     ],
 )
-def test_index_to_try_after_skip(
-    mocker, range_creator, brange, input, allowed_range, result
-):
+def test_index_to_try_after_skip(mocker, range_creator, brange, input, allowed_range, result):
     build_range = range_creator.create(brange)
     mocked_input = mocker.patch("mozregression.test_runner.input")
     mocked_input.side_effect = input

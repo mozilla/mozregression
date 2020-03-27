@@ -43,34 +43,22 @@ class MainWindow(QMainWindow):
         self.single_runner = SingleBuildRunner(self)
         self.current_runner = None
 
-        self.bisect_runner.worker_created.connect(
-            self.ui.report_view.model().attach_bisector
-        )
-        self.single_runner.worker_created.connect(
-            self.ui.report_view.model().attach_single_runner
-        )
+        self.bisect_runner.worker_created.connect(self.ui.report_view.model().attach_bisector)
+        self.single_runner.worker_created.connect(self.ui.report_view.model().attach_single_runner)
 
         self.ui.report_view.model().need_evaluate_editor.connect(
             self.bisect_runner.open_evaluate_editor
         )
 
-        self.ui.report_view.step_report_changed.connect(
-            self.ui.build_info_browser.update_content
-        )
+        self.ui.report_view.step_report_changed.connect(self.ui.build_info_browser.update_content)
         self.report_delegate = ReportItemDelegate()
         self.report_delegate.got_verdict.connect(self.bisect_runner.set_verdict)
         self.ui.report_view.setItemDelegateForColumn(0, self.report_delegate)
 
         for runner in (self.bisect_runner, self.single_runner):
-            runner.running_state_changed.connect(
-                self.ui.actionStart_a_new_bisection.setDisabled
-            )
-            runner.running_state_changed.connect(
-                self.ui.actionStop_the_bisection.setEnabled
-            )
-            runner.running_state_changed.connect(
-                self.ui.actionRun_a_single_build.setDisabled
-            )
+            runner.running_state_changed.connect(self.ui.actionStart_a_new_bisection.setDisabled)
+            runner.running_state_changed.connect(self.ui.actionStop_the_bisection.setEnabled)
+            runner.running_state_changed.connect(self.ui.actionRun_a_single_build.setDisabled)
 
         self.persist = mkdtemp()
 

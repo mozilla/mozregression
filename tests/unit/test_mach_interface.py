@@ -19,9 +19,7 @@ from mozregression.mach_interface import new_release_on_pypi, parser, run
     ],
 )
 def test_new_release_on_pypi(mocker, pypi_version, result):
-    pypi_latest_version = mocker.patch(
-        "mozregression.mach_interface.pypi_latest_version"
-    )
+    pypi_latest_version = mocker.patch("mozregression.mach_interface.pypi_latest_version")
     pypi_latest_version.side_effect = pypi_version
     assert new_release_on_pypi() == result
 

@@ -53,9 +53,7 @@ def init_logger(debug=True, allow_color=ALLOW_COLOR, output=None):
         return "%s %s: %s\n" % (elapsed, level, msg)
 
     logger = StructuredLogger("mozregression")
-    handler = LogLevelFilter(
-        StreamHandler(output, format_log), "debug" if debug else "info"
-    )
+    handler = LogLevelFilter(StreamHandler(output, format_log), "debug" if debug else "info")
     logger.add_handler(handler)
 
     set_default_logger(logger)

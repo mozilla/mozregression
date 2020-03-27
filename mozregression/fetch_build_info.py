@@ -23,11 +23,7 @@ from taskcluster.exceptions import TaskclusterFailure
 # and http://bugs.python.org/issue7980
 import _strptime  # noqa
 from mozregression.build_info import IntegrationBuildInfo, NightlyBuildInfo
-from mozregression.config import (
-    OLD_TC_ROOT_URL,
-    TC_ROOT_URL,
-    TC_ROOT_URL_MIGRATION_FLAG_DATE,
-)
+from mozregression.config import OLD_TC_ROOT_URL, TC_ROOT_URL, TC_ROOT_URL_MIGRATION_FLAG_DATE
 from mozregression.errors import BuildInfoNotFound, MozRegressionError
 from mozregression.json_pushes import JsonPushes, Push
 from mozregression.network import retry_get, url_links
@@ -154,9 +150,7 @@ class IntegrationInfoFetcher(InfoFetcher):
                 break
 
         if run_id is None:
-            raise BuildInfoNotFound(
-                "Unable to find completed runs for task %s" % task_id
-            )
+            raise BuildInfoNotFound("Unable to find completed runs for task %s" % task_id)
         artifacts = tc_queue.listArtifacts(task_id, run_id)["artifacts"]
 
         # look over the artifacts of that run
@@ -268,9 +262,7 @@ class NightlyInfoFetcher(InfoFetcher):
         while build_urls:
             some = build_urls[:max_workers]
             threads = [
-                Thread(
-                    target=self._fetch_build_info_from_url, args=(url, i, valid_builds)
-                )
+                Thread(target=self._fetch_build_info_from_url, args=(url, i, valid_builds))
                 for i, url in enumerate(some)
             ]
             for thread in threads:

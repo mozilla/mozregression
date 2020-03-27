@@ -21,12 +21,7 @@ from requests.exceptions import HTTPError, RequestException
 
 from mozregression import __version__
 from mozregression.approx_persist import ApproxPersistChooser
-from mozregression.bisector import (
-    Bisection,
-    Bisector,
-    IntegrationHandler,
-    NightlyHandler,
-)
+from mozregression.bisector import Bisection, Bisector, IntegrationHandler, NightlyHandler
 from mozregression.bugzilla import bug_url, find_bugids_in_push
 from mozregression.cli import cli
 from mozregression.config import DEFAULT_EXPAND, TC_CREDENTIALS_FNAME
@@ -112,9 +107,7 @@ class Application(object):
                 self.build_download_manager,
                 dl_in_background=self.options.background_dl,
                 approx_chooser=(
-                    None
-                    if self.options.approx_policy != "auto"
-                    else ApproxPersistChooser(7)
+                    None if self.options.approx_policy != "auto" else ApproxPersistChooser(7)
                 ),
             )
         return self._bisector
@@ -144,9 +137,7 @@ class Application(object):
             LOG.info("Got as far as we can go bisecting nightlies...")
             handler.print_range()
             LOG.info("Switching bisection method to taskcluster")
-            self.fetch_config.set_repo(
-                self.fetch_config.get_nightly_repo(handler.bad_date)
-            )
+            self.fetch_config.set_repo(self.fetch_config.get_nightly_repo(handler.bad_date))
             return self._bisect_integration(
                 handler.good_revision, handler.bad_revision, expand=DEFAULT_EXPAND
             )
@@ -169,9 +160,7 @@ class Application(object):
             ensure_good_and_bad=self.options.mode != "no-first-check",
         )
 
-    def _bisect_integration(
-        self, good_rev, bad_rev, ensure_good_and_bad=False, expand=0
-    ):
+    def _bisect_integration(self, good_rev, bad_rev, ensure_good_and_bad=False, expand=0):
         LOG.info(
             "Getting %s builds between %s and %s"
             % (self.fetch_config.integration_branch, good_rev, bad_rev)
@@ -195,9 +184,7 @@ class Application(object):
                 if result:
                     branch, good_rev, bad_rev = result
                     self.fetch_config.set_repo(branch)
-                    return self._bisect_integration(
-                        good_rev, bad_rev, expand=DEFAULT_EXPAND
-                    )
+                    return self._bisect_integration(good_rev, bad_rev, expand=DEFAULT_EXPAND)
                 else:
                     # This code is broken, it prints out the message even when
                     # there are multiple bug numbers or commits in the range.
@@ -210,14 +197,12 @@ class Application(object):
                     jp = JsonPushes(handler.build_range[1].repo_name)
                     num_pushes = len(
                         jp.pushes_within_changes(
-                            handler.build_range[0].changeset,
-                            handler.build_range[1].changeset,
+                            handler.build_range[0].changeset, handler.build_range[1].changeset,
                         )
                     )
                     if num_pushes == 2:
                         bugids = find_bugids_in_push(
-                            handler.build_range[1].repo_name,
-                            handler.build_range[1].changeset,
+                            handler.build_range[1].repo_name, handler.build_range[1].changeset,
                         )
                         if len(bugids) == 1:
                             word = "fix" if handler.find_fix else "regression"

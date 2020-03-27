@@ -32,9 +32,7 @@ def read_only(klass):
     if klass is build_info.NightlyBuildInfo:
         defaults.extend([("repo_name", "mozilla-central"), ("build_type", "nightly")])
     else:
-        defaults.extend(
-            [("repo_name", "mozilla-central"), ("build_type", "integration")]
-        )
+        defaults.extend([("repo_name", "mozilla-central"), ("build_type", "integration")])
     return [(klass, attr, value) for attr, value in defaults]
 
 
@@ -63,9 +61,7 @@ def test_writable_attrs(klass, attr, value):
     assert getattr(binfo, attr) == value
 
 
-@pytest.mark.parametrize(
-    "klass", [build_info.NightlyBuildInfo, build_info.IntegrationBuildInfo]
-)
+@pytest.mark.parametrize("klass", [build_info.NightlyBuildInfo, build_info.IntegrationBuildInfo])
 def test_update_from_app_info(klass):
     app_info = {
         "application_changeset": "chset",
@@ -88,9 +84,7 @@ def test_update_from_app_info(klass):
     assert binfo.repo_url != "repo"
 
 
-@pytest.mark.parametrize(
-    "klass", [build_info.NightlyBuildInfo, build_info.IntegrationBuildInfo]
-)
+@pytest.mark.parametrize("klass", [build_info.NightlyBuildInfo, build_info.IntegrationBuildInfo])
 def test_to_dict(klass):
     binfo = create_build_info(klass)
     dct = binfo.to_dict()
@@ -111,11 +105,7 @@ def test_to_dict(klass):
             "2015-11-16-10-02-05--mozilla-central--url",
         ),
         # same but for integration
-        (
-            build_info.IntegrationBuildInfo,
-            {},
-            "12ab12ab12ab-shippable--mozilla-central--url",
-        ),
+        (build_info.IntegrationBuildInfo, {}, "12ab12ab12ab-shippable--mozilla-central--url",),
     ],
 )
 def test_persist_filename(klass, extra, result):

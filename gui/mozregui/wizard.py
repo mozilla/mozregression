@@ -4,13 +4,7 @@ import datetime
 
 import mozinfo
 from PySide2.QtCore import SIGNAL, QDate, QStringListModel, Qt, Slot
-from PySide2.QtWidgets import (
-    QApplication,
-    QCompleter,
-    QMessageBox,
-    QWizard,
-    QWizardPage,
-)
+from PySide2.QtWidgets import QApplication, QCompleter, QMessageBox, QWizard, QWizardPage
 
 from mozregression.branches import get_branches
 from mozregression.dates import to_datetime
@@ -60,10 +54,7 @@ class WizardPage(QWizardPage):
 class IntroPage(WizardPage):
     UI_CLASS = Ui_Intro
     TITLE = "Basic configuration"
-    SUBTITLE = (
-        "Please choose an application and other options to specify"
-        " what you want to test."
-    )
+    SUBTITLE = "Please choose an application and other options to specify" " what you want to test."
     FIELDS = {
         "application": "app_combo",
         "repository": "repository",
@@ -127,9 +118,7 @@ class IntroPage(WizardPage):
 
         self.fetch_config = create_config(app_name, mozinfo.os, bits, mozinfo.processor)
 
-        self.build_type_model = QStringListModel(
-            self.fetch_config.available_build_types()
-        )
+        self.build_type_model = QStringListModel(self.fetch_config.available_build_types())
         self.ui.build_type.setModel(self.build_type_model)
 
         if not self.fetch_config.available_bits():
@@ -248,9 +237,7 @@ class BuildSelectionPage(WizardPage):
             if end_date <= current:
                 return True
             else:
-                QMessageBox.critical(
-                    self, "Error", "You can't define a date in the future."
-                )
+                QMessageBox.critical(self, "Error", "You can't define a date in the future.")
         else:
             QMessageBox.critical(
                 self, "Error", "The first date must be earlier than the second one."
@@ -266,9 +253,7 @@ class Wizard(QWizard):
         self.resize(800, 600)
 
         # associate current text to comboboxes fields instead of current index
-        self.setDefaultProperty(
-            "QComboBox", "currentText", SIGNAL("currentIndexChanged(QString)")
-        )
+        self.setDefaultProperty("QComboBox", "currentText", SIGNAL("currentIndexChanged(QString)"))
 
         for klass in class_pages:
             self.addPage(klass())
@@ -298,10 +283,7 @@ class Wizard(QWizard):
 class BisectionWizard(Wizard):
     def __init__(self, parent=None):
         Wizard.__init__(
-            self,
-            "Bisection wizard",
-            (IntroPage, ProfilePage, BuildSelectionPage),
-            parent=parent,
+            self, "Bisection wizard", (IntroPage, ProfilePage, BuildSelectionPage), parent=parent,
         )
 
 

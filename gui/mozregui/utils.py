@@ -27,9 +27,7 @@ class FSLineEdit(QLineEdit):
         self.completer = QCompleter()
         self.completer.setModel(self.fsmodel)
         self.setCompleter(self.completer)
-        self.fsmodel.setFilter(
-            QDir.Drives | QDir.AllDirs | QDir.Hidden | QDir.NoDotAndDotDot
-        )
+        self.fsmodel.setFilter(QDir.Drives | QDir.AllDirs | QDir.Hidden | QDir.NoDotAndDotDot)
 
     def setPath(self, path):
         self.setText(path)
@@ -71,9 +69,7 @@ class BuildSelection(QWidget):
         self.ui = Ui_BuildSelectionHelper()
         self.ui.setupUi(self)
         self.ui.release.addItems([str(k) for k in sorted(releases())])
-        self.ui.combo_helper.currentIndexChanged.connect(
-            self.ui.stackedWidget.setCurrentIndex
-        )
+        self.ui.combo_helper.currentIndexChanged.connect(self.ui.stackedWidget.setCurrentIndex)
 
     def get_value(self):
         currentw = self.ui.stackedWidget.currentWidget()

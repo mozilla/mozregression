@@ -92,9 +92,7 @@ class BuildRange(object):
             if item.step not in (1, None):
                 raise ValueError("only step=1 supported")
             new_range = copy.copy(self)
-            new_range._future_build_infos = self._future_build_infos[
-                item.start : item.stop
-            ]
+            new_range._future_build_infos = self._future_build_infos[item.start : item.stop]
             return new_range
 
         return self._future_build_infos[item].build_info
@@ -114,9 +112,7 @@ class BuildRange(object):
 
     def _fetch(self, indexes):
         indexes = set(indexes)
-        need_fetch = any(
-            not self._future_build_infos[i].is_available() for i in indexes
-        )
+        need_fetch = any(not self._future_build_infos[i].is_available() for i in indexes)
         if not need_fetch:
             return
         threads = [Thread(target=self.__getitem__, args=(i,)) for i in indexes]
@@ -260,9 +256,7 @@ def _tc_build_range(future_tc, start_id, end_id):
 
 def tc_range_after(future_tc, size):
     """Create a build range after a TCFutureBuildInfo"""
-    return _tc_build_range(
-        future_tc, future_tc.data.push_id, int(future_tc.data.push_id) + size
-    )
+    return _tc_build_range(future_tc, future_tc.data.push_id, int(future_tc.data.push_id) + size)
 
 
 def tc_range_before(future_tc, size):
@@ -314,9 +308,7 @@ def get_nightly_range(fetch_config, start_date, end_date, expand=0, interrupt=No
     # build the build range using only dates
     sd = to_date(start_date)
     for i in range((to_date(end_date) - sd).days + 1):
-        futures_builds.append(
-            FutureBuildInfo(info_fetcher, sd + datetime.timedelta(days=i))
-        )
+        futures_builds.append(FutureBuildInfo(info_fetcher, sd + datetime.timedelta(days=i)))
     # and now put back the real start and end dates
     # in case they were datetime instances (coming from buildid)
     futures_builds[0].data = start_date

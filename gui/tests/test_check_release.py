@@ -15,9 +15,7 @@ def mainwindow(qtbot):
 
 def test_check_release(qtbot, mocker, mainwindow):
     retry_get = mocker.patch("mozregui.check_release.retry_get")
-    retry_get.return_value = mocker.Mock(
-        json=lambda *a: {"tag_name": "0.0", "html_url": "url"}
-    )
+    retry_get.return_value = mocker.Mock(json=lambda *a: {"tag_name": "0.0", "html_url": "url"})
     status_bar = mainwindow.ui.status_bar
     assert status_bar.findChild(QLabel, "") is None
 

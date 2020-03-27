@@ -72,8 +72,7 @@ def get_build_regex(name, os, bits, processor, psuffix="", with_ext=True):
         suffix, ext = r".*mac.*", r"\.dmg"
     else:
         raise errors.MozRegressionError(
-            "mozregression supports linux, mac and windows but your"
-            " os is reported as '%s'." % os
+            "mozregression supports linux, mac and windows but your" " os is reported as '%s'." % os
         )
 
     # New taskcluster builds now just name the binary archive 'target', so
@@ -133,9 +132,7 @@ class CommonConfig(object):
         on the servers.
         """
         return (
-            get_build_regex(
-                self.app_name, self.os, self.bits, self.processor, with_ext=False
-            )
+            get_build_regex(self.app_name, self.os, self.bits, self.processor, with_ext=False)
             + r"\.txt$"
         )
 
@@ -151,16 +148,10 @@ class CommonConfig(object):
         for available in self.BUILD_TYPES:
             match = re.match(r"(.+)\[(.+)\]", available)
             if match:
-                suffix = (
-                    "-aarch64"
-                    if self.processor == "aarch64" and self.bits == 64
-                    else ""
-                )
+                suffix = "-aarch64" if self.processor == "aarch64" and self.bits == 64 else ""
                 available = match.group(1)
                 platforms = match.group(2)
-                if "{}{}{}".format(self.os, self.bits, suffix) not in platforms.split(
-                    ","
-                ):
+                if "{}{}{}".format(self.os, self.bits, suffix) not in platforms.split(","):
                     available = None
             if available:
                 res.append(available)
@@ -197,12 +188,10 @@ class CommonConfig(object):
 
         Note that this method relies on the repo and build type defined.
         """
+        # we can find the asan builds (firefox and jsshell) in archives.m.o
         return not (
             branches.get_category(self.repo) in ("integration", "try", "releases")
-            or
-            # we can find the asan builds (firefox and jsshell) in
-            # archives.m.o
-            self.build_type not in ("opt", "asan", "shippable")
+            or self.build_type not in ("opt", "asan", "shippable")
         )
 
 
@@ -436,10 +425,7 @@ class ThunderbirdIntegrationConfigMixin(IntegrationConfigMixin):
     def tk_routes(self, push):
         for build_type in self.build_types:
             yield "comm.v2.{}.revision.{}.thunderbird.{}-{}".format(
-                self.integration_branch,
-                push.changeset,
-                _common_tk_part(self),
-                build_type,
+                self.integration_branch, push.changeset, _common_tk_part(self), build_type,
             )
             self._inc_used_build()
         return
@@ -466,9 +452,7 @@ def create_config(name, os, bits, processor):
 
 
 @REGISTRY.register("firefox")
-class FirefoxConfig(
-    CommonConfig, FirefoxNightlyConfigMixin, FirefoxIntegrationConfigMixin
-):
+class FirefoxConfig(CommonConfig, FirefoxNightlyConfigMixin, FirefoxIntegrationConfigMixin):
     BUILD_TYPES = (
         "shippable",
         "opt",
@@ -507,9 +491,7 @@ class ThunderbirdConfig(
 
 
 @REGISTRY.register("fennec")
-class FennecConfig(
-    CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConfigMixin
-):
+class FennecConfig(CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConfigMixin):
     BUILD_TYPES = ("opt", "debug")
 
     def build_regex(self):
@@ -523,9 +505,7 @@ class FennecConfig(
 
 
 @REGISTRY.register("gve")
-class GeckoViewExampleConfig(
-    CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConfigMixin
-):
+class GeckoViewExampleConfig(CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConfigMixin):
     BUILD_TYPES = ("opt", "debug")
 
     def build_regex(self):
@@ -561,9 +541,7 @@ class JsShellConfig(FirefoxConfig):
     def build_info_regex(self):
         # the info file is the one for firefox
         return (
-            get_build_regex(
-                "firefox", self.os, self.bits, self.processor, with_ext=False
-            )
+            get_build_regex("firefox", self.os, self.bits, self.processor, with_ext=False)
             + r"\.txt$"
         )
 

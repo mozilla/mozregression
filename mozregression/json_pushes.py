@@ -119,9 +119,7 @@ class JsonPushes(object):
             kwargs["tochange"] = tochange
         else:
             # add one day to take the last day in account
-            kwargs["enddate"] = (tochange + datetime.timedelta(days=1)).strftime(
-                "%Y-%m-%d"
-            )
+            kwargs["enddate"] = (tochange + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
 
         # now fetch all remaining changesets
         chsets.extend(self.pushes(**kwargs))
@@ -152,12 +150,9 @@ class JsonPushes(object):
         """
         if is_date_or_datetime(changeset):
             try:
-                return self.pushes_within_changes(changeset, changeset, verbose=False)[
-                    -1
-                ]
+                return self.pushes_within_changes(changeset, changeset, verbose=False)[-1]
             except EmptyPushlogError:
                 raise EmptyPushlogError(
-                    "No pushes available for the date %s on %s."
-                    % (changeset, self.branch)
+                    "No pushes available for the date %s on %s." % (changeset, self.branch)
                 )
         return self.pushes(changeset=changeset, **kwargs)[0]

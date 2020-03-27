@@ -94,9 +94,7 @@ class TestCli(unittest.TestCase):
             "bits": "64",
         }
 
-        content = [
-            "%s=%s\n" % (key, value) for key, value in six.iteritems(valid_values)
-        ]
+        content = ["%s=%s\n" % (key, value) for key, value in six.iteritems(valid_values)]
         filepath = self._create_conf_file("\n".join(content))
 
         options = cli.cli(["--bits=32"], conf_file=filepath).options
@@ -112,9 +110,7 @@ class TestCli(unittest.TestCase):
         conf.logger.warning = warns.append
         conf.validate()
         self.assertIn(
-            "Unable to find a suitable build type 'foo'."
-            " (Defaulting to 'shippable')",
-            warns,
+            "Unable to find a suitable build type 'foo'." " (Defaulting to 'shippable')", warns,
         )
 
 
@@ -216,9 +212,7 @@ def test_find_fix_reverse_default_dates(os, bits, default_bad_date):
 
 
 def test_with_releases():
-    releases_data = sorted(
-        ((k, v) for k, v in releases().items()), key=(lambda k_v: k_v[0])
-    )
+    releases_data = sorted(((k, v) for k, v in releases().items()), key=(lambda k_v: k_v[0]))
     conf = do_cli("--bad=%s" % releases_data[-1][0], "--good=%s" % releases_data[0][0],)
     assert str(conf.options.good) == releases_data[0][1]
     assert str(conf.options.bad) == releases_data[-1][1]
@@ -230,11 +224,7 @@ def test_with_releases():
         (["--launch=34"], "launch_nightlies", cli.parse_date(releases()[34])),
         (["--launch=2015-11-01"], "launch_nightlies", datetime.date(2015, 11, 1)),
         (["--launch=abc123"], "launch_integration", "abc123"),
-        (
-            ["--launch=2015-11-01", "--repo=m-i"],
-            "launch_integration",
-            datetime.date(2015, 11, 1),
-        ),
+        (["--launch=2015-11-01", "--repo=m-i"], "launch_integration", datetime.date(2015, 11, 1),),
     ],
 )
 def test_launch(args, action, value):
@@ -359,14 +349,7 @@ def test_mozversion_output_filtered(mozversion_msg, shown):
     [
         ("jsshell", "win", 64, "x86_64", None, (datetime.date(2014, 5, 27), TODAY)),
         ("jsshell", "linux", 64, "x86_64", "asan", (datetime.date(2013, 9, 1), TODAY)),
-        (
-            "jsshell",
-            "linux",
-            64,
-            "x86_64",
-            "asan-debug",
-            (datetime.date(2013, 9, 1), TODAY),
-        ),
+        ("jsshell", "linux", 64, "x86_64", "asan-debug", (datetime.date(2013, 9, 1), TODAY),),
         ("jsshell", "linux", 32, "x86", None, (datetime.date(2012, 4, 18), TODAY)),
         ("jsshell", "mac", 64, "x86_64", None, (datetime.date(2012, 4, 18), TODAY)),
         ("jsshell", "win", 32, "x86", None, (datetime.date(2012, 4, 18), TODAY)),

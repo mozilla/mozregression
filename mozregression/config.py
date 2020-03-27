@@ -18,9 +18,7 @@ from six.moves import input
 from mozregression.errors import MozRegressionError
 from mozregression.log import colorize
 
-CONFIG_FILE_HELP_URL = (
-    "http://mozilla.github.io/mozregression/documentation/configuration.html"
-)
+CONFIG_FILE_HELP_URL = "http://mozilla.github.io/mozregression/documentation/configuration.html"
 DEFAULT_CONF_FNAME = os.path.expanduser(
     os.path.join("~", ".mozilla", "mozregression", "mozregression.cfg")
 )
@@ -69,9 +67,7 @@ def get_defaults(conf_path):
     try:
         config = ConfigObj(conf_path)
     except ParseError as exc:
-        raise MozRegressionError(
-            "Error while reading the config file %s:\n  %s" % (conf_path, exc)
-        )
+        raise MozRegressionError("Error while reading the config file %s:\n  %s" % (conf_path, exc))
     defaults.update(config)
 
     return defaults

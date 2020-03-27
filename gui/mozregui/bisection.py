@@ -32,9 +32,7 @@ class GuiBisector(QObject, Bisector):
     step_finished = Signal(object, str)
     handle_merge = Signal(object, str, str, str)
 
-    def __init__(
-        self, fetch_config, test_runner, download_manager, download_in_background=True
-    ):
+    def __init__(self, fetch_config, test_runner, download_manager, download_in_background=True):
         QObject.__init__(self)
         Bisector.__init__(self, fetch_config, test_runner, download_manager)
         self.bisection = None
@@ -114,9 +112,7 @@ class GuiBisector(QObject, Bisector):
         # this is executed in the working thread
         if self.test_runner.verdict != "r":
             try:
-                self.mid = self.bisection.search_mid_point(
-                    interrupt=self.should_stop.is_set
-                )
+                self.mid = self.bisection.search_mid_point(interrupt=self.should_stop.is_set)
             except MozRegressionError:
                 self._finish_on_exception(self.bisection)
                 return
@@ -171,9 +167,7 @@ class GuiBisector(QObject, Bisector):
         # a skip.
         if self.download_in_background and self.test_runner.verdict != "s":
             self.index_promise = IndexPromise(
-                self.mid,
-                self.bisection._download_next_builds,
-                args=(self._persist_files,),
+                self.mid, self.bisection._download_next_builds, args=(self._persist_files,),
             )
         # run the build evaluation
         self.bisection.evaluate(self.build_infos)
@@ -259,8 +253,7 @@ class BisectRunner(AbstractBuildRunner):
                 "Launcher Error",
                 (
                     "An error occured while starting the process, so the build"
-                    " will be skipped. Error message:<br><strong>%s</strong>"
-                    % err_message
+                    " will be skipped. Error message:<br><strong>%s</strong>" % err_message
                 ),
             )
             self.worker.test_runner.finish("s")
@@ -301,9 +294,7 @@ class BisectRunner(AbstractBuildRunner):
             if not getattr(bisection, "no_more_merge", False):
                 if isinstance(bisection.handler, NightlyHandler):
                     handler = bisection.handler
-                    fetch_config.set_repo(
-                        fetch_config.get_nightly_repo(handler.bad_date)
-                    )
+                    fetch_config.set_repo(fetch_config.get_nightly_repo(handler.bad_date))
                     QTimer.singleShot(0, self.worker.bisect_further)
                 else:
                     # check merge, try to bisect further

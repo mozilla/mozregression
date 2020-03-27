@@ -90,11 +90,7 @@ class BisectorHandler(six.with_metaclass(ABCMeta)):
         first_rev, last_rev = self.get_range()
         if first_rev == last_rev:
             return "%s/pushloghtml?changeset=%s" % (self.found_repo, first_rev)
-        return "%s/pushloghtml?fromchange=%s&tochange=%s" % (
-            self.found_repo,
-            first_rev,
-            last_rev,
-        )
+        return "%s/pushloghtml?fromchange=%s&tochange=%s" % (self.found_repo, first_rev, last_rev,)
 
     def get_range(self):
         return self._reverse_if_find_fix(self.good_revision, self.bad_revision)
@@ -166,9 +162,7 @@ class NightlyHandler(BisectorHandler):
     def _print_progress(self, new_data):
         next_good_date = new_data[0].build_date
         next_bad_date = new_data[-1].build_date
-        next_days_range = abs(
-            (to_datetime(next_bad_date) - to_datetime(next_good_date)).days
-        )
+        next_days_range = abs((to_datetime(next_bad_date) - to_datetime(next_good_date)).days)
         LOG.info(
             "Narrowed nightly regression window from"
             " [%s, %s] (%d days) to [%s, %s] (%d days)"
@@ -222,11 +216,7 @@ class NightlyHandler(BisectorHandler):
             return BisectorHandler.get_pushlog_url(self)
         else:
             start, end = self.get_date_range()
-            return "%s/pushloghtml?startdate=%s&enddate=%s\n" % (
-                self.found_repo,
-                start,
-                end,
-            )
+            return "%s/pushloghtml?startdate=%s&enddate=%s\n" % (self.found_repo, start, end,)
 
 
 class IntegrationHandler(BisectorHandler):
@@ -250,12 +240,8 @@ class IntegrationHandler(BisectorHandler):
 
     def user_exit(self, mid):
         words = self._reverse_if_find_fix("Newest", "Oldest")
-        LOG.info(
-            "%s known good integration revision: %s" % (words[0], self.good_revision)
-        )
-        LOG.info(
-            "%s known bad integration revision: %s" % (words[1], self.bad_revision)
-        )
+        LOG.info("%s known good integration revision: %s" % (words[0], self.good_revision))
+        LOG.info("%s known bad integration revision: %s" % (words[1], self.bad_revision))
 
     def _choose_integration_branch(self, changeset):
         """
@@ -433,9 +419,7 @@ class Bisection(object):
         is the dict of build infos for the build.
         """
         build_infos = self.handler.build_range[mid_point]
-        return self._download_build(
-            mid_point, build_infos, allow_bg_download=allow_bg_download
-        )
+        return self._download_build(mid_point, build_infos, allow_bg_download=allow_bg_download)
 
     def _find_approx_build(self, mid_point, build_infos):
         approx_index, persist_files = None, ()
@@ -522,10 +506,7 @@ class Bisection(object):
         if self.handler.find_fix:
             good, bad = bad, good
 
-        LOG.info(
-            "Testing good and bad builds to ensure that they are"
-            " really good and bad..."
-        )
+        LOG.info("Testing good and bad builds to ensure that they are" " really good and bad...")
         self.download_manager.focus_download(good)
         if self.dl_in_background:
             self.download_manager.download_in_background(bad)
@@ -646,10 +627,7 @@ class Bisector(object):
                 return result
             if previous_verdict is None and handler.ensure_good_and_bad:
                 if bisection.ensure_good_and_bad():
-                    LOG.info(
-                        "Good and bad builds are correct. Let's"
-                        " continue the bisection."
-                    )
+                    LOG.info("Good and bad builds are correct. Let's" " continue the bisection.")
                 else:
                     return bisection.USER_EXIT
             bisection.handler.print_range(full=False)

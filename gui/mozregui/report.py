@@ -63,11 +63,7 @@ class StartItem(ReportItem):
     def status_text(self):
         if "pushlog_url" not in self.data:
             return ReportItem.status_text(self)
-        return "Bisecting on %s [%s - %s]" % (
-            self.data["repo_name"],
-            self.first,
-            self.last,
-        )
+        return "Bisecting on %s [%s - %s]" % (self.data["repo_name"], self.first, self.last,)
 
 
 class StepItem(ReportItem):
@@ -128,9 +124,7 @@ class ReportModel(QAbstractTableModel):
         if bisector:
             self.attach_single_runner(None)
             _bulk_action_slots("connect", bisector_slots, bisector, self)
-            _bulk_action_slots(
-                "connect", downloader_slots, bisector.download_manager, self
-            )
+            _bulk_action_slots("connect", downloader_slots, bisector.download_manager, self)
 
         self.bisector = bisector
 
@@ -142,9 +136,7 @@ class ReportModel(QAbstractTableModel):
         if single_runner:
             self.attach_bisector(None)
             _bulk_action_slots("connect", sr_slots, single_runner, self)
-            _bulk_action_slots(
-                "connect", downloader_slots, single_runner.download_manager, self
-            )
+            _bulk_action_slots("connect", downloader_slots, single_runner.download_manager, self)
 
         self.single_runner = single_runner
 

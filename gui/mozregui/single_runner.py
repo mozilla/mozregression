@@ -61,10 +61,7 @@ class SingleBuildRunner(AbstractBuildRunner):
         # evaluate_started will be called if we have an error
         self.test_runner.evaluate_started.connect(self.on_error)
         self.worker.error.connect(self.on_error)
-        if (
-            is_date_or_datetime(self.worker.launch_arg)
-            and fetch_config.should_use_archive()
-        ):
+        if is_date_or_datetime(self.worker.launch_arg) and fetch_config.should_use_archive():
             return self.worker.launch_nightlies
         else:
             return self.worker.launch_integration

@@ -7,29 +7,10 @@ from six.moves import range
 
 from mozregression import build_range
 from mozregression.errors import BuildInfoNotFound
-from mozregression.fetch_build_info import InfoFetcher
 from mozregression.fetch_configs import create_config
 from mozregression.json_pushes import JsonPushes
 
 from .test_fetch_configs import create_push
-
-
-class RangeCreator(object):
-    def __init__(self, mocker):
-        self.mocker = mocker
-
-    def create(self, values):
-        info_fetcher = self.mocker.Mock(spec=InfoFetcher)
-        info_fetcher.find_build_info.side_effect = lambda i: i
-        future_build_infos = [
-            build_range.FutureBuildInfo(info_fetcher, v) for v in values
-        ]
-        return build_range.BuildRange(info_fetcher, future_build_infos)
-
-
-@pytest.fixture
-def range_creator(mocker):
-    return RangeCreator(mocker)
 
 
 def test_len(range_creator):
@@ -100,8 +81,7 @@ def test_mid_point_interrupt(range_creator):
 
 def _build_range(fb, rng):
     return build_range.BuildRange(
-        fb.build_info_fetcher,
-        [build_range.FutureBuildInfo(fb.build_info_fetcher, i) for i in rng],
+        fb.build_info_fetcher, [build_range.FutureBuildInfo(fb.build_info_fetcher, i) for i in rng],
     )
 
 
@@ -147,13 +127,7 @@ def range_after(fb, expand):
             ["can't find a build before"],
         ),
         # unable to find any valid builds in after range
-        (
-            10,
-            list(range(10)),
-            list(range(9, 20)),
-            list(range(0, 9)),
-            ["can't find a build after"],
-        ),
+        (10, list(range(10)), list(range(9, 20)), list(range(0, 9)), ["can't find a build after"],),
         # unable to find valid builds in before and after
         (
             10,
@@ -164,9 +138,7 @@ def range_after(fb, expand):
         ),
     ],
 )
-def test_check_expand(
-    mocker, range_creator, size_expand, initial, fail_in, expected, error
-):
+def test_check_expand(mocker, range_creator, size_expand, initial, fail_in, expected, error):
     log = mocker.patch("mozregression.build_range.LOG")
     build_range = range_creator.create(initial)
     fetch_unless(build_range, lambda i: i in fail_in)
@@ -206,9 +178,7 @@ def test_get_integration_range(mocker):
     fetch_config = create_config("firefox", "linux", 64, "x86_64")
     jpush_class = mocker.patch("mozregression.fetch_build_info.JsonPushes")
     pushes = [create_push("b", 1), create_push("d", 2), create_push("f", 3)]
-    jpush = mocker.Mock(
-        pushes_within_changes=mocker.Mock(return_value=pushes), spec=JsonPushes
-    )
+    jpush = mocker.Mock(pushes_within_changes=mocker.Mock(return_value=pushes), spec=JsonPushes)
     jpush_class.return_value = jpush
 
     b_range = build_range.get_integration_range(fetch_config, "a", "e")
@@ -230,9 +200,7 @@ def test_get_integration_range_with_expand(mocker):
     fetch_config = create_config("firefox", "linux", 64, "x86_64")
     jpush_class = mocker.patch("mozregression.fetch_build_info.JsonPushes")
     pushes = [create_push("b", 1), create_push("d", 2), create_push("f", 3)]
-    jpush = mocker.Mock(
-        pushes_within_changes=mocker.Mock(return_value=pushes), spec=JsonPushes
-    )
+    jpush = mocker.Mock(pushes_within_changes=mocker.Mock(return_value=pushes), spec=JsonPushes)
     jpush_class.return_value = jpush
 
     check_expand = mocker.patch("mozregression.build_range.BuildRange.check_expand")
@@ -258,14 +226,10 @@ DATE_TOO_OLD = DATE_YEAR_BEFORE + timedelta(days=-5)
         (DATE_TOO_OLD, DATE_NOW, DATE_YEAR_BEFORE, DATE_NOW),
     ],
 )
-def test_get_integration_range_with_dates(
-    mocker, start_date, end_date, start_call, end_call
-):
+def test_get_integration_range_with_dates(mocker, start_date, end_date, start_call, end_call):
     fetch_config = create_config("firefox", "linux", 64, "x86_64")
     jpush_class = mocker.patch("mozregression.fetch_build_info.JsonPushes")
-    jpush = mocker.Mock(
-        pushes_within_changes=mocker.Mock(return_value=[]), spec=JsonPushes
-    )
+    jpush = mocker.Mock(pushes_within_changes=mocker.Mock(return_value=[]), spec=JsonPushes)
     jpush_class.return_value = jpush
 
     build_range.get_integration_range(

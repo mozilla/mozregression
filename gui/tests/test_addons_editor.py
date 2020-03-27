@@ -40,9 +40,7 @@ def test_add_addon(qtbot, addons_editor, addons_file):
         dlg.getOpenFileNames.return_value = ([filePath], "addon file (*.xpi)")
         qtbot.mouseClick(addons_editor.ui.add_addon, Qt.LeftButton)
         dlg.getOpenFileNames.assert_called_once_with(
-            addons_editor,
-            "Choose one or more addon files",
-            filter="addon file (*.xpi)",
+            addons_editor, "Choose one or more addon files", filter="addon file (*.xpi)",
         )
 
         # check addons

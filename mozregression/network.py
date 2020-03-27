@@ -7,12 +7,13 @@ network functions utilities for mozregression.
 """
 
 from __future__ import absolute_import
+
 import re
+
 import redo
 import requests
-
-from bs4 import BeautifulSoup
 import six
+from bs4 import BeautifulSoup
 
 
 def retry_get(url, **karwgs):
@@ -23,10 +24,14 @@ def retry_get(url, **karwgs):
     it will retry the requests call three times in case of HTTPError or
     ConnectionError.
     """
-    return redo.retry(get_http_session().get, attempts=3, sleeptime=1,
-                      retry_exceptions=(requests.exceptions.HTTPError,
-                                        requests.exceptions.ConnectionError),
-                      args=(url,), kwargs=karwgs)
+    return redo.retry(
+        get_http_session().get,
+        attempts=3,
+        sleeptime=1,
+        retry_exceptions=(requests.exceptions.HTTPError, requests.exceptions.ConnectionError,),
+        args=(url,),
+        kwargs=karwgs,
+    )
 
 
 SESSION = None
@@ -53,6 +58,7 @@ def set_http_session(session=None, get_defaults=None):
             for k, v in six.iteritems(get_defaults):
                 kwargs.setdefault(k, v)
             return _get(*args, **kwargs)
+
         session.get = _default_get
     SESSION = session
 
@@ -85,19 +91,20 @@ def url_links(url, regex=None, auth=None):
             regex = re.compile(regex)
         match = regex.match
     else:
+
         def match(_):
             return True
 
     # do not return a generator but an array, so we can store it for later use
     result = []
-    for link in soup.findAll('a'):
-        href = link.get('href')
+    for link in soup.findAll("a"):
+        href = link.get("href")
         # return "relative" part of the url only
-        if href.startswith('/'):
-            if href.endswith('/'):
-                href = href.strip('/').rsplit('/', 1)[-1] + '/'
+        if href.startswith("/"):
+            if href.endswith("/"):
+                href = href.strip("/").rsplit("/", 1)[-1] + "/"
             else:
-                href = href.rsplit('/', 1)[-1]
+                href = href.rsplit("/", 1)[-1]
         if match(href):
             result.append(href)
     return result

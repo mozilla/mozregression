@@ -3,9 +3,10 @@ Date utilities functions.
 """
 
 from __future__ import absolute_import
-import re
-import datetime
+
 import calendar
+import datetime
+import re
 
 from mozregression.errors import DateFormatError
 
@@ -20,13 +21,11 @@ def parse_date(date_string):
             return datetime.datetime.strptime(date_string, "%Y%m%d%H%M%S")
         except ValueError:
             raise DateFormatError(date_string, "Not a valid build id: `%s`")
-    regex = re.compile(r'(\d{4})\-(\d{1,2})\-(\d{1,2})')
+    regex = re.compile(r"(\d{4})\-(\d{1,2})\-(\d{1,2})")
     matched = regex.match(date_string)
     if not matched:
         raise DateFormatError(date_string)
-    return datetime.date(int(matched.group(1)),
-                         int(matched.group(2)),
-                         int(matched.group(3)))
+    return datetime.date(int(matched.group(1)), int(matched.group(2)), int(matched.group(3)))
 
 
 def to_datetime(date):

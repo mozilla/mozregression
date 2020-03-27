@@ -1,7 +1,6 @@
-from PySide2.QtCore import QAbstractTableModel, QModelIndex, Qt, \
-    Slot
-from PySide2.QtWidgets import QFileDialog, QWidget
 from mozprofile.prefs import Preferences
+from PySide2.QtCore import QAbstractTableModel, QModelIndex, Qt, Slot
+from PySide2.QtWidgets import QFileDialog, QWidget
 
 from mozregui.ui.pref_editor import Ui_PrefEditor
 
@@ -10,6 +9,7 @@ class PreferencesModel(QAbstractTableModel):
     """
     A Qt model that can edit preferences.
     """
+
     def __init__(self):
         QAbstractTableModel.__init__(self)
         self.prefs = []
@@ -22,7 +22,7 @@ class PreferencesModel(QAbstractTableModel):
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
-            return ('name', 'value')[section]
+            return ("name", "value")[section]
 
     def data(self, index, role=Qt.DisplayRole):
         if role in (Qt.DisplayRole, Qt.EditRole):
@@ -52,15 +52,14 @@ class PreferencesModel(QAbstractTableModel):
     def add_empty_pref(self):
         nb_prefs = len(self.prefs)
         self.beginInsertRows(QModelIndex(), nb_prefs, nb_prefs)
-        self.prefs.append(('', ''))
+        self.prefs.append(("", ""))
         self.endInsertRows()
 
     def add_prefs_from_file(self, fname):
         prefs = Preferences.read(fname)
         if prefs:
             nb_prefs = len(self.prefs)
-            self.beginInsertRows(QModelIndex(), nb_prefs,
-                                 nb_prefs + len(prefs) - 1)
+            self.beginInsertRows(QModelIndex(), nb_prefs, nb_prefs + len(prefs) - 1)
             self.prefs.extend(list(prefs.items()))
             self.endInsertRows()
 
@@ -75,6 +74,7 @@ class PreferencesWidgetEditor(QWidget):
     A widget to edit preferences, using PreferencesModel in a table view
     and buttons to let the user interact.
     """
+
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self.ui = Ui_PrefEditor()
@@ -93,9 +93,7 @@ class PreferencesWidgetEditor(QWidget):
     @Slot()
     def add_prefs_from_file(self):
         (fileName, _) = QFileDialog.getOpenFileName(
-            self,
-            "Choose a preference file",
-            filter="pref file (*.json *.ini)",
+            self, "Choose a preference file", filter="pref file (*.json *.ini)",
         )
         if fileName:
             self.pref_model.add_prefs_from_file(fileName)
@@ -103,8 +101,7 @@ class PreferencesWidgetEditor(QWidget):
     @Slot()
     def remove_selected_prefs(self):
         selected_rows = sorted(
-            set(i.row() for i in self.ui.pref_view.selectedIndexes()),
-            reverse=True
+            set(i.row() for i in self.ui.pref_view.selectedIndexes()), reverse=True
         )
         for row in selected_rows:
             self.pref_model.remove_pref(row)
@@ -113,7 +110,7 @@ class PreferencesWidgetEditor(QWidget):
         return self.pref_model.prefs[:]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from PySide2.QtWidgets import QApplication
 
     app = QApplication([])

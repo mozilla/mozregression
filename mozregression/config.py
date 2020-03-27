@@ -6,32 +6,28 @@
 Reading and writing of the configuration file.
 """
 
-from __future__ import absolute_import
-from __future__ import print_function
-import os
-import mozinfo
+from __future__ import absolute_import, print_function
 
-from configobj import ConfigObj, ParseError
+import os
 from datetime import datetime
 
-from mozregression.log import colorize
-from mozregression.errors import MozRegressionError
+import mozinfo
+from configobj import ConfigObj, ParseError
 from six.moves import input
 
+from mozregression.errors import MozRegressionError
+from mozregression.log import colorize
 
-CONFIG_FILE_HELP_URL = (
-    "http://mozilla.github.io/mozregression/documentation/configuration.html"
-)
+CONFIG_FILE_HELP_URL = "http://mozilla.github.io/mozregression/documentation/configuration.html"
 DEFAULT_CONF_FNAME = os.path.expanduser(
     os.path.join("~", ".mozilla", "mozregression", "mozregression.cfg")
 )
 TC_CREDENTIALS_FNAME = os.path.expanduser(
-    os.path.join("~", ".mozilla", "mozregression",
-                 "taskcluster-credentials.json")
+    os.path.join("~", ".mozilla", "mozregression", "taskcluster-credentials.json")
 )
 OLD_TC_ROOT_URL = "https://taskcluster.net"
 TC_ROOT_URL = "https://firefox-ci-tc.services.mozilla.com"
-TC_ROOT_URL_MIGRATION_FLAG_DATE = datetime.strptime('2019-11-09', '%Y-%M-%d')
+TC_ROOT_URL_MIGRATION_FLAG_DATE = datetime.strptime("2019-11-09", "%Y-%M-%d")
 ARCHIVE_BASE_URL = "https://archive.mozilla.org/pub"
 # when a bisection range needs to be expanded, the following value is used to
 # specify how many builds we try (if 20, we will try 20 before the lower limit,
@@ -41,25 +37,25 @@ DEFAULT_EXPAND = 20
 # default values when not defined in config file.
 # Note that this is also the list of options that can be used in config file
 DEFAULTS = {
-    'adb-profile-dir': None,
-    'app': 'firefox',
-    'approx-policy': 'auto',
-    'archive-base-url': ARCHIVE_BASE_URL,
-    'background-dl-policy': 'cancel',
-    'bits': None,
-    'build-type': '',
-    'cmdargs': [],
-    'http-timeout': 30.0,
-    'mode': 'classic',
-    'no-background-dl': '',
-    'persist': None,
-    'persist-size-limit': 0,
-    'process-output': None,
-    'profile': None,
-    'profile-persistence': 'clone',
-    'repo': None,
-    'taskcluster-accesstoken': None,
-    'taskcluster-clientid': None,
+    "adb-profile-dir": None,
+    "app": "firefox",
+    "approx-policy": "auto",
+    "archive-base-url": ARCHIVE_BASE_URL,
+    "background-dl-policy": "cancel",
+    "bits": None,
+    "build-type": "",
+    "cmdargs": [],
+    "http-timeout": 30.0,
+    "mode": "classic",
+    "no-background-dl": "",
+    "persist": None,
+    "persist-size-limit": 0,
+    "process-output": None,
+    "profile": None,
+    "profile-persistence": "clone",
+    "repo": None,
+    "taskcluster-accesstoken": None,
+    "taskcluster-clientid": None,
 }
 
 
@@ -71,23 +67,25 @@ def get_defaults(conf_path):
     try:
         config = ConfigObj(conf_path)
     except ParseError as exc:
-        raise MozRegressionError(
-            "Error while reading the config file %s:\n  %s" % (conf_path, exc)
-        )
+        raise MozRegressionError("Error while reading the config file %s:\n  %s" % (conf_path, exc))
     defaults.update(config)
 
     return defaults
 
 
 def _get_persist_dir(default):
-    print("You should configure a persist directory, where to put downloaded"
-          " build files to reuse them in future bisections.")
-    print("I recommend using %s. Leave blank to use that default. If you"
-          " really don't want a persist dir type NONE, else you can"
-          " just define a path that you would like to use." % default)
+    print(
+        "You should configure a persist directory, where to put downloaded"
+        " build files to reuse them in future bisections."
+    )
+    print(
+        "I recommend using %s. Leave blank to use that default. If you"
+        " really don't want a persist dir type NONE, else you can"
+        " just define a path that you would like to use." % default
+    )
     value = input("persist: ")
     if value == "NONE":
-        return ''
+        return ""
     elif value:
         persist_dir = os.path.realpath(value)
     else:
@@ -100,11 +98,13 @@ def _get_persist_dir(default):
 
 
 def _get_persist_size_limit(default):
-    print("You should choose a size limit for the persist dir. I recommend you"
-          " to use %s GiB, so leave it blank to use that default. Else you"
-          " can type NONE to not limit the persist dir, or any number you like"
-          " (a GiB value, so type 0.5 to allow ~500 MiB)." % default)
-    value = input('persist-size-limit: ')
+    print(
+        "You should choose a size limit for the persist dir. I recommend you"
+        " to use %s GiB, so leave it blank to use that default. Else you"
+        " can type NONE to not limit the persist dir, or any number you like"
+        " (a GiB value, so type 0.5 to allow ~500 MiB)." % default
+    )
+    value = input("persist-size-limit: ")
     if value == "NONE":
         return 0.0
     elif value:
@@ -113,12 +113,14 @@ def _get_persist_size_limit(default):
 
 
 def _get_bits(default):
-    print("You are using a 64-bit system, so mozregression will by default"
-          " use the 64-bit build files. If you want to change that to"
-          " 32-bit by default, type 32 here.")
+    print(
+        "You are using a 64-bit system, so mozregression will by default"
+        " use the 64-bit build files. If you want to change that to"
+        " 32-bit by default, type 32 here."
+    )
     while 1:
-        value = input('bits: ')
-        if value in ('', '32', '64'):
+        value = input("bits: ")
+        if value in ("", "32", "64"):
             break
     if not value:
         return default
@@ -156,22 +158,23 @@ def write_conf(conf_path):
             else:
                 value = default
         else:
-            print('%s already defined.' % optname)
+            print("%s already defined." % optname)
             value = config[optname]
         name = colorize("{fGREEN}%s{sRESET_ALL}" % optname)
         print("%s: %s" % (name, value))
 
-    _set_option('persist', _get_persist_dir,
-                os.path.join(conf_dir, "persist"))
+    _set_option("persist", _get_persist_dir, os.path.join(conf_dir, "persist"))
 
-    _set_option('persist-size-limit', _get_persist_size_limit, 20.0)
+    _set_option("persist-size-limit", _get_persist_size_limit, 20.0)
 
-    if mozinfo.os != 'mac' and mozinfo.bits == 64:
-        _set_option('bits', _get_bits, 64)
+    if mozinfo.os != "mac" and mozinfo.bits == 64:
+        _set_option("bits", _get_bits, 64)
 
     config.write()
 
     print()
-    print(colorize('Config file {sBRIGHT}%s{sRESET_ALL} written.' % conf_path))
-    print("Note you can edit it manually, and there are other options you can"
-          " configure. See %s." % CONFIG_FILE_HELP_URL)
+    print(colorize("Config file {sBRIGHT}%s{sRESET_ALL} written." % conf_path))
+    print(
+        "Note you can edit it manually, and there are other options you can"
+        " configure. See %s." % CONFIG_FILE_HELP_URL
+    )

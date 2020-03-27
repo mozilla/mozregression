@@ -1,9 +1,12 @@
 from __future__ import absolute_import
+
 import re
+
 import pytest
-from mozregression import log
-from six import StringIO
 from colorama import Fore, Style
+from six import StringIO
+
+from mozregression import log
 
 
 def init_logger(mocker, **kwargs):
@@ -41,5 +44,6 @@ def test_logger_debug(mocker, debug):
 def test_colorize():
     assert log.colorize("stuff", allow_color=True) == "stuff"
     assert log.colorize("{fRED}stuff{sRESET_ALL}", allow_color=True) == (
-        Fore.RED + "stuff" + Style.RESET_ALL)
+        Fore.RED + "stuff" + Style.RESET_ALL
+    )
     assert log.colorize("{fRED}stuf{sRESET_ALL}", allow_color=False) == "stuf"

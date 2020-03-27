@@ -23,18 +23,18 @@ a virtualenv here. See this link
 about python virtualenvs. You may also consider using virtualenvwrapper
 (https://virtualenvwrapper.readthedocs.org/en/latest/).
 
-Python 3.5+ is *required* to develop or use mozregression-gui.
+Python 3.6+ is *required* to develop or use mozregression-gui.
 
 Install with virtualenvwrapper: ::
 
    mkvirtualenv -p /usr/bin/python3 mozregression
-   pip install -r requirements-gui-dev.txt
+   pip install -r requirements/all.txt
 
 Or with virtualenv: ::
 
    virtualenv --system-site-packages -p /usr/bin/python3 venv
    source venv/bin/activate
-   pip install -r requirements-gui-dev.txt
+   pip install -r requirements/all.txt
 
 Launching the application
 -------------------------

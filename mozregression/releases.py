@@ -1,12 +1,13 @@
 from __future__ import absolute_import
-import re
 
+import re
 from datetime import date
+
+import six
+from six.moves import filter, map
+
 from mozregression.errors import UnavailableRelease
 from mozregression.network import retry_get
-import six
-from six.moves import filter
-from six.moves import map
 
 
 def releases():
@@ -71,7 +72,7 @@ def releases():
         53: "2017-01-23",
         54: "2017-03-06",
         55: "2017-06-12",
-        56: "2017-08-02"
+        56: "2017-08-02",
     }
 
     def filter_tags(tag_node):
@@ -89,10 +90,7 @@ def releases():
     response = retry_get(tags_url)
 
     if response.status_code == 200:
-        fetched_releases = list(map(
-            map_tags,
-            list(filter(filter_tags, response.json()["tags"]))
-        ))
+        fetched_releases = list(map(map_tags, list(filter(filter_tags, response.json()["tags"]))))
 
         for release in fetched_releases:
             releases.update(release)
@@ -114,10 +112,10 @@ def tag_of_release(release):
     """
     Provide the mercurial tag of a release, suitable for use in place of a hash
     """
-    if re.match(r'^\d+$', release):
-        release += '.0'
-    if re.match(r'^\d+\.\d(\.\d)?$', release):
-        return 'FIREFOX_%s_RELEASE' % release.replace('.', '_')
+    if re.match(r"^\d+$", release):
+        release += ".0"
+    if re.match(r"^\d+\.\d(\.\d)?$", release):
+        return "FIREFOX_%s_RELEASE" % release.replace(".", "_")
     else:
         raise UnavailableRelease(release)
 
@@ -127,10 +125,10 @@ def tag_of_beta(release):
     Provide the mercurial tag of a beta release, suitable for use in place of a
     hash
     """
-    if re.match(r'^\d+\.0b\d+$', release):
-        return 'FIREFOX_%s_RELEASE' % release.replace('.', '_')
-    elif re.match(r'^\d+(\.0)?$', release):
-        return 'FIREFOX_RELEASE_%s_BASE' % release.replace('.0', '')
+    if re.match(r"^\d+\.0b\d+$", release):
+        return "FIREFOX_%s_RELEASE" % release.replace(".", "_")
+    elif re.match(r"^\d+(\.0)?$", release):
+        return "FIREFOX_RELEASE_%s_BASE" % release.replace(".0", "")
     else:
         raise UnavailableRelease(release)
 
@@ -142,6 +140,6 @@ def formatted_valid_release_dates():
     """
     message = "Valid releases: \n"
     for key, value in six.iteritems(releases()):
-        message += '% 3s: %s\n' % (key, value)
+        message += "% 3s: %s\n" % (key, value)
 
     return message

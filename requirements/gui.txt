@@ -1,5 +1,3 @@
--r requirements-dev.txt
-
 # Qt bindings for python
 PySide2==5.14.1
 

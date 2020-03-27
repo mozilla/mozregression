@@ -1,19 +1,19 @@
-from __future__ import absolute_import
-from __future__ import print_function
-import tempfile
-import threading
-import requests
+from __future__ import absolute_import, print_function
+
 import os
 import sys
-import mozfile
-
+import tempfile
+import threading
 from contextlib import closing
+
+import mozfile
+import requests
+import six
 from mozlog import get_proxy_logger
 
 from mozregression.persist_limit import PersistLimit
-import six
 
-LOG = get_proxy_logger('Download')
+LOG = get_proxy_logger("Download")
 
 
 class DownloadInterrupt(Exception):
@@ -45,11 +45,18 @@ class Download(object):
     :param progress: A callable to report the progress (default to None).
                      see :meth:`set_progress`.
     """
-    def __init__(self, url, dest, finished_callback=None,
-                 chunk_size=16 * 1024, session=requests, progress=None):
+
+    def __init__(
+        self,
+        url,
+        dest,
+        finished_callback=None,
+        chunk_size=16 * 1024,
+        session=requests,
+        progress=None,
+    ):
         self.thread = threading.Thread(
-            target=self._download,
-            args=(url, dest, finished_callback, chunk_size, session)
+            target=self._download, args=(url, dest, finished_callback, chunk_size, session),
         )
         self._lock = threading.Lock()
         self.__url = url
@@ -156,16 +163,14 @@ class Download(object):
         bytes_so_far = 0
         try:
             with closing(session.get(url, stream=True)) as response:
-                total_size = int(response.headers['Content-length'].strip())
+                total_size = int(response.headers["Content-length"].strip())
                 self._update_progress(bytes_so_far, total_size)
                 # we use NamedTemporaryFile as raw open() call was causing
                 # issues on windows - see:
                 # https://bugzilla.mozilla.org/show_bug.cgi?id=1185756
                 with tempfile.NamedTemporaryFile(
-                        delete=False,
-                        mode='wb',
-                        suffix='.tmp',
-                        dir=os.path.dirname(dest)) as temp:
+                    delete=False, mode="wb", suffix=".tmp", dir=os.path.dirname(dest)
+                ) as temp:
                     for chunk in response.iter_content(chunk_size):
                         if self.is_canceled():
                             break
@@ -225,6 +230,7 @@ class DownloadManager(object):
                           limiting the size of the download dir. Defaults
                           to None, meaning no limit.
     """
+
     def __init__(self, destdir, session=requests, persist_limit=None):
         self.destdir = destdir
         self.session = session
@@ -283,10 +289,13 @@ class DownloadManager(object):
         # else create the download (will be automatically removed of
         # the list on completion) start it, and returns that.
         with self._lock:
-            download = Download(url, dest,
-                                session=self.session,
-                                finished_callback=self._download_finished,
-                                progress=progress)
+            download = Download(
+                url,
+                dest,
+                session=self.session,
+                finished_callback=self._download_finished,
+                progress=progress,
+            )
             self._downloads[dest] = download
             download.start()
             self._download_started(download)
@@ -313,13 +322,13 @@ class BuildDownloadManager(DownloadManager):
     """
     A DownloadManager specialized to download builds.
     """
-    def __init__(self, destdir, session=requests,
-                 background_dl_policy='cancel',
-                 persist_limit=None):
-        DownloadManager.__init__(self, destdir, session=session,
-                                 persist_limit=persist_limit)
+
+    def __init__(
+        self, destdir, session=requests, background_dl_policy="cancel", persist_limit=None,
+    ):
+        DownloadManager.__init__(self, destdir, session=session, persist_limit=persist_limit)
         self._downloads_bg = set()
-        assert background_dl_policy in ('cancel', 'keep')
+        assert background_dl_policy in ("cancel", "keep")
         self.background_dl_policy = background_dl_policy
 
     def _extract_download_info(self, build_info):
@@ -360,7 +369,7 @@ class BuildDownloadManager(DownloadManager):
         build_info.build_file = dest
         # first, stop all downloads in background (except the one for this
         # build if any)
-        if self.background_dl_policy == 'cancel':
+        if self.background_dl_policy == "cancel":
             self.cancel(cancel_if=lambda dl: dest != dl.get_dest())
 
         dl = self.download(build_url, fname, progress=download_progress)
@@ -369,7 +378,7 @@ class BuildDownloadManager(DownloadManager):
             try:
                 dl.wait()
             finally:
-                print('')  # a new line after download_progress calls
+                print("")  # a new line after download_progress calls
 
         else:
             msg = "Using local file: %s" % dest

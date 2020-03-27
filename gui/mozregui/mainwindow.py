@@ -1,18 +1,16 @@
-
-import mozregression
-import mozfile
-
 from tempfile import mkdtemp
-from PySide2.QtCore import Slot, QSettings
+
+import mozfile
+from PySide2.QtCore import QSettings, Slot
 from PySide2.QtWidgets import QMainWindow, QMessageBox
 
-from mozregui.ui.mainwindow import Ui_MainWindow
-from mozregui.wizard import BisectionWizard, SingleRunWizard
+import mozregression
 from mozregui.bisection import BisectRunner
-from mozregui.single_runner import SingleBuildRunner
 from mozregui.global_prefs import change_prefs_dialog
 from mozregui.report_delegate import ReportItemDelegate
-
+from mozregui.single_runner import SingleBuildRunner
+from mozregui.ui.mainwindow import Ui_MainWindow
+from mozregui.wizard import BisectionWizard, SingleRunWizard
 
 ABOUT_TEXT = """\
 <p><strong>mozregression-gui</strong> is a desktop interface for
@@ -27,7 +25,9 @@ http://mozilla.github.io/mozregression/</a></p>
 from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a>
 and licensed under <a href="http://creativecommons.org/licenses/by/3.0/"
                       title="Creative Commons BY 3.0">CC BY 3.0</a></p>
-""" % (mozregression.__version__)
+""" % (
+    mozregression.__version__
+)
 
 
 class MainWindow(QMainWindow):
@@ -43,29 +43,22 @@ class MainWindow(QMainWindow):
         self.single_runner = SingleBuildRunner(self)
         self.current_runner = None
 
-        self.bisect_runner.worker_created.connect(
-            self.ui.report_view.model().attach_bisector)
-        self.single_runner.worker_created.connect(
-            self.ui.report_view.model().attach_single_runner)
+        self.bisect_runner.worker_created.connect(self.ui.report_view.model().attach_bisector)
+        self.single_runner.worker_created.connect(self.ui.report_view.model().attach_single_runner)
 
         self.ui.report_view.model().need_evaluate_editor.connect(
-            self.bisect_runner.open_evaluate_editor)
-
-        self.ui.report_view.step_report_changed.connect(
-            self.ui.build_info_browser.update_content)
-        self.report_delegate = ReportItemDelegate()
-        self.report_delegate.got_verdict.connect(
-            self.bisect_runner.set_verdict
+            self.bisect_runner.open_evaluate_editor
         )
+
+        self.ui.report_view.step_report_changed.connect(self.ui.build_info_browser.update_content)
+        self.report_delegate = ReportItemDelegate()
+        self.report_delegate.got_verdict.connect(self.bisect_runner.set_verdict)
         self.ui.report_view.setItemDelegateForColumn(0, self.report_delegate)
 
         for runner in (self.bisect_runner, self.single_runner):
-            runner.running_state_changed.connect(
-                self.ui.actionStart_a_new_bisection.setDisabled)
-            runner.running_state_changed.connect(
-                self.ui.actionStop_the_bisection.setEnabled)
-            runner.running_state_changed.connect(
-                self.ui.actionRun_a_single_build.setDisabled)
+            runner.running_state_changed.connect(self.ui.actionStart_a_new_bisection.setDisabled)
+            runner.running_state_changed.connect(self.ui.actionStop_the_bisection.setEnabled)
+            runner.running_state_changed.connect(self.ui.actionRun_a_single_build.setDisabled)
 
         self.persist = mkdtemp()
 

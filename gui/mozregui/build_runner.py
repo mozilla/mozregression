@@ -1,13 +1,11 @@
-from PySide2.QtCore import QObject, QThread, Signal, \
-    Slot, QTimer
+from PySide2.QtCore import QObject, QThread, QTimer, Signal, Slot
 
-from mozregui.global_prefs import get_prefs, apply_prefs
 from mozregression.download_manager import BuildDownloadManager
-from mozregression.test_runner import create_launcher
+from mozregression.errors import LauncherError
 from mozregression.network import get_http_session
 from mozregression.persist_limit import PersistLimit
-from mozregression.errors import LauncherError
-
+from mozregression.test_runner import create_launcher
+from mozregui.global_prefs import apply_prefs, get_prefs
 from mozregui.log_report import log
 
 
@@ -18,10 +16,9 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
 
     def __init__(self, destdir, persist_limit, **kwargs):
         QObject.__init__(self)
-        BuildDownloadManager.__init__(self, destdir,
-                                      session=get_http_session(),
-                                      persist_limit=persist_limit,
-                                      **kwargs)
+        BuildDownloadManager.__init__(
+            self, destdir, session=get_http_session(), persist_limit=persist_limit, **kwargs
+        )
 
     def _download_started(self, task):
         self.download_started.emit(task)
@@ -72,7 +69,7 @@ class GuiTestRunner(QObject):
             self.run_error = True
             self.evaluate_started.emit(str(exc))
         else:
-            self.evaluate_started.emit('')
+            self.evaluate_started.emit("")
             self.run_error = False
 
     def finish(self, verdict):
@@ -94,6 +91,7 @@ class AbstractBuildRunner(QObject):
     Create the required test runner and build manager, along with a thread
     that should be used for blocking tasks.
     """
+
     running_state_changed = Signal(bool)
     worker_created = Signal(object)
     worker_class = None
@@ -124,42 +122,36 @@ class AbstractBuildRunner(QObject):
         # apply the global prefs now
         apply_prefs(global_prefs)
 
-        fetch_config.set_base_url(global_prefs['archive_base_url'])
+        fetch_config.set_base_url(global_prefs["archive_base_url"])
 
-        download_dir = global_prefs['persist']
+        download_dir = global_prefs["persist"]
         if not download_dir:
             download_dir = self.mainwindow.persist
-        persist_limit = PersistLimit(
-            abs(global_prefs['persist_size_limit']) * 1073741824
-        )
-        self.download_manager = GuiBuildDownloadManager(download_dir,
-                                                        persist_limit)
+        persist_limit = PersistLimit(abs(global_prefs["persist_size_limit"]) * 1073741824)
+        self.download_manager = GuiBuildDownloadManager(download_dir, persist_limit)
         self.test_runner = GuiTestRunner()
         self.thread = QThread()
 
         # options for the app launcher
         launcher_kwargs = {}
-        for name in ('profile', 'preferences'):
+        for name in ("profile", "preferences"):
             if name in options:
                 value = options[name]
                 if value:
                     launcher_kwargs[name] = value
 
         # add add-ons paths to the app launcher
-        launcher_kwargs['addons'] = options['addons']
+        launcher_kwargs["addons"] = options["addons"]
         self.test_runner.launcher_kwargs = launcher_kwargs
 
-        if options['profile_persistence'] in ('clone-first', 'reuse') or options['profile']:
-            launcher_kwargs['cmdargs'] = launcher_kwargs.get('cmdargs', []) + ['--allow-downgrade']
+        if options["profile_persistence"] in ("clone-first", "reuse") or options["profile"]:
+            launcher_kwargs["cmdargs"] = launcher_kwargs.get("cmdargs", []) + ["--allow-downgrade"]
 
         # Thunderbird will fail to start if passed an URL arg
-        if 'url' in options and fetch_config.app_name != 'thunderbird':
-            launcher_kwargs['cmdargs'] = (
-                launcher_kwargs.get('cmdargs', []) + [options['url']]
-            )
+        if "url" in options and fetch_config.app_name != "thunderbird":
+            launcher_kwargs["cmdargs"] = launcher_kwargs.get("cmdargs", []) + [options["url"]]
 
-        self.worker = self.worker_class(fetch_config, self.test_runner,
-                                        self.download_manager)
+        self.worker = self.worker_class(fetch_config, self.test_runner, self.download_manager)
         # Move self.bisector in the thread. This will
         # allow to the self.bisector slots (connected after the move)
         # to be automatically called in the thread.
@@ -179,9 +171,8 @@ class AbstractBuildRunner(QObject):
     def stop(self, wait=True):
         self.stopped = True
         if self.options:
-            if self.options['profile'] and \
-               self.options['profile_persistence'] == 'clone-first':
-                self.options['profile'].cleanup()
+            if self.options["profile"] and self.options["profile_persistence"] == "clone-first":
+                self.options["profile"].cleanup()
         if self.download_manager:
             self.download_manager.cancel()
         if self.thread:
@@ -206,7 +197,7 @@ class AbstractBuildRunner(QObject):
         if self.test_runner:
             self.test_runner.finish(None)
         self.running_state_changed.emit(False)
-        log('Stopped')
+        log("Stopped")
 
     @Slot()
     def _remove_pending_thread(self):

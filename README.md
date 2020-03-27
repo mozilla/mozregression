@@ -3,20 +3,21 @@
 mozregression is an interactive regression rangefinder for quickly tracking down the source of bugs in Mozilla nightly and inbound builds.
 
 You can start using mozregression today:
-- [start with our installation guide](https://mozilla.github.io/mozregression/install.html), then 
-- take a look at [our Quick Start document](https://mozilla.github.io/mozregression/quickstart.html). 
+
+- [start with our installation guide](https://mozilla.github.io/mozregression/install.html), then
+- take a look at [our Quick Start document](https://mozilla.github.io/mozregression/quickstart.html).
 
 ## Status
 
 [![Latest Version](https://img.shields.io/pypi/v/mozregression.svg)](https://pypi.python.org/pypi/mozregression/)
 [![License](https://img.shields.io/pypi/l/mozregression.svg)](https://pypi.python.org/pypi/mozregression/)
 
-
 Build status:
- - Linux:
-   [![Linux Build Status](https://travis-ci.org/mozilla/mozregression.svg?branch=master)](https://travis-ci.org/mozilla/mozregression)
-   [![Coverage Status](https://img.shields.io/coveralls/mozilla/mozregression.svg)](https://coveralls.io/r/mozilla/mozregression)
- - Windows: [![Windows Build status](https://ci.appveyor.com/api/projects/status/bcg7t1pt2bahggdr?svg=true)](https://ci.appveyor.com/project/wlach/mozregression/branch/master)
+
+- Linux:
+  [![Linux Build Status](https://travis-ci.org/mozilla/mozregression.svg?branch=master)](https://travis-ci.org/mozilla/mozregression)
+  [![Coverage Status](https://img.shields.io/coveralls/mozilla/mozregression.svg)](https://coveralls.io/r/mozilla/mozregression)
+- Windows: [![Windows Build status](https://ci.appveyor.com/api/projects/status/bcg7t1pt2bahggdr?svg=true)](https://ci.appveyor.com/project/wlach/mozregression/branch/master)
 
 For more information see:
 
@@ -41,27 +42,39 @@ This is recommended.
 If you are **really sure** that you only want to hack on the mozregression command line:
 
 1. Install [virtualenv](https://virtualenv.pypa.io/en/stable/)
-  or [virtualenvwrapper](https://virtualenvwrapper.readthedocs.org/en/latest/).
+   or [virtualenvwrapper](https://virtualenvwrapper.readthedocs.org/en/latest/).
 
 2. install dependencies:
 
-  With virtualenvwrapper:
+With virtualenvwrapper:
 
-  ```bash
-  mkvirtualenv -p /usr/bin/python3 mozregression
-  pip install -r requirements-dev.txt
-  ```
+```bash
+mkvirtualenv -p /usr/bin/python3 mozregression
+pip install -r requirements/all-console.txt
+```
 
-  Or with virtualenv: ::
+Or with virtualenv: ::
 
-  ```bash
-  virtualenv -p /usr/bin/python3 venv
-  source venv/bin/activate
-  pip install -r requirements-dev.txt
-  ```
+```bash
+virtualenv -p /usr/bin/python3 venv
+source venv/bin/activate
+pip install -r requirements/all-console.txt
+```
+
+2. lint your code for errors and formatting (we use [black](https://black.readthedocs.io/en/stable/), [flake8](https://flake8.pycqa.org/en/latest/) and [isort](https://isort.readthedocs.io/en/latest/))
+
+```bash
+./bin/lint-check.sh
+```
+
+If it turns up errors, try using the `lint-fix.sh` script to fix any errors which can be addressed automatically:
+
+```bash
+./bin/lint-fix.sh
+```
 
 3. run tests (be sure that your virtualenv is activated):
 
-  ```bash
-  pytest tests
-  ```
+```bash
+pytest tests
+```

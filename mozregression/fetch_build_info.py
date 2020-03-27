@@ -7,27 +7,28 @@ The public API is composed of two classes, :class:`NightlyInfoFetcher` and
 """
 
 from __future__ import absolute_import
+
 import os
 import re
-import taskcluster
 from datetime import datetime
-from taskcluster.exceptions import TaskclusterFailure
-from mozlog import get_proxy_logger
-from threading import Thread, Lock
-from requests import HTTPError
+from threading import Lock, Thread
 
-from mozregression.config import (OLD_TC_ROOT_URL, TC_ROOT_URL,
-                                  TC_ROOT_URL_MIGRATION_FLAG_DATE)
-from mozregression.network import url_links, retry_get
-from mozregression.errors import BuildInfoNotFound, MozRegressionError
-from mozregression.build_info import NightlyBuildInfo, IntegrationBuildInfo
-from mozregression.json_pushes import JsonPushes, Push
-
-LOG = get_proxy_logger(__name__)
 # Fix intermittent bug due to strptime first call not being thread safe
 # see https://bugzilla.mozilla.org/show_bug.cgi?id=1200270
 # and http://bugs.python.org/issue7980
 import _strptime  # noqa
+import taskcluster
+from mozlog import get_proxy_logger
+from requests import HTTPError
+from taskcluster.exceptions import TaskclusterFailure
+
+from mozregression.build_info import IntegrationBuildInfo, NightlyBuildInfo
+from mozregression.config import OLD_TC_ROOT_URL, TC_ROOT_URL, TC_ROOT_URL_MIGRATION_FLAG_DATE
+from mozregression.errors import BuildInfoNotFound, MozRegressionError
+from mozregression.json_pushes import JsonPushes, Push
+from mozregression.network import retry_get, url_links
+
+LOG = get_proxy_logger(__name__)
 
 
 class InfoFetcher(object):
@@ -37,10 +38,8 @@ class InfoFetcher(object):
         self.build_info_regex = re.compile(fetch_config.build_info_regex())
 
     def _update_build_info_from_txt(self, build_info):
-        if 'build_txt_url' in build_info:
-            build_info.update(
-                self._fetch_txt_info(build_info['build_txt_url'])
-            )
+        if "build_txt_url" in build_info:
+            build_info.update(self._fetch_txt_info(build_info["build_txt_url"]))
 
     def _fetch_txt_info(self, url):
         """
@@ -52,18 +51,18 @@ class InfoFetcher(object):
         data = {}
         response = retry_get(url)
         for line in response.text.splitlines():
-            if '/rev/' in line:
-                repository, changeset = line.split('/rev/')
-                data['repository'] = repository
-                data['changeset'] = changeset
+            if "/rev/" in line:
+                repository, changeset = line.split("/rev/")
+                data["repository"] = repository
+                data["changeset"] = changeset
                 break
         if not data:
             # the txt file could be in an old format:
             # DATE CHANGESET
             # we can try to extract that to get the changeset at least.
-            matched = re.match(r'^\d+ (\w+)$', response.text.strip())
+            matched = re.match(r"^\d+ (\w+)$", response.text.strip())
             if matched:
-                data['changeset'] = matched.group(1)
+                data["changeset"] = matched.group(1)
         return data
 
     def find_build_info(self, changeset_or_date, fetch_txt_info=True):
@@ -115,59 +114,59 @@ class IntegrationInfoFetcher(InfoFetcher):
             task_id = None
             status = None
             for tc_root_url in possible_tc_root_urls:
-                LOG.debug('using taskcluster root url %s' % tc_root_url)
+                LOG.debug("using taskcluster root url %s" % tc_root_url)
                 options = self.fetch_config.tk_options(tc_root_url)
                 tc_index = taskcluster.Index(options)
                 tc_queue = taskcluster.Queue(options)
                 tk_routes = self.fetch_config.tk_routes(push)
                 stored_failure = None
                 for tk_route in tk_routes:
-                    LOG.debug('using taskcluster route %r' % tk_route)
+                    LOG.debug("using taskcluster route %r" % tk_route)
                     try:
-                        task_id = tc_index.findTask(tk_route)['taskId']
+                        task_id = tc_index.findTask(tk_route)["taskId"]
                     except TaskclusterFailure as ex:
-                        LOG.debug('nothing found via route %r' % tk_route)
+                        LOG.debug("nothing found via route %r" % tk_route)
                         stored_failure = ex
                         continue
                     if task_id:
-                        status = tc_queue.status(task_id)['status']
+                        status = tc_queue.status(task_id)["status"]
                         break
                 if status:
                     break
             if not task_id:
                 raise stored_failure
         except TaskclusterFailure:
-            raise BuildInfoNotFound("Unable to find build info using the"
-                                    " taskcluster route %r" %
-                                    self.fetch_config.tk_route(push))
+            raise BuildInfoNotFound(
+                "Unable to find build info using the"
+                " taskcluster route %r" % self.fetch_config.tk_route(push)
+            )
 
         # find a completed run for that task
         run_id, build_date = None, None
-        for run in reversed(status['runs']):
-            if run['state'] == 'completed':
-                run_id = run['runId']
-                build_date = datetime.strptime(run["resolved"],
-                                               '%Y-%m-%dT%H:%M:%S.%fZ')
+        for run in reversed(status["runs"]):
+            if run["state"] == "completed":
+                run_id = run["runId"]
+                build_date = datetime.strptime(run["resolved"], "%Y-%m-%dT%H:%M:%S.%fZ")
                 break
 
         if run_id is None:
-            raise BuildInfoNotFound("Unable to find completed runs for task %s"
-                                    % task_id)
-        artifacts = tc_queue.listArtifacts(task_id, run_id)['artifacts']
+            raise BuildInfoNotFound("Unable to find completed runs for task %s" % task_id)
+        artifacts = tc_queue.listArtifacts(task_id, run_id)["artifacts"]
 
         # look over the artifacts of that run
         build_url = None
         for a in artifacts:
-            name = os.path.basename(a['name'])
+            name = os.path.basename(a["name"])
             if self.build_regex.search(name):
                 meth = tc_queue.buildUrl
                 if self.fetch_config.tk_needs_auth():
                     meth = tc_queue.buildSignedUrl
-                build_url = meth('getArtifact', task_id, run_id, a['name'])
+                build_url = meth("getArtifact", task_id, run_id, a["name"])
                 break
         if build_url is None:
-            raise BuildInfoNotFound("unable to find a build url for the"
-                                    " changeset %r" % changeset)
+            raise BuildInfoNotFound(
+                "unable to find a build url for the" " changeset %r" % changeset
+            )
         return IntegrationBuildInfo(
             self.fetch_config,
             build_url=build_url,
@@ -194,21 +193,21 @@ class NightlyInfoFetcher(InfoFetcher):
         build info file are found for the url.
         """
         data = {}
-        if not url.endswith('/'):
-            url += '/'
+        if not url.endswith("/"):
+            url += "/"
         for link in url_links(url):
-            if 'build_url' not in data and self.build_regex.match(link):
-                data['build_url'] = url + link
-            elif 'build_txt_url' not in data  \
-                    and self.build_info_regex.match(link):
-                data['build_txt_url'] = url + link
+            if "build_url" not in data and self.build_regex.match(link):
+                data["build_url"] = url + link
+            elif "build_txt_url" not in data and self.build_info_regex.match(link):
+                data["build_txt_url"] = url + link
         if data:
             # Check that we found all required data. The URL in build_url is
             # required. build_txt_url is optional.
-            if 'build_url' not in data:
+            if "build_url" not in data:
                 raise BuildInfoNotFound(
                     "Failed to find a build file in directory {} that "
-                    "matches regex '{}'".format(url, self.build_regex.pattern))
+                    "matches regex '{}'".format(url, self.build_regex.pattern)
+                )
 
             with self._fetch_lock:
                 lst.append((index, data))
@@ -262,9 +261,10 @@ class NightlyInfoFetcher(InfoFetcher):
         valid_builds = []
         while build_urls:
             some = build_urls[:max_workers]
-            threads = [Thread(target=self._fetch_build_info_from_url,
-                              args=(url, i, valid_builds))
-                       for i, url in enumerate(some)]
+            threads = [
+                Thread(target=self._fetch_build_info_from_url, args=(url, i, valid_builds))
+                for i, url in enumerate(some)
+            ]
             for thread in threads:
                 thread.daemon = True
                 thread.start()
@@ -279,10 +279,10 @@ class NightlyInfoFetcher(InfoFetcher):
 
                 build_info = NightlyBuildInfo(
                     self.fetch_config,
-                    build_url=infos['build_url'],
+                    build_url=infos["build_url"],
                     build_date=date,
-                    changeset=infos.get('changeset'),
-                    repo_url=infos.get('repository')
+                    changeset=infos.get("changeset"),
+                    repo_url=infos.get("repository"),
                 )
                 break
             build_urls = build_urls[max_workers:]

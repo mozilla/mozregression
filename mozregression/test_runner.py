@@ -7,20 +7,20 @@ This module implements a :class:`TestRunner` interface for testing builds
 and a default implementation :class:`ManualTestRunner`.
 """
 
-from __future__ import absolute_import
-from __future__ import print_function
-from mozlog import get_proxy_logger
-import subprocess
-import shlex
-import os
-import datetime
+from __future__ import absolute_import, print_function
 
-from mozregression.launchers import create_launcher as mozlauncher
-from mozregression.errors import TestCommandError, LauncherError
+import datetime
+import os
+import shlex
+import subprocess
 from abc import ABCMeta, abstractmethod
+
 import six
-from six.moves import range
-from six.moves import input
+from mozlog import get_proxy_logger
+from six.moves import input, range
+
+from mozregression.errors import LauncherError, TestCommandError
+from mozregression.launchers import create_launcher as mozlauncher
 
 LOG = get_proxy_logger("Test Runner")
 
@@ -29,16 +29,13 @@ def create_launcher(build_info):
     """
     Create and returns a :class:`mozregression.launchers.Launcher`.
     """
-    if build_info.build_type == 'nightly':
+    if build_info.build_type == "nightly":
         if isinstance(build_info.build_date, datetime.datetime):
-            desc = ("for buildid %s"
-                    % build_info.build_date.strftime("%Y%m%d%H%M%S"))
+            desc = "for buildid %s" % build_info.build_date.strftime("%Y%m%d%H%M%S")
         else:
             desc = "for %s" % build_info.build_date
     else:
-        desc = ("built on %s, revision %s"
-                % (build_info.build_date,
-                   build_info.short_changeset))
+        desc = "built on %s, revision %s" % (build_info.build_date, build_info.short_changeset,)
     LOG.info("Running %s build %s" % (build_info.repo_name, desc))
 
     return mozlauncher(build_info)
@@ -93,6 +90,7 @@ class ManualTestRunner(TestRunner):
     A TestRunner subclass that run builds and ask for evaluation by
     prompting in the terminal.
     """
+
     def __init__(self, launcher_kwargs=None):
         TestRunner.__init__(self)
         self.launcher_kwargs = launcher_kwargs or {}
@@ -101,22 +99,22 @@ class ManualTestRunner(TestRunner):
         """
         Ask and returns the verdict.
         """
-        options = ['good', 'bad', 'skip', 'retry', 'exit']
+        options = ["good", "bad", "skip", "retry", "exit"]
         if allow_back:
-            options.insert(-1, 'back')
+            options.insert(-1, "back")
         # allow user to just type one letter
         allowed_inputs = options + [o[0] for o in options]
         # format options to nice printing
-        formatted_options = (', '.join(["'%s'" % o for o in options[:-1]]) +
-                             " or '%s'" % options[-1])
+        formatted_options = ", ".join(["'%s'" % o for o in options[:-1]]) + " or '%s'" % options[-1]
         verdict = ""
         while verdict not in allowed_inputs:
-            verdict = input("Was this %s build good, bad, or broken?"
-                            " (type %s and press Enter): " % (build_info.build_type,
-                                                              formatted_options))
+            verdict = input(
+                "Was this %s build good, bad, or broken?"
+                " (type %s and press Enter): " % (build_info.build_type, formatted_options)
+            )
 
-        if verdict == 'back':
-            return 'back'
+        if verdict == "back":
+            return "back"
         # shorten verdict to one character for processing...
         return verdict[0]
 
@@ -149,13 +147,17 @@ class ManualTestRunner(TestRunner):
         min = -mid + 1
         max = build_range_len - mid - 2
         valid_range = list(range(min, max + 1))
-        print("Build was skipped. You can manually choose a new build to"
-              " test, to be able to get out of a broken build range.")
-        print("Please type the index of the build you would like to try - the"
-              " index is 0-based on the middle of the remaining build range.")
+        print(
+            "Build was skipped. You can manually choose a new build to"
+            " test, to be able to get out of a broken build range."
+        )
+        print(
+            "Please type the index of the build you would like to try - the"
+            " index is 0-based on the middle of the remaining build range."
+        )
         print("You can choose a build index between [%d, %d]:" % (min, max))
         while True:
-            value = input('> ')
+            value = input("> ")
             try:
                 index = int(value)
                 if index in valid_range:
@@ -164,9 +166,8 @@ class ManualTestRunner(TestRunner):
                 pass
 
 
-def _raise_command_error(exc, msg=''):
-    raise TestCommandError("Unable to run the test command%s: `%s`"
-                           % (msg, exc))
+def _raise_command_error(exc, msg=""):
+    raise TestCommandError("Unable to run the test command%s: `%s`" % (msg, exc))
 
 
 class CommandTestRunner(TestRunner):
@@ -185,6 +186,7 @@ class CommandTestRunner(TestRunner):
        with curly brackets. Example:
        `mozmill -app firefox -b {binary} -t path/to/test.js`
     """
+
     def __init__(self, command):
         TestRunner.__init__(self)
         self.command = command
@@ -193,29 +195,28 @@ class CommandTestRunner(TestRunner):
         with create_launcher(build_info) as launcher:
             build_info.update_from_app_info(launcher.get_app_info())
             variables = {k: v for k, v in six.iteritems(build_info.to_dict())}
-            if hasattr(launcher, 'binary'):
-                variables['binary'] = launcher.binary
+            if hasattr(launcher, "binary"):
+                variables["binary"] = launcher.binary
 
             env = dict(os.environ)
             for k, v in six.iteritems(variables):
-                env['MOZREGRESSION_' + k.upper()] = str(v)
+                env["MOZREGRESSION_" + k.upper()] = str(v)
             try:
                 command = self.command.format(**variables)
             except KeyError as exc:
-                _raise_command_error(exc, ' (formatting error)')
-            LOG.info('Running test command: `%s`' % command)
+                _raise_command_error(exc, " (formatting error)")
+            LOG.info("Running test command: `%s`" % command)
             cmdlist = shlex.split(command)
             try:
                 retcode = subprocess.call(cmdlist, env=env)
             except IndexError:
                 _raise_command_error("Empty command")
             except OSError as exc:
-                _raise_command_error(exc,
-                                     " (%s not found or not executable)"
-                                     % cmdlist[0])
-        LOG.info('Test command result: %d (build is %s)'
-                 % (retcode, 'good' if retcode == 0 else 'bad'))
-        return 'g' if retcode == 0 else 'b'
+                _raise_command_error(exc, " (%s not found or not executable)" % cmdlist[0])
+        LOG.info(
+            "Test command result: %d (build is %s)" % (retcode, "good" if retcode == 0 else "bad")
+        )
+        return "g" if retcode == 0 else "b"
 
     def run_once(self, build_info):
-        return 0 if self.evaluate(build_info) == 'g' else 1
+        return 0 if self.evaluate(build_info) == "g" else 1

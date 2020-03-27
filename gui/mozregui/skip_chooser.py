@@ -1,7 +1,13 @@
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QBrush
-from PySide2.QtWidgets import (QGraphicsRectItem, QGraphicsScene, QGraphicsView,
-                               QToolTip, QDialog, QMessageBox)
+from PySide2.QtWidgets import (
+    QDialog,
+    QGraphicsRectItem,
+    QGraphicsScene,
+    QGraphicsView,
+    QMessageBox,
+    QToolTip,
+)
 
 
 class BuildItem(QGraphicsRectItem):
@@ -40,7 +46,7 @@ class SkipChooserScene(QGraphicsScene):
                 future,
                 column * BuildItem.WIDTH + self.SPACE * column,
                 row * BuildItem.WIDTH + self.SPACE * row,
-                selectable=i not in bounds
+                selectable=i not in bounds,
             )
             if i == mid:
                 item.setBrush(QBrush(Qt.blue))
@@ -89,6 +95,7 @@ class SkipDialog(QDialog):
         QDialog.__init__(self, parent)
         assert len(build_range) > 3
         from mozregui.ui.skip_dialog import Ui_SkipDialog
+
         self.ui = Ui_SkipDialog()
         self.ui.setupUi(self)
         self.scene = SkipChooserScene(build_range)
@@ -102,9 +109,7 @@ class SkipDialog(QDialog):
             self.ui.lbl_status.setText("Selected build to test, %s" % items[0])
 
     def build_index(self, item):
-        return self.scene.build_range.future_build_infos.index(
-            item.future_build_info
-        )
+        return self.scene.build_range.future_build_infos.index(item.future_build_info)
 
     def choose_next_build(self):
         if self.exec_() == self.Accepted:
@@ -113,18 +118,23 @@ class SkipDialog(QDialog):
             return self.build_index(items[0])
 
     def closeEvent(self, evt):
-        if QMessageBox.warning(
-                self, "Stop the bisection ?",
+        if (
+            QMessageBox.warning(
+                self,
+                "Stop the bisection ?",
                 "Closing this dialog will end the bisection. Are you sure"
                 " you want to end the bisection now ?",
                 QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No) == QMessageBox.Yes:
+                QMessageBox.No,
+            )
+            == QMessageBox.Yes
+        ):
             evt.accept()
         else:
             evt.ignore()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from mozregression.build_range import BuildRange, FutureBuildInfo
 
     class FInfo(FutureBuildInfo):
@@ -134,6 +144,7 @@ if __name__ == '__main__':
     build_range = BuildRange(None, [FInfo(None, i) for i in range(420)])
 
     from PySide2.QtWidgets import QApplication, QMainWindow
+
     app = QApplication([])
     win = QMainWindow()
 

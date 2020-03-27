@@ -10,12 +10,13 @@ break mach!
 """
 
 from __future__ import absolute_import
+
 from argparse import Namespace
 
+from mozregression import __version__
 from mozregression.cli import create_parser
 from mozregression.config import DEFAULT_CONF_FNAME, get_defaults
 from mozregression.main import main, pypi_latest_version
-from mozregression import __version__
 
 
 def new_release_on_pypi():

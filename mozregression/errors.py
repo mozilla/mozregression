@@ -15,16 +15,16 @@ class WinTooOldBuildError(MozRegressionError):
     """
     Raised when a windows build is too old.
     """
+
     def __init__(self):
-        MozRegressionError.__init__(self,
-                                    "Can't run Windows builds before"
-                                    " 2010-03-18")
+        MozRegressionError.__init__(self, "Can't run Windows builds before" " 2010-03-18")
 
 
 class DateFormatError(MozRegressionError):
     """
     Raised when a date can not be parsed from a string.
     """
+
     def __init__(self, date_string, format="Incorrect date format: `%s`"):
         MozRegressionError.__init__(self, format % date_string)
 
@@ -46,10 +46,11 @@ class UnavailableRelease(MozRegressionError):
     """
     Raised when firefox release is not available.
     """
+
     def __init__(self, release):
-        MozRegressionError.__init__(self,
-                                    "Unable to find a matching date for"
-                                    " release %s" % release)
+        MozRegressionError.__init__(
+            self, "Unable to find a matching date for" " release %s" % release
+        )
 
 
 class LauncherError(MozRegressionError):

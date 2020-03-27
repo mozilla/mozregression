@@ -11,7 +11,8 @@ class ClassRegistry(object):
     :param attr_name: On each registered class, the unique name will be saved
                       under this class attribute name.
     """
-    def __init__(self, attr_name='name'):
+
+    def __init__(self, attr_name="name"):
         self._classes = {}
         self.attr_name = attr_name
 
@@ -32,6 +33,7 @@ class ClassRegistry(object):
             for key, value in six.iteritems(kwargs):
                 setattr(klass, key, value)
             return klass
+
         return wrapper
 
     def get(self, name):

@@ -1,15 +1,13 @@
-from PySide2.QtCore import QObject, QThread, Slot, Qt, QUrl
+from PySide2.QtCore import QObject, Qt, QThread, QUrl, Slot
 from PySide2.QtGui import QDesktopServices
 from PySide2.QtWidgets import QLabel
-from mozregression.network import retry_get
 
 from mozregression import __version__ as mozregression_version
+from mozregression.network import retry_get
 
 
 class CheckReleaseThread(QThread):
-    GITHUB_LATEST_RELEASE_URL = (
-        "https://api.github.com/repos/mozilla/mozregression/releases/latest"
-    )
+    GITHUB_LATEST_RELEASE_URL = "https://api.github.com/repos/mozilla/mozregression/releases/latest"
 
     def __init__(self):
         QThread.__init__(self)
@@ -18,8 +16,8 @@ class CheckReleaseThread(QThread):
 
     def run(self):
         data = retry_get(self.GITHUB_LATEST_RELEASE_URL).json()
-        self.tag_name = data['tag_name']
-        self.release_url = data['html_url']
+        self.tag_name = data["tag_name"]
+        self.release_url = data["html_url"]
 
 
 class CheckRelease(QObject):
@@ -44,9 +42,9 @@ class CheckRelease(QObject):
             return
 
         self.label.setText(
-            'There is a new release available! Download the new'
-            ' <a href="%s">release %s</a>.'
-            % (self.thread.release_url, release_name))
+            "There is a new release available! Download the new"
+            ' <a href="%s">release %s</a>.' % (self.thread.release_url, release_name)
+        )
         self.mainwindow.ui.status_bar.addWidget(self.label)
 
     @Slot(str)

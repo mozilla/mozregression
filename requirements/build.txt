@@ -5,6 +5,7 @@ configobj==5.0.6
 mozdevice==3.1.0
 mozfile==2.1.0
 mozinfo==1.2.1
+mozinstall==2.0.0
 mozlog==6.0
 mozprofile==2.5.0
 mozrunner==7.8.0

@@ -8,6 +8,7 @@ matrix:
       language: python
       python: '2.7'
       script:
+        - pip install -e .
         - coverage run -m pytest tests && mv .coverage .coverage.core
         - coverage combine
         - pip install coveralls; coveralls
@@ -17,6 +18,7 @@ matrix:
       language: python
       python: '3.5'
       script:
+        - pip install -e .
         - coverage run -m pytest tests && mv .coverage .coverage.core
         - coverage combine
         - pip install coveralls; coveralls

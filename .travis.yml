@@ -7,14 +7,21 @@ matrix:
       dist: trusty # newer dists seem to have some weird ssl error with python2
       language: python
       python: '2.7'
-      virtualenv:
-        system_site_packages: true
+      script:
+        - coverage run -m pytest tests && mv .coverage .coverage.core
+        - coverage combine
+        - pip install coveralls; coveralls
+    - name: python35-linux
+      env: PYTHON=python3.5
+      os: linux
+      language: python
+      python: '3.5'
       script:
         - coverage run -m pytest tests && mv .coverage .coverage.core
         - coverage combine
         - pip install coveralls; coveralls
     - name: python3-linux
-      env: PYTHON=python3.5
+      env: PYTHON=python3.6
       os: linux
       addons:
         apt:
@@ -24,20 +31,21 @@ matrix:
       services:
         - xvfb
       language: python
-      python: '3.5'
+      python: '3.6'
       script:
-        - pip install -r requirements-gui-dev.txt
+        - pip install -r requirements/all.txt
         - coverage run -m pytest tests && mv .coverage .coverage.core
         - coverage run gui/build.py test && mv .coverage .coverage.gui
         - coverage combine
         - pip install coveralls; coveralls
         - python gui/build.py bundle
     - name: linters
-      env: PYTHON=python3.5
+      env: PYTHON=python3.6
       os: linux
       language: python
       python: '3.6'
       script:
+        - pip install -r requirements/linters.txt
         - ./bin/lint-check.sh
 
 install:
@@ -55,7 +63,7 @@ install:
           sudo install_name_tool -id $PWD/QtGui.so QtGui.so;
           cd $MOZPATH;
       fi
-    - pip install -r requirements-dev.txt
+    - pip install -r requirements/console.txt
 
 deploy:
   - provider: releases

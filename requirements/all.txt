@@ -1,0 +1,6 @@
+# all the things (what you usually want when doing development)
+-r dev.txt
+-r linters.txt
+-r build.txt
+-r gui.txt
+-e .

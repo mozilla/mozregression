@@ -50,7 +50,7 @@ With virtualenvwrapper:
 
 ```bash
 mkvirtualenv -p /usr/bin/python3 mozregression
-pip install -r requirements-dev.txt
+pip install -r requirements/all-console.txt
 ```
 
 Or with virtualenv: ::
@@ -58,7 +58,7 @@ Or with virtualenv: ::
 ```bash
 virtualenv -p /usr/bin/python3 venv
 source venv/bin/activate
-pip install -r requirements-dev.txt
+pip install -r requirements/all-console.txt
 ```
 
 2. lint your code for errors and formatting (we use [black](https://black.readthedocs.io/en/stable/), [flake8](https://flake8.pycqa.org/en/latest/) and [isort](https://isort.readthedocs.io/en/latest/))

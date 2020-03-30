@@ -28,9 +28,6 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
-if sys.version_info < (2, 7) or (sys.version_info >= (3, 0) and sys.version_info < (3, 5)):
-    sys.exit("mozregression requires either python 2.7 or >= 3.5")
-
 # we pin these dependencies in the requirements files -- all of these
 # should be python 3 compatible
 DEPENDENCIES = [
@@ -72,11 +69,17 @@ setup(
           mozregression = mozregression.main:main
         """,
     platforms=["Any"],
+    python_requires=">=3.5",
     install_requires=DEPENDENCIES,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3 :: Only",
     ],
 )

@@ -1,32 +1,6 @@
-import sys
-
 from setuptools import setup
-from setuptools.command.test import test as TestCommand
 
 from mozregression import __version__
-
-
-class PyTest(TestCommand):
-    """
-    Run py.test with the "python setup.py test command"
-    """
-
-    user_options = [("pytest-args=", "a", "Arguments to pass to py.test")]
-
-    def initialize_options(self):
-        TestCommand.initialize_options(self)
-        self.pytest_args = ""
-
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.pytest_args += " " + self.distribution.test_suite
-
-    def run_tests(self):
-        import pytest
-
-        errno = pytest.main(self.pytest_args)
-        sys.exit(errno)
-
 
 # we pin these dependencies in the requirements files -- all of these
 # should be python 3 compatible

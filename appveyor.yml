@@ -8,6 +8,7 @@ init:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
 install:
   # install mozregression code and test dependencies
+  - "pip install -r requirements\\base.txt"
   - "pip install -r requirements\\gui.txt"
 test_script:
   # bundle the application

@@ -1,8 +1,5 @@
 # Qt bindings for python
 PySide2==5.14.1
 
-# for testing
-pytest-qt == 3.3.0
-
 # for bundling standalone executable / image
 PyInstaller == 3.6

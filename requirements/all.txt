@@ -1,6 +1,7 @@
 # all the things (what you usually want when doing development)
+-r base.txt
 -r dev.txt
 -r linters.txt
--r build.txt
 -r gui.txt
+-r gui-dev.txt
 -e .

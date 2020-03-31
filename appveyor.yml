@@ -14,7 +14,8 @@ install:
   - "pip install -r requirements\\base.txt"
   - "pip install -r requirements\\gui.txt"
   - "pip install -e ."
-test_script:
+  # remove unneeded pyside2 libraries (to be sure they don't get bundled)
+  - "python bin\\remove-unwanted-pyside2.py"
   # bundle the application
   - "python gui\\build.py bundle --nsis-path \"C:\\Program Files (x86)\\NSIS\""
   # install test-only dependencies *after* building the bundle

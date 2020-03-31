@@ -20,7 +20,7 @@ Note that currently only Windows builds of the GUI are provided.
 
 ## mozregression
 
-The original command line tool, mozregression, is a Python (2.7 and 3.5+)
+The original command line tool, mozregression, is a Python (3.5+)
 package installable via [pip]. You can find it on pypi, as
 [mozregression](https://pypi.org/project/mozregression/)
 

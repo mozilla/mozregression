@@ -11,7 +11,7 @@ install:
   - "pip install virtualenv"
   - "virtualenv venv"
   - "venv\\Scripts\\activate.bat"
-  - "pip install -r requirements/build.txt"
+  - "pip install -r requirements/gui.txt"
 test_script:
   # - "pytest tests"
   # - "python gui\\build.py test"

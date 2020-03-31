@@ -7,10 +7,10 @@ matrix:
       language: python
       python: '3.5'
       script:
-        - pip install -e .
+        - pip3 install -e .
         - coverage run -m pytest tests && mv .coverage .coverage.core
         - coverage combine
-        - pip install coveralls; coveralls
+        - pip3 install coveralls; coveralls
     - name: python3-linux
       env: PYTHON=python3.7
       os: linux
@@ -24,39 +24,39 @@ matrix:
       language: python
       python: '3.7'
       script:
-        - pip install -r requirements/all.txt
+        - pip3 install -r requirements/all.txt
         - coverage run -m pytest tests && mv .coverage .coverage.core
         - coverage run gui/build.py test && mv .coverage .coverage.gui
         - coverage combine
-        - pip install coveralls; coveralls
-        - python gui/build.py bundle
+        - pip3 install coveralls; coveralls
+        - python3 gui/build.py bundle
+    - name: gui-macosx
+      os: osx
+      osx_image: xcode11.3
+      language: shell
+      before_install:
+        - python3 --version
+        - pip3 install -U pip
+      script:
+        - pip3 install -r requirements/all.txt
+        - coverage run -m pytest tests && mv .coverage .coverage.core
+        - coverage run gui/build.py test && mv .coverage .coverage.gui
+        - coverage combine
+        - pip3 install coveralls; coveralls
+        - python3 gui/build.py bundle
     - name: linters
       env: PYTHON=python3.7
       os: linux
       language: python
       python: '3.7'
       script:
-        - pip install -r requirements/all.txt
+        - pip3 install -r requirements/all.txt
         - ./bin/lint-check.sh || (echo "Lint fix results:" && ./bin/lint-fix.sh && git diff && false)
         - bin/update-glean-documentation.sh
         - if [[ $(git diff docs/glean | head -c1 | wc -c) -ne 0 ]]; then echo "Unexpected glean changes! Please regenerate glean documentation via `./bin/update-glean-documentation.sh`." && false; fi
 
 install:
-    - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-          brew update; brew outdated xctool || brew upgrade xctool;
-          pip install virtualenv;
-          brew install pyqt;
-          brew linkapps qt;
-          MOZPATH="$PWD";
-          mkdir -p /Users/travis/Library/Python/2.7/lib/python/site-packages;
-          echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> /Users/travis/Library/Python/2.7/lib/python/site-packages/homebrew.pth;
-          export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH;
-          cd /usr/local/opt/pyqt/lib/python2.7/site-packages/PyQt4;
-          sudo install_name_tool -id $PWD/QtCore.so QtCore.so;
-          sudo install_name_tool -id $PWD/QtGui.so QtGui.so;
-          cd $MOZPATH;
-      fi
-    - pip install -r requirements/console.txt
+    - pip3 install -r requirements/console.txt
 
 deploy:
   - provider: releases

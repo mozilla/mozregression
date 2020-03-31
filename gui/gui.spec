@@ -1,5 +1,8 @@
 # -*- mode: python -*-
+import sys
 from PyInstaller.utils.hooks import collect_all
+
+IS_MAC = sys.platform == "darwin"
 
 block_cipher = None
 
@@ -22,19 +25,41 @@ a = Analysis(['mozregression-gui.py'],
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
-pyz = PYZ(a.pure, a.zipped_data,
-             cipher=block_cipher)
-exe = EXE(pyz,
-          a.scripts,
-          a.binaries,
-          a.zipfiles,
-          a.datas,
-          [],
-          name='mozregression-gui',
-          debug=False,
-          bootloader_ignore_signals=False,
-          strip=False,
-          upx=False,
-          runtime_tmpdir=None,
-          console=False, 
-          icon='wininst/app_icon.ico')
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+
+if IS_MAC:
+    exe = EXE(pyz,
+            a.scripts,
+            [],
+            exclude_binaries=True,
+            name='mozregression-gui',
+            debug=False,
+            bootloader_ignore_signals=False,
+            strip=False,
+            upx=False,
+            console=False,
+            icon='wininst/app_icon.ico')
+    app = BUNDLE(exe,
+                a.binaries,
+                a.zipfiles,
+                a.datas,
+                strip=False,
+                upx=True,
+                name='mozregression-gui.app',
+                icon='icons/app_icon.icns',
+                bundle_identifier=None)
+else:
+    exe = EXE(pyz,
+            a.scripts,
+            a.binaries,
+            a.zipfiles,
+            a.datas,
+            [],
+            name='mozregression-gui',
+            debug=False,
+            bootloader_ignore_signals=False,
+            strip=False,
+            upx=False,
+            runtime_tmpdir=None,
+            console=False,
+            icon='wininst/app_icon.ico')

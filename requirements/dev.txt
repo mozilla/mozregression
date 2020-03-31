@@ -2,4 +2,3 @@ coverage==4.2
 mock==3.0.5 # last version compatible with python2.7
 pytest==4.6.9 # last version compatible with python2.7
 pytest-mock == 2.0.0
-pytest-qt == 3.3.0

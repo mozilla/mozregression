@@ -13,12 +13,13 @@ install:
   - "venv\\Scripts\\activate.bat"
   - "pip install -r requirements/gui.txt"
 test_script:
-  # - "pytest tests"
-  # - "python gui\\build.py test"
-  # remove unneeded pyside2 libraries
-  - "python bin\\remove-unwanted-pyside2.py"
   # bundle the application
   - "python gui\\build.py bundle --nsis-path \"C:\\Program Files (x86)\\NSIS\""
+  # install test-only dependencies *after* building the bundle
+  # (otherwise we will install them in the bundle, bloating the size)
+  - "pip install -r requirements/all.txt"
+  - "pytest tests"
+  - "python gui\\build.py test"
 
 # section required for deploy
 artifacts:

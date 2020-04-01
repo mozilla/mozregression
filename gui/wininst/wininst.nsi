@@ -1,5 +1,5 @@
 !define APPNAME "mozregression-gui"
-!define COMPANYNAME "Mozilla A Team"
+!define COMPANYNAME "Mozilla"
 !define DESCRIPTION "regression range finder for Mozilla nightly and inbound builds"
 # These three must be integers (not used yet)
 !define VERSIONMAJOR 1

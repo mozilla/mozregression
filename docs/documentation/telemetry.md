@@ -7,7 +7,7 @@ description: About the use of Telemetry in mozregression
 
 # Telemetry
 
-Unless explicitly disabled, mozregression will send an anonymized telemetry "ping" (a small JSON-document) to Mozilla's servers on each use (command-line invocation in the case of console mozregression, each bisection or single run in the case of the GUI).
+Unless explicitly disabled, mozregression will send a telemetry "ping" (a small JSON-document) to Mozilla's servers on each use (command-line invocation in the case of console mozregression, each bisection or single run in the case of the GUI).
 
 This ping does not contain any personally identifiable information and
 is intentionally limited to what we need to understand the basics

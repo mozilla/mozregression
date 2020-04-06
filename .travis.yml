@@ -38,11 +38,11 @@ matrix:
         #- coverage run setup.py test && mv .coverage .coverage.core
         #- coverage combine
         - pip install --user virtualenv
-        - virtualenv .
-        - bin/activate
-        - pip install --user -r requirements-dev.txt
-        - pip install --user PyInstaller==3.6
-        - pyinstaller --onefile $USER_PYTHON_PATH/mozregression
+        - virtualenv --no-site-packages .
+        - source bin/activate
+        - pip install -r requirements-dev.txt
+        - pip install PyInstaller==3.6
+        - pyinstaller --onefile bin/mozregression
     - name: python2-linters
       env: PYTHON=python2
       os: linux

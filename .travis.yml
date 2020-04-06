@@ -32,13 +32,13 @@ matrix:
         - python --version
         - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
         - sudo python get-pip.py
-      script:
-        - coverage run setup.py test && mv .coverage .coverage.core
-        - coverage combine
-        - pip install -U setuptools
         # hack from stackoverflow: https://stackoverflow.com/questions/55955127/pip-vendor-pep517-wrappers-backendunavailable-error-while-installing-cryptograp#comment98684254_55955127
         - pip install cryptography --no-use-pep517
+        - pip install -U setuptools
+      script:
         - pip install coveralls; coveralls
+        - coverage run setup.py test && mv .coverage .coverage.core
+        - coverage combine
         - pip install PyInstaller
         - pyinstaller --onefile /usr/local/bin/mozregression
     - name: python2-linters

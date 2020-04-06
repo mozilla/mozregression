@@ -31,10 +31,8 @@ matrix:
       before_install:
         - python --version
         - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-        - sudo python get-pip.py
-        # hack from stackoverflow: https://stackoverflow.com/questions/55955127/pip-vendor-pep517-wrappers-backendunavailable-error-while-installing-cryptograp#comment98684254_55955127
-        - pip install cryptography --no-use-pep517
-        - pip install -U setuptools
+        # pip 19+ seems to have a weird issue installing PyInstaller
+        - sudo python get-pip.py -c <(echo 'pip==18.1')
       script:
         - pip install coveralls; coveralls
         - coverage run setup.py test && mv .coverage .coverage.core

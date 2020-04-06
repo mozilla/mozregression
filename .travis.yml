@@ -30,9 +30,8 @@ matrix:
       language: shell
       before_install:
         - python --version
-        - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
         # pip 19+ seems to have a weird issue installing PyInstaller
-        - sudo python get-pip.py -c <(echo 'pip==18.1')
+        - sudo easy_install pip==18.1
       script:
         - pip install coveralls; coveralls
         - coverage run setup.py test && mv .coverage .coverage.core

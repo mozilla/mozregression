@@ -39,7 +39,7 @@ matrix:
         #- coverage combine
         - pip install --user -r requirements-dev.txt
         - pip install --user PyInstaller
-        - pyinstaller --onefile mozregression
+        - pyinstaller --onefile $USER_PYTHON_PATH/mozregression
     - name: python2-linters
       env: PYTHON=python2
       os: linux
@@ -64,6 +64,10 @@ install:
           sudo apt-get update -qq;
           sudo apt-get install python-qt4 pyqt4-dev-tools;
           pip install -r requirements-dev.txt;
+      fi
+    - if [ "$TRAVIS_OS_NAME" == "mac" ]; then
+          export USER_PYTHON_PATH=/Users/travis/Library/Python/2.7/bin;
+          export PATH="$USER_PYTHON_PATH:$PATH";
       fi
 deploy:
   - provider: releases

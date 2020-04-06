@@ -39,7 +39,7 @@ matrix:
         #- coverage combine
         - echo $PATH
         - pip install --user -r requirements-dev.txt
-        - pip install --user PyInstaller altgraph==0.17
+        - pip install --user PyInstaller==3.5
         - pyinstaller --onefile $USER_PYTHON_PATH/mozregression
     - name: python2-linters
       env: PYTHON=python2

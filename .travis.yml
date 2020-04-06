@@ -30,6 +30,8 @@ matrix:
       language: shell
       before_install:
         - python --version
+        - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+        - python get-pip.py
       script:
         - pip install PyInstaller
         - coverage run setup.py test && mv .coverage .coverage.core

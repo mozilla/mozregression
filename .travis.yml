@@ -29,7 +29,7 @@ matrix:
       osx_image: xcode6.4
       language: shell
       before_install:
-        - python2 --version
+        - python --version
       script:
         - pip install PyInstaller
         - coverage run setup.py test && mv .coverage .coverage.core

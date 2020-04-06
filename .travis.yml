@@ -37,6 +37,7 @@ matrix:
         #- pip install coveralls; coveralls
         #- coverage run setup.py test && mv .coverage .coverage.core
         #- coverage combine
+        - echo $PATH
         - pip install --user -r requirements-dev.txt
         - pip install --user PyInstaller
         - pyinstaller --onefile $USER_PYTHON_PATH/mozregression

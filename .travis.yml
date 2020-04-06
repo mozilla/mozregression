@@ -34,11 +34,12 @@ matrix:
         # pip 19+ seems to have a weird issue installing PyInstaller
         - sudo python get-pip.py 'pip==18.1'
       script:
-        - pip install coveralls; coveralls
-        - coverage run setup.py test && mv .coverage .coverage.core
-        - coverage combine
-        - pip install PyInstaller
-        - pyinstaller --onefile /usr/local/bin/mozregression
+        #- pip install coveralls; coveralls
+        #- coverage run setup.py test && mv .coverage .coverage.core
+        #- coverage combine
+        - pip install --user -r requirements-dev.txt
+        - pip install --user PyInstaller
+        - pyinstaller --onefile mozregression
     - name: python2-linters
       env: PYTHON=python2
       os: linux
@@ -62,9 +63,8 @@ install:
           sh -e /etc/init.d/xvfb start;
           sudo apt-get update -qq;
           sudo apt-get install python-qt4 pyqt4-dev-tools;
+          pip install -r requirements-dev.txt;
       fi
-    - pip install -r requirements-dev.txt
-
 deploy:
   - provider: releases
     api-key:

@@ -24,6 +24,18 @@ matrix:
         - coverage run setup.py test && mv .coverage .coverage.core
         - coverage combine
         - pip install coveralls; coveralls
+    - name: macosx-pyinstaller
+      os: osx
+      osx_image: xcode6.4
+      language: shell
+      before_install:
+        - python2 --version
+      script:
+        - pip install PyInstaller
+        - coverage run setup.py test && mv .coverage .coverage.core
+        - coverage combine
+        - pip install coveralls; coveralls
+        - pyinstaller --onefile /usr/local/bin/mozregression
     - name: python2-linters
       env: PYTHON=python2
       os: linux
@@ -47,20 +59,6 @@ install:
           sh -e /etc/init.d/xvfb start;
           sudo apt-get update -qq;
           sudo apt-get install python-qt4 pyqt4-dev-tools;
-      fi
-    - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-          brew update; brew outdated xctool || brew upgrade xctool;
-          pip install virtualenv;
-          brew install pyqt;
-          brew linkapps qt;
-          MOZPATH="$PWD";
-          mkdir -p /Users/travis/Library/Python/2.7/lib/python/site-packages;
-          echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> /Users/travis/Library/Python/2.7/lib/python/site-packages/homebrew.pth;
-          export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH;
-          cd /usr/local/opt/pyqt/lib/python2.7/site-packages/PyQt4;
-          sudo install_name_tool -id $PWD/QtCore.so QtCore.so;
-          sudo install_name_tool -id $PWD/QtGui.so QtGui.so;
-          cd $MOZPATH;
       fi
     - pip install -r requirements-dev.txt
 

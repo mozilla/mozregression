@@ -35,6 +35,7 @@ matrix:
       script:
         - coverage run setup.py test && mv .coverage .coverage.core
         - coverage combine
+        - pip install -U setuptools
         - pip install coveralls; coveralls
         - pip install PyInstaller
         - pyinstaller --onefile /usr/local/bin/mozregression

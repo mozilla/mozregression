@@ -34,15 +34,15 @@ matrix:
         # pip 19+ seems to have a weird issue installing PyInstaller
         - sudo python get-pip.py 'pip==18.1'
       script:
-        #- pip install coveralls; coveralls
         #- coverage run setup.py test && mv .coverage .coverage.core
         #- coverage combine
         - pip install --user virtualenv
-        - virtualenv --no-site-packages .
+        - /Users/travis/Library/Python/2.7/bin/virtualenv .
         - source bin/activate
         - pip install -r requirements-dev.txt
         - pip install PyInstaller==3.6
-        - pyinstaller --onefile bin/mozregression
+        - pyinstaller --onefile mozregression/main
+        - mv dist/main mozregression
     - name: python2-linters
       env: PYTHON=python2
       os: linux

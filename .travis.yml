@@ -41,7 +41,7 @@ matrix:
         - source bin/activate
         - pip install -r requirements-dev.txt
         - pip install PyInstaller==3.6
-        - pyinstaller --onefile mozregression/main
+        - pyinstaller --onefile mozregression/main.py
         - mv dist/main mozregression
     - name: python2-linters
       env: PYTHON=python2

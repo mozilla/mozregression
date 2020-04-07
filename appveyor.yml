@@ -22,15 +22,3 @@ test_script:
   - "python gui\\build.py test"
   # bundle the application
   - "python gui\\build.py bundle --nsis-path \"C:\\Program Files (x86)\\NSIS\""
-
-# section required for deploy
-artifacts:
-  - path: gui\wininst\mozregression-gui.exe
-
-deploy:
-  - provider: GitHub
-    auth_token:
-      secure: Zl7fsn0LErFrvaqG45Fa+zxIDBwjXtHc9aS8074ew3dsXOc/F+I5POFGfToxd4d6
-    artifact: gui\wininst\mozregression-gui.exe
-    on:
-      appveyor_repo_tag: true

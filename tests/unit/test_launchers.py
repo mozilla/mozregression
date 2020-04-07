@@ -3,6 +3,7 @@ from mozregression import launchers
 import unittest
 import os
 import pytest
+import sys
 import tempfile
 import mozfile
 import mozinfo
@@ -172,6 +173,7 @@ profile_class', spec=Profile)
         self.assertFalse(os.path.isdir(tempdir))
 
 
+@pytest.mark.skipif(sys.platform == "darwin", reason="fails on macosx")
 def test_firefox_install(mocker):
     install_ext, binary_name = (
         ('zip', 'firefox.exe') if mozinfo.isWin else

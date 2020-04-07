@@ -17,7 +17,7 @@ what is being collected, please see this [automatically
 generated report](https://github.com/mozilla/mozregression/blob/master/docs/glean/metrics.md).
 
 The purpose of this data gathering is only to improve mozregression itself by understanding the scope of its environment and usage, and
-will not be broadly shared except in aggregated form. Although not a consumer product, mozregression strives to follow Mozilla's general guidelines on [lean data practices](https://www.mozilla.org/en-US/about/policy/lean-data/).
+will not be broadly shared except in aggregated form. Although not a consumer product, mozregression strives to follow Mozilla's general guidelines on [lean data practices](https://www.mozilla.org/en-US/about/policy/lean-data/) and is subject to our [privacy policy](https://www.mozilla.org/en-US/privacy/websites/).
 
 ## How to disable
 

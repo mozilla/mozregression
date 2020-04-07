@@ -12,7 +12,7 @@ This means you might have to go searching through the dependency tree to get a f
 
 ## usage
 
-A ping to record usage of mozregression. The purpose of this data gathering is only to improve mozregression itself by understanding the scope of its environment and usage, and will not be broadly shared except in aggregated form. Although not a consumer product, mozregression strives to follow Mozilla's general guidelines on [lean data practices](https://www.mozilla.org/en-US/about/policy/lean-data/).
+A ping to record usage of mozregression. The purpose of this data gathering is only to improve mozregression itself by understanding the scope of its environment and usage, and will not be broadly shared except in aggregated form. Although not a consumer product, mozregression strives to follow Mozilla's general guidelines on [lean data practices](https://www.mozilla.org/en-US/about/policy/lean-data/) and is also subject to Mozilla's [privacy policy](https://www.mozilla.org/en-US/privacy/websites/).
 
 
 This ping includes the [client id](https://mozilla.github.io/glean/book/user/pings/index.html#the-client_info-section).

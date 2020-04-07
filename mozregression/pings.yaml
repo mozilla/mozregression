@@ -8,7 +8,8 @@ usage:
     the scope of its environment and usage, and will not be broadly
     shared except in aggregated form. Although not a consumer product,
     mozregression strives to follow Mozilla's general guidelines on
-    [lean data practices](https://www.mozilla.org/en-US/about/policy/lean-data/).
+    [lean data practices](https://www.mozilla.org/en-US/about/policy/lean-data/)
+    and is also subject to Mozilla's [privacy policy](https://www.mozilla.org/en-US/privacy/websites/).
   include_client_id: true
   notification_emails:
     - wlachance@mozilla.com

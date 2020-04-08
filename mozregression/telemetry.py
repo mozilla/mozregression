@@ -20,7 +20,7 @@ METRICS = load_metrics(resource_filename(__name__, "metrics.yaml"))
 def initialize_telemetry(upload_enabled):
     mozregression_path = Path.home() / ".mozilla" / "mozregression"
     Glean.initialize(
-        application_id="mozregression",
+        application_id="org.mozilla.mozregression",
         application_version=__version__,
         upload_enabled=upload_enabled,
         configuration=Configuration(ping_tag="mozregression-test-tag", allow_multiprocessing=False),

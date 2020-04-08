@@ -45,4 +45,4 @@ def run(options):
     """
     Run mozregression given a dict of options.
     """
-    main(namespace=Namespace(**options), check_new_version=False)
+    main(namespace=Namespace(**options), check_new_version=False, mozregression_variant="mach")

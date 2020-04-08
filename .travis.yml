@@ -36,8 +36,10 @@ matrix:
       language: python
       python: '3.7'
       script:
-        - pip install -r requirements/linters.txt
+        - pip install -r requirements/all.txt
         - ./bin/lint-check.sh || (echo "Lint fix results:" && ./bin/lint-fix.sh && git diff && false)
+        - bin/update-glean-documentation.sh
+        - if [[ $(git diff docs/glean | head -c1 | wc -c) -ne 0 ]]; then echo "Unexpected glean changes! Please regenerate glean documentation via `./bin/update-glean-documentation.sh`." && false; fi
 
 install:
     - if [ "$TRAVIS_OS_NAME" == "osx" ]; then

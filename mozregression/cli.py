@@ -643,6 +643,7 @@ def cli(argv=None, conf_file=DEFAULT_CONF_FNAME, namespace=None):
     else:
         defaults = get_defaults(conf_file)
         options = parse_args(argv=argv, defaults=defaults)
+        options.enable_telemetry = defaults["enable-telemetry"] not in ("no", "false", 0)
         if not options.cmdargs:
             # we don't set the cmdargs default to be that from the
             # configuration file, because then any new arguments

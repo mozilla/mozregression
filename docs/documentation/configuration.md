@@ -27,4 +27,5 @@ persist-size-limit = 3.0
 bits = 64
 profile-persistence = clone-first
 http-timeout = 30.0
+enable-telemetry = yes
 {% endhighlight %}

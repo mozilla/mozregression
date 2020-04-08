@@ -1,0 +1,20 @@
+---
+$schema: moz://mozilla.org/schemas/glean/pings/1-0-0
+
+usage:
+  description: >
+    A ping to record usage of mozregression. The purpose of this data
+    gathering is only to improve mozregression itself by understanding
+    the scope of its environment and usage, and will not be broadly
+    shared except in aggregated form. Although not a consumer product,
+    mozregression strives to follow Mozilla's general guidelines on
+    [lean data practices](https://www.mozilla.org/en-US/about/policy/lean-data/)
+    and is also subject to Mozilla's
+    [privacy policy](https://www.mozilla.org/en-US/privacy/websites/).
+  include_client_id: true
+  notification_emails:
+    - wlachance@mozilla.com
+  bugs:
+    - https://bugzilla.mozilla.org/show_bug.cgi?id=1581647
+  data_reviews:
+    - https://bugzilla.mozilla.org/show_bug.cgi?id=1581647#c9

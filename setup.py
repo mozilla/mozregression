@@ -5,6 +5,7 @@ from mozregression import __version__
 # we pin these dependencies in the requirements files -- all of these
 # should be python 3 compatible
 DEPENDENCIES = [
+    "glean_sdk>=27.0.0",
     "beautifulsoup4>=4.7.1",
     "colorama>=0.4.1",
     "configobj>=5.0.6",
@@ -42,6 +43,7 @@ setup(
           [console_scripts]
           mozregression = mozregression.main:main
         """,
+    package_data={"mozregression": ["*.yaml"]},
     platforms=["Any"],
     python_requires=">=3.5",
     install_requires=DEPENDENCIES,

@@ -1,6 +1,7 @@
 import os
 
 from configobj import ConfigObj
+from glean import Glean
 from PySide2.QtWidgets import QDialog
 
 from mozregression.config import ARCHIVE_BASE_URL, DEFAULT_CONF_FNAME, get_defaults
@@ -23,6 +24,8 @@ def get_prefs():
     options["approx_policy"] = settings["approx-policy"] == "auto"
     options["archive_base_url"] = settings["archive-base-url"]
     options["cmdargs"] = settings["cmdargs"]
+    options["enable_telemetry"] = not settings.get("enable-telemetry") in ["no", "0", "false"]
+
     return options
 
 
@@ -30,6 +33,7 @@ def save_prefs(options):
     conf_dir = os.path.dirname(DEFAULT_CONF_FNAME)
     if not os.path.isdir(conf_dir):
         os.makedirs(conf_dir)
+
     settings = ConfigObj(DEFAULT_CONF_FNAME)
     settings.update(
         {
@@ -38,6 +42,7 @@ def save_prefs(options):
             "persist-size-limit": options["persist_size_limit"],
             "background_downloads": "yes" if options["background_downloads"] else "no",
             "approx-policy": "auto" if options["approx_policy"] else "none",
+            "enable-telemetry": "yes" if options["enable_telemetry"] else "no",
         }
     )
     # only save base url in the file if it differs from the default.
@@ -48,6 +53,7 @@ def save_prefs(options):
     # likewise only save args if it has a value
     if "cmdargs" in settings and not settings["cmdargs"]:
         del settings["cmdargs"]
+
     settings.write()
 
 
@@ -80,6 +86,7 @@ class ChangePrefsDialog(QDialog):
         self.ui.approx.setChecked(options["approx_policy"])
         self.ui.archive_base_url.setText(options["archive_base_url"])
         self.ui.advanced_options.setText("Show Advanced Options")
+        self.ui.enable_telemetry.setChecked(options["enable_telemetry"])
         self.toggle_visibility(False)
         self.ui.advanced_options.clicked.connect(self.toggle_adv_options)
 
@@ -98,6 +105,8 @@ class ChangePrefsDialog(QDialog):
         self.ui.label_2.setVisible(visible)
         self.ui.archive_base_url.setVisible(visible)
         self.ui.label_5.setVisible(visible)
+        self.ui.enable_telemetry.setVisible(visible)
+        self.ui.telemetryLabel.setVisible(visible)
 
     def save_prefs(self):
         options = get_prefs()
@@ -109,6 +118,12 @@ class ChangePrefsDialog(QDialog):
         options["background_downloads"] = ui.bg_downloads.isChecked()
         options["approx_policy"] = ui.approx.isChecked()
         options["archive_base_url"] = str(ui.archive_base_url.text())
+        options["enable_telemetry"] = ui.enable_telemetry.isChecked()
+
+        # if telemetry went from enabled to disabled, we will send a deletion
+        # ping
+        Glean.set_upload_enabled(options["enable_telemetry"])
+
         save_prefs(options)
 
 

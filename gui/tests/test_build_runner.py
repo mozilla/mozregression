@@ -4,6 +4,7 @@ import tempfile
 import time
 import unittest
 
+import pytest
 from mock import Mock, patch
 from PySide2.QtCore import QObject, QThread, Signal, Slot
 
@@ -12,6 +13,12 @@ from mozregression.persist_limit import PersistLimit
 from mozregui import build_runner
 
 from . import wait_signal
+
+
+@pytest.fixture(autouse=True)
+def mock_send_telemetry_ping():
+    with patch("mozregui.build_runner.send_telemetry_ping") as p:
+        yield p
 
 
 def mock_session():
@@ -143,7 +150,7 @@ def test_abstract_build_runner(qtbot):
     assert not runner.pending_threads
 
 
-def test_runner_started_multiple_times():
+def test_runner_started_multiple_times(mock_send_telemetry_ping):
     class Worker(QObject):
         def __init__(self, *args):
             QObject.__init__(self)
@@ -165,10 +172,12 @@ def test_runner_started_multiple_times():
     runner = BuildRunner(Mock(persist="."))
     assert not runner.stopped
     runner.start(fetch_config, options)
+    assert mock_send_telemetry_ping.call_count == 1
     assert not runner.stopped
     runner.stop()
     assert runner.stopped
     runner.start(fetch_config, options)
+    assert mock_send_telemetry_ping.call_count == 2
     assert not runner.stopped
     runner.stop()
     assert runner.stopped

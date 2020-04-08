@@ -120,7 +120,7 @@ class ChangePrefsDialog(QDialog):
         options["archive_base_url"] = str(ui.archive_base_url.text())
         options["enable_telemetry"] = ui.enable_telemetry.isChecked()
 
-        # if telemetry went from enabled to disabled, send a deletion
+        # if telemetry went from enabled to disabled, we will send a deletion
         # ping
         Glean.set_upload_enabled(options["enable_telemetry"])
 

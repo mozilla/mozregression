@@ -166,9 +166,9 @@ class AbstractBuildRunner(QObject):
         # this will be called in the worker thread.
         QTimer.singleShot(0, action)
         # an action = instance of mozregression usage, so send
-        # a usage ping (if telemetry is enabled)
-        if get_prefs()["enable_telemetry"]:
-            send_telemetry_ping("gui", fetch_config.app_name)
+        # a usage ping (if telemetry is disabled, it will automatically
+        # be discarded)
+        send_telemetry_ping("gui", fetch_config.app_name)
 
         self.stopped = False
         self.running_state_changed.emit(True)

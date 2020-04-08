@@ -7,7 +7,7 @@ APP = QApplication([])  # we need an application to create widgets
 
 
 @contextmanager
-def wait_signal(signal, timeout=1):
+def wait_signal(signal, timeout=5):
     """Block loop until signal emitted, or timeout (s) elapses."""
     loop = QEventLoop()
     signal.connect(loop.quit)

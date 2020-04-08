@@ -2,7 +2,7 @@
 beautifulsoup4==4.7.1
 colorama==0.4.1
 configobj==5.0.6
-glean_sdk==26.0.0
+glean_sdk==27.0.0
 mozdevice==3.1.0
 mozfile==2.1.0
 mozinfo==1.2.1

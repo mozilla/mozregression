@@ -23,7 +23,7 @@ def initialize_telemetry(upload_enabled):
         application_id="mozregression",
         application_version=__version__,
         upload_enabled=upload_enabled,
-        configuration=Configuration(ping_tag="mozregression-test-tag"),
+        configuration=Configuration(ping_tag="mozregression-test-tag", allow_multiprocessing=False),
         data_dir=mozregression_path / "data",
     )
 

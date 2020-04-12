@@ -1,4 +1,4 @@
-coverage==4.2
+coverage==5.0.4
 mock==3.0.5 # last version compatible with python2.7
 pytest==4.6.9 # last version compatible with python2.7
 pytest-mock == 2.0.0

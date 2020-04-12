@@ -11,7 +11,7 @@ mozlog==6.0
 mozprofile==2.5.0
 mozrunner==7.8.0
 mozversion==2.3.0
-redo==2.0.2
+redo==2.0.3
 requests==2.23.0
 taskcluster==6.0.0
 

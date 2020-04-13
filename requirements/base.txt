@@ -16,4 +16,4 @@ requests==2.23.0
 taskcluster==6.0.0
 
 # for some reason we need to specify a specific version of six
-six==1.12.0
+six==1.14.0

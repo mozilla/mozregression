@@ -52,11 +52,11 @@ class AskVerdict(QWidget):
         self.ui.badVerdict.setIcon(AskVerdict.icons_cache["bad"])
 
     def on_dropdown_item_activated(self):
-        self.delegate.got_verdict.emit(str(self.ui.comboVerdict.currentText())[0])
+        self.delegate.got_verdict.emit(str(self.ui.comboVerdict.currentText())[0].lower())
         self.emitted = True
 
     def on_good_bad_button_clicked(self):
-        self.delegate.got_verdict.emit(str(self.sender().text())[0])
+        self.delegate.got_verdict.emit(str(self.sender().text())[0].lower())
         self.emitted = True
 
 

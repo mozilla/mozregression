@@ -1,5 +1,5 @@
 # Qt bindings for python
-PySide2==5.14.1
+PySide2==5.14.2
 
 # for bundling standalone executable / image
 PyInstaller == 3.6

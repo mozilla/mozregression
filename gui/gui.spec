@@ -1,13 +1,20 @@
 # -*- mode: python -*-
+from PyInstaller.utils.hooks import collect_all
 
 block_cipher = None
 
+datas, binaries, hiddenimports = [], [], []
+for pkgname in ['glean', 'glean_parser', 'mozregression', 'yamllint']:
+    pkg_datas, pkg_binaries, pkg_hiddenimports = collect_all(pkgname)
+    datas.extend(pkg_datas)
+    binaries.extend(pkg_binaries)
+    hiddenimports.extend(pkg_hiddenimports)
 
 a = Analysis(['mozregression-gui.py'],
              pathex=['/Users/wlach/src/mozregression/gui'],
-             binaries=[],
-             datas=[],
-             hiddenimports=[],
+             binaries=binaries,
+             datas=datas,
+             hiddenimports=hiddenimports,
              hookspath=[],
              runtime_hooks=[],
              excludes=[],

@@ -13,7 +13,7 @@ mozrunner==7.8.0
 mozversion==2.3.0
 redo==2.0.3
 requests==2.23.0
-taskcluster==6.0.0
+taskcluster==29.0.1
 
 # for some reason we need to specify a specific version of six
 six==1.12.0

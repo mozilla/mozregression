@@ -1,5 +1,5 @@
 # pinned version of dependencies
-beautifulsoup4==4.7.1
+beautifulsoup4==4.9.0
 colorama==0.4.3
 configobj==5.0.6
 glean_sdk==27.1.0

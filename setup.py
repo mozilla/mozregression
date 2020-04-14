@@ -1,7 +1,5 @@
 from setuptools import setup
 
-from mozregression import __version__
-
 # we pin these dependencies in the requirements files -- all of these
 # should be python 3 compatible
 DEPENDENCIES = [
@@ -31,7 +29,7 @@ http://mozilla.github.io/mozregression/"""
 
 setup(
     name="mozregression",
-    version=__version__,
+    use_scm_version=True,
     description=desc,
     long_description=long_desc,
     author="Mozilla Automation and Tools Team",
@@ -46,6 +44,7 @@ setup(
     package_data={"mozregression": ["*.yaml"]},
     platforms=["Any"],
     python_requires=">=3.5",
+    setup_requires=["setuptools_scm"],
     install_requires=DEPENDENCIES,
     classifiers=[
         "Development Status :: 5 - Production/Stable",

@@ -1,6 +1,13 @@
+# pyproject.toml
+[build-system]
+requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]
+
+[tool.setuptools_scm]
+write_to = "mozregression/version.py"
+
 [tool.black]
 line-length = 100
-exclude = "gui/mozregui/ui"
+# excludes handled in setup.cfg, since it's called via flake8
 
 [tool.isort]
 line_length = 100

@@ -1,6 +1,6 @@
 # pinned version of dependencies
 beautifulsoup4==4.7.1
-colorama==0.4.1
+colorama==0.4.3
 configobj==5.0.6
 glean_sdk==27.1.0
 mozdevice==3.1.0

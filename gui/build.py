@@ -84,8 +84,14 @@ def do_bundle(options):
         makensis_path = os.path.join(options.nsis_path, "makensis.exe")
         call(makensis_path, "wininst.nsi", cwd="wininst")
     elif IS_MAC:
+        os.chdir("dist")
+        # create a mozregression-gui subdirectory and make the dmg bundle that
+        os.mkdir("mozregression-gui")
+        os.rename(
+            "mozregression-gui.app", os.path.join("mozregression-gui", "mozregression-gui.app")
+        )
         call(
-            "hdiutil", "create", "dist/mozregression-gui.dmg", "-srcfolder", "dist/", "-ov",
+            "hdiutil", "create", "mozregression-gui.dmg", "-srcfolder", "mozregression-gui", "-ov",
         )
     else:
         with tarfile.open("mozregression-gui.tar.gz", "w:gz") as tar:

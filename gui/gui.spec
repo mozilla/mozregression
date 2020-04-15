@@ -1,6 +1,6 @@
 # -*- mode: python -*-
 import sys
-from PyInstaller.utils.hooks import collect_all
+from PyInstaller.utils.hooks import (collect_all, collect_submodules)
 
 IS_MAC = sys.platform == "darwin"
 
@@ -12,6 +12,10 @@ for pkgname in ['glean', 'glean_parser', 'mozregression', 'yamllint']:
     datas.extend(pkg_datas)
     binaries.extend(pkg_binaries)
     hiddenimports.extend(pkg_hiddenimports)
+
+# workaround this bad interaction between setuptools and pyinstaller:
+# https://github.com/pypa/setuptools/issues/1963
+hiddenimports.extend(collect_submodules('pkg_resources'))
 
 a = Analysis(['mozregression-gui.py'],
              pathex=['/Users/wlach/src/mozregression/gui'],

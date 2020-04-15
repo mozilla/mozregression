@@ -88,7 +88,7 @@ def do_bundle(options):
         # create a mozregression-gui subdirectory and make the dmg bundle that
         os.mkdir("mozregression-gui")
         os.rename(
-            "mozregression-gui.app", os.path.join("mozregression-gui", "mozregression-gui.app")
+            "mozregression GUI.app", os.path.join("mozregression-gui", "mozregression GUI.app")
         )
         call(
             "hdiutil", "create", "mozregression-gui.dmg", "-srcfolder", "mozregression-gui", "-ov",

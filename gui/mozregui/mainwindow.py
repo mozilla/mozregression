@@ -72,6 +72,7 @@ class MainWindow(QMainWindow):
         # where this was possible)
         self.ui.toolBar.setVisible(True)
         self.ui.log_view.setVisible(True)
+        self.ui.logDockWidget.setVisible(True)
 
     @Slot()
     def clear(self):

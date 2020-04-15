@@ -35,7 +35,7 @@ setup(
     author="Mozilla Automation and Tools Team",
     author_email="tools@lists.mozilla.org",
     url="http://github.com/mozilla/mozregression",
-    license="MPL 1.1/GPL 2.0/LGPL 2.1",
+    license="MPL 2.0",
     packages=["mozregression"],
     entry_points="""
           [console_scripts]
@@ -47,6 +47,7 @@ setup(
     setup_requires=["setuptools_scm"],
     install_requires=DEPENDENCIES,
     classifiers=[
+        "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
         "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
         "Intended Audience :: Developers",

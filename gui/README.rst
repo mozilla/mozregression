@@ -29,12 +29,14 @@ Install with virtualenvwrapper: ::
 
    mkvirtualenv -p /usr/bin/python3 mozregression
    pip install -r requirements/all.txt
+   pip install -e .
 
 Or with virtualenv: ::
 
    virtualenv --system-site-packages -p /usr/bin/python3 venv
    source venv/bin/activate
    pip install -r requirements/all.txt
+   pip install -e .
 
 Launching the application
 -------------------------

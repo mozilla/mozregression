@@ -138,6 +138,9 @@
    <addaction name="actionStop_the_bisection"/>
   </widget>
   <widget class="QDockWidget" name="logDockWidget">
+   <property name="features">
+    <set>QDockWidget::NoDockWidgetFeatures</set>
+   </property>
    <property name="windowTitle">
     <string>Log</string>
    </property>

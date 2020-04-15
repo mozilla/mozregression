@@ -36,22 +36,25 @@ if IS_MAC:
             a.scripts,
             [],
             exclude_binaries=True,
-            name='mozregression-gui',
+            name='mozregression GUI',
             debug=False,
             bootloader_ignore_signals=False,
             strip=False,
             upx=False,
-            console=False,
-            icon='wininst/app_icon.ico')
+            console=False)
     app = BUNDLE(exe,
                 a.binaries,
                 a.zipfiles,
                 a.datas,
                 strip=False,
                 upx=True,
-                name='mozregression-gui.app',
+                name='mozregression GUI.app',
                 icon='icons/app_icon.icns',
-                bundle_identifier=None)
+                bundle_identifier=None,
+                info_plist={
+                    'NSPrincipalClass': 'NSApplication',
+                    'NSHighResolutionCapable': 'True'
+                })
 else:
     exe = EXE(pyz,
             a.scripts,

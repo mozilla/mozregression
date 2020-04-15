@@ -33,7 +33,7 @@ Section
 
     # copy files and icon
     createDirectory "$INSTDIR"
-    File /r "..\dist\"
+    File /r "..\dist\mozregression-gui\"
     File "${APPICON}"
 
     # create the uninstaller

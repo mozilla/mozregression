@@ -1,4 +1,0 @@
-# *just* the dependencies required for the console version of
-# mozregression (compatible with older versions of python)
--r base.txt
--r dev.txt

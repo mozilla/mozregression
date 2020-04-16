@@ -159,8 +159,9 @@ importlib-metadata==1.6.0 \
     --hash=sha256:2a688cbaa90e0cc587f1df48bdc97a6eadccdcd9c35fb3f976a09e3b5016d90f \
     --hash=sha256:34513a8a0c4962bc66d35b359558fd8a5e10cd472d37aec5f66858addef32c1e \
     # via jsonschema, pluggy, pytest
-inflection==0.3.1 \
-    --hash=sha256:18ea7fb7a7d152853386523def08736aa8c32636b047ade55f7578c4edeb16ca \
+inflection==0.4.0 \
+    --hash=sha256:9a15d3598f01220e93f2207c432cfede50daff53137ce660fb8be838ef1ca6cc \
+    --hash=sha256:32a5c3341d9583ec319548b9015b7fbdf8c429cbcb575d326c33ae3a0e90d52c \
     # via glean-sdk
 iso8601==0.1.12 \
     --hash=sha256:210e0134677cc0d02f6028087fee1df1e1d76d372ee1db0bf30bf66c5c1c89a3 \

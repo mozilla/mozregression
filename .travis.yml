@@ -82,13 +82,3 @@ deploy:
       condition:
         - $TRAVIS_OS_NAME == linux
         - $NEVER_TRUE == 1
-
-  - provider: pypi
-    user: "__token__"
-    skip_existing: true
-    on:
-      tags: true
-      condition:
-        - $TRAVIS_OS_NAME == linux
-    password:
-      secure: LKl8MN+aroqUhczAHVEm1oTKrBzDJ9QxO443vSkbA7zT7+n7LzXaBf7XIJefsMmNW/f5RsbJxXGKs5CCGCHy1CDv4nEYbbobvPSts6Qs2xpakaBjVk35DFCUNAd/UlsFNHBexFu80QpGdP7Z8qhwamHDc4KHtHYTKz95infDnW8=

@@ -16,8 +16,8 @@ class CheckReleaseThread(QThread):
 
     def run(self):
         data = retry_get(self.GITHUB_LATEST_RELEASE_URL).json()
-        self.tag_name = data["tag_name"]
-        self.release_url = data["html_url"]
+        self.tag_name = data.get("tag_name")
+        self.release_url = data.get("html_url")
 
 
 class CheckRelease(QObject):
@@ -37,6 +37,11 @@ class CheckRelease(QObject):
 
     @Slot()
     def on_release_found(self):
+        if not self.thread.tag_name or not self.thread.release_url:
+            # could not find a release, silently return -- presumably
+            # a temporary issue
+            return
+
         release_name = self.thread.tag_name
         if release_name == mozregression_version:
             return

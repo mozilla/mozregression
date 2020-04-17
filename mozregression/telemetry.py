@@ -38,6 +38,15 @@ def send_telemetry_ping(variant, appname):
     _send_telemetry_ping(variant, appname)
 
 
+def _send_telemetry_ping_oop(variant, appname, upload_enabled):
+    initialize_telemetry(upload_enabled)
+    if upload_enabled:
+        _send_telemetry_ping(variant, appname)
+        # we sleep to give glean's async machinery a chance to
+        # submit the ping
+        time.sleep(1)
+
+
 def send_telemetry_ping_oop(variant, appname, upload_enabled):
     """
     This somewhat convoluted function forks off a process (using
@@ -46,14 +55,5 @@ def send_telemetry_ping_oop(variant, appname, upload_enabled):
     call mozregression inside a process which is itself using
     Glean for other purposes (e.g. mach)
     """
-
-    def _send_telemetry_ping_oop(variant, appname, upload_enabled):
-        initialize_telemetry(upload_enabled)
-        if upload_enabled:
-            _send_telemetry_ping(variant, appname)
-            # we sleep to give glean's async machinery a chance to
-            # submit the ping
-            time.sleep(1)
-
     p = Process(target=_send_telemetry_ping_oop, args=(variant, appname, upload_enabled))
     p.start()

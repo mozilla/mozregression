@@ -1,6 +1,7 @@
 import sys
 
 from mozlog.structuredlog import StructuredLogger, set_default_logger
+from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QApplication
 
 from .check_release import CheckRelease
@@ -17,6 +18,10 @@ def main():
     log_model = LogModel()
     logger.add_handler(log_model)
     argv = [sys.argv[0].replace("mozregression-gui.py", "mozregression")] + sys.argv[1:]
+
+    # enable hi-dpi scaling
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+
     app = QApplication(argv)
     crash_reporter = CrashReporter(app)
     crash_reporter.install()

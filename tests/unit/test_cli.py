@@ -110,8 +110,8 @@ class TestCli(unittest.TestCase):
         )
 
 
-def do_cli(*argv):
-    conf = cli.cli(argv, conf_file=None)
+def do_cli(*argv, conf_file=None):
+    conf = cli.cli(argv, conf_file=conf_file)
     conf.validate()
     return conf
 
@@ -159,6 +159,8 @@ def test_no_args(os, bits, default_good_date):
         assert config.action == "bisect_nightlies"
         assert config.options.good == default_good_date
         assert config.options.bad == datetime.date.today()
+        # telemetry is by default enabled
+        assert config.enable_telemetry
 
 
 TODAY = datetime.date.today()
@@ -361,3 +363,13 @@ def test_get_default_date_range(app, os, bits, processor, build_type, expected_r
         fetch_config.set_build_type(build_type)
 
     assert expected_range == cli.get_default_date_range(fetch_config)
+
+
+@pytest.mark.parametrize("enable_telemetry", (True, False))
+def test_telemetry(enable_telemetry):
+    with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
+        f.write("enable-telemetry = %s\n" % ("yes" if enable_telemetry else "no"))
+        f.close()
+        config = do_cli(conf_file=f.name)
+        assert config.enable_telemetry is enable_telemetry
+        os.unlink(f.name)

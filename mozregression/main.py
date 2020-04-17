@@ -333,7 +333,7 @@ def main(
 
         app = Application(config.fetch_config, config.options)
         send_telemetry_ping_oop(
-            mozregression_variant, config.fetch_config.app_name, config.options.enable_telemetry
+            mozregression_variant, config.fetch_config.app_name, config.enable_telemetry
         )
 
         method = getattr(app, config.action)

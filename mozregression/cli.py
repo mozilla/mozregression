@@ -462,7 +462,7 @@ def get_default_date_range(fetch_config):
 
 class Configuration(object):
     """
-    Holds the configuration extracted from the command line.
+    Holds the configuration extracted from the command line + configuration file.
 
     This is usually instantiated by calling :func:`cli`.
 
@@ -479,7 +479,7 @@ class Configuration(object):
                         information about a build
     """
 
-    def __init__(self, options):
+    def __init__(self, options, config):
         self.options = options
         self.logger = init_logger(debug=options.debug)
         # allow to filter process output based on the user option
@@ -500,6 +500,8 @@ class Configuration(object):
         get_default_logger("mozversion").component_filter = lambda data: (
             None if re_ignore_mozversion_line.match(data["message"]) else data
         )
+
+        self.enable_telemetry = config["enable-telemetry"] not in ("no", "false", 0)
 
         self.action = None
         self.fetch_config = None
@@ -639,7 +641,6 @@ def cli(argv=None, conf_file=DEFAULT_CONF_FNAME, namespace=None):
         options = namespace
     else:
         options = parse_args(argv=argv, defaults=config)
-        options.enable_telemetry = defaults["enable-telemetry"] not in ("no", "false", 0)
         if not options.cmdargs:
             # we don't set the cmdargs default to be that from the
             # configuration file, because then any new arguments
@@ -656,4 +657,4 @@ def cli(argv=None, conf_file=DEFAULT_CONF_FNAME, namespace=None):
         )
         print("*" * 10)
         print()
-    return Configuration(options)
+    return Configuration(options, config)

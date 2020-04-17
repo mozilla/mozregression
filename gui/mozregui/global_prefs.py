@@ -4,7 +4,7 @@ from configobj import ConfigObj
 from glean import Glean
 from PySide2.QtWidgets import QDialog
 
-from mozregression.config import ARCHIVE_BASE_URL, DEFAULT_CONF_FNAME, get_defaults
+from mozregression.config import ARCHIVE_BASE_URL, DEFAULT_CONF_FNAME, get_config
 from mozregression.network import set_http_session
 from mozregui.ui.global_prefs import Ui_GlobalPrefs
 
@@ -13,7 +13,7 @@ def get_prefs():
     """
     Return the global prefs as a dict.
     """
-    settings = get_defaults(DEFAULT_CONF_FNAME)
+    settings = get_config(DEFAULT_CONF_FNAME)
     options = dict()
     options["persist"] = settings["persist"]
     options["http_timeout"] = float(settings["http-timeout"])

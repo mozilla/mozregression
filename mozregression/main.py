@@ -305,7 +305,9 @@ def check_mozregression_version():
         )
 
 
-def main(argv=None, namespace=None, check_new_version=True, mozregression_variant="console"):
+def main(
+    argv=None, namespace=None, check_new_version=True, mozregression_variant="console",
+):
     """
     main entry point of mozregression command line.
     """

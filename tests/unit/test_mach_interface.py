@@ -27,8 +27,8 @@ def test_new_release_on_pypi(mocker, pypi_version, result):
 def test_parser(mocker):
     defaults = dict(DEFAULTS)
     defaults.update({"persist": "stuff"})
-    get_defaults = mocker.patch("mozregression.mach_interface.get_defaults")
-    get_defaults.return_value = defaults
+    get_config = mocker.patch("mozregression.mach_interface.get_config")
+    get_config.return_value = defaults
     p = parser()
     assert isinstance(p, ArgumentParser)
     options = p.parse_args(["--persist-size-limit=1"])

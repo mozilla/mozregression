@@ -4,7 +4,7 @@ import json
 
 from taskcluster import utils as tc_utils
 
-from mozregression.config import DEFAULT_CONF_FNAME, TC_CREDENTIALS_FNAME, get_defaults
+from mozregression.config import DEFAULT_CONF_FNAME, TC_CREDENTIALS_FNAME, get_config
 
 
 def tc_authenticate(logger):
@@ -12,7 +12,7 @@ def tc_authenticate(logger):
     Returns valid credentials for use with Taskcluster private builds.
     """
     # first, try to load credentials from mozregression config file
-    defaults = get_defaults(DEFAULT_CONF_FNAME)
+    defaults = get_config(DEFAULT_CONF_FNAME)
     client_id = defaults.get("taskcluster-clientid")
     access_token = defaults.get("taskcluster-accesstoken")
     if client_id and access_token:

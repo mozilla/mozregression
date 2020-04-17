@@ -281,10 +281,10 @@ def test_write_confif(mocker):
     out = []
     stdout = mocker.patch("sys.stdout")
     stdout.write = out.append
-    write_conf = mocker.patch("mozregression.cli.write_conf")
+    write_config = mocker.patch("mozregression.cli.write_config")
     with pytest.raises(SystemExit):
         do_cli("--write-conf")
-    assert len(write_conf.mock_calls) == 1
+    assert len(write_config.mock_calls) == 1
 
 
 def test_warning_no_conf(mocker):

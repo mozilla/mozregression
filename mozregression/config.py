@@ -56,18 +56,18 @@ DEFAULTS = {
 }
 
 
-def get_defaults(conf_path):
+def get_config(conf_path):
     """
     Get custom defaults from configuration file in argument.
     """
-    defaults = dict(DEFAULTS)
+    config = dict(DEFAULTS)
     try:
-        config = ConfigObj(conf_path)
+        config_obj = ConfigObj(conf_path)
     except ParseError as exc:
         raise MozRegressionError("Error while reading the config file %s:\n  %s" % (conf_path, exc))
-    defaults.update(config)
+    config.update(config_obj)
 
-    return defaults
+    return config
 
 
 def _get_persist_dir(default):
@@ -137,7 +137,7 @@ CONF_HELP = """\
 """
 
 
-def write_conf(conf_path):
+def write_config(conf_path):
     conf_dir = os.path.dirname(conf_path)
     if not os.path.isdir(conf_dir):
         os.makedirs(conf_dir)

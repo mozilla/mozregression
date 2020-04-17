@@ -11,7 +11,7 @@ from argparse import Namespace
 
 from mozregression import __version__
 from mozregression.cli import create_parser
-from mozregression.config import DEFAULT_CONF_FNAME, get_defaults
+from mozregression.config import DEFAULT_CONF_FNAME, get_config
 from mozregression.main import main, pypi_latest_version
 
 
@@ -33,7 +33,7 @@ def parser():
     """
     Create and returns the mozregression ArgumentParser instance.
     """
-    defaults = get_defaults(DEFAULT_CONF_FNAME)
+    defaults = get_config(DEFAULT_CONF_FNAME)
     return create_parser(defaults=defaults)
 
 

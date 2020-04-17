@@ -19,7 +19,7 @@ from mozlog.structuredlog import get_default_logger
 
 from mozregression import __version__
 from mozregression.branches import get_name
-from mozregression.config import DEFAULT_CONF_FNAME, get_defaults, write_conf
+from mozregression.config import DEFAULT_CONF_FNAME, get_config, write_config
 from mozregression.dates import is_date_or_datetime, parse_date, to_datetime
 from mozregression.errors import DateFormatError, MozRegressionError, UnavailableRelease
 from mozregression.fetch_configs import REGISTRY as FC_REGISTRY
@@ -52,7 +52,7 @@ class ListReleasesAction(_StopAction):
 
 class WriteConfigAction(_StopAction):
     def __call__(self, parser, namespace, values, option_string=None):
-        write_conf(DEFAULT_CONF_FNAME)
+        write_config(DEFAULT_CONF_FNAME)
         parser.exit()
 
 
@@ -634,17 +634,17 @@ def cli(argv=None, conf_file=DEFAULT_CONF_FNAME, namespace=None):
     if namespace is given, it will be used as a arg parsing result, so no
     arg parsing will be done.
     """
+    config = get_config(conf_file)
     if namespace:
         options = namespace
     else:
-        defaults = get_defaults(conf_file)
-        options = parse_args(argv=argv, defaults=defaults)
+        options = parse_args(argv=argv, defaults=config)
         options.enable_telemetry = defaults["enable-telemetry"] not in ("no", "false", 0)
         if not options.cmdargs:
             # we don't set the cmdargs default to be that from the
             # configuration file, because then any new arguments
             # will be appended: https://bugs.python.org/issue16399
-            options.cmdargs = defaults["cmdargs"]
+            options.cmdargs = config["cmdargs"]
     if conf_file and not os.path.isfile(conf_file):
         print("*" * 10)
         print(

@@ -1,0 +1,6 @@
+exclude .coveragerc .gitignore .linter-files .travis.yml CODE_OF_CONDUCT.md appveyor.yml setup.cfg
+recursive-exclude bin *
+recursive-exclude docs *
+recursive-exclude tests *
+recursive-exclude gui *
+recursive-exclude requirements *

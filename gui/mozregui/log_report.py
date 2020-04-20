@@ -79,15 +79,13 @@ class LogView(QPlainTextEdit):
     def on_log_filter(self):
         log_lvl_name = str(self.sender().iconText()).upper()
         self.log_lvl = log_levels[log_lvl_name]
-        cursor = QTextCursor(self.document())
-        current_block = cursor.block()
-        while current_block.isValid() and current_block.userData():
-            block_log_lvl = current_block.userData().log_lvl
-            if block_log_lvl <= self.log_lvl:
-                current_block.setVisible(True)
-            else:
-                current_block.setVisible(False)
-            current_block = next(current_block)
+        it = self.document().begin()
+        while it != self.document().end():
+            userdata = it.userData()
+            if userdata:
+                block_log_lvl = userdata.log_lvl
+                it.setVisible(block_log_lvl <= self.log_lvl)
+            it = it.next()
         self.viewport().update()
 
 

@@ -32,7 +32,7 @@ class LogView(QPlainTextEdit):
         for action in self.actions:
             action.setCheckable(True)
             action.triggered.connect(self.on_log_filter)
-        self.actions[0].setChecked(True)
+        self.actions[1].setChecked(True)
 
         self.customContextMenuRequested.connect(self.on_custom_context_menu_requested)
 

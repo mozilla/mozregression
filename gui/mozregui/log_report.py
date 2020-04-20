@@ -27,10 +27,7 @@ class LogView(QPlainTextEdit):
         self.setMaximumBlockCount(1000)
 
         self.group = QActionGroup(self)
-        self.actions = [
-            QAction(log_lvl, self.group)
-            for log_lvl in ["Debug", "Info", "Warning", "Error", "Critical"]
-        ]
+        self.actions = [QAction(log_lvl, self.group) for log_lvl in ["Debug", "Info"]]
 
         for action in self.actions:
             action.setCheckable(True)

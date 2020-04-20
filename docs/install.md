@@ -15,8 +15,16 @@ For the graphical interface, we provide a simple installation process:
   Download the latest **mozregression-gui.exe** file from the
   [github releases]. Once the file is downloaded double-click on it and
   follow the installation process.
+- **Mac**:
+  Download the latest **mozregression-gui.dmg** file from the
+  [github releases]. Once the file is downloaded, click on it and drag
+  the "mozregression GUI" icon to "Applications". Note that on recent
+  versions of MacOS X you will need to [override the setting that disallows
+  installing applications from unidentified developers](https://support.apple.com/en-ca/guide/mac-help/mh40616/mac) since at present we do not sign mozregression (see
+  [bug 1366570]).
 
-Note that currently only Windows builds of the GUI are provided.
+At present there is no version of the GUI for Linux, please see [bug 1581643]
+for status on changing this.
 
 ## mozregression
 
@@ -25,5 +33,6 @@ package installable via [pip]. You can find it on pypi, as
 [mozregression](https://pypi.org/project/mozregression/)
 
 [github releases]: https://github.com/mozilla/mozregression/releases
-[from github]: https://github.com/mozilla/mozregression/blob/master/gui/README.rst
+[bug 1366570]: https://bugzilla.mozilla.org/show_bug.cgi?id=1366570
+[bug 1581643]: https://bugzilla.mozilla.org/show_bug.cgi?id=1581643
 [pip]: https://pypi.org/project/pip/

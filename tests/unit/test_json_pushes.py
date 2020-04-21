@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-import sys
 from datetime import date, datetime
 
 import pytest
@@ -50,7 +49,6 @@ def test_push_nothing_found(mocker):
         jpushes.push("invalid_changeset")
 
 
-@pytest.mark.skipif(sys.version_info < (3, 0), reason="fails on python 2 for some unknown reason")
 def test_pushes_within_changes(mocker):
     push_first = {"1": {"changesets": ["a"]}}
     other_pushes = {"2": {"changesets": ["b"]}, "3": {"changesets": ["c"]}}

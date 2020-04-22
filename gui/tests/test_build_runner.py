@@ -1,5 +1,4 @@
 import os
-import shutil
 import tempfile
 import time
 import unittest
@@ -11,8 +10,6 @@ from PySide2.QtCore import QObject, QThread, Signal, Slot
 from mozregression.fetch_configs import create_config
 from mozregression.persist_limit import PersistLimit
 from mozregui import build_runner
-
-from . import wait_signal
 
 
 @pytest.fixture(autouse=True)
@@ -38,40 +35,6 @@ def mock_response(response, data, wait=0):
 
     response.headers = {"Content-length": str(len(data))}
     response.iter_content = iter_content
-
-
-class TestGuiBuildDownloadManager(unittest.TestCase):
-    def setUp(self):
-        self.session, self.session_response = mock_session()
-        tmpdir = tempfile.mkdtemp()
-        tpersist = PersistLimit(10 * 1073741824)
-        self.addCleanup(shutil.rmtree, tmpdir)
-        self.dl_manager = build_runner.GuiBuildDownloadManager(tmpdir, tpersist)
-        self.dl_manager.session = self.session
-        self.signals = {}
-        for sig in ("download_progress", "download_started", "download_finished"):
-            self.signals[sig] = Mock()
-            getattr(self.dl_manager, sig).connect(self.signals[sig])
-
-    @patch("mozregui.build_runner.GuiBuildDownloadManager._extract_download_info")
-    def test_focus_download(self, extract_info):
-        extract_info.return_value = ("http://foo", "foo")
-        mock_response(self.session_response, b"this is some data" * 10000, 0.01)
-        build_info = Mock()
-
-        with wait_signal(self.dl_manager.download_finished):
-            self.dl_manager.focus_download(build_info)
-
-        # build_path is defined
-        self.assertEqual(build_info.build_file, self.dl_manager.get_dest("foo"))
-
-        # signals have been emitted
-        self.assertEqual(self.signals["download_started"].call_count, 1)
-        self.assertEqual(self.signals["download_finished"].call_count, 1)
-        self.assertGreater(self.signals["download_progress"].call_count, 0)
-
-        # well, file has been downloaded finally
-        self.assertTrue(os.path.isfile(build_info.build_file))
 
 
 class TestGuiTestRunner(unittest.TestCase):
@@ -106,6 +69,42 @@ class TestGuiTestRunner(unittest.TestCase):
         self.assertEqual(self.evaluate_finished.call_count, 1)
         # verdict is defined, launcher is None
         self.assertEqual(self.test_runner.verdict, "g")
+
+
+@pytest.fixture()
+def mock_extract_info():
+    with patch("mozregui.build_runner.GuiBuildDownloadManager._extract_download_info") as p:
+        yield p
+
+
+def test_gui_build_download_manager_focus_download(qtbot, mock_extract_info):
+    session, session_response = mock_session()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tpersist = PersistLimit(10 * 1073741824)
+        dl_manager = build_runner.GuiBuildDownloadManager(tmpdir, tpersist)
+        dl_manager.session = session
+        signals = {}
+        for sig in ("download_progress", "download_started", "download_finished"):
+            signals[sig] = Mock()
+            getattr(dl_manager, sig).connect(signals[sig])
+
+        mock_extract_info.return_value = ("http://foo", "foo")
+        mock_response(session_response, b"this is some data" * 10000, 0.01)
+        build_info = Mock()
+
+        with qtbot.waitSignal(dl_manager.download_finished, raising=True):
+            dl_manager.focus_download(build_info)
+
+        # build_path is defined
+        assert build_info.build_file == dl_manager.get_dest("foo")
+
+        # signals have been emitted
+        assert signals["download_started"].call_count == 1
+        assert signals["download_finished"].call_count == 1
+        assert signals["download_progress"].call_count == 12
+
+        # well, file has been downloaded finally
+        assert os.path.isfile(build_info.build_file)
 
 
 def test_abstract_build_runner(qtbot):

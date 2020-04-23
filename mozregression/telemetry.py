@@ -1,4 +1,3 @@
-import time
 from multiprocessing import Process
 from pathlib import Path
 
@@ -13,13 +12,13 @@ PINGS = load_pings(resource_filename(__name__, "pings.yaml"))
 METRICS = load_metrics(resource_filename(__name__, "metrics.yaml"))
 
 
-def initialize_telemetry(upload_enabled):
+def initialize_telemetry(upload_enabled, allow_multiprocessing=False):
     mozregression_path = Path.home() / ".mozilla" / "mozregression"
     Glean.initialize(
         application_id="org.mozilla.mozregression",
         application_version=__version__,
         upload_enabled=upload_enabled,
-        configuration=Configuration(allow_multiprocessing=False),
+        configuration=Configuration(allow_multiprocessing=allow_multiprocessing),
         data_dir=mozregression_path / "data",
     )
 
@@ -31,16 +30,14 @@ def _send_telemetry_ping(variant, appname):
 
 
 def send_telemetry_ping(variant, appname):
+    LOG.debug("Sending usage ping")
     _send_telemetry_ping(variant, appname)
 
 
 def _send_telemetry_ping_oop(variant, appname, upload_enabled):
-    initialize_telemetry(upload_enabled)
+    initialize_telemetry(upload_enabled, allow_multiprocessing=True)
     if upload_enabled:
         _send_telemetry_ping(variant, appname)
-        # we sleep to give glean's async machinery a chance to
-        # submit the ping
-        time.sleep(1)
 
 
 def send_telemetry_ping_oop(variant, appname, upload_enabled):
@@ -51,5 +48,6 @@ def send_telemetry_ping_oop(variant, appname, upload_enabled):
     call mozregression inside a process which is itself using
     Glean for other purposes (e.g. mach)
     """
+    LOG.debug("Sending usage ping (OOP)")
     p = Process(target=_send_telemetry_ping_oop, args=(variant, appname, upload_enabled))
     p.start()

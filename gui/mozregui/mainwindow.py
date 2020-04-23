@@ -65,7 +65,8 @@ class MainWindow(QMainWindow):
 
         self.read_settings()
 
-        initialize_telemetry(get_prefs()["enable_telemetry"])
+        # get weird behaviour if we enable multiprocessing on pyinstaller builds of the GUI
+        initialize_telemetry(get_prefs()["enable_telemetry"], allow_multiprocessing=False)
 
         # Make sure the toolbar and logviews are visible (in case
         # the user manually turned them off in a previous release

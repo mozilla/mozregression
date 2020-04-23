@@ -156,15 +156,15 @@ flake8==3.7.9 \
 future==0.18.2 \
     --hash=sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d \
     # via pefile
-glean-parser==1.21.0 \
-    --hash=sha256:bdd64f4024c4363d195149022195a4eafe710aa9b2fdd563eb4d03b1ac0b195e \
-    --hash=sha256:3e86163ed700154ba4c27c7a661b65065c8a76e520b922ac013632a42e295d32 \
+glean-parser==1.20.4 \
+    --hash=sha256:8f3461cb9de523a464e1e915e892ee2e6eee9f51a306c9f3a08ec140a5c55855 \
+    --hash=sha256:d15a77ead6e39835a490009c47b4a71a1a6b5edbd21d8228ff97b34080900bc7 \
     # via glean-sdk
-glean-sdk==27.1.0 \
-    --hash=sha256:125d9ade182e006054f00bc27b4c4382ff63e150f8f8bd1e55b6169c1f47d6f4 \
-    --hash=sha256:3a228fa103185d711f6d33c586c95bfb1902ab56abf145ef0e162d2a7b5fd9e5 \
-    --hash=sha256:59851f6d217d8b72ce2fc369999f7ed3b4839eaa0dc31d34cec32652df1ab8c6 \
-    --hash=sha256:8f86ec03ff768d848be26801de007fb224f1ba5f07c855faf5049cbaadedd278 \
+glean_sdk==30.1.0 \
+    --hash=sha256:27f9f1387aa2271031a09e7abf727a7951529f2d1b00f20e8845fe9e3b732232 \
+    --hash=sha256:5a575424b2cf87e479ad282fa5bd6f7bccb3c6c5ccf0aa00ea9c2efc306db66d \
+    --hash=sha256:5bcb426b975e21c4a67a7f492445e42b49c29883452f3435ed7649ec63c8afef \
+    --hash=sha256:7561263640fad5ce22eadae524dadcd3f4d2a8fa5167ce3382511f27bae300a6 \
     # via -r base.in
 idna==2.9 \
     --hash=sha256:7588d1c14ae4c77d74036e8c22ff447b26d0fde8f007354fd48a7814db15b7cb \
@@ -174,10 +174,6 @@ importlib-metadata==1.6.0 \
     --hash=sha256:2a688cbaa90e0cc587f1df48bdc97a6eadccdcd9c35fb3f976a09e3b5016d90f \
     --hash=sha256:34513a8a0c4962bc66d35b359558fd8a5e10cd472d37aec5f66858addef32c1e \
     # via jsonschema, pluggy, pytest
-inflection==0.4.0 \
-    --hash=sha256:9a15d3598f01220e93f2207c432cfede50daff53137ce660fb8be838ef1ca6cc \
-    --hash=sha256:32a5c3341d9583ec319548b9015b7fbdf8c429cbcb575d326c33ae3a0e90d52c \
-    # via glean-sdk
 iso8601==0.1.12 \
     --hash=sha256:210e0134677cc0d02f6028087fee1df1e1d76d372ee1db0bf30bf66c5c1c89a3 \
     --hash=sha256:49c4b20e1f38aa5cf109ddcd39647ac419f928512c869dc01d5c7098eddede82 \
@@ -233,7 +229,7 @@ markupsafe==1.1.1 \
     --hash=sha256:cdb132fc825c38e1aeec2c8aa9338310d29d337bebbd7baa06889d09a60a1fa2 \
     --hash=sha256:e249096428b3ae81b08327a63a485ad0878de3fb939049038579ac0ef61e17e7 \
     --hash=sha256:e8313f01ba26fbbe36c7be1966a7b7424942f670f38e666995b88d012765b9be \
-    # via glean-parser, jinja2
+    # via jinja2
 mccabe==0.6.1 \
     --hash=sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42 \
     --hash=sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f \
@@ -513,7 +509,7 @@ yarl==1.4.2 \
 zipp==1.2.0 \
     --hash=sha256:c70410551488251b0fee67b460fb9a536af8d6f9f008ad10ac51f615b6a521b1 \
     --hash=sha256:e0d9e63797e483a30d27e09fffd308c59a700d365ec34e93cc100844168bf921 \
-    # via glean-parser, importlib-metadata
+    # via importlib-metadata
 
 # WARNING: The following packages were not pinned, but pip requires them to be
 # pinned when the requirements file includes hashes. Consider using the --allow-unsafe flag.

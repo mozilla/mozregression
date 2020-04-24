@@ -134,9 +134,9 @@ distro==1.5.0 \
     --hash=sha256:df74eed763e18d10d0da624258524ae80486432cd17392d9c3d96f5e83cd2799 \
     --hash=sha256:0e58756ae38fbd8fc3020d54badb8eae17c5b9dcbed388b17bb55b8a5928df92 \
     # via mozinfo
-glean-parser==1.20.1 \
-    --hash=sha256:d1c8644a4803efd456cbc27edd23f5dccfb80af917b68ccdc22dcd71f0d9756e \
-    --hash=sha256:8767f14d4dc6c56ca2a7bb0bf329e7dda1cffd92fa9fccbf5aa9224a460beadb \
+glean-parser==1.20.2 \
+    --hash=sha256:eaa18a0a8b41c58df202a403b9c46165560186fcb544fec6f584293a486b78ab \
+    --hash=sha256:53fe34c5a16bedf75a512cdf894efc2d7d1b4a51f063bb2d755327513180bbd2 \
     # via glean-sdk
 glean-sdk==27.1.0 \
     --hash=sha256:125d9ade182e006054f00bc27b4c4382ff63e150f8f8bd1e55b6169c1f47d6f4 \

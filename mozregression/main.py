@@ -133,11 +133,12 @@ class Application(object):
         if result == Bisection.FINISHED:
             LOG.info("Got as far as we can go bisecting nightlies...")
             handler.print_range()
-            LOG.info("Switching bisection method to taskcluster")
-            self.fetch_config.set_repo(self.fetch_config.get_nightly_repo(handler.bad_date))
-            return self._bisect_integration(
-                handler.good_revision, handler.bad_revision, expand=DEFAULT_EXPAND
-            )
+            if self.fetch_config.can_go_integration():
+                LOG.info("Switching bisection method to taskcluster")
+                self.fetch_config.set_repo(self.fetch_config.get_nightly_repo(handler.bad_date))
+                return self._bisect_integration(
+                    handler.good_revision, handler.bad_revision, expand=DEFAULT_EXPAND
+                )
         elif result == Bisection.USER_EXIT:
             self._print_resume_info(handler)
         else:

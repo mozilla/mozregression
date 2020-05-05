@@ -135,6 +135,18 @@ class CommonConfig(object):
             + r"\.txt$"
         )
 
+    def is_nightly(self):
+        """
+        Returns True if the configuration can be used for nightly fetching.
+        """
+        return isinstance(self, NightlyConfigMixin)
+
+    def is_integration(self):
+        """
+        Returns True if the configuration can be used for integration fetching.
+        """
+        return isinstance(self, IntegrationConfigMixin)
+
     def available_bits(self):
         """
         Returns the no. of bits of the OS for which the application should
@@ -274,6 +286,12 @@ class NightlyConfigMixin(metaclass=ABCMeta):
                 repo,
             )
         return r"^%04d-%02d-%02d-[\d-]+%s/$" % (date.year, date.month, date.day, repo)
+
+    def can_go_integration(self):
+        """
+        Indicate if we can bisect integration from this nightly config.
+        """
+        return self.is_integration()
 
 
 class FirefoxNightlyConfigMixin(NightlyConfigMixin):

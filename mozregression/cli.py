@@ -587,7 +587,7 @@ class Configuration(object):
         if options.bits == 32 and mozinfo.os == "mac":
             self.logger.info("only 64-bit builds available for mac, using " "64-bit builds")
 
-        if fetch_config.tk_needs_auth():
+        if fetch_config.is_integration() and fetch_config.tk_needs_auth():
             creds = tc_authenticate(self.logger)
             fetch_config.set_tk_credentials(creds)
 
@@ -638,6 +638,13 @@ class Configuration(object):
                     )
                 if fetch_config.should_use_archive():
                     self.action = "bisect_nightlies"
+        if (
+            self.action in ("launch_integration", "bisect_integration")
+            and not fetch_config.is_integration()
+        ):
+            raise MozRegressionError(
+                "Unable to bisect integration for `%s`" % fetch_config.app_name
+            )
         options.preferences = preferences(options.prefs_files, options.prefs, self.logger)
         # convert GiB to bytes.
         options.persist_size_limit = int(abs(float(options.persist_size_limit)) * 1073741824)

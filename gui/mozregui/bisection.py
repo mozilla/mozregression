@@ -290,7 +290,7 @@ class BisectRunner(AbstractBuildRunner):
             dialog = QMessageBox.critical
         else:
             fetch_config = self.worker.fetch_config
-            if not getattr(bisection, "no_more_merge", False):
+            if fetch_config.can_go_integration() and not getattr(bisection, "no_more_merge", False):
                 if isinstance(bisection.handler, NightlyHandler):
                     handler = bisection.handler
                     fetch_config.set_repo(fetch_config.get_nightly_repo(handler.bad_date))

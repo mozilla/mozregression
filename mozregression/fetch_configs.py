@@ -412,8 +412,12 @@ class FennecIntegrationConfigMixin(IntegrationConfigMixin):
             elif push.timestamp >= TIMESTAMP_FENNEC_API_15:
                 tk_name = "android-api-15"
         for build_type in self.build_types:
-            yield "gecko.v2.{}.revision.{}.mobile.{}-{}".format(
-                self.integration_branch, push.changeset, tk_name, build_type
+            yield "gecko.v2.{}{}.revision.{}.mobile.{}-{}".format(
+                self.integration_branch,
+                ".shippable" if build_type == "shippable" else "",
+                push.changeset,
+                tk_name,
+                "opt" if build_type == "shippable" else build_type,
             )
             self._inc_used_build()
             return
@@ -492,7 +496,11 @@ class ThunderbirdConfig(
 
 @REGISTRY.register("fennec")
 class FennecConfig(CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConfigMixin):
-    BUILD_TYPES = ("opt", "debug")
+    BUILD_TYPES = ("shippable", "opt", "pgo", "debug")
+    BUILD_TYPE_FALLBACKS = {
+        "shippable": ("opt", "pgo"),
+        "opt": ("shippable", "pgo"),
+    }
 
     def build_regex(self):
         return r"(target|fennec-.*)\.apk"

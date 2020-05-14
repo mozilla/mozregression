@@ -1,3 +1,5 @@
+from packaging import version
+
 from PySide2.QtCore import QObject, Qt, QThread, QUrl, Slot
 from PySide2.QtGui import QDesktopServices
 from PySide2.QtWidgets import QLabel
@@ -43,7 +45,7 @@ class CheckRelease(QObject):
             return
 
         release_name = self.thread.tag_name
-        if release_name == mozregression_version:
+        if version.parse(release_name) <= version.parse(mozregression_version):
             return
 
         self.label.setText(

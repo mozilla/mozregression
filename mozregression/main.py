@@ -13,6 +13,7 @@ import colorama
 import mozfile
 import requests
 from mozlog import get_proxy_logger
+from packaging import version
 from requests.exceptions import HTTPError, RequestException
 
 from mozregression import __version__
@@ -288,15 +289,15 @@ def pypi_latest_version():
 
 def check_mozregression_version():
     try:
-        mozregression_version = pypi_latest_version()
+        pypi_version = pypi_latest_version()
     except (RequestException, KeyError, ValueError):
         LOG.critical("Unable to get latest version from pypi.")
         return
 
-    if __version__ != mozregression_version:
+    if version.parse(__version__) < version.parse(pypi_version):
         LOG.warning(
             "You are using mozregression version %s, "
-            "however version %s is available." % (__version__, mozregression_version)
+            "however version %s is available." % (__version__, pypi_version)
         )
 
         LOG.warning(

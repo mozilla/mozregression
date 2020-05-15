@@ -93,10 +93,11 @@ class CommonConfig(object):
     BUILD_TYPE_FALLBACKS = {}
     app_name = None
 
-    def __init__(self, os, bits, processor):
+    def __init__(self, os, bits, processor, arch):
         self.os = os
         self.bits = bits
         self.processor = processor
+        self.arch = arch
         self.repo = None
         self.set_build_type("opt")
         self._used_build_index = 0
@@ -437,7 +438,7 @@ class ThunderbirdIntegrationConfigMixin(IntegrationConfigMixin):
 REGISTRY = ClassRegistry("app_name")
 
 
-def create_config(name, os, bits, processor):
+def create_config(name, os, bits, processor, arch=None):
     """
     Create and returns a configuration for the given name.
 
@@ -445,10 +446,13 @@ def create_config(name, os, bits, processor):
     :param os: os name, e.g 'linux', 'win' or 'mac'
     :param bits: the bit of the os as an int, e.g 32 or 64. Can be None
                  if the bits do not make sense (e.g. fennec)
-    :param processor: processor family, e.g 'x86', 'x86_86', 'ppc', 'ppc64' or
+    :param processor: processor family, e.g 'x86', 'x86_64', 'ppc', 'ppc64' or
                       'aarch64'
+    :param arch: architecture of the target build. e.g. From a linux64 machine
+                 you can run an ARM GVE build (default) or an x86_64 build,
+                 this is controlled by the arch parameter.
     """
-    return REGISTRY.get(name)(os, bits, processor)
+    return REGISTRY.get(name)(os, bits, processor, arch)
 
 
 @REGISTRY.register("firefox")
@@ -466,8 +470,8 @@ class FirefoxConfig(CommonConfig, FirefoxNightlyConfigMixin, FirefoxIntegrationC
         "opt": ("shippable", "pgo"),
     }
 
-    def __init__(self, os, bits, processor):
-        super(FirefoxConfig, self).__init__(os, bits, processor)
+    def __init__(self, os, bits, processor, arch):
+        super(FirefoxConfig, self).__init__(os, bits, processor, arch)
         self.set_build_type("shippable")
 
     def build_regex(self):
@@ -507,6 +511,11 @@ class FennecConfig(CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConf
 @REGISTRY.register("gve")
 class GeckoViewExampleConfig(CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConfigMixin):
     BUILD_TYPES = ("opt", "debug")
+
+    def __init__(self, os, bits, processor, arch):
+        super(GeckoViewExampleConfig, self).__init__(os, bits, processor, arch)
+        if arch == "x86_64":
+            self.tk_name = "android-x86_64"
 
     def build_regex(self):
         return r"geckoview_example\.apk"

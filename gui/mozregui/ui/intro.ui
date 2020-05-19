@@ -35,20 +35,30 @@
     <widget class="QComboBox" name="bits_combo"/>
    </item>
    <item row="2" column="0">
+    <widget class="QLabel" name="arch_label">
+     <property name="text">
+      <string>Build architecture</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QComboBox" name="arch_combo"/>
+   </item>
+   <item row="3" column="0">
     <widget class="QLabel" name="label_5">
      <property name="text">
       <string>Build Type</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
+   <item row="3" column="1">
     <widget class="QComboBox" name="build_type">
      <property name="toolTip">
       <string>Choose a build type you want.</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
+   <item row="4" column="0">
     <widget class="QLabel" name="label_3">
      <property name="toolTip">
       <string>you can choose a specific repository name here</string>
@@ -58,7 +68,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
+   <item row="4" column="1">
     <widget class="QLineEdit" name="repository">
      <property name="toolTip">
       <string>repository like mozilla-inbound|mozilla-beta|...</string>
@@ -68,7 +78,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="0">
+   <item row="5" column="0">
     <widget class="QLabel" name="url_label">
      <property name="toolTip">
       <string>enter a URL to pass to the app</string>
@@ -78,7 +88,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
+   <item row="5" column="1">
     <widget class="QLineEdit" name="url">
      <property name="toolTip">
       <string>URL such as example.org, https://mozilla.org, about:logo</string>

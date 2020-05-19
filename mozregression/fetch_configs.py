@@ -97,7 +97,7 @@ class CommonConfig(object):
         self.os = os
         self.bits = bits
         self.processor = processor
-        self.arch = arch
+        self.set_arch(arch)
         self.repo = None
         self.set_build_type("opt")
         self._used_build_index = 0
@@ -143,6 +143,18 @@ class CommonConfig(object):
         run.
         """
         return (32, 64)
+
+    def available_archs(self):
+        """
+        Returns the available architectures for this application.
+        """
+        return []
+
+    def set_arch(self, arch):
+        """
+        Set the target build architecture for the application.
+        """
+        self.arch = arch
 
     def available_build_types(self):
         res = []
@@ -512,11 +524,6 @@ class FennecConfig(CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConf
 class GeckoViewExampleConfig(CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConfigMixin):
     BUILD_TYPES = ("opt", "debug")
 
-    def __init__(self, os, bits, processor, arch):
-        super(GeckoViewExampleConfig, self).__init__(os, bits, processor, arch)
-        if arch == "x86_64":
-            self.tk_name = "android-x86_64"
-
     def build_regex(self):
         return r"geckoview_example\.apk"
 
@@ -525,6 +532,15 @@ class GeckoViewExampleConfig(CommonConfig, FennecNightlyConfigMixin, FennecInteg
 
     def available_bits(self):
         return ()
+
+    def available_archs(self):
+        return ["arm", "x86_64"]
+
+    def set_arch(self, arch):
+        if arch == "x86_64":
+            self.tk_name = "android-x86_64"
+        else:
+            self.tk_name = "android-api-11"
 
     def should_use_archive(self):
         # GVE is not on archive.mozilla.org, only on taskcluster

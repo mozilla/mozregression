@@ -1,15 +1,21 @@
+image: Visual Studio 2019
 build: false
 environment:
   NSIS_ROOT: C:\nsis
   matrix:
-    - PYTHON: "C:\\Python37"
+    - PYTHON: "C:\\Python38"
 init:
   - "ECHO %PYTHON%"
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
 install:
   # install mozregression code and test dependencies
+  - "pip install virtualenv"
+  - "virtualenv ."
+  - "Scripts\\activate.bat"
   - "pip install -r requirements\\all.txt"
   - "pip install -e ."
+  - "pip install pywin32"
+  - "pywin32_postinstall.py -install"
 test_script:
   # bundle the application
   - "python gui\\build.py bundle --nsis-path \"C:\\Program Files (x86)\\NSIS\""

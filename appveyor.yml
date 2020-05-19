@@ -10,7 +10,7 @@ install:
   # install mozregression code and test dependencies
   - "pip install virtualenv"
   - "virtualenv ."
-  - "Scripts\activate.bat"
+  - "Scripts\\activate.bat"
   - "pip install -r requirements\\all.txt"
   - "pip install -e ."
   - "pip install pywin32"

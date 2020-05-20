@@ -33,7 +33,11 @@ matrix:
         - python3 gui/build.py bundle
     - name: gui-macosx
       os: osx
-      osx_image: xcode11.3
+      osx_image: xcode6.4
+      addons:
+        homebrew:
+          packages:
+          - python@3.8
       language: shell
       before_install:
         - python3 --version

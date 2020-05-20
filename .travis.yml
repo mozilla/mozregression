@@ -33,7 +33,7 @@ matrix:
         - python3 gui/build.py bundle
     - name: gui-macosx
       os: osx
-      osx_image: xcode8
+      osx_image: xcode9.2
       addons:
         homebrew:
           packages:

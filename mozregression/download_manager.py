@@ -266,9 +266,12 @@ class DownloadManager(object):
         """
         Wait for all downloads to be finished.
         """
-        downloads = self._downloads.values()
-        for download in downloads:
-            download.wait(raise_if_error=raise_if_error)
+        # downloads can get removed from _downloads on completion during
+        # iteration so we can't use a live iterator, hence the list().
+        for download_key in list(self._downloads.keys()):
+            download = self._downloads.get(download_key)
+            if download:
+                download.wait(raise_if_error=raise_if_error)
 
     def download(self, url, fname, progress=None):
         """

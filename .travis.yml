@@ -33,7 +33,8 @@ matrix:
         - python3 gui/build.py bundle
     - name: gui-macosx
       os: osx
-      osx_image: xcode11.3
+      # this is the oldest version of Mac (10.13) that seems to work
+      osx_image: xcode10.1
       language: shell
       before_install:
         - python3 --version

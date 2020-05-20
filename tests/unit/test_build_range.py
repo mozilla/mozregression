@@ -242,17 +242,15 @@ def test_get_integration_range_with_dates(mocker, start_date, end_date, start_ca
 def test_get_nightly_range():
     fetch_config = create_config("firefox", "linux", 64, "x86_64")
 
-    b_range = build_range.get_nightly_range(
-        fetch_config, date(2015, 0o1, 0o1), date(2015, 0o1, 0o3)
-    )
+    b_range = build_range.get_nightly_range(fetch_config, date(2015, 1, 1), date(2015, 1, 3))
 
     assert isinstance(b_range, build_range.BuildRange)
     assert len(b_range) == 3
 
     b_range.build_info_fetcher.find_build_info = lambda v: v
-    assert b_range[0] == date(2015, 0o1, 0o1)
-    assert b_range[1] == date(2015, 0o1, 0o2)
-    assert b_range[2] == date(2015, 0o1, 0o3)
+    assert b_range[0] == date(2015, 1, 1)
+    assert b_range[1] == date(2015, 1, 2)
+    assert b_range[2] == date(2015, 1, 3)
 
 
 @pytest.mark.parametrize(

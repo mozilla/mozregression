@@ -88,13 +88,13 @@ class TestNightlyInfoFetcher(unittest.TestCase):
             "foo",
             "bar/",
         ]
-        urls = self.info_fetcher._get_urls(datetime.date(2014, 11, 0o1))
+        urls = self.info_fetcher._get_urls(datetime.date(2014, 11, 1))
         self.assertEqual(
             urls[0],
             fetch_configs.ARCHIVE_BASE_URL
             + "/firefox/nightly/2014/11/2014-11-01-03-02-05-mozilla-central/",
         )
-        urls = self.info_fetcher._get_urls(datetime.date(2014, 11, 0o2))
+        urls = self.info_fetcher._get_urls(datetime.date(2014, 11, 2))
         self.assertEqual(urls, [])
 
     def test_find_build_info(self):

@@ -98,7 +98,7 @@ def test_app_bisect_nightlies_finished(create_app, mocker):
     nh = Mock(bad_date=date.today(), good_revision="c1", bad_revision="c2")
     NightlyHandler.return_value = nh
     assert app.bisect_nightlies() == 0
-    app.bisector.bisect.assert_called_once_with(ANY, date(2015, 0o6, 0o1), date(2015, 0o6, 0o2))
+    app.bisector.bisect.assert_called_once_with(ANY, date(2015, 6, 1), date(2015, 6, 2))
     assert create_app.find_in_log("Got as far as we can go bisecting nightlies...")
     app._bisect_integration.assert_called_once_with("c1", "c2", expand=config.DEFAULT_EXPAND)
 

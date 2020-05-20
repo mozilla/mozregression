@@ -267,6 +267,13 @@ def create_parser(defaults):
     )
 
     parser.add_argument(
+        "--arch",
+        choices=("arm", "x86_64"),
+        default=None,
+        help=("Force x86_64 build (only applies to GVE app). Default: arm"),
+    )
+
+    parser.add_argument(
         "-c",
         "--command",
         help=(
@@ -550,7 +557,14 @@ class Configuration(object):
 
         user_defined_bits = options.bits is not None
         options.bits = parse_bits(options.bits or mozinfo.bits)
-        fetch_config = create_config(options.app, mozinfo.os, options.bits, mozinfo.processor)
+        if options.arch is not None:
+            if options.app != "gve":
+                self.logger.warning("--arch ignored for non-GVE app.")
+                options.arch = None
+
+        fetch_config = create_config(
+            options.app, mozinfo.os, options.bits, mozinfo.processor, options.arch
+        )
         if options.build_type:
             try:
                 fetch_config.set_build_type(options.build_type)

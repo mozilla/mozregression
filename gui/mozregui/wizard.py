@@ -59,6 +59,7 @@ class IntroPage(WizardPage):
         "application": "app_combo",
         "repository": "repository",
         "bits": "bits_combo",
+        "arch": "arch_combo",
         "build_type": "build_type",
         "url": "url",
     }
@@ -82,6 +83,7 @@ class IntroPage(WizardPage):
             bits_index = 0
         self.ui.bits_combo.setModel(self.bits_model)
         self.ui.bits_combo.setCurrentIndex(bits_index)
+        self.arch_model = QStringListModel()
         self.build_type_model = QStringListModel()
 
         self.ui.app_combo.currentIndexChanged.connect(self._set_fetch_config)
@@ -117,6 +119,15 @@ class IntroPage(WizardPage):
         bits = int(self.ui.bits_combo.currentText())
 
         self.fetch_config = create_config(app_name, mozinfo.os, bits, mozinfo.processor)
+
+        self.arch_model = QStringListModel(self.fetch_config.available_archs())
+        self.ui.arch_combo.setModel(self.arch_model)
+        if not self.arch_model.stringList():
+            self.ui.arch_label.hide()
+            self.ui.arch_combo.hide()
+        else:
+            self.ui.arch_label.show()
+            self.ui.arch_combo.show()
 
         self.build_type_model = QStringListModel(self.fetch_config.available_build_types())
         self.ui.build_type.setModel(self.build_type_model)
@@ -265,6 +276,8 @@ class Wizard(QWizard):
 
         fetch_config = self.page(self.pageIds()[0]).fetch_config
         fetch_config.set_repo(options["repository"])
+        if options["arch"]:
+            fetch_config.set_arch(options["arch"])
         fetch_config.set_build_type(options["build_type"])
 
         # create a profile if required

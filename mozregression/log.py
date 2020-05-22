@@ -4,6 +4,7 @@ Logging and outputting configuration and utilities.
 
 from __future__ import absolute_import
 
+import logging
 import sys
 import time
 
@@ -20,6 +21,22 @@ def _format_seconds(total):
     """Format number of seconds to MM:SS.DD form."""
     minutes, seconds = divmod(total, 60)
     return "%2d:%05.2f" % (minutes, seconds)
+
+
+def init_python_redirect_logger(logger):
+    """Create a pipe to the main log, at debug level
+
+    This is so we can see logs from third party libraries (like Glean)
+    """
+
+    class RedirectHandler(logging.StreamHandler):
+        def emit(self, record):
+            logger.debug("{}: {}".format(record.name, str(record.msg) % record.args))
+
+    rh = RedirectHandler()
+    rh.setLevel(logging.DEBUG)
+    logging.root.addHandler(rh)
+    logging.root.setLevel(logging.DEBUG)
 
 
 def init_logger(debug=True, allow_color=ALLOW_COLOR, output=None):
@@ -55,6 +72,8 @@ def init_logger(debug=True, allow_color=ALLOW_COLOR, output=None):
     logger = StructuredLogger("mozregression")
     handler = LogLevelFilter(StreamHandler(output, format_log), "debug" if debug else "info")
     logger.add_handler(handler)
+
+    init_python_redirect_logger(logger)
 
     set_default_logger(logger)
     return logger

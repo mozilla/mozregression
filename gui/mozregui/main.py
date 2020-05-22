@@ -4,6 +4,8 @@ from mozlog.structuredlog import StructuredLogger, set_default_logger
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QApplication
 
+from mozregression.log import init_python_redirect_logger
+
 from .check_release import CheckRelease
 from .crash_reporter import CrashReporter
 from .global_prefs import set_default_prefs
@@ -13,7 +15,9 @@ from .mainwindow import MainWindow
 
 def main():
     logger = StructuredLogger("mozregression-gui")
+    init_python_redirect_logger(logger)
     set_default_logger(logger)
+
     # Create a Qt application
     log_model = LogModel()
     logger.add_handler(log_model)

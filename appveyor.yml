@@ -9,6 +9,7 @@ init:
 install:
   # install mozregression code and test dependencies
   - "pip install -r requirements\\all.txt"
+  - "pip install pypiwin32"
   - "pip install -e ."
 test_script:
   # bundle the application

@@ -1,6 +1,3 @@
-import six
-
-
 class ClassRegistry(object):
     """
     A registry to store classes identified by a unique name.
@@ -27,7 +24,7 @@ class ClassRegistry(object):
         def wrapper(klass):
             self._classes[name] = klass
             setattr(klass, self.attr_name, attr_value or name)
-            for key, value in six.iteritems(kwargs):
+            for key, value in kwargs.items():
                 setattr(klass, key, value)
             return klass
 
@@ -49,7 +46,7 @@ class ClassRegistry(object):
         """
         names = sorted(self._classes)
         if predicate:
-            for name, klass in six.iteritems(self._classes):
+            for name, klass in self._classes.items():
                 if not predicate(klass):
                     names.remove(name)
         return names

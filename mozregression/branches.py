@@ -7,7 +7,6 @@ from __future__ import absolute_import
 import re
 from collections import defaultdict
 
-import six
 from mozlog import get_proxy_logger
 
 from mozregression.errors import MozRegressionError
@@ -49,7 +48,7 @@ class Branches(object):
 
     def get_category(self, branch_name_or_alias):
         name = self.get_name(branch_name_or_alias)
-        for cat, names in six.iteritems(self._categories):
+        for cat, names in self._categories.items():
             if name in names:
                 return cat
 

@@ -9,7 +9,6 @@ import sys
 import time
 
 import mozinfo
-import six
 from colorama import Back, Fore, Style
 from mozlog.handlers import LogLevelFilter, StreamHandler
 from mozlog.structuredlog import StructuredLogger, set_default_logger
@@ -83,7 +82,7 @@ COLORS = {}
 NO_COLORS = {}
 
 for prefix, st in (("b", Back), ("s", Style), ("f", Fore)):
-    for name, value in six.iteritems(st.__dict__):
+    for name, value in st.__dict__.items():
         COLORS[prefix + name] = value
         NO_COLORS[prefix + name] = ""
 

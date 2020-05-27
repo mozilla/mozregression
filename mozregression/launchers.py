@@ -17,7 +17,6 @@ from threading import Thread
 import mozinfo
 import mozinstall
 import mozversion
-import six
 from mozdevice import ADBAndroid, ADBError, ADBHost
 from mozfile import remove
 from mozlog.structured import get_default_logger, get_proxy_logger
@@ -57,7 +56,7 @@ class Launcher(metaclass=ABCMeta):
         except Exception as e:
             msg = "Unable to install {} (error: {})".format(dest, e)
             LOG.error(msg)
-            six.reraise(LauncherError, LauncherError(msg), sys.exc_info()[2])
+            raise LauncherError(msg).with_traceback(sys.exc_info()[2])
 
     def start(self, **kwargs):
         """
@@ -69,7 +68,7 @@ class Launcher(metaclass=ABCMeta):
             except Exception as e:
                 msg = "Unable to start the application (error: {})".format(e)
                 LOG.error(msg)
-                six.reraise(LauncherError, LauncherError(msg), sys.exc_info()[2])
+                raise LauncherError(msg).with_traceback(sys.exc_info()[2])
             self._running = True
 
     def wait(self):
@@ -93,7 +92,7 @@ class Launcher(metaclass=ABCMeta):
             except Exception as e:
                 msg = "Unable to stop the application (error: {})".format(e)
                 LOG.error(msg)
-                six.reraise(LauncherError, LauncherError(msg), sys.exc_info()[2])
+                raise LauncherError(msg).with_traceback(sys.exc_info()[2])
             self._running = False
             self._stopping = False
 

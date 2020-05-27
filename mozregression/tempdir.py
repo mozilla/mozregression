@@ -3,8 +3,6 @@ from __future__ import absolute_import
 import os
 import tempfile
 
-import six
-
 
 def safe_mkdtemp():
     """
@@ -19,7 +17,7 @@ def safe_mkdtemp():
         BUFFER_SIZE = 500
         buffer = create_unicode_buffer(BUFFER_SIZE)
         get_long_path_name = windll.kernel32.GetLongPathNameW
-        get_long_path_name(six.text_type(tempdir), buffer, BUFFER_SIZE)
+        get_long_path_name(str(tempdir), buffer, BUFFER_SIZE)
         return buffer.value
     else:
         return tempdir

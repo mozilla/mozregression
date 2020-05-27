@@ -8,7 +8,6 @@ import re
 
 import redo
 import requests
-import six
 from bs4 import BeautifulSoup
 
 
@@ -83,7 +82,7 @@ def url_links(url, regex=None, auth=None):
     soup = BeautifulSoup(response.text, features="html.parser")
 
     if regex:
-        if isinstance(regex, six.string_types):
+        if isinstance(regex, str):
             regex = re.compile(regex)
         match = regex.match
     else:

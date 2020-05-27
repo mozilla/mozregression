@@ -25,8 +25,6 @@ import datetime
 import re
 from abc import ABCMeta, abstractmethod
 
-import six
-
 from mozregression import branches, errors
 from mozregression.class_registry import ClassRegistry
 from mozregression.config import ARCHIVE_BASE_URL
@@ -208,7 +206,7 @@ class CommonConfig(object):
         )
 
 
-class NightlyConfigMixin(six.with_metaclass(ABCMeta)):
+class NightlyConfigMixin(metaclass=ABCMeta):
     """
     Define the nightly-related required configuration to find nightly builds.
 
@@ -327,7 +325,7 @@ class FennecNightlyConfigMixin(NightlyConfigMixin):
         return self._get_nightly_repo_regex(date, repo)
 
 
-class IntegrationConfigMixin(six.with_metaclass(ABCMeta)):
+class IntegrationConfigMixin(metaclass=ABCMeta):
     """
     Define the integration-related required configuration.
     """

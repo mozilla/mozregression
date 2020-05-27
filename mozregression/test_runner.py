@@ -11,7 +11,6 @@ import shlex
 import subprocess
 from abc import ABCMeta, abstractmethod
 
-import six
 from mozlog import get_proxy_logger
 
 from mozregression.errors import LauncherError, TestCommandError
@@ -36,7 +35,7 @@ def create_launcher(build_info):
     return mozlauncher(build_info)
 
 
-class TestRunner(six.with_metaclass(ABCMeta)):
+class TestRunner(metaclass=ABCMeta):
     """
     Abstract class that allows to test a build.
 

@@ -15,5 +15,4 @@ redo
 requests
 setuptools
 setuptools_scm
-six
 taskcluster

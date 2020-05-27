@@ -51,7 +51,7 @@ def set_http_session(session=None, get_defaults=None):
         _get = session.get
 
         def _default_get(*args, **kwargs):
-            for k, v in six.iteritems(get_defaults):
+            for k, v in get_defaults.items():
                 kwargs.setdefault(k, v)
             return _get(*args, **kwargs)
 

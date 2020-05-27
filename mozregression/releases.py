@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import re
 from datetime import date
 
-import six
 from six.moves import filter, map
 
 from mozregression.errors import UnavailableRelease
@@ -139,7 +138,7 @@ def formatted_valid_release_dates():
     the valid release dates.
     """
     message = "Valid releases: \n"
-    for key, value in six.iteritems(releases()):
+    for key, value in releases().items():
         message += "% 3s: %s\n" % (key, value)
 
     return message

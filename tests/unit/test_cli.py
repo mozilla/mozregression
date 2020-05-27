@@ -6,7 +6,6 @@ import tempfile
 import unittest
 
 import pytest
-import six
 from mock import patch
 from mozlog import get_default_logger
 
@@ -90,7 +89,7 @@ class TestCli(unittest.TestCase):
             "bits": "64",
         }
 
-        content = ["%s=%s\n" % (key, value) for key, value in six.iteritems(valid_values)]
+        content = ["%s=%s\n" % (key, value) for key, value in valid_values.items()]
         filepath = self._create_conf_file("\n".join(content))
 
         options = cli.cli(["--bits=32"], conf_file=filepath).options

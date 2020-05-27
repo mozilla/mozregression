@@ -10,7 +10,6 @@ import datetime
 from threading import Thread
 
 from mozlog import get_proxy_logger
-from six.moves import range
 
 from mozregression.dates import is_date_or_datetime, to_date, to_datetime
 from mozregression.errors import BuildInfoNotFound

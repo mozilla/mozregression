@@ -3,7 +3,6 @@ from __future__ import absolute_import
 from datetime import date, datetime, timedelta
 
 import pytest
-from six.moves import range
 
 from mozregression import build_range
 from mozregression.errors import BuildInfoNotFound

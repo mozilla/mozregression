@@ -4,7 +4,6 @@ import datetime
 import unittest
 
 from mock import MagicMock, Mock, call, patch
-from six.moves import range
 
 from mozregression import build_range
 from mozregression.bisector import (

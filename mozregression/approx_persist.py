@@ -2,8 +2,6 @@ from __future__ import absolute_import
 
 import re
 
-from six.moves import range
-
 
 class ApproxPersistChooser(object):
     """

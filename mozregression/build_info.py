@@ -5,8 +5,7 @@ from __future__ import absolute_import
 
 import datetime
 import re
-
-from six.moves.urllib.parse import urlparse
+from urllib.parse import urlparse
 
 FIELDS = []
 

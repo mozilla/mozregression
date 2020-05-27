@@ -9,7 +9,6 @@ from datetime import datetime
 
 import mozinfo
 from configobj import ConfigObj, ParseError
-from six.moves import input
 
 from mozregression.errors import MozRegressionError
 from mozregression.log import colorize

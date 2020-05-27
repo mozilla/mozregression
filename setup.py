@@ -18,7 +18,6 @@ DEPENDENCIES = [
     "mozversion>=2.1.0",
     "redo>=2.0.2",
     "requests>=2.21.0",
-    "six>=1.12.0",
     "taskcluster>=6.0.0",
 ]
 

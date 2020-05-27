@@ -5,7 +5,6 @@ import os
 import threading
 from abc import ABCMeta, abstractmethod
 
-import six
 from mozlog import get_proxy_logger
 
 from mozregression.branches import find_branch_in_merge_commit, get_name
@@ -29,7 +28,7 @@ def compute_steps_left(steps):
     return math.trunc(math.log(steps, 2))
 
 
-class BisectorHandler(six.with_metaclass(ABCMeta)):
+class BisectorHandler(metaclass=ABCMeta):
     """
     React to events of a :class:`Bisector`. This is intended to be subclassed.
 

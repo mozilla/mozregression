@@ -31,7 +31,7 @@ from mozregression.tempdir import safe_mkdtemp
 LOG = get_proxy_logger("Test Runner")
 
 
-class Launcher(six.with_metaclass(ABCMeta)):
+class Launcher(metaclass=ABCMeta):
     """
     Handle the logic of downloading a build file, installing and
     running an application.

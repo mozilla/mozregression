@@ -5,7 +5,6 @@ import unittest
 
 import pytest
 from mock import Mock, patch
-from six.moves import range
 
 from mozregression import build_info, errors, test_runner
 

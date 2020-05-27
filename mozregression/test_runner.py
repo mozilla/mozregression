@@ -13,7 +13,6 @@ from abc import ABCMeta, abstractmethod
 
 import six
 from mozlog import get_proxy_logger
-from six.moves import input, range
 
 from mozregression.errors import LauncherError, TestCommandError
 from mozregression.launchers import create_launcher as mozlauncher

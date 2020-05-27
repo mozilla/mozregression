@@ -7,7 +7,6 @@ from datetime import date
 import pytest
 import requests
 from mock import ANY, MagicMock, Mock, call, patch
-from six.moves import range
 
 from mozregression import __version__, config, errors, main
 from mozregression.bisector import Bisection, Bisector, IntegrationHandler, NightlyHandler

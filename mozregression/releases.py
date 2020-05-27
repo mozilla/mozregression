@@ -3,8 +3,6 @@ from __future__ import absolute_import
 import re
 from datetime import date
 
-from six.moves import filter, map
-
 from mozregression.errors import UnavailableRelease
 from mozregression.network import retry_get
 

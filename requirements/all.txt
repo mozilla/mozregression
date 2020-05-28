@@ -419,13 +419,13 @@ setuptools-scm==3.5.0 \
     --hash=sha256:0d23db3d43e0a43eb7196bcf0eb8a4a2eb0561f621ed7ec44b2fdccfd907e38f \
     --hash=sha256:5bdf21a05792903cafe7ae0c9501182ab52497614fa6b1750d9dbae7b60c1a87 \
     # via -r base.in
-shiboken2==5.14.2.1 \
-    --hash=sha256:d285d476a76f254bff69cc58c1d4385df295b42de1a818d4a8d11694c2d728fc \
-    --hash=sha256:73d03e74f542204e351539e42ab3e3727a69408e1497af4c6e84fb66c3e706d8 \
-    --hash=sha256:16b59490228bf923ea7c8ed6edcb4f7349ce5a5fc30369190c41487baf6d4aaa \
-    --hash=sha256:cd6ba0ba0d070c8ec090ad3eb10440989f7e5a4404c6b087f8f695a75a01e1dc \
-    --hash=sha256:fe4d0cf6737f1d01944be4cf3b401d74015c515ab84622bf04f47d64ffcd39f9 \
-    --hash=sha256:c022203b7cf01df6ad0bb190d286c2965958243a16e47bee8c5e6bbb9d0cd475 \
+shiboken2==5.15.0 \
+    --hash=sha256:0826ce788fe55bce19a8f8a2c33d720a6ba8f59e1aab1fa9d7a53eceed3f3af5 \
+    --hash=sha256:a92c55363d5cd3cfdd6cd28dcf91e81a00a3aa5bb177d712817c09d26bd760db \
+    --hash=sha256:41a9157fb9cc7e0c0747926b25c23c3f94d59d61736a6ff763ebc7acf6afc5cf \
+    --hash=sha256:5702e77ad5999ac45498c3cd47f5d078ce7406cf8dc8df74337b0cdc084bf762 \
+    --hash=sha256:4b0904e0967356a36e80cde05981faa14c120141856d973ee983eac0b83633c0 \
+    --hash=sha256:19d5f715e5ae8a815a7f148a8614a3225dceee6fd9d5decaa7749657f0f7ccbe \
     # via pyside2
 six==1.15.0 \
     --hash=sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced \

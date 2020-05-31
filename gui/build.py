@@ -95,7 +95,7 @@ def do_bundle(options):
         )
     else:
         with tarfile.open("mozregression-gui.tar.gz", "w:gz") as tar:
-            tar.add(r"dist/")
+            tar.add(r"dist/mozregression-gui", arcname="mozregression-gui")
 
 
 def parse_args():

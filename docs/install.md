@@ -22,9 +22,15 @@ For the graphical interface, we provide a simple installation process:
   versions of MacOS X you will need to [override the setting that disallows
   installing applications from unidentified developers](https://support.apple.com/en-ca/guide/mac-help/mh40616/mac) since at present we do not sign mozregression (see
   [bug 1366570]).
+- **Linux**:
+  Download the latest **mozregression-gui.tar.gz** file from the
+  [github releases]. Once the file is downloaded, extract it and run the
+  `mozregression-gui` file in the `mozregression-gui` directory.  Example:
 
-At present there is no version of the GUI for Linux, please see [bug 1581643]
-for status on changing this.
+  ```sh
+  tar xf mozregression-gui.tar.gz
+  mozregression-gui/mozregression-gui
+  ```
 
 ## mozregression
 

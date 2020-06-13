@@ -12,6 +12,7 @@ from mozregression.fetch_configs import (
     TIMESTAMP_FENNEC_API_15,
     TIMESTAMP_FENNEC_API_16,
     FirefoxConfig,
+    FirefoxL10nConfig,
     create_config,
     errors,
     get_build_regex,
@@ -112,6 +113,44 @@ class TestFirefoxConfigMac(TestFirefoxConfigLinux64):
     os = "mac"
     build_examples = ["firefox-38.0a1.en-US.mac.dmg"]
     build_info_examples = ["firefox-38.0a1.en-US.mac.txt"]
+
+
+class TestFirefoxl10nConfig(unittest.TestCase):
+    app_name = "firefox-l10n"
+    os = "linux"
+    bits = 64
+    processor = "x86_64"
+    lang = "ar"
+
+    instance_type = FirefoxL10nConfig
+
+    build_examples = ["firefox-38.0a1.ar.linux-x86_64.tar.bz2"]
+    build_info_examples = ["firefox-38.0a1.en-US.linux-x86_64.txt"]
+
+    def setUp(self):
+        self.conf = create_config(self.app_name, self.os, self.bits, self.processor)
+        self.conf.set_lang(self.lang)
+
+    def test_instance(self):
+        self.assertIsInstance(self.conf, self.instance_type)
+
+    def test_build_regex(self):
+        for example in self.build_examples:
+            res = re.match(self.conf.build_regex(), example)
+            self.assertIsNotNone(res)
+
+    def test_build_info_regex(self):
+        for example in self.build_info_examples:
+            res = re.match(self.conf.build_info_regex(), example)
+            self.assertIsNotNone(res)
+
+    def test_nightly_repo_regex(self):
+        repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2016, 1, 1))
+        self.assertEqual(repo_regex, "/2016-01-01-[\\d-]+mozilla-central-l10n/$")
+
+    def test_nightly_repo_regex_before_2005_10_19(self):
+        with self.assertRaises(errors.MozRegressionError):
+            self.conf.get_nightly_repo_regex(datetime.date(2005, 9, 7))
 
 
 class TestThunderbirdConfig(unittest.TestCase):

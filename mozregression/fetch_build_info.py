@@ -38,6 +38,7 @@ class InfoFetcher(object):
         self.build_info_regex = re.compile(fetch_config.build_info_regex())
 
     def _update_build_info_from_txt(self, build_info):
+        LOG.debug("Update build info from {}".format(build_info))
         if "build_txt_url" in build_info:
             build_info.update(self._fetch_txt_info(build_info["build_txt_url"]))
 
@@ -48,6 +49,7 @@ class InfoFetcher(object):
         Returns a dict with keys repository and changeset if information
         is found.
         """
+        LOG.debug("Fetching txt info from {}".format(url))
         data = {}
         response = retry_get(url)
         for line in response.text.splitlines():
@@ -192,10 +194,14 @@ class NightlyInfoFetcher(InfoFetcher):
         build_url and build_txt_url if respectively a build file and a
         build info file are found for the url.
         """
+        LOG.debug("Fetching build info from {}".format(url))
         data = {}
         if not url.endswith("/"):
             url += "/"
-        for link in url_links(url):
+        links = url_links(url)
+        if not self.fetch_config.has_build_info:
+            links += url_links(self.fetch_config.get_nightly_info_url(url))
+        for link in links:
             if "build_url" not in data and self.build_regex.search(link):
                 data["build_url"] = link
             elif "build_txt_url" not in data and self.build_info_regex.search(link):
@@ -225,6 +231,7 @@ class NightlyInfoFetcher(InfoFetcher):
         This methods needs to be thread-safe as it is used in
         :meth:`NightlyBuildData.get_build_url`.
         """
+        LOG.debug("Get URLs for {}".format(date))
         url = self.fetch_config.get_nightly_base_url(date)
         link_regex = re.compile(self.fetch_config.get_nightly_repo_regex(date))
 

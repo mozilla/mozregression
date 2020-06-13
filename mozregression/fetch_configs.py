@@ -25,10 +25,14 @@ import datetime
 import re
 from abc import ABCMeta, abstractmethod
 
+from mozlog import get_proxy_logger
+
 from mozregression import branches, errors
 from mozregression.class_registry import ClassRegistry
 from mozregression.config import ARCHIVE_BASE_URL
 from mozregression.dates import to_utc_timestamp
+
+LOG = get_proxy_logger(__name__)
 
 # switch from fennec api-11 to api-15 on taskcluster
 # appeared on this date for m-c.
@@ -238,6 +242,7 @@ class NightlyConfigMixin(metaclass=ABCMeta):
     archive_base_url = ARCHIVE_BASE_URL
     nightly_base_repo_name = "firefox"
     nightly_repo = None
+    has_build_info = True
 
     def set_base_url(self, url):
         self.archive_base_url = url.rstrip("/")
@@ -252,6 +257,12 @@ class NightlyConfigMixin(metaclass=ABCMeta):
             date.year,
             date.month,
         )
+
+    def get_nightly_info_url(self, url):
+        """
+        Returns the url for the folder to find the build info .txt
+        """
+        return url
 
     def get_nightly_repo(self, date):
         """
@@ -301,6 +312,22 @@ class FirefoxNightlyConfigMixin(NightlyConfigMixin):
             return "trunk"
         else:
             return "mozilla-central"
+
+
+class FirefoxL10nNightlyConfigMixin(NightlyConfigMixin):
+    has_build_info = False
+    oldest_builds = datetime.date(2015, 10, 19)
+
+    def _get_nightly_repo(self, date):
+        if date < self.oldest_builds:
+            raise errors.MozRegressionError(
+                "firefox-l10n builds not available before {}".format(self.oldest_builds)
+            )
+        else:
+            return "mozilla-central-l10n"
+
+    def get_nightly_info_url(self, url):
+        return url.replace("-l10n/", "/")
 
 
 class ThunderbirdNightlyConfigMixin(NightlyConfigMixin):
@@ -515,6 +542,25 @@ class FirefoxConfig(CommonConfig, FirefoxNightlyConfigMixin, FirefoxIntegrationC
                 self.bits,
                 self.processor,
                 platsuffix="-asan-reporter" if "asan" in self.build_type else "",
+            )
+            + "$"
+        )
+
+
+@REGISTRY.register("firefox-l10n", attr_value="firefox")
+class FirefoxL10nConfig(CommonConfig, FirefoxL10nNightlyConfigMixin):
+    def set_lang(self, lang):
+        LOG.info("setting lang to {}".format(lang))
+        self.lang = lang
+
+    def build_regex(self):
+        return (
+            get_build_regex(
+                self.app_name,
+                self.os,
+                self.bits,
+                self.processor,
+                platprefix=r".*\." + self.lang + r"\.",
             )
             + "$"
         )

@@ -65,21 +65,21 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
 
     def test_nightly_repo_regex(self):
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008, 6, 15))
-        self.assertEqual(repo_regex, "^2008-06-15-[\\d-]+trunk/$")
+        self.assertEqual(repo_regex, "/2008-06-15-[\\d-]+trunk/$")
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008, 6, 27))
-        self.assertEqual(repo_regex, "^2008-06-27-[\\d-]+mozilla-central/$")
+        self.assertEqual(repo_regex, "/2008-06-27-[\\d-]+mozilla-central/$")
         # test with a datetime instance (buildid)
         repo_regex = self.conf.get_nightly_repo_regex(datetime.datetime(2015, 11, 27, 6, 5, 58))
-        self.assertEqual(repo_regex, "^2015-11-27-06-05-58-mozilla-central/$")
+        self.assertEqual(repo_regex, "/2015-11-27-06-05-58-mozilla-central/$")
 
     def test_set_repo(self):
         self.conf.set_repo("foo-bar")
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008, 6, 27))
-        self.assertEqual(repo_regex, "^2008-06-27-[\\d-]+foo-bar/$")
+        self.assertEqual(repo_regex, "/2008-06-27-[\\d-]+foo-bar/$")
         # with a value of None, default is applied
         self.conf.set_repo(None)
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008, 6, 27))
-        self.assertEqual(repo_regex, "^2008-06-27-[\\d-]+mozilla-central/$")
+        self.assertEqual(repo_regex, "/2008-06-27-[\\d-]+mozilla-central/$")
 
 
 class TestFirefoxConfigLinux32(TestFirefoxConfigLinux64):
@@ -124,19 +124,19 @@ class TestThunderbirdConfig(unittest.TestCase):
 
     def test_nightly_repo_regex_before_2008_07_26(self):
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008, 7, 25))
-        self.assertEqual(repo_regex, "^2008-07-25-[\\d-]+trunk/$")
+        self.assertEqual(repo_regex, "/2008-07-25-[\\d-]+trunk/$")
 
     def test_nightly_repo_regex_before_2009_01_09(self):
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2009, 1, 8))
-        self.assertEqual(repo_regex, "^2009-01-08-[\\d-]+comm-central/$")
+        self.assertEqual(repo_regex, "/2009-01-08-[\\d-]+comm-central/$")
 
     def test_nightly_repo_regex_before_2010_08_21(self):
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2010, 8, 20))
-        self.assertEqual(repo_regex, "^2010-08-20-[\\d-]+comm-central-trunk/$")
+        self.assertEqual(repo_regex, "/2010-08-20-[\\d-]+comm-central-trunk/$")
 
     def test_nightly_repo_regex_since_2010_08_21(self):
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2010, 8, 21))
-        self.assertEqual(repo_regex, "^2010-08-21-[\\d-]+comm-central/$")
+        self.assertEqual(repo_regex, "/2010-08-21-[\\d-]+comm-central/$")
 
 
 class TestThunderbirdConfigWin(TestThunderbirdConfig):

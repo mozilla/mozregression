@@ -48,10 +48,10 @@ class TestNightlyInfoFetcher(unittest.TestCase):
     @patch("mozregression.fetch_build_info.url_links")
     def test__find_build_info_from_url(self, url_links):
         url_links.return_value = [
-            "file1.txt.gz",
-            "file2.txt",
-            "firefox01linux-x86_64.txt",
-            "firefox01linux-x86_64.tar.bz2",
+            "http://foo/file1.txt.gz",
+            "http://foo/file2.txt",
+            "http://foo/firefox01linux-x86_64.txt",
+            "http://foo/firefox01linux-x86_64.tar.bz2",
         ]
         expected = {
             "build_txt_url": "http://foo/firefox01linux-x86_64.txt",
@@ -83,10 +83,11 @@ class TestNightlyInfoFetcher(unittest.TestCase):
     @patch("mozregression.fetch_build_info.url_links")
     def test__get_url(self, url_links):
         url_links.return_value = [
-            "2014-11-01-03-02-05-mozilla-central/",
-            "2014-11-01-03-02-05-foo/",
-            "foo",
-            "bar/",
+            fetch_configs.ARCHIVE_BASE_URL
+            + "/firefox/nightly/2014/11/2014-11-01-03-02-05-mozilla-central/",
+            fetch_configs.ARCHIVE_BASE_URL + "/firefox/nightly/2014/11/2014-11-01-03-02-05-foo/",
+            fetch_configs.ARCHIVE_BASE_URL + "/firefox/nightly/2014/11/foo",
+            fetch_configs.ARCHIVE_BASE_URL + "/firefox/nightly/2014/11/bar/",
         ]
         urls = self.info_fetcher._get_urls(datetime.date(2014, 11, 1))
         self.assertEqual(

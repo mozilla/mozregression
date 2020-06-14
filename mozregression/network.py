@@ -5,6 +5,7 @@ network functions utilities for mozregression.
 from __future__ import absolute_import
 
 import re
+from urllib.parse import urljoin
 
 import redo
 import requests
@@ -68,13 +69,6 @@ def get_http_session():
 def url_links(url, regex=None, auth=None):
     """
     Returns a list of links that can be found on a given web page.
-
-    Note that it href of links found are starting with '/' (absolute url from
-    the server point of view) then only the last part of the link will be
-    returned. E.G:
-
-    '/pub/firefox/nightly/2015/03/2015-03-02-03-02-04-mozilla-central/'
-    will return '2015-03-02-03-02-04-mozilla-central/'.
     """
     response = retry_get(url, auth=auth)
     response.raise_for_status()
@@ -94,12 +88,7 @@ def url_links(url, regex=None, auth=None):
     result = []
     for link in soup.findAll("a"):
         href = link.get("href")
-        # return "relative" part of the url only
-        if href.startswith("/"):
-            if href.endswith("/"):
-                href = href.strip("/").rsplit("/", 1)[-1] + "/"
-            else:
-                href = href.rsplit("/", 1)[-1]
-        if match(href):
-            result.append(href)
+        ahref = urljoin(url, href)
+        if match(ahref):
+            result.append(ahref)
     return result

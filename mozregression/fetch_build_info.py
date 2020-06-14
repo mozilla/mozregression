@@ -196,10 +196,10 @@ class NightlyInfoFetcher(InfoFetcher):
         if not url.endswith("/"):
             url += "/"
         for link in url_links(url):
-            if "build_url" not in data and self.build_regex.match(link):
-                data["build_url"] = url + link
-            elif "build_txt_url" not in data and self.build_info_regex.match(link):
-                data["build_txt_url"] = url + link
+            if "build_url" not in data and self.build_regex.search(link):
+                data["build_url"] = link
+            elif "build_txt_url" not in data and self.build_info_regex.search(link):
+                data["build_txt_url"] = link
         if data:
             # Check that we found all required data. The URL in build_url is
             # required. build_txt_url is optional.
@@ -233,8 +233,8 @@ class NightlyInfoFetcher(InfoFetcher):
         # first parse monthly list to get correct directory
         matches = []
         for dirlink in month_links:
-            if link_regex.match(dirlink):
-                matches.append(url + dirlink)
+            if link_regex.search(dirlink):
+                matches.append(dirlink)
         # the most recent build urls first
         matches.reverse()
         return matches

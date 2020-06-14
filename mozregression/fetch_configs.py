@@ -285,7 +285,7 @@ class NightlyConfigMixin(metaclass=ABCMeta):
 
     def _get_nightly_repo_regex(self, date, repo):
         if isinstance(date, datetime.datetime):
-            return r"^%04d-%02d-%02d-%02d-%02d-%02d-%s/$" % (
+            return r"/%04d-%02d-%02d-%02d-%02d-%02d-%s/$" % (
                 date.year,
                 date.month,
                 date.day,
@@ -294,7 +294,7 @@ class NightlyConfigMixin(metaclass=ABCMeta):
                 date.second,
                 repo,
             )
-        return r"^%04d-%02d-%02d-[\d-]+%s/$" % (date.year, date.month, date.day, repo)
+        return r"/%04d-%02d-%02d-[\d-]+%s/$" % (date.year, date.month, date.day, repo)
 
     def can_go_integration(self):
         """

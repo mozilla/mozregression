@@ -47,7 +47,7 @@ class TestUrlLinks(unittest.TestCase):
         </body>
         """
         )
-        self.assertEqual(network.url_links(""), ["thing/", "thing2"])
+        self.assertEqual(network.url_links(""), ["/useless/thing/", "/useless/thing2"])
 
 
 def test_set_http_session():

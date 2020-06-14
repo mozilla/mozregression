@@ -59,7 +59,7 @@
     </widget>
    </item>
    <item row="4" column="0">
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="repository_label">
      <property name="toolTip">
       <string>you can choose a specific repository name here</string>
      </property>
@@ -79,6 +79,26 @@
     </widget>
    </item>
    <item row="5" column="0">
+    <widget class="QLabel" name="lang_label">
+      <property name="toolTip">
+        <string>enter the code of the lang you want a build for</string>
+      </property>
+      <property name="text">
+        <string>Lang</string>
+      </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+     <widget class="QLineEdit" name="lang">
+       <property name="toolTip">
+        <string>Lang code such as he, ar, zh-TW</string>
+      </property>
+      <property name="placeholderText">
+        <string>The lang code (e.g. de)</string>
+      </property>
+     </widget>
+   </item>
+   <item row="6" column="0">
     <widget class="QLabel" name="url_label">
      <property name="toolTip">
       <string>enter a URL to pass to the app</string>
@@ -88,7 +108,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
+   <item row="6" column="1">
     <widget class="QLineEdit" name="url">
      <property name="toolTip">
       <string>URL such as example.org, https://mozilla.org, about:logo</string>

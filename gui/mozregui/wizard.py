@@ -61,6 +61,7 @@ class IntroPage(WizardPage):
         "bits": "bits_combo",
         "arch": "arch_combo",
         "build_type": "build_type",
+        "lang": "lang",
         "url": "url",
     }
 
@@ -146,6 +147,18 @@ class IntroPage(WizardPage):
         else:
             self.ui.url.show()
             self.ui.url_label.show()
+
+        # lang only makes sense for firefox-l10n, and repo doesn't
+        if app_name == "firefox-l10n":
+            self.ui.lang.setEnabled(True)
+            self.ui.lang_label.setEnabled(True)
+            self.ui.repository.setDisabled(True)
+            self.ui.repository_label.setDisabled(True)
+        else:
+            self.ui.lang.setDisabled(True)
+            self.ui.lang_label.setDisabled(True)
+            self.ui.repository.setEnabled(True)
+            self.ui.repository_label.setEnabled(True)
 
     def validatePage(self):
         app_name = self.fetch_config.app_name

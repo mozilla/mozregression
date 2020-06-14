@@ -1,7 +1,7 @@
 from PySide2.QtCore import QObject, QThread, QTimer, Signal, Slot
 
 from mozregression.download_manager import BuildDownloadManager
-from mozregression.errors import LauncherError
+from mozregression.errors import LauncherError, MozRegressionError
 from mozregression.network import get_http_session
 from mozregression.persist_limit import PersistLimit
 from mozregression.telemetry import UsageMetrics, send_telemetry_ping
@@ -153,6 +153,13 @@ class AbstractBuildRunner(QObject):
         # Thunderbird will fail to start if passed an URL arg
         if options.get("url") and fetch_config.app_name != "thunderbird":
             launcher_kwargs["cmdargs"] += [options["url"]]
+
+        # Lang only works for firefox-l10n
+        if options.get("lang"):
+            if options["application"] == "firefox-l10n":
+                fetch_config.set_lang(options["lang"])
+            else:
+                raise MozRegressionError("Invalid lang argument")
 
         self.worker = self.worker_class(fetch_config, self.test_runner, self.download_manager)
         # Move self.bisector in the thread. This will

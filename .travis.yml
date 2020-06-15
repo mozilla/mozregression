@@ -31,6 +31,7 @@ matrix:
         - coverage combine
         - pip3 install coveralls; coveralls
         - python3 gui/build.py bundle
+        - ls -alh gui/mozregression-gui.tar.gz
     - name: gui-macosx
       os: osx
       # this is the oldest version of Mac (10.13) that seems to work
@@ -47,6 +48,7 @@ matrix:
         - coverage combine
         - pip3 install coveralls; coveralls
         - python3 gui/build.py bundle
+        - ls -alh gui/dist/mozregression-gui.dmg
     - name: linters
       env: PYTHON=python3.7
       os: linux

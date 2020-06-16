@@ -8,6 +8,7 @@ import argparse
 import glob
 import os
 import pipes
+import re
 import shutil
 import subprocess
 import sys
@@ -15,6 +16,37 @@ import tarfile
 
 IS_WIN = os.name == "nt"
 IS_MAC = sys.platform == "darwin"
+UNWANTED_PYSIDE_LIBRARIES = [
+    "Qt5?3DAnimation",
+    "Qt5?3DCore",
+    "Qt5?3DExtras",
+    "Qt5?3DInput",
+    "Qt5?3DLogic",
+    "Qt5?3DRender",
+    "Qt5?Charts",
+    "Qt5?Concurrent",
+    "Qt5?DataVisualization",
+    "Qt5?Help",
+    "Qt5?Location",
+    "Qt5?Multimedia",
+    "Qt5?MultimediaWidgets",
+    "Qt5?OpenGL",
+    "Qt5?Positioning",
+    "Qt5?Quick",
+    "Qt5?QuickWidgets",
+    "Qt5?Scxml",
+    "Qt5?Sensors",
+    "Qt5?Sql",
+    "Qt5?Svg",
+    "Qt5?TextToSpeech",
+    "Qt5?WebChannel",
+    "Qt5?WebEngineCore",
+    "Qt5?WebEngineWidgets",
+    "Qt5?WebSockets",
+    "Qt5?WebView",
+    "Qt5?Xml",
+    "Qt5?XmlPatterns",
+]
 
 
 def call(*args, **kwargs):
@@ -77,8 +109,22 @@ def do_bundle(options):
     for dirname in ("build", "dist"):
         if os.path.isdir(dirname):
             shutil.rmtree(dirname)
+
     # create a bundle for the application
     call("pyinstaller", "gui.spec")
+
+    # remove any pyside2 files we don't need
+    unwanted_re = "|".join(UNWANTED_PYSIDE_LIBRARIES)
+    for root, dirs, filenames in os.walk("dist"):
+        qt_filenames = [
+            os.path.join(root, filename)
+            for filename in filenames
+            if re.search(unwanted_re, filename)
+        ]
+        for qt_filename in qt_filenames:
+            print("unlinking {}".format(qt_filename))
+            os.unlink(qt_filename)
+
     # create an installer
     if IS_WIN:
         makensis_path = os.path.join(options.nsis_path, "makensis.exe")
@@ -94,6 +140,8 @@ def do_bundle(options):
             "hdiutil", "create", "mozregression-gui.dmg", "-srcfolder", "mozregression-gui", "-ov",
         )
     else:
+        # seems like some qml stuff is also bundled on Linux
+        shutil.rmtree(os.path.join("dist", "mozregression-gui", "PySide2", "qml"))
         with tarfile.open("mozregression-gui.tar.gz", "w:gz") as tar:
             tar.add(r"dist/mozregression-gui", arcname="mozregression-gui")
 

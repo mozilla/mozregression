@@ -40,8 +40,8 @@ regression range, something like this:
 
 ![My helpful screenshot]({{ site.baseurl }}/images/mozreg.png)
 
-Then mozregression will go on and do the same things with inbound builds
-to get you the smallest possible window range for inbounds.
+Then mozregression will go on and do the same things with integration builds
+to get you the smallest possible window range.
 
 There is plenty of options for mozregression. See
 

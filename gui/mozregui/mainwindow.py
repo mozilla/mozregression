@@ -16,7 +16,7 @@ from mozregui.wizard import BisectionWizard, SingleRunWizard
 ABOUT_TEXT = """\
 <p><strong>mozregression-gui</strong> is a desktop interface for
 <strong>mozregression</strong>, a regression range finder for Mozilla
-nightly and inbound builds.</p>
+nightly and integration builds.</p>
 <p><a href="http://mozilla.github.io/mozregression/">\
 http://mozilla.github.io/mozregression/</a></p>
 <p><b>Using mozregression version: %s</b></p>

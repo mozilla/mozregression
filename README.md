@@ -1,6 +1,6 @@
 # mozregression
 
-mozregression is an interactive regression rangefinder for quickly tracking down the source of bugs in Mozilla nightly and inbound builds.
+mozregression is an interactive regression rangefinder for quickly tracking down the source of bugs in Mozilla nightly and integration builds.
 
 You can start using mozregression today:
 

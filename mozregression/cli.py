@@ -108,13 +108,7 @@ def create_parser(defaults):
         help=(
             "first known bad build, default is today."
             " It can be a date (YYYY-MM-DD), a build id,"
-            " a release number or a changeset. If it is"
-            " a changeset, the default branch will be the"
-            " integration branch of the application"
-            " (e.g. mozilla-inbound for firefox), else"
-            " the default release branch for the application"
-            " will be used as the default (e.g"
-            " mozilla-central for firefox)."
+            " a release number or a changeset."
         ),
     )
 
@@ -250,7 +244,7 @@ def create_parser(defaults):
 
     parser.add_argument(
         "--repo",
-        metavar="[mozilla-inbound|autoland|mozilla-beta...]",
+        metavar="[autoland|mozilla-beta...]",
         default=defaults["repo"],
         help="repository name used for the bisection.",
     )

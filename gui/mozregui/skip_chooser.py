@@ -69,8 +69,12 @@ class SkipChooserView(QGraphicsView):
         scene.mid_build.setSelected(True)
 
     def mousePressEvent(self, evt):
+        item = self.itemAt(evt.pos())
         # do nothing if we don't click on an item
-        if not self.itemAt(evt.pos()):
+        if not item:
+            return
+        # do nothing if we click on a bound
+        if not (item.flags() & QGraphicsRectItem.ItemIsSelectable):
             return
         # only one item can be selected at a time, so deselect if any
         for item in self.scene().selectedItems():
@@ -86,7 +90,8 @@ class SkipChooserView(QGraphicsView):
 
     def mouseDoubleClickEvent(self, evt):
         item = self.itemAt(evt.pos())
-        if item:
+        # do nothing if we click on a bound
+        if item and item.flags() & QGraphicsRectItem.ItemIsSelectable:
             self.build_choosen.emit()
 
 

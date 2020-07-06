@@ -39,17 +39,31 @@ Want to hack on mozregression ? Cool!
 ### Installing dependencies
 
 To make setup more deterministic, we have provided requirements files to use a known-working
-set of python dependencies. From your mozregression checkout, you can install these inside 
+set of python dependencies. From your mozregression checkout, you can install these inside
 a virtual development environment.
 
 After checking out the mozregression repository from GitHub, this is a two step process:
 
-1. If you don't have it already, install [virtualenv](https://virtualenv.pypa.io/en/stable/).
+1. Be sure you are using Python 3.6 or above: earlier versions are not supported (if you
+   are not sure, run `python --version` or `python3 --version` on the command line).
 
-2. From inside your mozregression checkout, activate virtualenv and install dependencies:
+2. If you don't have it already, install [virtualenv](https://virtualenv.pypa.io/en/stable/).
+
+3. From inside your mozregression checkout, create a virtualenv, activate it, and install the dependencies. The instructions are slightly different depending on whether you are using Windows or Linux/MacOS.
+
+On Windows:
 
 ```bash
-virtualenv -p /usr/bin/python3 venv
+virtualenv -p python venv
+venv\Scripts\activate
+pip install -r requirements\all.txt
+pip install -e .
+```
+
+On Linux/MacOS:
+
+```bash
+virtualenv -p python3 venv
 source venv/bin/activate
 pip install -r requirements/all.txt
 pip install -e .

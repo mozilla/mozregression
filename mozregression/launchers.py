@@ -17,7 +17,7 @@ from threading import Thread
 import mozinfo
 import mozinstall
 import mozversion
-from mozdevice import ADBAndroid, ADBError, ADBHost
+from mozdevice import ADBDeviceFactory, ADBError, ADBHost
 from mozfile import remove
 from mozlog.structured import get_default_logger, get_proxy_logger
 from mozprofile import Profile, ThunderbirdProfile
@@ -380,7 +380,7 @@ class AndroidLauncher(Launcher):
         # get info now, as dest may be removed
         self.app_info = safe_get_version(binary=dest)
         self.package_name = self.app_info.get("package_name", self._get_package_name())
-        self.adb = ADBAndroid(require_root=False)
+        self.adb = ADBDeviceFactory()
         try:
             self.adb.uninstall_app(self.package_name)
         except ADBError as msg:
@@ -388,7 +388,7 @@ class AndroidLauncher(Launcher):
                 "Failed to uninstall %s (%s)\nThis is normal if it is the"
                 " first time the application is installed." % (self.package_name, msg)
             )
-        self.adb.install_app(dest)
+        self.adb.run_as_package = self.adb.install_app(dest)
 
     def _start(
         self, profile=None, addons=(), cmdargs=(), preferences=None, adb_profile_dir=None,

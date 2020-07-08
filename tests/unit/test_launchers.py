@@ -212,12 +212,12 @@ class TestFennecLauncher(unittest.TestCase):
         self.remote_profile_path = self.test_root + "/" + os.path.basename(self.profile.profile)
 
     @patch("mozregression.launchers.mozversion.get_version")
-    @patch("mozregression.launchers.ADBAndroid")
-    def create_launcher(self, ADBAndroid, get_version, **kwargs):
+    @patch("mozregression.launchers.ADBDeviceFactory")
+    def create_launcher(self, ADBDeviceFactory, get_version, **kwargs):
         self.adb = Mock(test_root=self.test_root)
         if kwargs.get("uninstall_error"):
             self.adb.uninstall_app.side_effect = launchers.ADBError
-        ADBAndroid.return_value = self.adb
+        ADBDeviceFactory.return_value = self.adb
         get_version.return_value = kwargs.get("version_value", {})
         return launchers.FennecLauncher("/binary")
 

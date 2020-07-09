@@ -27,3 +27,57 @@ usage:
     expires: never
     send_in_pings:
       - usage
+  build_type:
+    type: string
+    description: >
+      The build type being bisected (opt, shippable, etc.)
+    notification_emails: [wlachance@mozilla.com]
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
+    expires: never
+    send_in_pings:
+      - usage
+  good_date:
+    type: datetime
+    time_unit: day
+    description: >
+      The good date parameter used in a bisection, if present and specified
+      as a date
+    notification_emails: [wlachance@mozilla.com]
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
+    expires: never
+    send_in_pings:
+      - usage
+  bad_date:
+    type: datetime
+    time_unit: day
+    description: >
+      The bad date parameter used in a bisection, if present and specified as
+      a date
+    notification_emails: [wlachance@mozilla.com]
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
+    expires: never
+    send_in_pings:
+      - usage
+  launch_date:
+    type: datetime
+    time_unit: day
+    description: >
+      The launch parameter used when running a single build, if if present
+      and specified as a date
+    notification_emails: [wlachance@mozilla.com]
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
+    expires: never
+    send_in_pings:
+      - usage

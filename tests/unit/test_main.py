@@ -11,6 +11,7 @@ from mock import ANY, MagicMock, Mock, call, patch
 from mozregression import __version__, config, errors, main
 from mozregression.bisector import Bisection, Bisector, IntegrationHandler, NightlyHandler
 from mozregression.download_manager import BuildDownloadManager
+from mozregression.telemetry import UsageMetrics
 from mozregression.test_runner import CommandTestRunner, ManualTestRunner
 
 
@@ -258,7 +259,18 @@ class TestMain(unittest.TestCase):
         except SystemExit as exc:
             self.assertEqual(send_telemetry_ping_oop.call_count, 1)
             self.assertEqual(
-                send_telemetry_ping_oop.call_args, call("console", "firefox", telemetry_enabled)
+                send_telemetry_ping_oop.call_args,
+                call(
+                    UsageMetrics(
+                        "console",
+                        "firefox",
+                        self.app.fetch_config.build_type,
+                        self.app.options.good,
+                        self.app.options.bad,
+                        self.app.options.launch,
+                    ),
+                    telemetry_enabled,
+                ),
             )
             return exc.code
         else:

@@ -1,3 +1,4 @@
+from collections import namedtuple
 from multiprocessing import Process
 from pathlib import Path
 
@@ -6,10 +7,15 @@ from mozlog import get_proxy_logger
 from pkg_resources import resource_filename
 
 from mozregression import __version__
+from mozregression.dates import is_date_or_datetime, to_datetime
 
 LOG = get_proxy_logger("telemetry")
 PINGS = load_pings(resource_filename(__name__, "pings.yaml"))
 METRICS = load_metrics(resource_filename(__name__, "metrics.yaml"))
+
+UsageMetrics = namedtuple(
+    "UsageMetrics", ["variant", "appname", "build_type", "good", "bad", "launch"]
+)
 
 
 def initialize_telemetry(upload_enabled, allow_multiprocessing=False):
@@ -18,29 +24,39 @@ def initialize_telemetry(upload_enabled, allow_multiprocessing=False):
         application_id="org.mozilla.mozregression",
         application_version=__version__,
         upload_enabled=upload_enabled,
-        configuration=Configuration(allow_multiprocessing=allow_multiprocessing),
+        configuration=Configuration(
+            allow_multiprocessing=allow_multiprocessing, ping_tag="mozregression-test"
+        ),
         data_dir=mozregression_path / "data",
     )
 
 
-def _send_telemetry_ping(variant, appname):
-    METRICS.usage.variant.set(variant)
-    METRICS.usage.app.set(appname)
+def _send_telemetry_ping(metrics):
+    print(metrics)
+    METRICS.usage.variant.set(metrics.variant)
+    METRICS.usage.app.set(metrics.appname)
+    METRICS.usage.build_type.set(metrics.build_type)
+    if is_date_or_datetime(metrics.good):
+        METRICS.usage.good_date.set(to_datetime(metrics.good))
+    if is_date_or_datetime(metrics.bad):
+        METRICS.usage.bad_date.set(to_datetime(metrics.bad))
+    if is_date_or_datetime(metrics.launch):
+        METRICS.usage.launch_date.set(to_datetime(metrics.launch))
     PINGS.usage.submit()
 
 
-def send_telemetry_ping(variant, appname):
+def send_telemetry_ping(metrics):
     LOG.debug("Sending usage ping")
-    _send_telemetry_ping(variant, appname)
+    _send_telemetry_ping(metrics)
 
 
-def _send_telemetry_ping_oop(variant, appname, upload_enabled):
+def _send_telemetry_ping_oop(metrics, upload_enabled):
     initialize_telemetry(upload_enabled, allow_multiprocessing=True)
     if upload_enabled:
-        _send_telemetry_ping(variant, appname)
+        _send_telemetry_ping(metrics)
 
 
-def send_telemetry_ping_oop(variant, appname, upload_enabled):
+def send_telemetry_ping_oop(metrics, upload_enabled):
     """
     This somewhat convoluted function forks off a process (using
     Python's multiprocessing module) and sends a glean ping --
@@ -49,5 +65,5 @@ def send_telemetry_ping_oop(variant, appname, upload_enabled):
     Glean for other purposes (e.g. mach)
     """
     LOG.debug("Sending usage ping (OOP)")
-    p = Process(target=_send_telemetry_ping_oop, args=(variant, appname, upload_enabled))
+    p = Process(target=_send_telemetry_ping_oop, args=(metrics, upload_enabled))
     p.start()

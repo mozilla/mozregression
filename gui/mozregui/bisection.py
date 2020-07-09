@@ -220,8 +220,7 @@ class BisectRunner(AbstractBuildRunner):
         self.worker.finished.connect(self.bisection_finished)
         self.worker.handle_merge.connect(self.handle_merge)
         self.worker.choose_next_build.connect(self.choose_next_build)
-
-        good, bad = options.pop("good"), options.pop("bad")
+        good, bad = options.get("good"), options.get("bad")
         if (
             is_date_or_datetime(good)
             and is_date_or_datetime(bad)

@@ -115,3 +115,19 @@ def test_persist_filename(klass, extra, result):
         # fake that the fetch config should return the persist_part
         binfo._fetch_config.integration_persist_part = lambda: persist_part
     assert binfo.persist_filename == result
+
+
+@pytest.mark.parametrize(
+    "arch,result",
+    [
+        ("arm", "2015-09-01--mozilla-central--arm--url"),
+        ("x86_64", "2015-09-01--mozilla-central--x86_64--url"),
+        (None, "2015-09-01--mozilla-central--arm--url"),
+    ],
+)
+def test_persist_filename_with_arch(arch, result):
+    binfo_args = {
+        "fetch_config": create_config("gve", "linux", None, "x86", arch),
+    }
+    binfo = create_build_info(build_info.NightlyBuildInfo, **binfo_args)
+    assert binfo.persist_filename == result

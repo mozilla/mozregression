@@ -165,7 +165,10 @@ class BuildInfo(object):
             persist_part = self._fetch_config.integration_persist_part()
         if persist_part:
             persist_part = "-" + persist_part
-        full_prefix = "{}{}--{}--".format(prefix, persist_part, self.repo_name)
+        extra = self._fetch_config.extra_persist_part()
+        if extra:
+            extra = extra + "--"
+        full_prefix = "{}{}--{}--{}".format(prefix, persist_part, self.repo_name, extra)
         if regex:
             full_prefix = re.escape(full_prefix)
             appname = self._fetch_config.build_regex()

@@ -205,6 +205,14 @@ class CommonConfig(object):
             or self.build_type not in ("opt", "asan", "shippable")
         )
 
+    def extra_persist_part(self):
+        """
+        Allow to add a part in the generated persist file name to distinguish
+        different builds that might be produced by a single config. Returns an
+        empty string by default.
+        """
+        return ""
+
 
 class NightlyConfigMixin(metaclass=ABCMeta):
     """
@@ -543,6 +551,7 @@ class GeckoViewExampleConfig(CommonConfig, FennecNightlyConfigMixin, FennecInteg
         return ["arm", "x86_64"]
 
     def set_arch(self, arch):
+        CommonConfig.set_arch(self, arch)
         if arch == "x86_64":
             self.tk_name = "android-x86_64"
         else:
@@ -551,6 +560,12 @@ class GeckoViewExampleConfig(CommonConfig, FennecNightlyConfigMixin, FennecInteg
     def should_use_archive(self):
         # GVE is not on archive.mozilla.org, only on taskcluster
         return False
+
+    def extra_persist_part(self):
+        if self.arch is None:
+            return "arm"
+        else:
+            return self.arch
 
 
 @REGISTRY.register("fennec-2.3", attr_value="fennec")

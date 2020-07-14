@@ -124,29 +124,29 @@ class IntroPage(WizardPage):
         self.arch_model = QStringListModel(self.fetch_config.available_archs())
         self.ui.arch_combo.setModel(self.arch_model)
         if not self.arch_model.stringList():
-            self.ui.arch_label.hide()
-            self.ui.arch_combo.hide()
+            self.ui.arch_label.setDisabled(True)
+            self.ui.arch_combo.setDisabled(True)
         else:
-            self.ui.arch_label.show()
-            self.ui.arch_combo.show()
+            self.ui.arch_label.setEnabled(True)
+            self.ui.arch_combo.setEnabled(True)
 
         self.build_type_model = QStringListModel(self.fetch_config.available_build_types())
         self.ui.build_type.setModel(self.build_type_model)
 
         if not self.fetch_config.available_bits():
-            self.ui.bits_combo.hide()
-            self.ui.label_4.hide()
+            self.ui.bits_combo.setDisabled(True)
+            self.ui.label_4.setDisabled(True)
         else:
-            self.ui.bits_combo.show()
-            self.ui.label_4.show()
+            self.ui.bits_combo.setEnabled(True)
+            self.ui.label_4.setEnabled(True)
 
         # URL doesn't make sense for Thunderbird
         if app_name == "thunderbird":
-            self.ui.url.hide()
-            self.ui.url_label.hide()
+            self.ui.url.setDisabled(True)
+            self.ui.url_label.setDisabled(True)
         else:
-            self.ui.url.show()
-            self.ui.url_label.show()
+            self.ui.url.setEnabled(True)
+            self.ui.url_label.setEnabled(True)
 
         # lang only makes sense for firefox-l10n, and repo doesn't
         if app_name == "firefox-l10n":

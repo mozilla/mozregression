@@ -24,15 +24,12 @@ def initialize_telemetry(upload_enabled, allow_multiprocessing=False):
         application_id="org.mozilla.mozregression",
         application_version=__version__,
         upload_enabled=upload_enabled,
-        configuration=Configuration(
-            allow_multiprocessing=allow_multiprocessing, ping_tag="mozregression-test"
-        ),
+        configuration=Configuration(allow_multiprocessing=allow_multiprocessing),
         data_dir=mozregression_path / "data",
     )
 
 
 def _send_telemetry_ping(metrics):
-    print(metrics)
     METRICS.usage.variant.set(metrics.variant)
     METRICS.usage.app.set(metrics.appname)
     METRICS.usage.build_type.set(metrics.build_type)

@@ -30,10 +30,10 @@ The following metrics are added to the ping:
 | Name | Type | Description | Data reviews | Extras | Expiration |
 | --- | --- | --- | --- | --- | --- |
 | usage.app |[string](https://mozilla.github.io/glean/book/user/metrics/string.html) |The name of the app being used (firefox, gve, etc.)  |[1](https://bugzilla.mozilla.org/show_bug.cgi?id=1581647#c9)||never |
-| usage.bad_date |[datetime](https://mozilla.github.io/glean/book/user/metrics/datetime.html) |The bad date parameter used in a bisection, if present and specified as a date  |[1](https://bugzilla.mozilla.org/show_bug.cgi?id=1651401)||never |
-| usage.build_type |[string](https://mozilla.github.io/glean/book/user/metrics/string.html) |The build type being bisected (opt, shippable, etc.)  |[1](https://bugzilla.mozilla.org/show_bug.cgi?id=1651401)||never |
-| usage.good_date |[datetime](https://mozilla.github.io/glean/book/user/metrics/datetime.html) |The good date parameter used in a bisection, if present and specified as a date  |[1](https://bugzilla.mozilla.org/show_bug.cgi?id=1651401)||never |
-| usage.launch_date |[datetime](https://mozilla.github.io/glean/book/user/metrics/datetime.html) |The launch parameter used when running a single build, if if present and specified as a date  |[1](https://bugzilla.mozilla.org/show_bug.cgi?id=1651401)||never |
+| usage.bad_date |[datetime](https://mozilla.github.io/glean/book/user/metrics/datetime.html) |The bad date parameter used in a bisection, if present and specified as a date  |[1](https://bugzilla.mozilla.org/show_bug.cgi?id=1651401#c5)||never |
+| usage.build_type |[string](https://mozilla.github.io/glean/book/user/metrics/string.html) |The build type being bisected (asan, debug, opt, pgo, shippable, ...)  |[1](https://bugzilla.mozilla.org/show_bug.cgi?id=1651401#c5)||never |
+| usage.good_date |[datetime](https://mozilla.github.io/glean/book/user/metrics/datetime.html) |The good date parameter used in a bisection, if present and specified as a date  |[1](https://bugzilla.mozilla.org/show_bug.cgi?id=1651401#c5)||never |
+| usage.launch_date |[datetime](https://mozilla.github.io/glean/book/user/metrics/datetime.html) |The launch parameter used when running a single build, if present and specified as a date  |[1](https://bugzilla.mozilla.org/show_bug.cgi?id=1651401#c5)||never |
 | usage.variant |[string](https://mozilla.github.io/glean/book/user/metrics/string.html) |The variant of mozregression used to perform the bisection (gui, console, mach, etc.)  |[1](https://bugzilla.mozilla.org/show_bug.cgi?id=1581647#c9)||never |
 
 

@@ -30,12 +30,12 @@ usage:
   build_type:
     type: string
     description: >
-      The build type being bisected (opt, shippable, etc.)
+      The build type being bisected (asan, debug, opt, pgo, shippable, ...)
     notification_emails: [wlachance@mozilla.com]
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
     data_reviews:
-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401#c5
     expires: never
     send_in_pings:
       - usage
@@ -49,7 +49,7 @@ usage:
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
     data_reviews:
-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401#c5
     expires: never
     send_in_pings:
       - usage
@@ -63,7 +63,7 @@ usage:
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
     data_reviews:
-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401#c5
     expires: never
     send_in_pings:
       - usage
@@ -71,13 +71,13 @@ usage:
     type: datetime
     time_unit: day
     description: >
-      The launch parameter used when running a single build, if if present
+      The launch parameter used when running a single build, if present
       and specified as a date
     notification_emails: [wlachance@mozilla.com]
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
     data_reviews:
-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401#c5
     expires: never
     send_in_pings:
       - usage

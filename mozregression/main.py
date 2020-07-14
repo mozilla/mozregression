@@ -28,7 +28,7 @@ from mozregression.json_pushes import JsonPushes
 from mozregression.launchers import REGISTRY as APP_REGISTRY
 from mozregression.network import set_http_session
 from mozregression.persist_limit import PersistLimit
-from mozregression.telemetry import send_telemetry_ping_oop
+from mozregression.telemetry import UsageMetrics, send_telemetry_ping_oop
 from mozregression.tempdir import safe_mkdtemp
 from mozregression.test_runner import CommandTestRunner, ManualTestRunner
 
@@ -325,7 +325,15 @@ def main(
 
         app = Application(config.fetch_config, config.options)
         send_telemetry_ping_oop(
-            mozregression_variant, config.fetch_config.app_name, config.enable_telemetry
+            UsageMetrics(
+                variant=mozregression_variant,
+                appname=config.fetch_config.app_name,
+                build_type=config.fetch_config.build_type,
+                good=config.options.good,
+                bad=config.options.bad,
+                launch=config.options.launch,
+            ),
+            config.enable_telemetry,
         )
 
         method = getattr(app, config.action)

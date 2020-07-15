@@ -479,9 +479,9 @@ wcwidth==0.2.5 \
     --hash=sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784 \
     --hash=sha256:c4d647b99872929fdb7bdcaa4fbe7f01413ed3d98077df798530e5b04f116c83 \
     # via pytest
-yamllint==1.23.0 \
-    --hash=sha256:0fa69bf8a86182b7fe14918bdd3a30354c869966bbc7cbfff176af71bda9c806 \
-    --hash=sha256:59f3ff77f44e7f46be6aecdb985830f73a1c51e290b7082a7d38c2ae1940f4a9 \
+yamllint==1.24.0 \
+    --hash=sha256:15c026033999ffb04312c2a2fcc8392bcbecb80e156c7d60b6d740a20309b8c3 \
+    --hash=sha256:b18ba0823bf446aa8c6f59bf5f9b4516c5ca2e5f024c492885d1249157239089 \
     # via glean-parser
 yarl==1.4.2 \
     --hash=sha256:0c2ab325d33f1b824734b3ef51d4d54a54e0e7a23d13b86974507602334c2cce \

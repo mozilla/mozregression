@@ -232,10 +232,12 @@ class MozRunnerLauncher(Launcher):
 
         # we don't need stdin, and GUI will not work in Windowed mode if set
         # see: https://stackoverflow.com/a/40108817
+        # also, don't stream to stdout: https://bugzilla.mozilla.org/show_bug.cgi?id=1653349
         devnull = open(os.devnull, "wb")
         self.runner.process_args = {
             "processOutputLine": [get_default_logger("process").info],
             "stdin": devnull,
+            "stream": None,
             "onFinish": _on_exit,
         }
         self.runner.start()

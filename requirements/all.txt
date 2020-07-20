@@ -267,9 +267,9 @@ mozprofile==2.5.0 \
     --hash=sha256:5b93462c16ba7c6cd7010035765627d565c2adc7c58ac8bf82a3b1b2c14f0daa \
     --hash=sha256:9f77840583432bc5605375b760a6c420328f2dc95c3e8950245e4b01d65da67e \
     # via -r base.in, mozrunner
-mozrunner==7.8.0 \
-    --hash=sha256:5e1bdf1709b4b8cb86b3daf3dbc9352d2abfc8428e26cc75a68ce87a565f4f25 \
-    --hash=sha256:f223e9ca7f0acd3f93d4c30760f8d976d41da81edf686cd5063d2973ebbebcfb \
+mozrunner==8.0.1 \
+    --hash=sha256:795f3702c24065c05543e0ce2698f09d657d51d3257de4f6fdc9ef63fb981a45 \
+    --hash=sha256:af764ed055633e841359e903a8da059c3d67ebef327d9d744c0876241d89185a \
     # via -r base.in
 mozterm==1.0.0 \
     --hash=sha256:b1e91acec188de07c704dbb7b0100a7be5c1e06567b3beb67f6ea11d00a483a4 \

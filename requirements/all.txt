@@ -242,9 +242,9 @@ more-itertools==8.4.0 \
     --hash=sha256:68c70cc7167bdf5c7c9d8f6954a7837089c6a36bf565383919bb595efb8a17e5 \
     --hash=sha256:b78134b2063dd214000685165d81c154522c3ee0a1c0d4d113c80361c234c5a2 \
     # via pytest
-mozdevice==3.1.0 \
-    --hash=sha256:3f19640478fae47c5dfed998da42f86aef39d9ba03222e99d19ff488e2f78184 \
-    --hash=sha256:e6f7a679ef9a40e6db8e1d47d611b8d9997f03d345953570cbdf34d7cde79b6e \
+mozdevice==4.0.0 \
+    --hash=sha256:7a77d66ebfb5a3bb06534a4457d3b3781b2c4d134882346a0179b7f93d90377d \
+    --hash=sha256:bbe7c6ceae68a5601c975a2ee810094ccaf58b1fa48d53baa78fd3e50806df33 \
     # via -r base.in, mozrunner
 mozfile==2.1.0 \
     --hash=sha256:e5dc835582ea150e35ecd57e9d86cb707d3aa3b2505679db7332326dd49fd6b8 \
@@ -255,9 +255,9 @@ mozinfo==1.2.2 \
 mozinstall==2.0.0 \
     --hash=sha256:219ba7c51308433487b4f30a2615cb9b3ecd40a76b9faf41cf1b1b005bb5dda7 \
     # via -r base.in
-mozlog==6.0 \
-    --hash=sha256:4eb8b781525a1433f05239583051dfe19927036b0c1f450ef0ad33882284a13b \
-    --hash=sha256:50608bd9f58461dc266be0e3663b6f97934b02a12bb403f2ccf09728e36f4898 \
+mozlog==6.1 \
+    --hash=sha256:0d45abc8b9aec5e812ade6665128e50f9041f98397d11f9c753aa93a3f10e978 \
+    --hash=sha256:ee6f23b854046296cbbf7dc31df67148b0393b772137c594803c6e6bbc072834 \
     # via -r base.in, mozdevice, mozprofile, mozrunner, mozversion
 mozprocess==1.2.0 \
     --hash=sha256:55731aec6daeeb8c920c97a303d46b509f1c8debbc751b5376d35f17a1a5e45c \
@@ -267,9 +267,9 @@ mozprofile==2.5.0 \
     --hash=sha256:5b93462c16ba7c6cd7010035765627d565c2adc7c58ac8bf82a3b1b2c14f0daa \
     --hash=sha256:9f77840583432bc5605375b760a6c420328f2dc95c3e8950245e4b01d65da67e \
     # via -r base.in, mozrunner
-mozrunner==8.0.1 \
-    --hash=sha256:795f3702c24065c05543e0ce2698f09d657d51d3257de4f6fdc9ef63fb981a45 \
-    --hash=sha256:af764ed055633e841359e903a8da059c3d67ebef327d9d744c0876241d89185a \
+mozrunner==8.0.2 \
+    --hash=sha256:515757eff20d95098018216c523cf32b67e171054711778c45c2aa1581df56a6 \
+    --hash=sha256:faf6c554934dd24d20bef8de5b1ee72fe67f8ba633d7bbcc1ea700449cbe1fbb \
     # via -r base.in
 mozterm==1.0.0 \
     --hash=sha256:b1e91acec188de07c704dbb7b0100a7be5c1e06567b3beb67f6ea11d00a483a4 \

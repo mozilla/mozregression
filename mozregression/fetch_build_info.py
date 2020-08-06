@@ -202,9 +202,10 @@ class NightlyInfoFetcher(InfoFetcher):
         if not self.fetch_config.has_build_info:
             links += url_links(self.fetch_config.get_nightly_info_url(url))
         for link in links:
-            if "build_url" not in data and self.build_regex.search(link):
+            name = os.path.basename(link)
+            if "build_url" not in data and self.build_regex.match(name):
                 data["build_url"] = link
-            elif "build_txt_url" not in data and self.build_info_regex.search(link):
+            elif "build_txt_url" not in data and self.build_info_regex.match(name):
                 data["build_txt_url"] = link
         if data:
             # Check that we found all required data. The URL in build_url is

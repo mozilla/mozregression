@@ -132,6 +132,31 @@ bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/",
             self.info_fetcher.find_build_info(datetime.date(2014, 11, 15))
 
 
+class TestNightlyInfoFetcher2(unittest.TestCase):
+    def setUp(self):
+        fetch_config = fetch_configs.create_config("firefox", "win", 64, "x86_64")
+        self.info_fetcher = fetch_build_info.NightlyInfoFetcher(fetch_config)
+
+    @patch("mozregression.fetch_build_info.url_links")
+    def test__find_build_info_from_url(self, url_links):
+        url_links.return_value = [
+            "http://foo/firefox/jsshell-win64.zip",
+            "http://foo/file1.txt.zip",
+            "http://foo/file2.txt",
+            "http://foo/firefox01linux-x86_64.txt",
+            "http://foo/firefox01linux-x86_64.tar.bz2",
+            "http://foo/firefox01win64.txt",
+            "http://foo/firefox01win64.zip",
+        ]
+        expected = {
+            "build_txt_url": "http://foo/firefox01win64.txt",
+            "build_url": "http://foo/firefox01win64.zip",
+        }
+        builds = []
+        self.info_fetcher._fetch_build_info_from_url("http://foo", 0, builds)
+        self.assertEqual(builds, [(0, expected)])
+
+
 class TestIntegrationInfoFetcher(unittest.TestCase):
     def setUp(self):
         fetch_config = fetch_configs.create_config("firefox", "linux", 64, "x86_64")

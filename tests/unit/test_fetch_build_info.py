@@ -2,12 +2,11 @@ from __future__ import absolute_import
 
 import datetime
 import re
-import time
 import unittest
 
 from mock import Mock, patch
 
-from mozregression import config, errors, fetch_build_info, fetch_configs
+from mozregression import errors, fetch_build_info, fetch_configs
 
 from .test_fetch_configs import create_push
 
@@ -159,8 +158,7 @@ class TestNightlyInfoFetcher2(unittest.TestCase):
 
 class TestIntegrationInfoFetcher(unittest.TestCase):
     def setUp(self):
-        fetch_config = fetch_configs.create_config("firefox", "linux", 64, "x86_64")
-        self.info_fetcher = fetch_build_info.IntegrationInfoFetcher(fetch_config)
+        self.fetch_config = fetch_configs.create_config("firefox", "linux", 64, "x86_64")
 
     @patch("taskcluster.Index")
     @patch("taskcluster.Queue")
@@ -181,25 +179,18 @@ class TestIntegrationInfoFetcher(unittest.TestCase):
         Queue.return_value.buildUrl.return_value = (
             "http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2"
         )
+        self.info_fetcher = fetch_build_info.IntegrationInfoFetcher(self.fetch_config)
         self.info_fetcher._fetch_txt_info = Mock(return_value={"changeset": "123456789"})
 
-        # test that we start searching using the correct tc root url
-        for push_timestamp in [
-            0,
-            time.mktime(config.TC_ROOT_URL_MIGRATION_FLAG_DATE.timetuple()) + 100,
-        ]:
-            result = self.info_fetcher.find_build_info(create_push("123456789", push_timestamp))
-            if push_timestamp == 0:
-                Index.assert_called_with({"rootUrl": config.OLD_TC_ROOT_URL})
-            else:
-                Index.assert_called_with({"rootUrl": config.TC_ROOT_URL})
-            self.assertEqual(result.build_url, "http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2")
-            self.assertEqual(result.changeset, "123456789")
-            self.assertEqual(result.build_type, "integration")
+        result = self.info_fetcher.find_build_info(create_push("123456789", 1))
+        self.assertEqual(result.build_url, "http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2")
+        self.assertEqual(result.changeset, "123456789")
+        self.assertEqual(result.build_type, "integration")
 
     @patch("taskcluster.Index")
     def test_find_build_info_no_task(self, Index):
         Index.findTask = Mock(side_effect=fetch_build_info.TaskclusterFailure)
+        self.info_fetcher = fetch_build_info.IntegrationInfoFetcher(self.fetch_config)
         with self.assertRaises(errors.BuildInfoNotFound):
             self.info_fetcher.find_build_info(create_push("123456789", 1))
 
@@ -225,12 +216,14 @@ class TestIntegrationInfoFetcher(unittest.TestCase):
         Queue.status = status
         Queue.listArtifacts = list_artifacts
 
+        self.info_fetcher = fetch_build_info.IntegrationInfoFetcher(self.fetch_config)
         with self.assertRaises(errors.BuildInfoNotFound):
             self.info_fetcher.find_build_info(create_push("123456789", 1))
 
     @patch("mozregression.json_pushes.JsonPushes.push")
     def test_find_build_info_check_changeset_error(self, push):
         push.side_effect = errors.MozRegressionError
+        self.info_fetcher = fetch_build_info.IntegrationInfoFetcher(self.fetch_config)
         with self.assertRaises(errors.BuildInfoNotFound):
             self.info_fetcher.find_build_info("123456789",)
         push.assert_called_with("123456789")

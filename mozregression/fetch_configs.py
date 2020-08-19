@@ -425,12 +425,12 @@ class IntegrationConfigMixin(metaclass=ABCMeta):
         """
         self._tk_credentials = creds
 
-    def tk_options(self, root_url):
+    def tk_options(self):
         """
         Returns the takcluster options, including the credentials required to
         download private artifacts.
         """
-        tk_options = {"rootUrl": root_url}
+        tk_options = {"rootUrl": "https://firefox-ci-tc.services.mozilla.com"}
         if self.tk_needs_auth():
             tk_options.update({"credentials": self._tk_credentials})
         return tk_options

@@ -5,7 +5,6 @@ Reading and writing of the configuration file.
 from __future__ import absolute_import, print_function
 
 import os
-from datetime import datetime
 
 import mozinfo
 from configobj import ConfigObj, ParseError
@@ -20,9 +19,6 @@ DEFAULT_CONF_FNAME = os.path.expanduser(
 TC_CREDENTIALS_FNAME = os.path.expanduser(
     os.path.join("~", ".mozilla", "mozregression", "taskcluster-credentials.json")
 )
-OLD_TC_ROOT_URL = "https://taskcluster.net"
-TC_ROOT_URL = "https://firefox-ci-tc.services.mozilla.com"
-TC_ROOT_URL_MIGRATION_FLAG_DATE = datetime.strptime("2019-11-09", "%Y-%M-%d")
 ARCHIVE_BASE_URL = "https://archive.mozilla.org/pub"
 # when a bisection range needs to be expanded, the following value is used to
 # specify how many builds we try (if 20, we will try 20 before the lower limit,

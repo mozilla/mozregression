@@ -23,7 +23,6 @@ from requests import HTTPError
 from taskcluster.exceptions import TaskclusterFailure
 
 from mozregression.build_info import IntegrationBuildInfo, NightlyBuildInfo
-from mozregression.config import OLD_TC_ROOT_URL, TC_ROOT_URL, TC_ROOT_URL_MIGRATION_FLAG_DATE
 from mozregression.errors import BuildInfoNotFound, MozRegressionError
 from mozregression.json_pushes import JsonPushes, Push
 from mozregression.network import retry_get, url_links
@@ -84,6 +83,9 @@ class IntegrationInfoFetcher(InfoFetcher):
     def __init__(self, fetch_config):
         InfoFetcher.__init__(self, fetch_config)
         self.jpushes = JsonPushes(branch=fetch_config.integration_branch)
+        options = fetch_config.tk_options()
+        self.index = taskcluster.Index(options)
+        self.queue = taskcluster.Queue(options)
 
     def find_build_info(self, push):
         """
@@ -104,36 +106,20 @@ class IntegrationInfoFetcher(InfoFetcher):
 
         changeset = push.changeset
 
+        tk_routes = self.fetch_config.tk_routes(push)
         try:
-            # taskcluster builds have two possible root urls: we switched
-            # from taskcluster.net -> firefox-ci-tc.services.mozilla.com
-            # around November 9. to make things faster, we'll iterate through
-            # them based on the one that most likely applies to this push
-            possible_tc_root_urls = [TC_ROOT_URL, OLD_TC_ROOT_URL]
-            if push.utc_date < TC_ROOT_URL_MIGRATION_FLAG_DATE:
-                possible_tc_root_urls.reverse()
-
             task_id = None
-            status = None
-            for tc_root_url in possible_tc_root_urls:
-                LOG.debug("using taskcluster root url %s" % tc_root_url)
-                options = self.fetch_config.tk_options(tc_root_url)
-                tc_index = taskcluster.Index(options)
-                tc_queue = taskcluster.Queue(options)
-                tk_routes = self.fetch_config.tk_routes(push)
-                stored_failure = None
-                for tk_route in tk_routes:
-                    LOG.debug("using taskcluster route %r" % tk_route)
-                    try:
-                        task_id = tc_index.findTask(tk_route)["taskId"]
-                    except TaskclusterFailure as ex:
-                        LOG.debug("nothing found via route %r" % tk_route)
-                        stored_failure = ex
-                        continue
-                    if task_id:
-                        status = tc_queue.status(task_id)["status"]
-                        break
-                if status:
+            stored_failure = None
+            for tk_route in tk_routes:
+                LOG.debug("using taskcluster route %r" % tk_route)
+                try:
+                    task_id = self.index.findTask(tk_route)["taskId"]
+                except TaskclusterFailure as ex:
+                    LOG.debug("nothing found via route %r" % tk_route)
+                    stored_failure = ex
+                    continue
+                if task_id:
+                    status = self.queue.status(task_id)["status"]
                     break
             if not task_id:
                 raise stored_failure
@@ -153,16 +139,16 @@ class IntegrationInfoFetcher(InfoFetcher):
 
         if run_id is None:
             raise BuildInfoNotFound("Unable to find completed runs for task %s" % task_id)
-        artifacts = tc_queue.listArtifacts(task_id, run_id)["artifacts"]
+        artifacts = self.queue.listArtifacts(task_id, run_id)["artifacts"]
 
         # look over the artifacts of that run
         build_url = None
         for a in artifacts:
             name = os.path.basename(a["name"])
             if self.build_regex.search(name):
-                meth = tc_queue.buildUrl
+                meth = self.queue.buildUrl
                 if self.fetch_config.tk_needs_auth():
-                    meth = tc_queue.buildSignedUrl
+                    meth = self.queue.buildSignedUrl
                 build_url = meth("getArtifact", task_id, run_id, a["name"])
                 break
         if build_url is None:

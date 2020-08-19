@@ -451,18 +451,7 @@ def get_default_date_range(fetch_config):
     Compute the default date range (first, last) to bisect.
     """
     last_date = datetime.date.today()
-    if fetch_config.app_name == "jsshell":
-        if fetch_config.os == "win" and fetch_config.bits == 64:
-            first_date = datetime.date(2014, 5, 27)
-        elif fetch_config.os == "linux" and "asan" in fetch_config.build_type:
-            first_date = datetime.date(2013, 9, 1)
-        else:
-            first_date = datetime.date(2012, 4, 18)
-    elif fetch_config.os == "win" and fetch_config.bits == 64:
-        # first firefox build date for win64 is 2010-05-28
-        first_date = datetime.date(2010, 5, 28)
-    else:
-        first_date = datetime.date(2009, 1, 1)
+    first_date = datetime.date.today() - datetime.timedelta(days=365)
 
     return first_date, last_date
 

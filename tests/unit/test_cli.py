@@ -10,7 +10,6 @@ from mock import patch
 from mozlog import get_default_logger
 
 from mozregression import cli, errors
-from mozregression.fetch_configs import create_config
 from mozregression.releases import releases
 
 
@@ -137,29 +136,16 @@ def test_list_build_types(mocker):
     assert "firefox:\n  shippable" in "".join(output)
 
 
-DEFAULTS_DATE = [
-    ("linux", 64, datetime.date(2009, 1, 1)),
-    ("linux", 32, datetime.date(2009, 1, 1)),
-    ("mac", 64, datetime.date(2009, 1, 1)),
-    ("win", 32, datetime.date(2009, 1, 1)),
-    ("win", 64, datetime.date(2010, 5, 28)),
-]
-
-
-@pytest.mark.parametrize("os,bits,default_good_date", DEFAULTS_DATE)
-def test_no_args(os, bits, default_good_date):
-    with patch("mozregression.cli.mozinfo") as mozinfo:
-        mozinfo.os = os
-        mozinfo.bits = bits
-        config = do_cli()
-        # application is by default firefox
-        assert config.fetch_config.app_name == "firefox"
-        # nightly by default
-        assert config.action == "bisect_nightlies"
-        assert config.options.good == default_good_date
-        assert config.options.bad == datetime.date.today()
-        # telemetry is by default enabled
-        assert config.enable_telemetry
+def test_no_args():
+    config = do_cli()
+    # application is by default firefox
+    assert config.fetch_config.app_name == "firefox"
+    # nightly by default
+    assert config.action == "bisect_nightlies"
+    assert config.options.good == datetime.date.today() - datetime.timedelta(days=365)
+    assert config.options.bad == datetime.date.today()
+    # telemetry is by default enabled
+    assert config.enable_telemetry
 
 
 TODAY = datetime.date.today()
@@ -194,18 +180,14 @@ def test_use_taskcluster_bisection_method(params, good, bad):
     assert config.options.bad.strftime("%Y-%m-%d") == bad.strftime("%Y-%m-%d")
 
 
-@pytest.mark.parametrize("os,bits,default_bad_date", DEFAULTS_DATE)
-def test_find_fix_reverse_default_dates(os, bits, default_bad_date):
-    with patch("mozregression.cli.mozinfo") as mozinfo:
-        mozinfo.os = os
-        mozinfo.bits = bits
-        config = do_cli("--find-fix")
-        # application is by default firefox
-        assert config.fetch_config.app_name == "firefox"
-        # nightly by default
-        assert config.action == "bisect_nightlies"
-        assert config.options.bad == default_bad_date
-        assert config.options.good == datetime.date.today()
+def test_find_fix_reverse_default_dates():
+    config = do_cli("--find-fix")
+    # application is by default firefox
+    assert config.fetch_config.app_name == "firefox"
+    # nightly by default
+    assert config.action == "bisect_nightlies"
+    assert config.options.bad == datetime.date.today() - datetime.timedelta(days=365)
+    assert config.options.good == datetime.date.today()
 
 
 def test_with_releases():
@@ -339,29 +321,6 @@ def test_mozversion_output_filtered(mozversion_msg, shown):
         assert result == log_data
     else:
         assert not result
-
-
-@pytest.mark.parametrize(
-    "app, os, bits, processor, build_type, expected_range",
-    [
-        ("jsshell", "win", 64, "x86_64", None, (datetime.date(2014, 5, 27), TODAY)),
-        ("jsshell", "linux", 64, "x86_64", "asan", (datetime.date(2013, 9, 1), TODAY)),
-        ("jsshell", "linux", 64, "x86_64", "asan-debug", (datetime.date(2013, 9, 1), TODAY),),
-        ("jsshell", "linux", 32, "x86", None, (datetime.date(2012, 4, 18), TODAY)),
-        ("jsshell", "mac", 64, "x86_64", None, (datetime.date(2012, 4, 18), TODAY)),
-        ("jsshell", "win", 32, "x86", None, (datetime.date(2012, 4, 18), TODAY)),
-        # anything else on win 64
-        ("firefox", "win", 64, "x86_64", None, (datetime.date(2010, 5, 28), TODAY)),
-        # anything else
-        ("firefox", "linux", 64, "x86_64", None, (datetime.date(2009, 1, 1), TODAY)),
-    ],
-)
-def test_get_default_date_range(app, os, bits, processor, build_type, expected_range):
-    fetch_config = create_config(app, os, bits, processor)
-    if build_type:
-        fetch_config.set_build_type(build_type)
-
-    assert expected_range == cli.get_default_date_range(fetch_config)
 
 
 @pytest.mark.parametrize("enable_telemetry", (True, False))

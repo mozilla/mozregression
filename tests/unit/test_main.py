@@ -131,8 +131,7 @@ def test_app_bisect_integration_finished(create_app, same_chsets):
         (["--addon=a b c", "--addon=d"], "'--addon=a b c' --addon=d"),
         (["--find-fix", "--arg=a b"], "--find-fix '--arg=a b'"),
         (["--profile=pro file"], "'--profile=pro file'"),
-        (["-g", "2015-11-01"], "--good=2015-11-01"),
-        (["--bad=2015-11-03"], "--bad=2015-11-03"),
+        (["-g", "2015-11-01", "-b", "2015-11-03"], "--good=2015-11-01 --bad=2015-11-03"),
     ],
 )
 def test_app_bisect_nightlies_user_exit(create_app, argv, expected_log, mocker):

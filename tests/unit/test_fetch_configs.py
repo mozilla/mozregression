@@ -217,18 +217,17 @@ class TestFennecConfig(unittest.TestCase):
         self.assertTrue(regex.match("fennec-36.0a1.multi.android-arm.txt"))
 
 
-class TestFennec23Config(unittest.TestCase):
+class TestGVEConfig(unittest.TestCase):
     def setUp(self):
-        self.conf = create_config("fennec-2.3", "linux", 64, None)
+        self.conf = create_config("gve", "linux", 64, None)
 
-    def test_class_attr_name(self):
-        self.assertEqual(self.conf.app_name, "fennec")
-
-    def test_get_nightly_repo_regex(self):
-        regex = self.conf.get_nightly_repo_regex(datetime.date(2014, 12, 5))
-        self.assertIn("mozilla-central-android", regex)
-        regex = self.conf.get_nightly_repo_regex(datetime.date(2015, 1, 1))
-        self.assertIn("mozilla-central-android-api-9", regex)
+    def test_fallbacking(self):
+        assert self.conf.build_type == "opt"
+        self.conf._inc_used_build()
+        assert self.conf.build_type == "shippable"
+        # Check we wrap
+        self.conf._inc_used_build()
+        assert self.conf.build_type == "opt"
 
 
 class TestGetBuildUrl(unittest.TestCase):
@@ -400,15 +399,6 @@ CHSET12 = "47856a214918"
             TIMESTAMP_FENNEC_API_16,
             "gecko.v2.mozilla-central.revision.%s.mobile.android-api-16-opt" % CHSET,
         ),
-        (
-            "fennec-2.3",
-            None,
-            None,
-            None,
-            "m-i",
-            TIMESTAMP_TEST,
-            "gecko.v2.mozilla-inbound.revision.%s.mobile.android-api-9-opt" % CHSET,
-        ),
         # thunderbird
         (
             "thunderbird",
@@ -456,6 +446,23 @@ def test_tk_route(app, os, bits, processor, repo, push_date, expected):
             "x86_64",
             "shippable",
             "gecko.v2.mozilla-central.shippable.revision.%s.firefox.linux64-opt" % CHSET,
+        ),
+        # gve
+        (
+            "gve",
+            "linux",
+            64,
+            "x86_64",
+            "opt",
+            "gecko.v2.mozilla-central.revision.%s.mobile.android-api-16-opt" % CHSET,
+        ),
+        (
+            "gve",
+            "linux",
+            64,
+            "x86_64",
+            "shippable",
+            "gecko.v2.mozilla-central.shippable.revision.%s.mobile.android-api-16-opt" % CHSET,
         ),
     ],
 )

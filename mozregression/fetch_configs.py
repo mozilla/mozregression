@@ -485,7 +485,7 @@ class FennecIntegrationConfigMixin(IntegrationConfigMixin):
                 "opt" if build_type == "shippable" else build_type,
             )
             self._inc_used_build()
-            return
+        return
 
 
 class ThunderbirdIntegrationConfigMixin(IntegrationConfigMixin):
@@ -601,7 +601,11 @@ class FennecConfig(CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConf
 
 @REGISTRY.register("gve")
 class GeckoViewExampleConfig(CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConfigMixin):
-    BUILD_TYPES = ("opt", "debug")
+    BUILD_TYPES = ("shippable", "opt", "debug")
+    BUILD_TYPE_FALLBACKS = {
+        "shippable": ("opt",),
+        "opt": ("shippable",),
+    }
 
     def build_regex(self):
         return r"geckoview_example\.apk"
@@ -631,20 +635,6 @@ class GeckoViewExampleConfig(CommonConfig, FennecNightlyConfigMixin, FennecInteg
             return "arm"
         else:
             return self.arch
-
-
-@REGISTRY.register("fennec-2.3", attr_value="fennec")
-class Fennec23Config(FennecConfig):
-    tk_name = "android-api-9"
-
-    def get_nightly_repo_regex(self, date):
-        repo = self.get_nightly_repo(date)
-        if repo == "mozilla-central":
-            if date < datetime.date(2014, 12, 6):
-                repo = "mozilla-central-android"
-            else:
-                repo = "mozilla-central-android-api-9"
-        return self._get_nightly_repo_regex(date, repo)
 
 
 @REGISTRY.register("jsshell", disable_in_gui=True)

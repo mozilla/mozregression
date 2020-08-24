@@ -14,7 +14,8 @@ For the graphical interface, we provide a simple installation process:
 - **Windows**:
   Download the latest **mozregression-gui.exe** file from the
   [github releases]. Once the file is downloaded double-click on it and
-  follow the installation process.
+  follow the installation process. Some anti-virus programs falsely claim that
+  mozregression is a virus, you can ignore this warning: see [bug 1647533].
 - **Mac**:
   Download the latest **mozregression-gui.dmg** file from the
   [github releases]. Once the file is downloaded, click on it and drag
@@ -25,7 +26,7 @@ For the graphical interface, we provide a simple installation process:
 - **Linux**:
   Download the latest **mozregression-gui.tar.gz** file from the
   [github releases]. Once the file is downloaded, extract it and run the
-  `mozregression-gui` file in the `mozregression-gui` directory.  Example:
+  `mozregression-gui` file in the `mozregression-gui` directory. Example:
 
   ```sh
   tar xf mozregression-gui.tar.gz
@@ -41,4 +42,5 @@ package installable via [pip]. You can find it on pypi, as
 [github releases]: https://github.com/mozilla/mozregression/releases
 [bug 1366570]: https://bugzilla.mozilla.org/show_bug.cgi?id=1366570
 [bug 1581643]: https://bugzilla.mozilla.org/show_bug.cgi?id=1581643
+[bug 1647533]: https://bugzilla.mozilla.org/show_bug.cgi?id=1647533
 [pip]: https://pypi.org/project/pip/

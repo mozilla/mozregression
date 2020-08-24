@@ -39,8 +39,19 @@ The original command line tool, mozregression, is a Python (3.6+)
 package installable via [pip]. You can find it on pypi, as
 [mozregression](https://pypi.org/project/mozregression/)
 
+## mach
+
+If you have an existing [Firefox source checkout], you can install and use
+mozregression via [mach]. For example:
+
+```sh
+./mach mozregression --help
+```
+
 [github releases]: https://github.com/mozilla/mozregression/releases
 [bug 1366570]: https://bugzilla.mozilla.org/show_bug.cgi?id=1366570
 [bug 1581643]: https://bugzilla.mozilla.org/show_bug.cgi?id=1581643
 [bug 1647533]: https://bugzilla.mozilla.org/show_bug.cgi?id=1647533
 [pip]: https://pypi.org/project/pip/
+[Firefox source checkout]: https://firefox-source-docs.mozilla.org/contributing/vcs/mercurial.html
+[mach]: https://firefox-source-docs.mozilla.org/mach/index.html

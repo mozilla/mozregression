@@ -333,8 +333,12 @@ pyflakes==2.2.0 \
     --hash=sha256:0d94e0e05a19e57a99444b6ddcf9a6eb2e5c68d3ca1e98e90707af8152c90a92 \
     --hash=sha256:35b2d75ee967ea93b55750aa9edbbf72813e06a66ba54438df2cfac9e3c27fc8 \
     # via -r linters.in, flake8
-pyinstaller==3.6 \
-    --hash=sha256:3730fa80d088f8bb7084d32480eb87cbb4ddb64123363763cf8f2a1378c1c4b7 \
+pyinstaller-hooks-contrib==2020.7 \
+    --hash=sha256:5b6e06ba6072499189f5b8e1623d5f0414962941aac370ee4f842de25455be5b \
+    --hash=sha256:74936d044f319cd7a9dca322b46a818fcb6e2af1c67af62e8a6a3121eb2863d2 \
+    # via pyinstaller
+pyinstaller==4.0 \
+    --hash=sha256:970beb07115761d5e4ec317c1351b712fd90ae7f23994db914c633281f99bab0 \
     # via -r base.in
 pyparsing==2.4.7 \
     --hash=sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1 \

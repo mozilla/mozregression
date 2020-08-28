@@ -130,7 +130,10 @@ class IntegrationInfoFetcher(InfoFetcher):
         for run in reversed(status["runs"]):
             if run["state"] == "completed":
                 run_id = run["runId"]
-                build_date = datetime.strptime(run["resolved"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                try:
+                    build_date = datetime.strptime(run["resolved"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                except ValueError:
+                    build_date = datetime.strptime(run["resolved"], "%Y-%m-%dT%H:%M:%S.%f%z")
                 break
 
         if run_id is None:

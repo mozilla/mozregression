@@ -133,7 +133,7 @@ class IntegrationInfoFetcher(InfoFetcher):
                 try:
                     build_date = datetime.strptime(run["resolved"], "%Y-%m-%dT%H:%M:%S.%fZ")
                 except ValueError:
-                    build_date = datetime.strptime(run["resolved"], "%Y-%m-%dT%H:%M:%S.%f%z")
+                    build_date = datetime.strptime(run["resolved"], "%Y-%m-%dT%H:%M:%S.%f+00:00")
                 break
 
         if run_id is None:

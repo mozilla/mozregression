@@ -306,8 +306,8 @@ pyparsing==2.4.7 \
     --hash=sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1 \
     --hash=sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b \
     # via packaging
-pyrsistent==0.16.0 \
-    --hash=sha256:28669905fe725965daa16184933676547c5bb40a5153055a8dee2a4bd7933ad3 \
+pyrsistent==0.17.0 \
+    --hash=sha256:8690178e75460d3afe32d6222feed1ca1fdd4ef7317f6d8b42147bcce5f9ee75 \
     # via jsonschema
 pytest-mock==3.0.0 \
     --hash=sha256:98e02534f170e4f37d7e1abdfc5973fd4207aa609582291717f643764e71c925 \

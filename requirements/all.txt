@@ -333,9 +333,9 @@ pyflakes==2.2.0 \
     --hash=sha256:0d94e0e05a19e57a99444b6ddcf9a6eb2e5c68d3ca1e98e90707af8152c90a92 \
     --hash=sha256:35b2d75ee967ea93b55750aa9edbbf72813e06a66ba54438df2cfac9e3c27fc8 \
     # via -r linters.in, flake8
-pyinstaller-hooks-contrib==2020.7 \
-    --hash=sha256:5b6e06ba6072499189f5b8e1623d5f0414962941aac370ee4f842de25455be5b \
-    --hash=sha256:74936d044f319cd7a9dca322b46a818fcb6e2af1c67af62e8a6a3121eb2863d2 \
+pyinstaller-hooks-contrib==2020.8 \
+    --hash=sha256:4935b2b48c2a38ab4f8f80d77147781642bff7d31748fca07d26dbdeeefb560d \
+    --hash=sha256:71982f32883309e89675bfd10093cdcaca4f894bce11a91a34559b8224cf5e63 \
     # via pyinstaller
 pyinstaller==4.0 \
     --hash=sha256:970beb07115761d5e4ec317c1351b712fd90ae7f23994db914c633281f99bab0 \

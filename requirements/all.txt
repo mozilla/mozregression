@@ -134,9 +134,9 @@ coverage==5.1 \
     --hash=sha256:e1ea316102ea1e1770724db01998d1603ed921c54a86a2efcb03428d5417e489 \
     --hash=sha256:f90bfc4ad18450c80b024036eaf91e4a246ae287701aaa88eaebebf150868052 \
     # via -r dev.in
-diskcache==5.0.2 \
-    --hash=sha256:3a565dd2851380f3fc3128c77a7fb1d0812fa21bbc51826e67af9d58b1e478c7 \
-    --hash=sha256:6e350e795e197f979316a3f524a729edb13d1739959c6e9cb5df78a0a72c8255 \
+diskcache==5.0.3 \
+    --hash=sha256:ff4dc1e69d599dca8c23cecfcf69b23bfecae9c04aca424b4f02c511bb1438c2 \
+    --hash=sha256:5f4bc2018d653a1d7bbdcdecce45ea12061bf8d3b5f0323b7a5402054a285c52 \
     # via glean-parser
 distro==1.5.0 \
     --hash=sha256:0e58756ae38fbd8fc3020d54badb8eae17c5b9dcbed388b17bb55b8a5928df92 \

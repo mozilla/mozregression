@@ -152,9 +152,9 @@ flake8==3.8.3 \
 future==0.18.2 \
     --hash=sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d \
     # via pefile
-glean-parser==1.22.0 \
-    --hash=sha256:2b5518d3e67d7a322a7978edc4ddf194a68158c0e2cef9b50539e2b3dd963fb5 \
-    --hash=sha256:3833268d70b5f419fb4f6309cdf624031b9a32f67f94c7e888eb680172a6980b \
+glean-parser==1.28.5 \
+    --hash=sha256:330e045fd8410f661e8e4a67edc8ab4a125996381e5519c40ca98b34b9dc5ec8 \
+    --hash=sha256:29ac33298898e0fd607163b704d68f598c1d118c5056852246d621ec26f973bb \
     # via glean-sdk
 glean-sdk==31.2.2 \
     --hash=sha256:10f9062e5c3850cdb345e8238b14ee62a9499e7748a51f0467d398ec34fa593e \

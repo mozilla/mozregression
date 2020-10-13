@@ -4,6 +4,7 @@ Define the launcher classes, responsible of running the tested applications.
 
 from __future__ import absolute_import, print_function
 
+import copy
 import json
 import os
 import stat
@@ -204,7 +205,7 @@ class MozRunnerLauncher(Launcher):
         profile = self._create_profile(profile=profile, addons=addons, preferences=preferences)
 
         LOG.info("Launching %s" % self.binary)
-        self.runner = Runner(binary=self.binary, cmdargs=cmdargs, profile=profile)
+        self.runner = Runner(binary=self.binary, cmdargs=copy.copy(cmdargs), profile=profile)
 
         def _on_exit():
             # if we are stopping the process do not log anything.

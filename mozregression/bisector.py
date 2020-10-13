@@ -155,6 +155,7 @@ class NightlyHandler(BisectorHandler):
         )
 
     def _print_progress(self, new_data):
+        good_date, bad_date = self._reverse_if_find_fix(self.good_date, self.bad_date)
         next_good_date = new_data[0].build_date
         next_bad_date = new_data[-1].build_date
         next_days_range = abs((to_datetime(next_bad_date) - to_datetime(next_good_date)).days)
@@ -163,8 +164,8 @@ class NightlyHandler(BisectorHandler):
             " [%s, %s] (%d days) to [%s, %s] (%d days)"
             " (~%d steps left)"
             % (
-                self.good_date,
-                self.bad_date,
+                good_date,
+                bad_date,
                 abs((to_datetime(self.bad_date) - to_datetime(self.good_date)).days),
                 next_good_date,
                 next_bad_date,

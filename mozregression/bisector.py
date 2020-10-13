@@ -160,10 +160,11 @@ class NightlyHandler(BisectorHandler):
         next_bad_date = new_data[-1].build_date
         next_days_range = abs((to_datetime(next_bad_date) - to_datetime(next_good_date)).days)
         LOG.info(
-            "Narrowed nightly regression window from"
+            "Narrowed nightly %s window from"
             " [%s, %s] (%d days) to [%s, %s] (%d days)"
             " (~%d steps left)"
             % (
+                "fix" if self.find_fix else "regression",
                 good_date,
                 bad_date,
                 abs((to_datetime(self.bad_date) - to_datetime(self.good_date)).days),
@@ -220,10 +221,11 @@ class IntegrationHandler(BisectorHandler):
 
     def _print_progress(self, new_data):
         LOG.info(
-            "Narrowed integration regression window from [%s, %s]"
+            "Narrowed integration %s window from [%s, %s]"
             " (%d builds) to [%s, %s] (%d builds)"
             " (~%d steps left)"
             % (
+                "fix" if self.find_fix else "regression",
                 self.build_range[0].short_changeset,
                 self.build_range[-1].short_changeset,
                 len(self.build_range),

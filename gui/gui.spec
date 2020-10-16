@@ -64,7 +64,8 @@ else:
             debug=False,
             bootloader_ignore_signals=False,
             strip=False,
-            upx=False,
+            upx=True,
+            upx_exclude=['vcruntime140.dll', 'python38.dll'],
             console=False,
             icon='wininst/app_icon.ico')
     coll = COLLECT(exe,
@@ -73,5 +74,5 @@ else:
             a.datas,
             strip=False,
             upx=True,
-            upx_exclude=[],
+            upx_exclude=['vcruntime140.dll', 'python38.dll'],
             name='mozregression-gui')

@@ -112,16 +112,18 @@ def do_bundle(options):
 
     # create a bundle for the application
     # UPX_EXCLUDE = ["vcruntime140.dll", "python36.dll"]
-    call(
+    ARGS = [
         "pyinstaller",
+        "--upx-dir",
+        options.upx_path,
         "--upx-exclude",
         "vcruntime140.dll",
         "--upx-exclude",
         "python38.dll",
-        "--upx-dir",
-        options.upx_path,
         "gui.spec",
-    )
+    ]
+    print(ARGS)
+    call(*ARGS)
 
     # remove any pyside2 files we don't need
     unwanted_re = "|".join(UNWANTED_PYSIDE_LIBRARIES)

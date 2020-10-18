@@ -115,94 +115,6 @@ def do_bundle(options):
     # UPX_EXCLUDE = ["vcruntime140.dll", "python36.dll"]
     ARGS = [
         "pyinstaller",
-        "--upx-dir",
-        options.upx_path,
-        "--upx-exclude",
-        "vcruntime140.dll",
-        "--upx-exclude",
-        "python38.dll",
-        "--upx-exclude",
-        "qxdgdesktopportal.dll",
-        "--upx-exclude",
-        "qwbmp.dll",
-        "--upx-exclude",
-        "qjpeg.dll",
-        "--upx-exclude",
-        "qicns.dll",
-        "--upx-exclude",
-        "qwindowsvistastyle.dll",
-        "--upx-exclude",
-        "qtiff.dll",
-        "--upx-exclude",
-        "qwindows.dll",
-        "--upx-exclude",
-        "qtvirtualkeyboardplugin.dll",
-        "--upx-exclude",
-        "qoffscreen.dll",
-        "--upx-exclude",
-        "libglesv2.dll",
-        "--upx-exclude",
-        "qsvgicon.dll",
-        "--upx-exclude",
-        "qminimal.dll",
-        "--upx-exclude",
-        "qtga.dll",
-        "--upx-exclude",
-        "qwebgl.dll",
-        "--upx-exclude",
-        "qwebp.dll",
-        "--upx-exclude",
-        "qgif.dll",
-        "--upx-exclude",
-        "opengl32sw.dll",
-        "--upx-exclude",
-        "qsvg.dll",
-        "--upx-exclude",
-        "libegl.dll",
-        "--upx-exclude",
-        "d3dcompiler_47.dll",
-        "--upx-exclude",
-        "qico.dll",
-        "--upx-exclude",
-        "qt5core.dll",
-        "--upx-exclude",
-        "qt5gui.dll",
-        "--upx-exclude",
-        "qt5widgets.dll",
-        "--upx-exclude",
-        "qt5qml.dll",
-        "--upx-exclude",
-        "qt5virtualkeyboard.dll",
-        "--upx-exclude",
-        "qt5svg.dll",
-        "--upx-exclude",
-        "qt5quick.dll",
-        "--upx-exclude",
-        "qt5network.dll",
-        "--upx-exclude",
-        "qt5websockets.dll",
-        "--upx-exclude",
-        "libcrypto-1_1.dll",
-        "--upx-exclude",
-        "libssl-1_1.dll",
-        "--upx-exclude",
-        "tcl86t.dll",
-        "--upx-exclude",
-        "tk86t.dll",
-        "--upx-exclude",
-        "libffi-7.dll",
-        "--upx-exclude",
-        "sqlite3.dll",
-        "--upx-exclude",
-        "pyside2.abi3.dll",
-        "--upx-exclude",
-        "shiboken2.abi3.dll",
-        "--upx-exclude",
-        "qt5qmlmodels.dll",
-        "--upx-exclude",
-        "msvcp140.dll",
-        "--upx-exclude",
-        "glean_ffi.dll",
         "gui.spec",
     ]
     print(ARGS)
@@ -222,6 +134,10 @@ def do_bundle(options):
 
     # create an installer
     if IS_WIN:
+        if options.upx_path:
+            call(
+                options.upx_path, os.path.join("dist", "mozregression-gui", "mozregression-gui.exe")
+            )
         makensis_path = os.path.join(options.nsis_path, "makensis.exe")
         call(makensis_path, "wininst.nsi", cwd="wininst")
     elif IS_MAC:
@@ -264,7 +180,7 @@ def parse_args():
             default="C:\\NSIS",
             help="your NSIS path on the" " system(default: %(default)r)",
         )
-        bundle.add_argument("--upx-path", default=os.path.curdir, help="Path to upx executable")
+        bundle.add_argument("--upx-path", default=None, help="Path to upx executable")
 
     bundle.set_defaults(func=do_bundle)
 

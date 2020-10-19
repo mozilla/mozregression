@@ -25,7 +25,6 @@ UNWANTED_PYSIDE_LIBRARIES = [
     "Qt5?3DRender",
     "Qt5?Charts",
     "Qt5?Concurrent",
-    "Qt5?DBus",
     "Qt5?DataVisualization",
     "Qt5?Help",
     "Qt5?Location",
@@ -112,13 +111,7 @@ def do_bundle(options):
             shutil.rmtree(dirname)
 
     # create a bundle for the application
-    # UPX_EXCLUDE = ["vcruntime140.dll", "python36.dll"]
-    ARGS = [
-        "pyinstaller",
-        "gui.spec",
-    ]
-    print(ARGS)
-    call(*ARGS)
+    call("pyinstaller", "gui.spec")
 
     # remove any pyside2 files we don't need
     unwanted_re = "|".join(UNWANTED_PYSIDE_LIBRARIES)
@@ -126,7 +119,7 @@ def do_bundle(options):
         qt_filenames = [
             os.path.join(root, filename)
             for filename in filenames
-            if re.search(unwanted_re, filename, re.IGNORECASE)
+            if re.search(unwanted_re, filename)
         ]
         for qt_filename in qt_filenames:
             print("unlinking {}".format(qt_filename))

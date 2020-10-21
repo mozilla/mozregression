@@ -127,6 +127,10 @@ def do_bundle(options):
 
     # create an installer
     if IS_WIN:
+        if options.upx_path:
+            call(
+                options.upx_path, os.path.join("dist", "mozregression-gui", "mozregression-gui.exe")
+            )
         makensis_path = os.path.join(options.nsis_path, "makensis.exe")
         call(makensis_path, "wininst.nsi", cwd="wininst")
     elif IS_MAC:
@@ -169,6 +173,7 @@ def parse_args():
             default="C:\\NSIS",
             help="your NSIS path on the" " system(default: %(default)r)",
         )
+        bundle.add_argument("--upx-path", default=None, help="Path to upx executable")
 
     bundle.set_defaults(func=do_bundle)
 

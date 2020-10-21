@@ -16,7 +16,9 @@ install:
   - "pip install -e ."
 test_script:
   # bundle the application
-  - "python gui\\build.py bundle --nsis-path \"C:\\Program Files (x86)\\NSIS\""
+  - "curl -L -o upx.zip https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip"
+  - "7z e upx.zip *.exe -r"
+  - "python gui\\build.py bundle --nsis-path \"C:\\Program Files (x86)\\NSIS\" --upx-path \"%CD%\\upx.exe\""
   - "pytest tests"
   - "python gui\\build.py test"
 

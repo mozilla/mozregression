@@ -78,10 +78,10 @@ class BuildSelection(QWidget):
         elif currentw == self.ui.s_release:
             return parse_date(date_of_release(str(self.ui.release.currentText())))
         elif currentw == self.ui.s_buildid:
-            buildid = self.ui.buildid.text()
+            buildid = self.ui.buildid.text().strip()
             try:
                 return parse_date(buildid)
             except DateFormatError:
                 raise DateFormatError(buildid, "Not a valid build id: `%s`")
         elif currentw == self.ui.s_changeset:
-            return self.ui.changeset.text()
+            return self.ui.changeset.text().strip()

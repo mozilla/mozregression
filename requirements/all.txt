@@ -247,9 +247,9 @@ mohawk==1.1.0 \
     --hash=sha256:3ed296a30453d0b724679e0fd41e4e940497f8e461a9a9c3b7f36e43bab0fa09 \
     --hash=sha256:d2a0e3ab10a209cc79e95e28f2dd54bd4a73fd1998ffe27b7ba0f962b6be9723 \
     # via taskcluster
-more-itertools==8.5.0 \
-    --hash=sha256:9b30f12df9393f0d28af9210ff8efe48d10c94f73e5daf886f10c4b0b0b4f03c \
-    --hash=sha256:6f83822ae94818eae2612063a5101a7311e68ae8002005b5e05f03fd74a86a20 \
+more-itertools==8.6.0 \
+    --hash=sha256:8e1a2a43b2f2727425f2b5839587ae37093f19153dc26c0927d1048ff6557330 \
+    --hash=sha256:b3a9005928e5bed54076e6e549c792b306fddfe72b2d1d22dd63d42d5d3899cf \
     # via pytest
 mozdevice==4.0.2 \
     --hash=sha256:2f0f2694218176a91fea6b93e9836e5dd1f751310805bbbe439141f5f26bd789 \

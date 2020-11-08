@@ -34,8 +34,10 @@ def test_switch_to_release_widget(build_selection, qtbot):
     "widname,value,expected",
     [
         ("buildid", "20150102101112", datetime.datetime(2015, 1, 2, 10, 11, 12)),
+        ("buildid", " \t20150102101112  ", datetime.datetime(2015, 1, 2, 10, 11, 12)),
         ("release", "40", datetime.date(2015, 5, 11)),
         ("changeset", "abc123", "abc123"),
+        ("changeset", " abc123\t  ", "abc123"),
     ],
 )
 def test_get_value(build_selection, qtbot, widname, value, expected):

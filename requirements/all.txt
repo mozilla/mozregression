@@ -480,9 +480,9 @@ taskcluster==29.0.1 \
     --hash=sha256:8eaa33c600843272618f1998a38d4dcf9d374a5604882d9a53c3acd1e8af4fe5 \
     --hash=sha256:ee37d56c3d8c83722e66ef6ca4a54ce1916ef2e452c05672f9935b65d969a433 \
     # via -r base.in
-toml==0.10.1 \
-    --hash=sha256:bda89d5935c2eac546d648028b9901107a595863cb36bae0c73ac804a9b4ce88 \
-    --hash=sha256:926b612be1e5ce0634a2ca03470f95169cf16f939018233a670519cb4ac58b0f \
+toml==0.10.2 \
+    --hash=sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b \
+    --hash=sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f \
     # via black
 typed-ast==1.4.1 \
     --hash=sha256:0666aa36131496aed8f7be0410ff974562ab7eeac11ef351def9ea6fa28f6355 \

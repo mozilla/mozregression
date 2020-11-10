@@ -24,7 +24,11 @@ def retry_get(url, **karwgs):
         get_http_session().get,
         attempts=3,
         sleeptime=1,
-        retry_exceptions=(requests.exceptions.HTTPError, requests.exceptions.ConnectionError,),
+        retry_exceptions=(
+            requests.exceptions.HTTPError,
+            requests.exceptions.ConnectionError,
+            requests.exceptions.Timeout,
+        ),
         args=(url,),
         kwargs=karwgs,
     )

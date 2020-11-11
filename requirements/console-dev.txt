@@ -394,9 +394,9 @@ typing-extensions==3.7.4.2 \
     --hash=sha256:79ee589a3caca649a9bfd2a8de4709837400dfa00b6cc81962a1e6a1815969ae \
     --hash=sha256:f8d2bd89d25bc39dabe7d23df520442fa1d8969b82544370e03d88b5a591c392 \
     # via -r python35-compat.in
-urllib3==1.25.11 \
-    --hash=sha256:f5321fbe4bf3fefa0efd0bfe7fb14e90909eb62a48ccda331726b4319897dd5e \
-    --hash=sha256:8d7eaa5a82a1cac232164990f04874c594c9453ec55eef02eab885aa02fc17a2 \
+urllib3==1.26.1 \
+    --hash=sha256:61ad24434555a42c0439770462df38b47d05d9e8e353d93ec3742900975e3e65 \
+    --hash=sha256:097116a6f16f13482d2a2e56792088b9b2920f4eb6b4f84a2c90555fb673db74 \
     # via requests
 wcwidth==0.2.5 \
     --hash=sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784 \

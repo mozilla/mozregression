@@ -156,7 +156,12 @@ class TestCommandTestRunner(unittest.TestCase):
     @patch("mozregression.test_runner.create_launcher")
     @patch("subprocess.call")
     def evaluate(
-        self, call, create_launcher, build_info={}, retcode=0, subprocess_call_effect=None,
+        self,
+        call,
+        create_launcher,
+        build_info={},
+        retcode=0,
+        subprocess_call_effect=None,
     ):
         build_info["app_name"] = "myapp"
         call.return_value = retcode
@@ -207,14 +212,20 @@ class TestCommandTestRunner(unittest.TestCase):
         # in case the command line is empty,
         # subprocess.call will raise IndexError
         self.assertRaisesRegex(
-            errors.TestCommandError, "Empty", self.evaluate, subprocess_call_effect=IndexError,
+            errors.TestCommandError,
+            "Empty",
+            self.evaluate,
+            subprocess_call_effect=IndexError,
         )
 
     def test_command_missing_error(self):
         # in case the command is missing or not executable,
         # subprocess.call will raise IOError
         self.assertRaisesRegex(
-            errors.TestCommandError, "not found", self.evaluate, subprocess_call_effect=OSError,
+            errors.TestCommandError,
+            "not found",
+            self.evaluate,
+            subprocess_call_effect=OSError,
         )
 
     def test_run_once(self):

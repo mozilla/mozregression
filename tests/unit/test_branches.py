@@ -77,7 +77,11 @@ def test_get_category(name, expected):
         ("Merge autoland to central, a=merge", "autoland", "mozilla-central"),
         ("merge autoland to mozilla-central a=merge", "autoland", "mozilla-central"),
         ("Merge m-i to m-c, a=merge CLOSED TREE", "mozilla-inbound", "mozilla-central"),
-        ("Merge mozilla inbound to central a=merge", "mozilla-inbound", "mozilla-central",),
+        (
+            "Merge mozilla inbound to central a=merge",
+            "mozilla-inbound",
+            "mozilla-central",
+        ),
     ],
 )
 def test_find_branch_in_merge_commit(commit, branch, current):

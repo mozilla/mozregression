@@ -29,7 +29,10 @@ def create_launcher(build_info):
         else:
             desc = "for %s" % build_info.build_date
     else:
-        desc = "built on %s, revision %s" % (build_info.build_date, build_info.short_changeset,)
+        desc = "built on %s, revision %s" % (
+            build_info.build_date,
+            build_info.short_changeset,
+        )
     LOG.info("Running %s build %s" % (build_info.repo_name, desc))
 
     return mozlauncher(build_info)

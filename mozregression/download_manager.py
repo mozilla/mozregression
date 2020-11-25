@@ -55,7 +55,8 @@ class Download(object):
         progress=None,
     ):
         self.thread = threading.Thread(
-            target=self._download, args=(url, dest, finished_callback, chunk_size, session),
+            target=self._download,
+            args=(url, dest, finished_callback, chunk_size, session),
         )
         self._lock = threading.Lock()
         self.__url = url
@@ -328,7 +329,11 @@ class BuildDownloadManager(DownloadManager):
     """
 
     def __init__(
-        self, destdir, session=requests, background_dl_policy="cancel", persist_limit=None,
+        self,
+        destdir,
+        session=requests,
+        background_dl_policy="cancel",
+        persist_limit=None,
     ):
         DownloadManager.__init__(self, destdir, session=session, persist_limit=persist_limit)
         self._downloads_bg = set()

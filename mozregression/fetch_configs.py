@@ -494,7 +494,10 @@ class ThunderbirdIntegrationConfigMixin(IntegrationConfigMixin):
     def tk_routes(self, push):
         for build_type in self.build_types:
             yield "comm.v2.{}.revision.{}.thunderbird.{}-{}".format(
-                self.integration_branch, push.changeset, _common_tk_part(self), build_type,
+                self.integration_branch,
+                push.changeset,
+                _common_tk_part(self),
+                build_type,
             )
             self._inc_used_build()
         return

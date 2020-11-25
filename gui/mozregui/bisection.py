@@ -167,7 +167,9 @@ class GuiBisector(QObject, Bisector):
         # a skip.
         if self.download_in_background and self.test_runner.verdict != "s":
             self.index_promise = IndexPromise(
-                self.mid, self.bisection._download_next_builds, args=(self._persist_files,),
+                self.mid,
+                self.bisection._download_next_builds,
+                args=(self._persist_files,),
             )
         # run the build evaluation
         self.bisection.evaluate(self.build_infos)

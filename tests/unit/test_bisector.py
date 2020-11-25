@@ -48,7 +48,8 @@ class TestBisectorHandler(unittest.TestCase):
         self.handler.found_repo = "https://hg.mozilla.repo"
         self.handler.good_revision = self.handler.bad_revision = "2"
         self.assertEqual(
-            self.handler.get_pushlog_url(), "https://hg.mozilla.repo/pushloghtml?changeset=2",
+            self.handler.get_pushlog_url(),
+            "https://hg.mozilla.repo/pushloghtml?changeset=2",
         )
 
     @patch("mozregression.bisector.LOG")

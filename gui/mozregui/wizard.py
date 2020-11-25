@@ -309,7 +309,10 @@ class Wizard(QWizard):
 class BisectionWizard(Wizard):
     def __init__(self, parent=None):
         Wizard.__init__(
-            self, "Bisection wizard", (IntroPage, ProfilePage, BuildSelectionPage), parent=parent,
+            self,
+            "Bisection wizard",
+            (IntroPage, ProfilePage, BuildSelectionPage),
+            parent=parent,
         )
 
 

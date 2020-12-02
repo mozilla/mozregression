@@ -27,8 +27,8 @@ def parse_date(date_string):
         raise DateFormatError(date_string)
     try:
         return datetime.date(int(matched.group(1)), int(matched.group(2)), int(matched.group(3)))
-    except ValueError:
-        raise DateValueError(date_string)
+    except ValueError as ex:
+        raise DateValueError(date_string, ex)
 
 
 def to_datetime(date):

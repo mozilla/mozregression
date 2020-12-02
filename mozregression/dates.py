@@ -8,7 +8,7 @@ import calendar
 import datetime
 import re
 
-from mozregression.errors import DateFormatError
+from mozregression.errors import DateFormatError, DateValueError
 
 
 def parse_date(date_string):
@@ -25,7 +25,10 @@ def parse_date(date_string):
     matched = regex.match(date_string)
     if not matched:
         raise DateFormatError(date_string)
-    return datetime.date(int(matched.group(1)), int(matched.group(2)), int(matched.group(3)))
+    try:
+        return datetime.date(int(matched.group(1)), int(matched.group(2)), int(matched.group(3)))
+    except ValueError:
+        raise DateValueError(date_string)
 
 
 def to_datetime(date):

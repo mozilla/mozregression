@@ -25,6 +25,15 @@ class DateFormatError(MozRegressionError):
         MozRegressionError.__init__(self, format % date_string)
 
 
+class DateValueError(MozRegressionError):
+    """
+    Raised when the integer values of a parsed date are invalid.
+    """
+
+    def __init__(self, date_string, format="Invalid date value: `%s`"):
+        MozRegressionError.__init__(self, format % date_string)
+
+
 class LauncherNotRunnable(MozRegressionError):
     """
     Raised when a :class:`mozregression.launchers.Launcher` can not be

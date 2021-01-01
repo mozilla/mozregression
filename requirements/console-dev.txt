@@ -153,9 +153,9 @@ glean-sdk==31.2.2 \
 idna-ssl==1.1.0 \
     --hash=sha256:a933e3bb13da54383f9e8f35dc4f9cb9eb9b3b78c6b36f311254d6d0d92c6c7c \
     # via -r python36-compat.in
-idna==2.10 \
-    --hash=sha256:b307872f855b18632ce0c21c5e45be78c0ea7ae4c15c828c20788b26921eb3f6 \
-    --hash=sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0 \
+idna==3.0 \
+    --hash=sha256:320229aadbdfc597bc28876748cc0c9d04d476e0fe6caacaaddea146365d9f63 \
+    --hash=sha256:c9a26e10e5558412384fac891eefb41957831d31be55f1e2c98ed97a70abb969 \
     # via idna-ssl, requests, yarl
 importlib-metadata==3.1.0 \
     --hash=sha256:590690d61efdd716ff82c39ca9a9d4209252adfe288a4b5721181050acbd4175 \

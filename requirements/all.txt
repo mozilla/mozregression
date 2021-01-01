@@ -168,9 +168,9 @@ glean-sdk==31.2.2 \
     --hash=sha256:a05fc900db585dd3df665340deb9e3f956fc31d6c5836c08513cc8220e60d6bc \
     --hash=sha256:c25f8f4f280b33b0dbc57b1a4a31350c108fca56be014261251b68af5eff361a \
     # via -r base.in
-idna==2.10 \
-    --hash=sha256:b307872f855b18632ce0c21c5e45be78c0ea7ae4c15c828c20788b26921eb3f6 \
-    --hash=sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0 \
+idna==3.0 \
+    --hash=sha256:320229aadbdfc597bc28876748cc0c9d04d476e0fe6caacaaddea146365d9f63 \
+    --hash=sha256:c9a26e10e5558412384fac891eefb41957831d31be55f1e2c98ed97a70abb969 \
     # via requests, yarl
 importlib-metadata==3.1.0 \
     --hash=sha256:590690d61efdd716ff82c39ca9a9d4209252adfe288a4b5721181050acbd4175 \

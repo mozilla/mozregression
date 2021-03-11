@@ -41,6 +41,7 @@ jobs:
       run: |
         sudo apt-get install x11-utils libxkbcommon-x11-0
         pip install pytest-xvfb
+        export QT_DEBUG_PLUGINS=1
         pytest -v gui/tests
         #coverage run -m pytest tests && mv .coverage .coverage.core
         #coverage run gui/build.py test && mv .coverage .coverage.gui

@@ -42,6 +42,7 @@ jobs:
         sudo apt-get install x11-utils libxkbcommon-x11-0
         sudo Xvfb :1 -screen 0 1024x768x24 </dev/null &
         export DISPLAY=":1"
+        export QT_DEBUG_PLUGINS=1
         xvfb-run coverage run -m pytest tests && mv .coverage .coverage.core
         xvfb-run coverage run gui/build.py test && mv .coverage .coverage.gui
         coverage combine

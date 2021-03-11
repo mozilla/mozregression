@@ -16,9 +16,14 @@ jobs:
     strategy:
       matrix:
         python-version: [3.7]
-
+    env:
+      DISPLAY: ':99.0'
     steps:
     - uses: actions/checkout@v2
+    - name: setup ${{ matrix.os }}
+      run: |
+        sudo apt install libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
+        /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX    
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
@@ -39,9 +44,6 @@ jobs:
         ls -alh gui/mozregression-gui.tar.gz
     - name: Test
       run: |
-        sudo apt-get install x11-utils libxkbcommon-x11-0
-        pip install pytest-xvfb
-        export QT_DEBUG_PLUGINS=1
         pytest -v gui/tests
         #coverage run -m pytest tests && mv .coverage .coverage.core
         #coverage run gui/build.py test && mv .coverage .coverage.gui

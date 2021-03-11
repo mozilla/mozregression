@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.7]
 
     steps:
     - uses: actions/checkout@v2
@@ -33,11 +33,14 @@ jobs:
         ./bin/lint-check.sh || (echo "Lint fix results:" && ./bin/lint-fix.sh && git diff && false)
         bin/update-glean-documentation.sh
         if [[   $(git diff docs/glean | head -c1 | wc -c) -ne 0 ]]; then echo "Unexpected glean changes! Please regenerate glean documentation via `./bin/update-glean-documentation.sh`." && false; fi
-    - name: Build and test
+    - name: Build
       run: |
         python gui/build.py bundle
         ls -alh gui/mozregression-gui.tar.gz
+    - name: Test
+      run: |
         coverage run -m pytest tests && mv .coverage .coverage.core
-        coverage run gui/build.py test && mv .coverage .coverage.gui
+        apt-get install xvfb
+        coverage run xvfb-run --auto-servernum gui/build.py test && mv .coverage .coverage.gui
         coverage combine
         pip install coveralls; coveralls

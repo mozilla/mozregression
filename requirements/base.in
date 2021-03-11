@@ -3,6 +3,7 @@ beautifulsoup4
 colorama
 configobj
 glean_sdk
+importlib-metadata
 mozdevice
 mozfile
 mozinfo

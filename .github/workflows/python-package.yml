@@ -39,6 +39,7 @@ jobs:
         ls -alh gui/mozregression-gui.tar.gz
     - name: Test
       run: |
+        sudo apt-get install x11-utils libxkbcommon-x11-0
         xvfb-run --auto-servernum coverage run -m pytest tests && mv .coverage .coverage.core
         xvfb-run --auto-servernum coverage run gui/build.py test && mv .coverage .coverage.gui
         coverage combine

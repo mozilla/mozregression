@@ -41,7 +41,8 @@ jobs:
       run: |
         sudo apt-get install x11-utils libxkbcommon-x11-0
         pip install pytest-xvfb
-        coverage run -m pytest tests && mv .coverage .coverage.core
-        coverage run gui/build.py test && mv .coverage .coverage.gui
-        coverage combine
-        pip install coveralls; coveralls
+        pytest -v gui/tests
+        #coverage run -m pytest tests && mv .coverage .coverage.core
+        #coverage run gui/build.py test && mv .coverage .coverage.gui
+        #coverage combine
+        #pip install coveralls; coveralls

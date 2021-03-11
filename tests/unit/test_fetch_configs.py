@@ -233,11 +233,13 @@ class TestGVEConfig(unittest.TestCase):
 class TestGetBuildUrl(unittest.TestCase):
     def test_for_linux(self):
         self.assertEqual(
-            get_build_regex("test", "linux", 32, "x86"), r"(target|test.*linux-i686)\.tar.bz2",
+            get_build_regex("test", "linux", 32, "x86"),
+            r"(target|test.*linux-i686)\.tar.bz2",
         )
 
         self.assertEqual(
-            get_build_regex("test", "linux", 64, "x86_64"), r"(target|test.*linux-x86_64)\.tar.bz2",
+            get_build_regex("test", "linux", 64, "x86_64"),
+            r"(target|test.*linux-x86_64)\.tar.bz2",
         )
 
         self.assertEqual(
@@ -248,7 +250,8 @@ class TestGetBuildUrl(unittest.TestCase):
     def test_for_win(self):
         self.assertEqual(get_build_regex("test", "win", 32, "x86"), r"(target|test.*win32)\.zip")
         self.assertEqual(
-            get_build_regex("test", "win", 64, "x86_64"), r"(target|test.*win64(-x86_64)?)\.zip",
+            get_build_regex("test", "win", 64, "x86_64"),
+            r"(target|test.*win64(-x86_64)?)\.zip",
         )
         self.assertEqual(
             get_build_regex("test", "win", 64, "x86_64", with_ext=False),
@@ -258,14 +261,16 @@ class TestGetBuildUrl(unittest.TestCase):
             get_build_regex("test", "win", 32, "aarch64"), r"(target|test.*win32)\.zip"
         )
         self.assertEqual(
-            get_build_regex("test", "win", 64, "aarch64"), r"(target|test.*win64-aarch64)\.zip",
+            get_build_regex("test", "win", 64, "aarch64"),
+            r"(target|test.*win64-aarch64)\.zip",
         )
 
     def test_for_mac(self):
         self.assertEqual(get_build_regex("test", "mac", 32, "x86"), r"(target|test.*mac.*)\.dmg")
         self.assertEqual(get_build_regex("test", "mac", 64, "x86_64"), r"(target|test.*mac.*)\.dmg")
         self.assertEqual(
-            get_build_regex("test", "mac", 64, "x86_64", with_ext=False), r"(target|test.*mac.*)",
+            get_build_regex("test", "mac", 64, "x86_64", with_ext=False),
+            r"(target|test.*mac.*)",
         )
 
     def test_unknown_os(self):

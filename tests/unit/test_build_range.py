@@ -80,7 +80,8 @@ def test_mid_point_interrupt(range_creator):
 
 def _build_range(fb, rng):
     return build_range.BuildRange(
-        fb.build_info_fetcher, [build_range.FutureBuildInfo(fb.build_info_fetcher, i) for i in rng],
+        fb.build_info_fetcher,
+        [build_range.FutureBuildInfo(fb.build_info_fetcher, i) for i in rng],
     )
 
 
@@ -126,7 +127,13 @@ def range_after(fb, expand):
             ["can't find a build before"],
         ),
         # unable to find any valid builds in after range
-        (10, list(range(10)), list(range(9, 20)), list(range(0, 9)), ["can't find a build after"],),
+        (
+            10,
+            list(range(10)),
+            list(range(9, 20)),
+            list(range(0, 9)),
+            ["can't find a build after"],
+        ),
         # unable to find valid builds in before and after
         (
             10,

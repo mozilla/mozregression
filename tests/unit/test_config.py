@@ -20,7 +20,13 @@ def tmp():
     "os_,bits,inputs,conf_dir_exists,results",
     [
         ("mac", 64, ["", ""], False, {"persist": None, "persist-size-limit": "20.0"}),
-        ("linux", 32, ["NONE", "NONE"], True, {"persist": "", "persist-size-limit": "0.0"},),
+        (
+            "linux",
+            32,
+            ["NONE", "NONE"],
+            True,
+            {"persist": "", "persist-size-limit": "0.0"},
+        ),
         ("win", 32, ["", "10"], True, {"persist": None, "persist-size-limit": "10.0"}),
         # on 64 bit (except for mac), bits option is asked
         (

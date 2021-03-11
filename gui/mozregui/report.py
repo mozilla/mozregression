@@ -63,7 +63,11 @@ class StartItem(ReportItem):
     def status_text(self):
         if "pushlog_url" not in self.data:
             return ReportItem.status_text(self)
-        return "Bisecting on %s [%s - %s]" % (self.data["repo_name"], self.first, self.last,)
+        return "Bisecting on %s [%s - %s]" % (
+            self.data["repo_name"],
+            self.first,
+            self.last,
+        )
 
 
 class StepItem(ReportItem):

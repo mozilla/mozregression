@@ -199,7 +199,12 @@ class MozRunnerLauncher(Launcher):
             json.dump(updatePolicy, fp, indent=2)
 
     def _start(
-        self, profile=None, addons=(), cmdargs=(), preferences=None, adb_profile_dir=None,
+        self,
+        profile=None,
+        addons=(),
+        cmdargs=(),
+        preferences=None,
+        adb_profile_dir=None,
     ):
         profile = self._create_profile(profile=profile, addons=addons, preferences=preferences)
 
@@ -221,7 +226,8 @@ class MozRunnerLauncher(Launcher):
                 except Exception:
                     print()
                     LOG.error(
-                        "Error while waiting process, consider filing a bug.", exc_info=True,
+                        "Error while waiting process, consider filing a bug.",
+                        exc_info=True,
                     )
                     return
                 if exitcode != 0:
@@ -391,7 +397,12 @@ class AndroidLauncher(Launcher):
         self.adb.run_as_package = self.adb.install_app(dest)
 
     def _start(
-        self, profile=None, addons=(), cmdargs=(), preferences=None, adb_profile_dir=None,
+        self,
+        profile=None,
+        addons=(),
+        cmdargs=(),
+        preferences=None,
+        adb_profile_dir=None,
     ):
         # for now we don't handle addons on the profile for fennec
         profile = self._create_profile(profile=profile, preferences=preferences)

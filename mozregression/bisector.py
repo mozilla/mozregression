@@ -85,7 +85,11 @@ class BisectorHandler(metaclass=ABCMeta):
         first_rev, last_rev = self.get_range()
         if first_rev == last_rev:
             return "%s/pushloghtml?changeset=%s" % (self.found_repo, first_rev)
-        return "%s/pushloghtml?fromchange=%s&tochange=%s" % (self.found_repo, first_rev, last_rev,)
+        return "%s/pushloghtml?fromchange=%s&tochange=%s" % (
+            self.found_repo,
+            first_rev,
+            last_rev,
+        )
 
     def get_range(self):
         return self._reverse_if_find_fix(self.good_revision, self.bad_revision)
@@ -213,7 +217,11 @@ class NightlyHandler(BisectorHandler):
             return BisectorHandler.get_pushlog_url(self)
         else:
             start, end = self.get_date_range()
-            return "%s/pushloghtml?startdate=%s&enddate=%s\n" % (self.found_repo, start, end,)
+            return "%s/pushloghtml?startdate=%s&enddate=%s\n" % (
+                self.found_repo,
+                start,
+                end,
+            )
 
 
 class IntegrationHandler(BisectorHandler):
@@ -320,7 +328,10 @@ class IntegrationHandler(BisectorHandler):
         try:
             jp2 = JsonPushes(branch)
             raw = [int(p.push_id) for p in jp2.pushes_within_changes(oldest, youngest)]
-            data = jp2.pushes(startID=str(min(raw) - 2), endID=str(max(raw)),)
+            data = jp2.pushes(
+                startID=str(min(raw) - 2),
+                endID=str(max(raw)),
+            )
 
             older = data[0].changeset
             youngest = data[-1].changeset

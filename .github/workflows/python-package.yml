@@ -40,7 +40,7 @@ jobs:
     - name: Test
       run: |
         coverage run -m pytest tests && mv .coverage .coverage.core
-        apt-get install xvfb
+        sudo apt-get install -y xvfb
         coverage run xvfb-run --auto-servernum gui/build.py test && mv .coverage .coverage.gui
         coverage combine
         pip install coveralls; coveralls

@@ -42,7 +42,7 @@ setup(
         """,
     package_data={"mozregression": ["*.yaml"]},
     platforms=["Any"],
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     setup_requires=["setuptools_scm"],
     install_requires=DEPENDENCIES,
     classifiers=[
@@ -51,7 +51,6 @@ setup(
         "Environment :: Console",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3 :: Only",

@@ -20,7 +20,7 @@
       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
      </property>
      <item row="0" column="0">
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="persist_directory_label">
        <property name="toolTip">
         <string>The directory in which downloaded files are to persist.</string>
        </property>
@@ -33,7 +33,7 @@
       <widget class="DirectorySelectWidget" name="persist" native="true"/>
      </item>
      <item row="1" column="0">
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="size_limit_persist_label">
        <property name="toolTip">
         <string>Size limit of the persist directory, in GiB. 0 means no limit.</string>
        </property>

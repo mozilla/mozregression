@@ -65,7 +65,7 @@ On Linux/MacOS:
 ```bash
 virtualenv -p python3 venv
 source venv/bin/activate
-pip install -r requirements\build.txt -r requirements\linters.txt
+pip install -r requirements/build.txt -r requirements/linters.txt
 pip install -e .
 ```
 

@@ -98,7 +98,6 @@ jobs:
       # The deployment target is picked up by the Python build tools automatically
       PYTHON_VERSION: 3.9.1
       MACOSX_DEPLOYMENT_TARGET: 10.9
-      PATH: /Library/Frameworks/Python.framework/Versions/3.9/bin:$PATH
     steps:
       - uses: actions/checkout@v2
       - name: Get Python
@@ -107,6 +106,7 @@ jobs:
         # Need to copy the pkg because the installer command removes it, breaking the cache
         run: |
           sudo installer -pkg python.pkg -target /
+          echo "/Library/Frameworks/Python.framework/Versions/3.9/bin" >> $GITHUB_PATH
           which python
           python --version
       - name: Install dependencies

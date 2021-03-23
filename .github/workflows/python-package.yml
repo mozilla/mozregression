@@ -45,7 +45,8 @@ jobs:
       - name: Build
         run: |
           python gui/build.py bundle
-          ls -alh gui/mozregression-gui.tar.gz
+          ls -alh gui/mozregression-gui.tar.gz || true
+          ls -alh gui/dist/mozregression-gui.dmg || true
       - name: Test
         run: |
           pytest -v gui/tests

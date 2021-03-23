@@ -98,6 +98,7 @@ jobs:
       # The deployment target is picked up by the Python build tools automatically
       PYTHON_VERSION: 3.9.1
       MACOSX_DEPLOYMENT_TARGET: 10.9
+      PATH: /Library/Frameworks/Python.framework/Versions/3.9/bin:$PATH
     steps:
       - uses: actions/checkout@v2
       - name: Get Python
@@ -106,19 +107,20 @@ jobs:
         # Need to copy the pkg because the installer command removes it, breaking the cache
         run: |
           sudo installer -pkg python.pkg -target /
-          python3 --version
+          which python
+          python --version
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          pip3 install -r requirements/all.txt
-          pip3 install -e .
+          python -m pip install --upgrade pip
+          pip install -r requirements/all.txt
+          pip install -e .
       - name: Build
         run: |
-          python3 gui/build.py bundle
+          python gui/build.py bundle
           ls -alh gui/dist/mozregression-gui.dmg
       - name: Test
         run: |
-          python3 `which pytest` -v gui/tests
+          pytest -v gui/tests
           #coverage run -m pytest tests && mv .coverage .coverage.core
           #coverage run gui/build.py test && mv .coverage .coverage.gui
           #coverage combine

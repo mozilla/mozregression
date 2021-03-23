@@ -79,7 +79,7 @@ jobs:
           ls -alh gui/mozregression-gui.tar.gz
       - name: Test
         run: |
-          coverage run pytest -v gui/tests
+          coverage run -m pytest -v gui/tests
           pip install coveralls; coveralls
 
   build-and-test-mac-gui:
@@ -113,5 +113,5 @@ jobs:
           ls -alh gui/dist/mozregression-gui.dmg
       - name: Test
         run: |
-          coverage run pytest -v gui/tests
+          coverage run -m pytest -v gui/tests
           pip install coveralls; coveralls

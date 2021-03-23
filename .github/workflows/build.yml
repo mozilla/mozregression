@@ -28,6 +28,8 @@ jobs:
 
   build-and-test-linux-base:
     runs-on: ${{ matrix.os }}
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       matrix:
         os:
@@ -58,6 +60,7 @@ jobs:
     runs-on: ubuntu-18.04
     env:
       DISPLAY: ":99.0"
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v2
       - name: setup
@@ -89,6 +92,7 @@ jobs:
       # The deployment target is picked up by the Python build tools automatically
       PYTHON_VERSION: 3.9.1
       MACOSX_DEPLOYMENT_TARGET: 10.9
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v2
       - name: Get Python

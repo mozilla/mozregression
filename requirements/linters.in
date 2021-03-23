@@ -1,5 +1,6 @@
 flake8
 flake8-black
+glean-parser
 isort
 mccabe
 pyflakes

@@ -106,7 +106,7 @@ jobs:
         # Need to copy the pkg because the installer command removes it, breaking the cache
         run: |
           sudo installer -pkg python.pkg -target /
-          python3 -version
+          python3 --version
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip

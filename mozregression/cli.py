@@ -37,7 +37,11 @@ from mozregression.tc_authenticate import tc_authenticate
 class _StopAction(Action):
     def __init__(self, option_strings, dest=SUPPRESS, default=SUPPRESS, help=None):
         super(_StopAction, self).__init__(
-            option_strings=option_strings, dest=dest, default=default, nargs=0, help=help,
+            option_strings=option_strings,
+            dest=dest,
+            default=default,
+            nargs=0,
+            help=help,
         )
 
     def __call__(self, parser, namespace, values, option_string=None):
@@ -120,7 +124,9 @@ def create_parser(defaults):
     )
 
     parser.add_argument(
-        "--list-releases", action=ListReleasesAction, help="list all known releases and exit",
+        "--list-releases",
+        action=ListReleasesAction,
+        help="list all known releases and exit",
     )
 
     parser.add_argument(
@@ -142,7 +148,9 @@ def create_parser(defaults):
     )
 
     parser.add_argument(
-        "--find-fix", action="store_true", help="Search for a bug fix instead of a regression.",
+        "--find-fix",
+        action="store_true",
+        help="Search for a bug fix instead of a regression.",
     )
 
     parser.add_argument(
@@ -397,7 +405,9 @@ def create_parser(defaults):
     )
 
     parser.add_argument(
-        "--write-config", action=WriteConfigAction, help="Helps to write the configuration file.",
+        "--write-config",
+        action=WriteConfigAction,
+        help="Helps to write the configuration file.",
     )
 
     parser.add_argument("--debug", "-d", action="store_true", help="Show the debug output.")

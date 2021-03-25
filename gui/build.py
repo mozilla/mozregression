@@ -141,7 +141,12 @@ def do_bundle(options):
             "mozregression GUI.app", os.path.join("mozregression-gui", "mozregression GUI.app")
         )
         call(
-            "hdiutil", "create", "mozregression-gui.dmg", "-srcfolder", "mozregression-gui", "-ov",
+            "hdiutil",
+            "create",
+            "mozregression-gui.dmg",
+            "-srcfolder",
+            "mozregression-gui",
+            "-ov",
         )
     else:
         # seems like some qml stuff is also bundled on Linux

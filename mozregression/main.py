@@ -195,12 +195,14 @@ class Application(object):
                     jp = JsonPushes(handler.build_range[1].repo_name)
                     num_pushes = len(
                         jp.pushes_within_changes(
-                            handler.build_range[0].changeset, handler.build_range[1].changeset,
+                            handler.build_range[0].changeset,
+                            handler.build_range[1].changeset,
                         )
                     )
                     if num_pushes == 2:
                         bugids = find_bugids_in_push(
-                            handler.build_range[1].repo_name, handler.build_range[1].changeset,
+                            handler.build_range[1].repo_name,
+                            handler.build_range[1].changeset,
                         )
                         if len(bugids) == 1:
                             word = "fix" if handler.find_fix else "regression"
@@ -307,7 +309,10 @@ def check_mozregression_version():
 
 
 def main(
-    argv=None, namespace=None, check_new_version=True, mozregression_variant="console",
+    argv=None,
+    namespace=None,
+    check_new_version=True,
+    mozregression_variant="console",
 ):
     """
     main entry point of mozregression command line.

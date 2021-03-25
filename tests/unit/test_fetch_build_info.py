@@ -225,5 +225,7 @@ class TestIntegrationInfoFetcher(unittest.TestCase):
         push.side_effect = errors.MozRegressionError
         self.info_fetcher = fetch_build_info.IntegrationInfoFetcher(self.fetch_config)
         with self.assertRaises(errors.BuildInfoNotFound):
-            self.info_fetcher.find_build_info("123456789",)
+            self.info_fetcher.find_build_info(
+                "123456789",
+            )
         push.assert_called_with("123456789")

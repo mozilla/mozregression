@@ -105,7 +105,11 @@ def test_to_dict(klass):
             "2015-11-16-10-02-05--mozilla-central--url",
         ),
         # same but for integration
-        (build_info.IntegrationBuildInfo, {}, "12ab12ab12ab-shippable--mozilla-central--url",),
+        (
+            build_info.IntegrationBuildInfo,
+            {},
+            "12ab12ab12ab-shippable--mozilla-central--url",
+        ),
     ],
 )
 def test_persist_filename(klass, extra, result):

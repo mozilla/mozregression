@@ -18,7 +18,12 @@ PAGES_SINGLE_RUN_WIZARD = (IntroPage, ProfilePage, SingleBuildSelectionPage)
 @pytest.mark.parametrize(
     "os, bits, wizard_class, pages",
     [
-        ("linux", 64, BisectionWizard, PAGES_BISECTION_WIZARD,),
+        (
+            "linux",
+            64,
+            BisectionWizard,
+            PAGES_BISECTION_WIZARD,
+        ),
         ("win", 32, BisectionWizard, PAGES_BISECTION_WIZARD),
         ("mac", 64, BisectionWizard, PAGES_BISECTION_WIZARD),
         ("linux", 64, SingleRunWizard, PAGES_SINGLE_RUN_WIZARD),

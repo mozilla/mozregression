@@ -88,7 +88,7 @@ jobs:
       # We need the official Python, because the GA ones only support newer macOS versions
       # The deployment target is picked up by the Python build tools automatically
       PYTHON_VERSION: 3.9.1
-      MACOSX_DEPLOYMENT_TARGET: 10.9
+      MACOSX_DEPLOYMENT_TARGET: 10.13
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
     steps:
@@ -96,7 +96,7 @@ jobs:
       - name: Get Python
         run: curl https://www.python.org/ftp/python/${PYTHON_VERSION}/python-${PYTHON_VERSION}-macosx10.9.pkg -o "python.pkg"
       - name: Install Python
-        # Need to copy the pkg because the installer command removes it, breaking the cache
+        # See: https://github.com/actions/virtual-environments/issues/1256#issuecomment-770270252
         run: |
           sudo installer -pkg python.pkg -target /
           echo "/Library/Frameworks/Python.framework/Versions/3.9/bin" >> $GITHUB_PATH
@@ -114,4 +114,4 @@ jobs:
       - name: Test
         run: |
           coverage run -m pytest -v gui/tests
-          pip install coveralls; coveralls
+          pip3 install coveralls; coveralls

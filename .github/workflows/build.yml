@@ -88,16 +88,22 @@ jobs:
       - name: Get the version
         if: startsWith(github.ref, 'refs/tags/')
         id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+        run: echo ::set-output name=version::${GITHUB_REF#refs/tags/}
+      - name: Get upload URL
+        id: geturl
+        run: |
+          upload_url=$(curl -sL https://api.github.com/repos/mozilla/mozregression/releases/tags/${{ steps.get_version.outputs.version }} | jq -r '.upload_url')
+          echo ::set-output name=upload_url::$upload_url
       - name: Upload
         if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          echo ${{ steps.get_version.outputs.VERSION }}
-          curl \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Content-Type: $(file -b --mime-type gui/mozregression-gui.tar.gz)" \
-            --data-binary @gui/mozregression-gui.tar.gz \
-            "https://uploads.github.com/repos/mozilla/mozregression/releases/${{ steps.get_version.outputs.VERSION }}/assets?name=mozregression-gui.tar.gz"
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.geturl.outputs.upload_url }}
+          asset_path: ./gui/mozregression-gui.tar.gz
+          asset_name: mozregression-gui.tar.gz
+          asset_content_type: application/gzip
 
   build-and-test-mac-gui:
     runs-on: macos-latest

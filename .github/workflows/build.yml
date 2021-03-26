@@ -3,6 +3,9 @@ name: Build
 on:
   push:
     branches: [master]
+    tags:
+      - "*"
+
   pull_request:
     branches: [master]
 
@@ -58,6 +61,7 @@ jobs:
       DISPLAY: ":99.0"
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      TAG: ${{ github.event.release.tag_name }}
     steps:
       - uses: actions/checkout@v2
       - name: setup
@@ -81,14 +85,19 @@ jobs:
         run: |
           coverage run -m pytest -v gui/tests
           pip install coveralls; coveralls
+      - name: Get the version
+        if: startsWith(github.ref, 'refs/tags/')
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
       - name: Upload
         if: startsWith(github.ref, 'refs/tags/')
         run: |
+          echo ${{ steps.get_version.outputs.VERSION }}
           curl \
             -H "Authorization: token $GITHUB_TOKEN" \
             -H "Content-Type: $(file -b --mime-type gui/mozregression-gui.tar.gz)" \
             --data-binary @gui/mozregression-gui.tar.gz \
-            "https://uploads.github.com/repos/mozilla/mozregression/releases/123/assets?name=mozregression-gui.tar.gz"
+            "https://uploads.github.com/repos/mozilla/mozregression/releases/${{ steps.get_version.outputs.VERSION }}/assets?name=mozregression-gui.tar.gz"
 
   build-and-test-mac-gui:
     runs-on: macos-latest

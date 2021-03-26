@@ -139,6 +139,10 @@ jobs:
         run: |
           coverage run -m pytest -v gui/tests
           pip3 install coveralls; coveralls
+      - name: Get the version
+        if: startsWith(github.ref, 'refs/tags/')
+        id: get_version
+        run: echo ::set-output name=version::${GITHUB_REF#refs/tags/}
       - name: Get upload URL
         if: startsWith(github.ref, 'refs/tags/')
         id: geturl

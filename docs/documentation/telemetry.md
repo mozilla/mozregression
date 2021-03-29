@@ -14,7 +14,8 @@ is intentionally limited to what we need to understand the basics
 of how mozregression is being used (for example, understanding
 which applications are being bisected). For an up-to-date list of
 what is being collected, please see this [automatically
-generated report](https://github.com/mozilla/mozregression/blob/master/docs/glean/metrics.md).
+generated report](https://github.com/mozilla/mozregression/blob/master/docs/glean/metrics.md) or
+look up [mozregression in the Glean Dictionary](https://dictionary.protosaur.dev/apps/mozregression).
 
 The purpose of this data gathering is only to improve mozregression itself by understanding the scope of its environment and usage, and
 will not be broadly shared except in aggregated form. Although not a consumer product, mozregression strives to follow Mozilla's general guidelines on [lean data practices](https://www.mozilla.org/en-US/about/policy/lean-data/) and is subject to our [privacy policy](https://www.mozilla.org/en-US/privacy/websites/).

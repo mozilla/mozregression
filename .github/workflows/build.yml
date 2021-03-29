@@ -157,5 +157,5 @@ jobs:
         with:
           upload_url: ${{ steps.geturl.outputs.upload_url }}
           asset_path: ./gui/dist/mozregression-gui.dmg
-          asset_name: gui/dist/mozregression-gui.dmg
+          asset_name: mozregression-gui.dmg
           asset_content_type: application/octet-stream

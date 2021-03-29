@@ -102,3 +102,18 @@ If it turns up errors, try using the `lint-fix.sh` script to fix any errors whic
 ```bash
 ./bin/lint-fix.sh
 ```
+
+### Making a release
+
+This is currently a multi-step process:
+
+1. Create a new GitHub release and give it a tag name identical to the version number you want (e.g. `4.0.20`).
+   CI should automatically upload new versions of the GUI applications to the release.
+2. Fetch the tag locally and make a new release. The recommended workflow is something like this (this assumes you have [twine](https://pypi.org/project/twine/) installed):
+
+```bash
+git fetch origin  # assumes origin is mozilla/mozregression
+git checkout 4.0.20
+python3 setup.py sdist bdist_wheel
+python3 -m twine upload dist/*
+```

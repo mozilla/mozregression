@@ -300,7 +300,7 @@ class BuildInfoTextBrowser(QTextBrowser):
             self.clear()
             return
 
-        html = u""
+        html = ""
         for k in sorted(item.data):
             v = item.data[k]
             if v is not None:

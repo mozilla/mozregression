@@ -14,9 +14,9 @@ attrs==20.3.0 \
     --hash=sha256:31b2eced602aa8423c2aea9c76a724617ed67cf9513173fd3a4f03e3a929c7e6 \
     --hash=sha256:832aa3cde19744e49938b91fea06d69ecb9e649c93ba974535d08ad92164f700
     # via jsonschema
-black==21.4b0 \
-    --hash=sha256:2db7040bbbbaa46247bfcc05c6efdebd7ebe50c1c3ca745ca6e0f6776438c96c \
-    --hash=sha256:915d916c48646dbe8040d5265cff7111421a60a3dfe7f7e07273176a57c24a34
+black==21.4b1 \
+    --hash=sha256:20d326de75d13be6290925a95c94a9f368aca2f71cb7b753a938a5ae20f34a37 \
+    --hash=sha256:c9601dc863779db2fb1bf18b345bbfa2bb868463123cde6a7eff44b59e4ef739
     # via flake8-black
 click==7.1.2 \
     --hash=sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a \

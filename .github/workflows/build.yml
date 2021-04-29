@@ -2,12 +2,12 @@ name: Build
 
 on:
   push:
-    branches: [master]
+    branches: [main]
     tags:
       - "*"
 
   pull_request:
-    branches: [master]
+    branches: [main]
 
 jobs:
   lint:

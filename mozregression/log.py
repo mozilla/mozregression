@@ -30,7 +30,7 @@ def init_python_redirect_logger(logger):
 
     class RedirectHandler(logging.StreamHandler):
         def emit(self, record):
-            logger.debug("{}: {}".format(record.name, str(record.msg) % record.args))
+            logger.debug("{}: {}".format(record.name, self.format(record)))
 
     rh = RedirectHandler()
     rh.setLevel(logging.DEBUG)

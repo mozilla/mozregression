@@ -27,6 +27,7 @@ jobs:
         run: |
           ./bin/lint-check.sh || (echo "Lint fix results:" && ./bin/lint-fix.sh && git diff && false)
           bin/update-glean-documentation.sh
+          git diff
           if [[   $(git diff docs/glean | head -c1 | wc -c) -ne 0 ]]; then echo "Unexpected glean changes! Please regenerate glean documentation via `./bin/update-glean-documentation.sh`." && false; fi
 
   build-and-test-linux-base:

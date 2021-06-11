@@ -51,7 +51,7 @@ jobs:
       - name: Test
         run: |
           coverage run -m pytest tests
-          pip install coveralls; coveralls
+          pip install coveralls; coveralls --service=github-actions
 
   build-and-test-linux-gui:
     runs-on: ubuntu-18.04
@@ -82,7 +82,7 @@ jobs:
       - name: Test
         run: |
           coverage run -m pytest -v gui/tests
-          pip install coveralls; coveralls
+          pip install coveralls; coveralls --service=github-actions
       - name: Get the version
         if: startsWith(github.ref, 'refs/tags/')
         id: get_version
@@ -136,7 +136,7 @@ jobs:
       - name: Test
         run: |
           coverage run -m pytest -v gui/tests
-          pip3 install coveralls; coveralls
+          pip3 install coveralls; coveralls --service=github-actions
       - name: Get the version
         if: startsWith(github.ref, 'refs/tags/')
         id: get_version

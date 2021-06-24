@@ -42,6 +42,8 @@ TIMESTAMP_FENNEC_API_15 = to_utc_timestamp(datetime.datetime(2016, 1, 29, 0, 30,
 # appeared on this date for m-c.
 TIMESTAMP_FENNEC_API_16 = to_utc_timestamp(datetime.datetime(2017, 8, 29, 18, 28, 36))
 
+# switch from geckoview api-16 to arm
+TIMESTAMP_GECKOVIEW_ARM = to_utc_timestamp(datetime.datetime(2021, 6, 4, 0, 0, 0))
 
 def get_build_regex(name, os, bits, processor, platprefix=r".*", platsuffix="", with_ext=True):
     """
@@ -472,7 +474,9 @@ class FennecIntegrationConfigMixin(IntegrationConfigMixin):
     def tk_routes(self, push):
         tk_name = self.tk_name
         if tk_name == "android-api-11":
-            if push.timestamp >= TIMESTAMP_FENNEC_API_16:
+            if push.timestamp >= TIMESTAMP_GECKOVIEW_ARM:
+                tk_name = "android-arm"
+            elif push.timestamp >= TIMESTAMP_FENNEC_API_16:
                 tk_name = "android-api-16"
             elif push.timestamp >= TIMESTAMP_FENNEC_API_15:
                 tk_name = "android-api-15"

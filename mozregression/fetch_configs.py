@@ -45,6 +45,7 @@ TIMESTAMP_FENNEC_API_16 = to_utc_timestamp(datetime.datetime(2017, 8, 29, 18, 28
 # switch from geckoview api-16 to arm
 TIMESTAMP_GECKOVIEW_ARM = to_utc_timestamp(datetime.datetime(2021, 6, 4, 0, 0, 0))
 
+
 def get_build_regex(name, os, bits, processor, platprefix=r".*", platsuffix="", with_ext=True):
     """
     Returns a string regexp that can match a build filename.

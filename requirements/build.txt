@@ -434,9 +434,9 @@ pycparser==2.20 \
     --hash=sha256:2d475327684562c3a96cc71adf7dc8c4f0565175cf86b6d7a404ff4c771f15f0 \
     --hash=sha256:7582ad22678f0fcd81102833f60ef8d0e57288b6b5fb00323d101be910e35705
     # via cffi
-pyinstaller-hooks-contrib==2021.1 \
-    --hash=sha256:27558072021857d89524c42136feaa2ffe4f003f1bdf0278f9b24f6902c1759c \
-    --hash=sha256:892310e6363655838485ee748bf1c5e5cade7963686d9af8650ee218a3e0b031
+pyinstaller-hooks-contrib==2021.2 \
+    --hash=sha256:57964f93eb69255c49159ffdf052aae893feed223b0f69773dfd010ca6c569d9 \
+    --hash=sha256:7f5d0689b30da3092149fc536a835a94045ac8c9f0e6dfb23ac171890f5ea8f2
     # via pyinstaller
 pyinstaller==4.3 \
     --hash=sha256:5ecf8bbc230d7298a796e52bb745b95eee12878d141f1645612c99246ecd23f2

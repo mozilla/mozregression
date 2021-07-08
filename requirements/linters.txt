@@ -28,22 +28,22 @@ diskcache==5.2.1 \
     --hash=sha256:1805acd5868ac10ad547208951a1190a0ab7bbff4e70f9a07cde4dbdfaa69f64 \
     --hash=sha256:6e8137c778fd2752b93c8a8f944e939b3665d645b46774d8537dd3528ac3baa1
     # via glean-parser
-flake8-black==0.2.1 \
-    --hash=sha256:f26651bc10db786c03f4093414f7c9ea982ed8a244cec323c984feeffdf4c118
-    # via -r requirements/linters.in
 flake8==3.9.1 \
     --hash=sha256:1aa8990be1e689d96c745c5682b687ea49f2e05a443aff1f8251092b0014e378 \
     --hash=sha256:3b9f848952dddccf635be78098ca75010f073bfe14d2c6bda867154bea728d2a
     # via
     #   -r requirements/linters.in
     #   flake8-black
+flake8-black==0.2.1 \
+    --hash=sha256:f26651bc10db786c03f4093414f7c9ea982ed8a244cec323c984feeffdf4c118
+    # via -r requirements/linters.in
 glean-parser==2.2.0 \
     --hash=sha256:41726b795773d9ea0fcaf0893ade517da1aa5c2f279079a0cad7e0b91df80c2f \
     --hash=sha256:6ec26c99d93b9cad0b19495a8a63598acce5911d93a7820cbc6fa768475ce7b2
     # via -r requirements/linters.in
-isort==5.8.0 \
-    --hash=sha256:0a943902919f65c5684ac4e0154b1ad4fac6dcaa5d9f3426b732f1c8b5419be6 \
-    --hash=sha256:2bb1680aad211e3c9944dbce1d4ba09a989f04e238296c87fe2139faa26d655d
+isort==5.9.2 \
+    --hash=sha256:eed17b53c3e7912425579853d078a0832820f023191561fcee9d7cae424e0813 \
+    --hash=sha256:f65ce5bd4cbc6abdfbe29afc2f0245538ab358c14590912df638033f157d555e
     # via -r requirements/linters.in
 jinja2==2.11.3 \
     --hash=sha256:03e47ad063331dd6a3f04a43eddca8a966a26ba0c5b7207a9a9e4e08f1b29419 \

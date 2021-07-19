@@ -14,9 +14,9 @@ attrs==20.3.0 \
     --hash=sha256:31b2eced602aa8423c2aea9c76a724617ed67cf9513173fd3a4f03e3a929c7e6 \
     --hash=sha256:832aa3cde19744e49938b91fea06d69ecb9e649c93ba974535d08ad92164f700
     # via jsonschema
-black==21.4b0 \
-    --hash=sha256:2db7040bbbbaa46247bfcc05c6efdebd7ebe50c1c3ca745ca6e0f6776438c96c \
-    --hash=sha256:915d916c48646dbe8040d5265cff7111421a60a3dfe7f7e07273176a57c24a34
+black==21.7b0 \
+    --hash=sha256:1c7aa6ada8ee864db745b22790a32f94b2795c253a75d6d9b5e439ff10d23116 \
+    --hash=sha256:c8373c6491de9362e39271630b65b964607bc5c79c83783547d76c839b3aa219
     # via flake8-black
 click==7.1.2 \
     --hash=sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a \
@@ -28,15 +28,15 @@ diskcache==5.2.1 \
     --hash=sha256:1805acd5868ac10ad547208951a1190a0ab7bbff4e70f9a07cde4dbdfaa69f64 \
     --hash=sha256:6e8137c778fd2752b93c8a8f944e939b3665d645b46774d8537dd3528ac3baa1
     # via glean-parser
-flake8-black==0.2.1 \
-    --hash=sha256:f26651bc10db786c03f4093414f7c9ea982ed8a244cec323c984feeffdf4c118
-    # via -r requirements/linters.in
 flake8==3.9.1 \
     --hash=sha256:1aa8990be1e689d96c745c5682b687ea49f2e05a443aff1f8251092b0014e378 \
     --hash=sha256:3b9f848952dddccf635be78098ca75010f073bfe14d2c6bda867154bea728d2a
     # via
     #   -r requirements/linters.in
     #   flake8-black
+flake8-black==0.2.1 \
+    --hash=sha256:f26651bc10db786c03f4093414f7c9ea982ed8a244cec323c984feeffdf4c118
+    # via -r requirements/linters.in
 glean-parser==2.2.0 \
     --hash=sha256:41726b795773d9ea0fcaf0893ade517da1aa5c2f279079a0cad7e0b91df80c2f \
     --hash=sha256:6ec26c99d93b9cad0b19495a8a63598acce5911d93a7820cbc6fa768475ce7b2
@@ -216,9 +216,9 @@ six==1.15.0 \
     --hash=sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259 \
     --hash=sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced
     # via jsonschema
-toml==0.10.2 \
-    --hash=sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b \
-    --hash=sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f
+tomli==1.0.4 \
+    --hash=sha256:0713b16ff91df8638a6a694e295c8159ab35ba93e3424a626dd5226d386057be \
+    --hash=sha256:be670d0d8d7570fd0ea0113bd7bb1ba3ac6706b4de062cc4c952769355c9c268
     # via black
 yamllint==1.26.1 \
     --hash=sha256:87d9462b3ed7e9dfa19caa177f7a77cd9888b3dc4044447d6ae0ab233bcd1324

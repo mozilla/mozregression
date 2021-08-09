@@ -31,7 +31,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
     strategy:
       matrix:
         os:
@@ -52,13 +51,15 @@ jobs:
         run: |
           coverage run -m pytest tests
           pip install coveralls; coveralls --service=github
+        env:
+          GITHUB_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
   build-and-test-linux-gui:
     runs-on: ubuntu-18.04
     env:
       DISPLAY: ":99.0"
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       TAG: ${{ github.event.release.tag_name }}
     steps:
       - uses: actions/checkout@v2
@@ -83,6 +84,9 @@ jobs:
         run: |
           coverage run -m pytest -v gui/tests
           pip install coveralls; coveralls --service=github
+        env:
+          GITHUB_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       - name: Get the version
         if: startsWith(github.ref, 'refs/tags/')
         id: get_version
@@ -112,7 +116,6 @@ jobs:
       PYTHON_VERSION: 3.9.1
       MACOSX_DEPLOYMENT_TARGET: 10.13
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
     steps:
       - uses: actions/checkout@v2
       - name: Get Python
@@ -137,6 +140,9 @@ jobs:
         run: |
           coverage run -m pytest -v gui/tests
           pip3 install coveralls; coveralls --service=github
+        env:
+          GITHUB_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       - name: Get the version
         if: startsWith(github.ref, 'refs/tags/')
         id: get_version

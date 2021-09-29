@@ -1,4 +1,5 @@
 coverage
+coveralls==3.1.0  # pinning to an older version, need to update CI for 3.2.0+
 mock
 pytest
 pytest-mock

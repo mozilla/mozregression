@@ -31,7 +31,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
     strategy:
       matrix:
         os:
@@ -58,7 +57,6 @@ jobs:
     env:
       DISPLAY: ":99.0"
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       TAG: ${{ github.event.release.tag_name }}
     steps:
       - uses: actions/checkout@v2
@@ -110,7 +108,6 @@ jobs:
       PYTHON_VERSION: 3.9.1
       MACOSX_DEPLOYMENT_TARGET: 10.13
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
     steps:
       - uses: actions/checkout@v2
       - name: Get Python

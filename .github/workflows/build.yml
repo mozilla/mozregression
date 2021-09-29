@@ -50,7 +50,7 @@ jobs:
       - name: Test
         run: |
           coverage run -m pytest tests
-          pip install coveralls; coveralls --service=github-actions
+          coveralls --service=github-actions
         env:
           GITHUB_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
@@ -83,7 +83,7 @@ jobs:
       - name: Test
         run: |
           coverage run -m pytest -v gui/tests
-          pip install coveralls; coveralls --service=github-actions
+          coveralls --service=github-actions
         env:
           GITHUB_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
@@ -139,7 +139,7 @@ jobs:
       - name: Test
         run: |
           coverage run -m pytest -v gui/tests
-          pip3 install coveralls; coveralls --service=github-actions
+          coveralls --service=github-actions
         env:
           GITHUB_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}

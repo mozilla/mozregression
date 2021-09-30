@@ -245,9 +245,9 @@ iniconfig==1.1.1 \
     --hash=sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3 \
     --hash=sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32
     # via pytest
-iso8601==0.1.14 \
-    --hash=sha256:e7e1122f064d626e17d47cd5106bed2c620cb38fe464999e0ddae2b6d2de6004 \
-    --hash=sha256:8aafd56fa0290496c5edbb13c311f78fa3a241f0853540da09d9363eae3ebd79 \
+iso8601==0.1.16 \
+    --hash=sha256:906714829fedbc89955d52806c903f2332e3948ed94e31e85037f9e0226b8376 \
+    --hash=sha256:36532f77cc800594e8f16641edae7f1baf7932f05d8e508545b95fc53c6dc85b \
     # via glean-parser, glean-sdk
 jinja2==3.0.1 \
     --hash=sha256:1f06f2da51e7b56b8f238affdd6b4e2c61e39598a378cc49345bc1bd42a978a4 \

@@ -34,8 +34,9 @@ flake8==3.9.1 \
     # via
     #   -r requirements/linters.in
     #   flake8-black
-flake8-black==0.2.1 \
-    --hash=sha256:f26651bc10db786c03f4093414f7c9ea982ed8a244cec323c984feeffdf4c118
+flake8-black==0.2.3 \
+    --hash=sha256:c199844bc1b559d91195ebe8620216f21ed67f2cc1ff6884294c91a0d2492684 \
+    --hash=sha256:cc080ba5b3773b69ba102b6617a00cc4ecbad8914109690cfda4d565ea435d96
     # via -r requirements/linters.in
 glean-parser==2.2.0 \
     --hash=sha256:41726b795773d9ea0fcaf0893ade517da1aa5c2f279079a0cad7e0b91df80c2f \
@@ -219,7 +220,9 @@ six==1.15.0 \
 toml==0.10.2 \
     --hash=sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b \
     --hash=sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f
-    # via black
+    # via
+    #   black
+    #   flake8-black
 yamllint==1.26.1 \
     --hash=sha256:87d9462b3ed7e9dfa19caa177f7a77cd9888b3dc4044447d6ae0ab233bcd1324
     # via glean-parser

@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import datetime
+import sys
 import unittest
 
 import pytest
@@ -175,12 +176,28 @@ class TestCommandTestRunner(unittest.TestCase):
         self.assertEqual("g", self.evaluate(retcode=0))
         self.assertEqual("b", self.evaluate(retcode=1))
 
-    def test_supbrocess_call(self):
+    @unittest.skipIf(sys.platform == "win32", "args is a string on Windows")
+    def test_subprocess_call(self):
         self.evaluate()
         command = self.subprocess_call.mock_calls[0][1][0]
         kwargs = self.subprocess_call.mock_calls[0][2]
         self.assertEqual(command, ["my", "command"])
         self.assertIn("env", kwargs)
+
+    @unittest.skipUnless(sys.platform == "win32", "requires Windows")
+    def test_subprocess_call_windows(self):
+        self.evaluate()
+        command = self.subprocess_call.mock_calls[0][1][0]
+        kwargs = self.subprocess_call.mock_calls[0][2]
+        self.assertEqual(command, "my command")
+        self.assertIn("env", kwargs)
+
+    @unittest.skipUnless(sys.platform == "win32", "requires Windows")
+    def test_subprocess_call_windows_path(self):
+        self.runner.command = r".\script.bat"
+        self.evaluate()
+        command = self.subprocess_call.mock_calls[0][1][0]
+        self.assertEqual(command, r".\script.bat")
 
     def test_env_vars(self):
         self.evaluate(build_info={"my": "var", "int": 15})
@@ -192,6 +209,7 @@ class TestCommandTestRunner(unittest.TestCase):
         passed_env = self.subprocess_call.mock_calls[0][2]["env"]
         self.assertTrue(set(expected).issubset(set(passed_env)))
 
+    @unittest.skipIf(sys.platform == "win32", "args is a string on Windows")
     def test_command_placeholder_replaced(self):
         self.runner.command = 'run {app_name} "1"'
         self.evaluate()
@@ -203,6 +221,19 @@ class TestCommandTestRunner(unittest.TestCase):
         self.evaluate(build_info={"foo": 12})
         command = self.subprocess_call.mock_calls[0][1][0]
         self.assertEqual(command, ["run", "mybinary", "12"])
+
+    @unittest.skipUnless(sys.platform == "win32", "requires Windows")
+    def test_command_placeholder_replaced_windows(self):
+        self.runner.command = 'run {app_name} "1"'
+        self.evaluate()
+        command = self.subprocess_call.mock_calls[0][1][0]
+        self.assertEqual(command, 'run myapp "1"')
+
+        self.runner.command = "run '{binary}' \"{foo}\""
+        self.launcher.binary = "mybinary"
+        self.evaluate(build_info={"foo": 12})
+        command = self.subprocess_call.mock_calls[0][1][0]
+        self.assertEqual(command, "run 'mybinary' \"12\"")
 
     def test_command_placeholder_error(self):
         self.runner.command = 'run {app_nam} "1"'

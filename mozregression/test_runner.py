@@ -9,6 +9,7 @@ import datetime
 import os
 import shlex
 import subprocess
+import sys
 from abc import ABCMeta, abstractmethod
 
 from mozlog import get_proxy_logger
@@ -202,14 +203,25 @@ class CommandTestRunner(TestRunner):
                 command = self.command.format(**variables)
             except KeyError as exc:
                 _raise_command_error(exc, " (formatting error)")
+            command = os.path.expanduser(command)
             LOG.info("Running test command: `%s`" % command)
-            cmdlist = shlex.split(command)
+
+            # `shlex.split` does parsing and escaping that isn't compatible with Windows.
+            if sys.platform == "win32":
+                cmdlist = command
+            else:
+                cmdlist = shlex.split(command)
+
             try:
                 retcode = subprocess.call(cmdlist, env=env)
             except IndexError:
                 _raise_command_error("Empty command")
             except OSError as exc:
-                _raise_command_error(exc, " (%s not found or not executable)" % cmdlist[0])
+                _raise_command_error(
+                    exc,
+                    " (%s not found or not executable)"
+                    % (command if sys.platform == "win32" else cmdlist[0]),
+                )
         LOG.info(
             "Test command result: %d (build is %s)" % (retcode, "good" if retcode == 0 else "bad")
         )

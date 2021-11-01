@@ -467,9 +467,9 @@ pyinstaller-hooks-contrib==2021.1 \
 pyinstaller==4.3 \
     --hash=sha256:5ecf8bbc230d7298a796e52bb745b95eee12878d141f1645612c99246ecd23f2
     # via -r base.in
-pyparsing==2.4.7 \
-    --hash=sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1 \
-    --hash=sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b
+pyparsing==3.0.4 \
+    --hash=sha256:c0a7dfcd26825bd4453574c4e7ad04aa095975ce54d04f738fe3a8350fbd223a \
+    --hash=sha256:e0df773d7fa2240322daae7805626dfc5f2d5effb34e1a7be2702c99cfb9f6b1
     # via packaging
 pyrsistent==0.17.3 \
     --hash=sha256:2e636185d9eb976a18a8a8e96efce62f2905fea90041958d8cc2a189756ebf3e

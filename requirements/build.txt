@@ -43,9 +43,9 @@ aiohttp==3.7.4.post0 \
     --hash=sha256:f881853d2643a29e643609da57b96d5f9c9b93f62429dcc1cbb413c7d07f0e1a \
     --hash=sha256:fe60131d21b31fd1a14bd43e6bb88256f69dfc3188b3a89d736d6c71ed43ec95
     # via taskcluster
-altgraph==0.17 \
-    --hash=sha256:1f05a47122542f97028caf78775a095fbe6a2699b5089de8477eb583167d69aa \
-    --hash=sha256:c623e5f3408ca61d4016f23a681b9adb100802ca3e3da5e718915a9e4052cebe
+altgraph==0.17.2 \
+    --hash=sha256:743628f2ac6a7c26f5d9223c91ed8ecbba535f506f4b6f558885a8a56a105857 \
+    --hash=sha256:ebf2269361b47d97b3b88e696439f6e4cbc607c17c51feb1754f90fb79839158
     # via
     #   macholib
     #   pyinstaller

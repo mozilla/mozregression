@@ -26,9 +26,9 @@ diskcache==5.2.1 \
     --hash=sha256:1805acd5868ac10ad547208951a1190a0ab7bbff4e70f9a07cde4dbdfaa69f64 \
     --hash=sha256:6e8137c778fd2752b93c8a8f944e939b3665d645b46774d8537dd3528ac3baa1
     # via glean-parser
-flake8==4.0.0 \
-    --hash=sha256:124554bfd067e04d891258c0208a764b512ca3a94c8a3c06bea56af539dd74db \
-    --hash=sha256:b52d27e627676b015340c3b1c72bc9259a6cacc9341712fb8f01ddfaaa2c651a
+flake8==4.0.1 \
+    --hash=sha256:479b1304f72536a55948cb40a32dce8bb0ffe3501e26eaf292c7e60eb5e0428d \
+    --hash=sha256:806e034dda44114815e23c16ef92f95c91e4c71100ff52813adf7132a6ad870d
     # via
     #   -r requirements/linters.in
     #   flake8-black

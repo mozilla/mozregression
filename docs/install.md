@@ -37,7 +37,10 @@ For the graphical interface, we provide a simple installation process:
 
 The original command line tool, mozregression, is a Python (3.6+)
 package installable via [pip]. You can find it on pypi, as
-[mozregression](https://pypi.org/project/mozregression/)
+[mozregression](https://pypi.org/project/mozregression/).
+
+Note that you will need a reasonably current version of pip to install mozregression to be able to download the [Glean] dependency.
+If you get any errors installing Glean and you have an older Python, try upgrading your local copy of pip ([Why you really need to upgrade pip] might be helpful for Linux users).
 
 ## mach
 
@@ -53,5 +56,7 @@ mozregression via [mach]. For example:
 [bug 1581643]: https://bugzilla.mozilla.org/show_bug.cgi?id=1581643
 [bug 1647533]: https://bugzilla.mozilla.org/show_bug.cgi?id=1647533
 [pip]: https://pypi.org/project/pip/
+[Glean]: https://mozilla.github.io/glean
+[Why you really need to upgrade pip]: https://pythonspeed.com/articles/upgrade-pip/
 [Firefox source checkout]: https://firefox-source-docs.mozilla.org/contributing/vcs/mercurial.html
 [mach]: https://firefox-source-docs.mozilla.org/mach/index.html

@@ -40,9 +40,9 @@ glean-parser==2.2.0 \
     --hash=sha256:41726b795773d9ea0fcaf0893ade517da1aa5c2f279079a0cad7e0b91df80c2f \
     --hash=sha256:6ec26c99d93b9cad0b19495a8a63598acce5911d93a7820cbc6fa768475ce7b2
     # via -r requirements/linters.in
-isort==5.10.0 \
-    --hash=sha256:1a18ccace2ed8910bd9458b74a3ecbafd7b2f581301b0ab65cfdd4338272d76f \
-    --hash=sha256:e52ff6d38012b131628cf0f26c51e7bd3a7c81592eefe3ac71411e692f1b9345
+isort==5.10.1 \
+    --hash=sha256:6f62d78e2f89b4500b080fe3a81690850cd254227f27f75c3a0c491a1f351ba7 \
+    --hash=sha256:e8443a5e7a020e9d7f97f1d7d9cd17c88bcb3bc7e218bf9cf5095fe550be2951
     # via -r requirements/linters.in
 jinja2==3.0.2 \
     --hash=sha256:827a0e32839ab1600d4eb1c4c33ec5a8edfbc5cb42dafa13b81f182f97784b45 \

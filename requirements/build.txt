@@ -215,9 +215,9 @@ coveralls==3.1.0 \
     --hash=sha256:172fb79c5f61c6ede60554f2cac46deff6d64ee735991fb2124fb414e188bdb4 \
     --hash=sha256:9b3236e086627340bf2c95f89f757d093cbed43d17179d3f4fb568c347e7d29a
     # via -r dev.in
-diskcache==5.2.1 \
-    --hash=sha256:1805acd5868ac10ad547208951a1190a0ab7bbff4e70f9a07cde4dbdfaa69f64 \
-    --hash=sha256:6e8137c778fd2752b93c8a8f944e939b3665d645b46774d8537dd3528ac3baa1
+diskcache==5.4.0 \
+    --hash=sha256:af3ec6d7f167bbef7b6c33d9ee22f86d3e8f2dd7131eb7c4703d8d91ccdc0cc4 \
+    --hash=sha256:8879eb8c9b4a2509a5e633d2008634fb2b0b35c2b36192d89655dbde02419644
     # via glean-parser
 distro==1.6.0 \
     --hash=sha256:c8713330ab31a034623a9515663ed87696700b55f04556b97c39cd261aa70dc7 \

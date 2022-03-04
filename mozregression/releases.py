@@ -89,7 +89,7 @@ def releases():
     if response.status_code == 200:
         fetched_releases = list(map(map_tags, list(filter(filter_tags, response.json()["tags"]))))
 
-        for release in fetched_releases:
+        for release in reversed(fetched_releases):
             releases.update(release)
 
     return releases

@@ -270,9 +270,9 @@ jsonschema==4.0.0 \
     --hash=sha256:c773028c649441ab980015b5b622f4cd5134cf563daaf0235ca4b73cc3734f20 \
     --hash=sha256:bc51325b929171791c42ebc1c70b9713eb134d3bb8ebd5474c8b659b15be6d86
     # via glean-parser
-macholib==1.15.2 \
-    --hash=sha256:885613dd02d3e26dbd2b541eb4cc4ce611b841f827c0958ab98656e478b9e6f6 \
-    --hash=sha256:1542c41da3600509f91c165cb897e7e54c0e74008bd8da5da7ebbee519d593d2
+macholib==1.16 \
+    --hash=sha256:001bf281279b986a66d7821790d734e61150d52f40c080899df8fefae056e9f7 \
+    --hash=sha256:5a0742b587e6e57bfade1ab90651d4877185bf66fd4a176a488116de36878229
     # via pyinstaller
 markupsafe==2.0.1 \
     --hash=sha256:f9081981fe268bd86831e5c75f7de206ef275defcb82bc70740ae6dc507aee51 \

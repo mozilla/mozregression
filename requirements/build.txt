@@ -143,9 +143,9 @@ chardet==4.0.0 \
     # via
     #   aiohttp
     #   requests
-click==8.0.3 \
-    --hash=sha256:353f466495adaeb40b6b5f592f9f91cb22372351c84caeb068132442a4518ef3 \
-    --hash=sha256:410e932b050f5eed773c4cda94de75971c89cdb3155a72a0831139a79e5ecb5b
+click==8.1.2 \
+    --hash=sha256:24e1a4a9ec5bf6299411369b208c1df2188d9eb8d916302fe6bf03faed227f1e \
+    --hash=sha256:479707fe14d9ec9a0757618b7a100a0ae4c4e236fac5b7f80ca68028141a1a72
     # via
     #   glean-parser
 colorama==0.4.4 \

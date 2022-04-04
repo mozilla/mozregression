@@ -718,9 +718,9 @@ yarl==1.7.0 \
     --hash=sha256:d750503682605088a14d29a4701548c15c510da4f13c8b17409c4097d5b04c52 \
     --hash=sha256:8e7ebaf62e19c2feb097ffb7c94deb0f0c9fab52590784c8cd679d30ab009162
     # via aiohttp
-zipp==3.6.0 \
-    --hash=sha256:9fe5ea21568a0a70e50f273397638d39b03353731e6cbbb3fd8502a33fec40bc \
-    --hash=sha256:71c644c5369f4a6e07636f0aa966270449561fcea2e3d6747b8d23efaa9d7832
+zipp==3.8.0 \
+    --hash=sha256:56bf8aadb83c24db6c4b577e13de374ccfb67da2078beba1d037c17980bf43ad \
+    --hash=sha256:c4f6e5bbf48e74f7a38e7cc5b0480ff42b0ae5178957d564d18932525d5cf099
     # via importlib-metadata
 
 # WARNING: The following packages were not pinned, but pip requires them to be

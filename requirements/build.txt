@@ -633,8 +633,9 @@ toml==0.10.2 \
     --hash=sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f
     # via
     #   pytest
-typing-extensions==4.0.0 \
-    --hash=sha256:829704698b22e13ec9eaf959122315eabb370b0884400e9818334d8b677023d9
+typing-extensions==4.2.0 \
+    --hash=sha256:6657594ee297170d19f67d55c05852a874e7eb634f4f753dbd667855e07c1708 \
+    --hash=sha256:f1c24655a0da0d1b67f07e17a5e6b2a105894e6824b92096378bb3668ef02376
     # via
     #   aiohttp
 urllib3==1.26.7 \

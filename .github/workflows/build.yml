@@ -2,12 +2,14 @@ name: Build
 
 on:
   push:
-    branches: [main]
+    branches: 
+        - main
     tags:
       - "*"
 
   pull_request:
-    branches: [main]
+    branches:
+        - main
 
 jobs:
   lint:
@@ -21,7 +23,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements/linters.txt
+          # TODO: improve this
+          pip install -r requirements/requirements-3.9-Linux.txt
           pip install -e .
       - name: Lint
         run: |
@@ -45,7 +48,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements/build.txt
+          pip install -r requirements/requirements-${{ matrix.python-version }}-${{ runner.os }}.txt
           pip install -e .
       - name: Test
         run: |
@@ -71,7 +74,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements/build.txt
+          pip install -r requirements/requirements-3.9-Linux.txt
           pip install -e .
       - name: Build
         run: |
@@ -122,7 +125,7 @@ jobs:
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
-          pip3 install -r requirements/build.txt
+          pip3 install -r requirements/requirements-3.9-macOS.txt
           pip3 install -e .
       - name: Build
         run: |

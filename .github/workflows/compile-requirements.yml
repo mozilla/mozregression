@@ -1,0 +1,82 @@
+name: Generate requirement files
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        default: '["ubuntu-latest"]'
+        description: A string representation of a list of operating systems.
+        required: false
+        type: string
+      python:
+        default: '["3.10"]'
+        description: A string representation of a list of Python versions.
+        required: false
+        type: string
+      requirements_directory:
+        default: requirements
+        description: The directory where requirements.in is located.
+        required: false
+        type: string
+      requirements_files:
+        default: '["requirements.in"]'
+        description: A string representation of a list of requirement files.
+        required: false
+        type: string
+
+jobs:
+  compile-requirements:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ${{ fromJSON(inputs.os) }}
+        python-version: ${{ fromJSON(inputs.python) }}
+        requirements_file: ${{ fromJSON(inputs.requirements_files) }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip-tools
+      - name: Generate
+        # Generate filename based on Python version and OS.
+        run: |
+          cd ${{ inputs.requirements_directory }}
+          python -m piptools compile --verbose ${{ matrix.requirements_file }} --generate-hashes --allow-unsafe --output-file requirements-${{ matrix.python-version }}-${{ runner.os }}.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.sha }}-${{ github.run_number }}-${{ github.run_attempt }}-requirements
+          path: requirements/requirements-${{ matrix.python-version }}-${{ runner.os }}.txt
+  commit-and-push:
+    needs: compile-requirements
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.sha }}-${{ github.run_number }}-${{ github.run_attempt }}-requirements
+          path: temp-requirements
+      - name: Configure git
+        run: |
+          git config user.name pip-tools compile
+          git config user.email nomail@example.org
+      - name: Commit and push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git status
+          git pull --rebase
+          find temp-requirements -name "requirements-*" -type f -exec mv -f -t requirements {} +
+          git add -A
+          git commit -m "Automatically generated requirements"
+          git push -f https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git

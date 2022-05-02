@@ -1,5 +1,5 @@
-coverage
+coverage==5.5
 coveralls==3.1.0  # pinning to an older version, need to update CI for 3.2.0+
-mock
-pytest
-pytest-mock
+mock==4.0.3
+pytest==6.2.2
+pytest-mock==3.5.1

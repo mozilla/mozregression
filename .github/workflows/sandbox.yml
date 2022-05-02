@@ -1,0 +1,11 @@
+name: Sandbox
+
+on:
+  pull_request:
+    branches: [requirements]
+
+jobs:
+  call-compile-requirements:
+    uses: zzzeid/compile-requirements/.github/workflows/compile-requirements.yml@f5e75b6cf9f960da17a06305da74c0c2be4486f0
+    with:
+      requirements_files: '["base.in dev.in gui-dev.in gui.in linters.in"]'

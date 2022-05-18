@@ -18,3 +18,5 @@ gui/mozregui/ui/*.py
 gui/.coverage
 gui/htmlcov/
 gui/resources_rc.py
+env/
+mozregression/version.py

@@ -150,7 +150,10 @@ def do_bundle(options):
         )
     else:
         # seems like some qml stuff is also bundled on Linux
-        shutil.rmtree(os.path.join("dist", "mozregression-gui", "PySide2", "qml"))
+        try:
+            shutil.rmtree(os.path.join("dist", "mozregression-gui", "PySide2", "qml"))
+        except FileNotFoundError:
+            pass
         with tarfile.open("mozregression-gui.tar.gz", "w:gz") as tar:
             tar.add(r"dist/mozregression-gui", arcname="mozregression-gui")
 

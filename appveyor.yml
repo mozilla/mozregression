@@ -3,7 +3,7 @@ build: false
 environment:
   NSIS_ROOT: C:\nsis
   matrix:
-    - PYTHON: "C:\\Python38"
+    - PYTHON: "C:\\Python39"
 init:
   - "ECHO %PYTHON%"
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
@@ -12,7 +12,7 @@ install:
   - "pip install virtualenv"
   - "virtualenv ."
   - "Scripts\\activate.bat"
-  - "pip install -r requirements\\build.txt"
+  - "pip install -r requirements\\requirements-3.9-Windows.txt"
   - "pip install -e ."
 test_script:
   # bundle the application

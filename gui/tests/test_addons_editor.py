@@ -1,4 +1,5 @@
 import os
+import platform
 import tempfile
 
 import mozfile
@@ -11,7 +12,7 @@ from mozregui.addons_editor import AddonsWidgetEditor
 
 @pytest.fixture
 def addons_editor(qtbot):
-    if os.uname().sysname.lower() == "darwin":
+    if platform.system().lower() == "darwin":
         os.environ["QT_MAC_WANTS_LAYER"] = "1"
     widget = AddonsWidgetEditor()
     qtbot.addWidget(widget)

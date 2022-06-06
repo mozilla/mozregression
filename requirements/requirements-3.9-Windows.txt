@@ -596,8 +596,8 @@ pathspec==0.9.0 \
     # via
     #   black
     #   yamllint
-pefile==2021.9.3 \
-    --hash=sha256:344a49e40a94e10849f0fe34dddc80f773a12b40675bf2f7be4b8be578bdd94a
+pefile==2022.5.30 \
+    --hash=sha256:a5488a3dd1fd021ce33f969780b88fe0f7eebb76eb20996d7318f307612a045b
     # via pyinstaller
 platformdirs==2.5.2 \
     --hash=sha256:027d8e83a2d7de06bbac4e5ef7e023c02b863d7ea5d079477e722bb41ab25788 \

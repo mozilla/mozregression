@@ -119,20 +119,24 @@ jobs:
         # See: https://github.com/actions/virtual-environments/issues/1256#issuecomment-770270252
         run: |
           sudo installer -pkg python.pkg -target /
-          echo "/Library/Frameworks/Python.framework/Versions/3.9/bin" >> $GITHUB_PATH
-          which python3
-          python3 --version
+          python3 -m venv env
+          source env/bin/activate
+          which python
+          python --version
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          pip3 install -r requirements/requirements-3.9-macOS.txt
-          pip3 install -e .
+          source env/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements/requirements-3.9-macOS.txt
+          python -m pip install -e .
       - name: Build
         run: |
-          python3 gui/build.py bundle
+          source env/bin/activate
+          python gui/build.py bundle
           ls -alh gui/dist/mozregression-gui.dmg
       - name: Test
         run: |
+          source env/bin/activate
           coverage run -m pytest -v gui/tests
           coveralls --service=github
       - name: Get the version

@@ -22,12 +22,14 @@ jobs:
           python-version: 3.9
       - name: Install dependencies
         run: |
+          python -m venv env
+          source env/bin/activate
           python -m pip install --upgrade pip
-          # TODO: improve this
           pip install -r requirements/requirements-3.9-Linux.txt
           pip install -e .
       - name: Lint
         run: |
+          source env/bin/activate
           ./bin/lint-check.sh || (echo "Lint fix results:" && ./bin/lint-fix.sh && git diff && false)
 
   build-and-test-linux-base:
@@ -47,11 +49,14 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
+          python -m venv env
+          source env/bin/activate
           python -m pip install --upgrade pip
           pip install -r requirements/requirements-${{ matrix.python-version }}-${{ runner.os }}.txt
           pip install -e .
       - name: Test
         run: |
+          source env/bin/activate
           coverage run -m pytest tests
           coveralls --service=github
 
@@ -73,15 +78,19 @@ jobs:
           python-version: 3.9
       - name: Install dependencies
         run: |
+          python -m venv env
+          source env/bin/activate
           python -m pip install --upgrade pip
           pip install -r requirements/requirements-3.9-Linux.txt
           pip install -e .
       - name: Build
         run: |
+          source env/bin/activate
           python gui/build.py bundle
           ls -alh gui/mozregression-gui.tar.gz
       - name: Test
         run: |
+          source env/bin/activate
           coverage run -m pytest -v gui/tests
           coveralls --service=github
       - name: Get the version
@@ -119,20 +128,24 @@ jobs:
         # See: https://github.com/actions/virtual-environments/issues/1256#issuecomment-770270252
         run: |
           sudo installer -pkg python.pkg -target /
-          echo "/Library/Frameworks/Python.framework/Versions/3.9/bin" >> $GITHUB_PATH
-          which python3
-          python3 --version
+          python3 -m venv env
+          source env/bin/activate
+          which python
+          python --version
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          pip3 install -r requirements/requirements-3.9-macOS.txt
-          pip3 install -e .
+          source env/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements/requirements-3.9-macOS.txt
+          python -m pip install -e .
       - name: Build
         run: |
-          python3 gui/build.py bundle
+          source env/bin/activate
+          python gui/build.py bundle
           ls -alh gui/dist/mozregression-gui.dmg
       - name: Test
         run: |
+          source env/bin/activate
           coverage run -m pytest -v gui/tests
           coveralls --service=github
       - name: Get the version

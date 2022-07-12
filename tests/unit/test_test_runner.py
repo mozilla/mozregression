@@ -98,7 +98,7 @@ class TestManualTestRunner(unittest.TestCase):
         build_infos = mockinfo()
         result = self.runner.evaluate(build_infos)
 
-        create_launcher.assert_called_with(build_infos)
+        create_launcher.assert_called_with(dest=build_infos)
         launcher.get_app_info.assert_called_with()
         launcher.start.assert_called_with()
         get_verdict.assert_called_with(build_infos, False)
@@ -124,7 +124,7 @@ class TestManualTestRunner(unittest.TestCase):
         create_launcher.return_value = Launcher(launcher)
         build_infos = mockinfo()
         self.assertEqual(self.runner.run_once(build_infos), 0)
-        create_launcher.assert_called_with(build_infos)
+        create_launcher.assert_called_with(dest=build_infos)
         launcher.get_app_info.assert_called_with()
         launcher.start.assert_called_with()
         launcher.wait.assert_called_with()
@@ -136,7 +136,7 @@ class TestManualTestRunner(unittest.TestCase):
         build_infos = mockinfo()
         with self.assertRaises(KeyboardInterrupt):
             self.runner.run_once(build_infos)
-        create_launcher.assert_called_with(build_infos)
+        create_launcher.assert_called_with(dest=build_infos)
         launcher.get_app_info.assert_called_with()
         launcher.start.assert_called_with()
         launcher.wait.assert_called_with()

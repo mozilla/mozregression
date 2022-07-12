@@ -9,7 +9,9 @@ application.
 from __future__ import absolute_import, print_function
 
 import datetime
+import json
 import os
+import pathlib
 import re
 from argparse import SUPPRESS, Action, ArgumentParser
 
@@ -243,6 +245,13 @@ def create_parser(defaults):
     )
 
     parser.add_argument(
+        "--policy",
+        type=pathlib.Path,
+        dest="policy_file",
+        help="Path to policy.json file containing policy overrides.",
+    )
+
+    parser.add_argument(
         "-n",
         "--app",
         choices=FC_REGISTRY.names(),
@@ -456,6 +465,18 @@ def preferences(prefs_files, prefs_args, logger):
     return prefs()
 
 
+def policy(policy_file=None):
+    """Load policy file. Return None if no policy file is provided."""
+    if not policy_file:
+        return None
+
+    if not policy_file.exists():
+        raise MozRegressionError(f"Path to policy file {policy_file} does not exist.")
+
+    with policy_file.open("r") as f:
+        return json.load(f)
+
+
 def get_default_date_range(fetch_config):
     """
     Compute the default date range (first, last) to bisect.
@@ -651,6 +672,7 @@ class Configuration(object):
                 "Unable to bisect integration for `%s`" % fetch_config.app_name
             )
         options.preferences = preferences(options.prefs_files, options.prefs, self.logger)
+        options.policy = policy(options.policy_file)
         # convert GiB to bytes.
         options.persist_size_limit = int(abs(float(options.persist_size_limit)) * 1073741824)
 

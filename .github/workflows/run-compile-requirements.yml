@@ -13,7 +13,7 @@ jobs:
     with:
       requirements_files: '["base.in dev.in gui-dev.in gui.in linters.in"]'
       os: '["ubuntu-latest"]'
-      python: '["3.6", "3.7", "3.8", "3.9"]'
+      python: '["3.6", "3.7", "3.8", "3.9", "3.10"]'
 
   call-compile-requirements-windows:
     needs: call-compile-requirements-linux
@@ -21,7 +21,7 @@ jobs:
     with:
       requirements_files: '["base.in dev.in gui-dev.in gui.in linters.in"]'
       os: '["windows-latest"]'
-      python: '["3.9"]'
+      python: '["3.9", "3.10"]'
 
   call-compile-requirements-macos:
     needs: call-compile-requirements-windows
@@ -29,4 +29,4 @@ jobs:
     with:
       requirements_files: '["base.in dev.in gui-dev.in gui.in linters.in"]'
       os: '["macos-latest"]'
-      python: '["3.9"]'
+      python: '["3.9", "3.10"]'

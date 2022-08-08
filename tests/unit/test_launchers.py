@@ -1,9 +1,9 @@
 from __future__ import absolute_import
 
 import os
-import sys
 import tempfile
 import unittest
+from subprocess import CalledProcessError
 
 import mozfile
 import mozinfo
@@ -178,8 +178,126 @@ profile_class",
         self.assertFalse(os.path.isdir(tempdir))
 
 
-@pytest.mark.skipif(sys.platform == "darwin", reason="fails on macosx")
-def test_firefox_install(mocker):
+class TestMozRunnerLauncher__codesign(unittest.TestCase):
+    """Test codesign functionality."""
+
+    @patch("mozregression.launchers.mozinfo")
+    @patch("mozregression.launchers.mozinstall")
+    def test__codesign_verify_raises_if_not_mac(self, mozinstall, mozinfo):
+        mozinstall.get_binary.return_value = "/binary"
+        mozinfo.os = "notmac"
+        launcher = launchers.MozRunnerLauncher("/binary")
+        with pytest.raises(Exception) as e:
+            launcher._codesign_verify("/")
+        assert str(e.value) == "_codesign_verify should only be called on macOS."
+
+    @patch("mozregression.launchers.mozinfo")
+    @patch("mozregression.launchers.mozinstall")
+    @patch("mozregression.launchers.check_output")
+    def test__codesign_verify_returns_correct_code(self, check_output, mozinstall, mozinfo):
+        mozinstall.get_binary.return_value = "/binary"
+        mozinfo.os = "mac"
+        launcher = launchers.MozRunnerLauncher("/binary")
+
+        # There is no output when verification is successful.
+        check_output.return_value = ""
+        result = launcher._codesign_verify("/")
+        assert result == launchers.CodesignResult.PASS
+
+        # There is an output and error code when unsuccessful.
+        check_output.side_effect = CalledProcessError(
+            1, [], output=b"\ncode object is not signed at all\n"
+        )
+
+        result = launcher._codesign_verify("/")
+        assert result is launchers.CodesignResult.UNSIGNED
+
+        check_output.side_effect = CalledProcessError(
+            1, [], output=b"\na sealed resource is missing or invalid\n"
+        )
+
+        result = launcher._codesign_verify("/")
+        assert result is launchers.CodesignResult.INVALID
+
+        check_output.side_effect = CalledProcessError(2, [], output=b"\nunknown error occurred\n")
+
+        result = launcher._codesign_verify("/")
+        assert result is launchers.CodesignResult.OTHER
+
+    @patch("mozregression.launchers.mozinfo")
+    @patch("mozregression.launchers.mozinstall")
+    def test__codesign_sign_raises_if_not_mac(self, mozinstall, mozinfo):
+        mozinstall.get_binary.return_value = "/binary"
+        mozinfo.os = "notmac"
+        with pytest.raises(Exception) as e:
+            launchers.MozRunnerLauncher._codesign_sign("/")
+        assert str(e.value) == "_codesign_sign should only be called on macOS."
+
+    @patch("mozregression.launchers.call")
+    @patch("mozregression.launchers.mozinfo")
+    @patch("mozregression.launchers.mozinstall")
+    def test__codesign_sign(self, mozinstall, mozinfo, call):
+        mozinstall.get_binary.return_value = "/binary"
+        mozinfo.os = "mac"
+        launchers.MozRunnerLauncher._codesign_sign("/")
+        call.assert_called_with(["codesign", "--force", "--deep", "--sign", "-", "/"])
+        call.assert_called_once()
+
+    @patch("mozregression.launchers.mozinfo")
+    @patch("mozregression.launchers.mozinstall")
+    def test__codesign_assert_resigned_if_unsigned(self, mozinstall, mozinfo):
+        mozinstall.get_binary.return_value = "/binary"
+        mozinfo.os = "mac"
+        with patch.object(
+            launchers.MozRunnerLauncher,
+            "_codesign_verify",
+            return_value=launchers.CodesignResult.UNSIGNED,
+        ):
+            with patch.object(launchers.MozRunnerLauncher, "_codesign_sign") as _codesign_sign:
+                launchers.MozRunnerLauncher("/binary")
+                _codesign_sign.assert_called_with("/")
+
+    @patch("mozregression.launchers.mozinfo")
+    @patch("mozregression.launchers.mozinstall")
+    def test__codesign_assert_no_calls_if_not_on_mac(self, mozinstall, mozinfo):
+        mozinstall.get_binary.return_value = "/binary"
+        mozinfo.os = "notmac"
+        with patch.object(launchers.MozRunnerLauncher, "_codesign_verify") as _codesign_verify:
+            with patch.object(launchers.MozRunnerLauncher, "_codesign_sign") as _codesign_sign:
+                launchers.MozRunnerLauncher("/binary")
+                _codesign_sign.assert_not_called()
+                _codesign_verify.assert_not_called()
+
+    @patch("mozregression.launchers.mozinfo")
+    @patch("mozregression.launchers.mozinstall")
+    def test__codesign_assert_not_resigned_if_not_unsigned(self, mozinstall, mozinfo):
+        mozinstall.get_binary.return_value = "/binary"
+        mozinfo.os = "mac"
+        with patch.object(
+            launchers.MozRunnerLauncher,
+            "_codesign_verify",
+            return_value=launchers.CodesignResult.INVALID,
+        ) as _codesign_verify:
+            with patch.object(launchers.MozRunnerLauncher, "_codesign_sign") as _codesign_sign:
+                launchers.MozRunnerLauncher("/binary")
+                _codesign_verify.assert_called_with("/")
+                _codesign_sign.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "verify_return_value,sign_call_count",
+    [
+        (launchers.CodesignResult.PASS, 0),
+        (launchers.CodesignResult.UNSIGNED, 1),
+        (launchers.CodesignResult.INVALID, 0),
+        (launchers.CodesignResult.OTHER, 0),
+    ],
+)
+@patch("mozregression.launchers.FirefoxLauncher._codesign_sign")
+@patch("mozregression.launchers.FirefoxLauncher._codesign_verify")
+def test_firefox_install(
+    _mock_codesign_verify, _mock_codesign_sign, verify_return_value, sign_call_count, mocker
+):
     install_ext, binary_name = (
         ("zip", "firefox.exe")
         if mozinfo.isWin
@@ -192,6 +310,10 @@ def test_firefox_install(mocker):
 
     installer = os.path.abspath(os.path.join("tests", "unit", "installer_stubs", installer_file))
     assert os.path.isfile(installer)
+
+    if mozinfo.isMac:
+        _mock_codesign_verify.return_value = verify_return_value
+
     with launchers.FirefoxLauncher(installer) as fx:
         assert os.path.isdir(fx.tempdir)
         assert os.path.basename(fx.binary) == binary_name
@@ -200,6 +322,12 @@ def test_firefox_install(mocker):
             installdir = os.path.normpath(os.path.join(installdir, "..", "Resources"))
         assert os.path.exists(os.path.join(installdir, "distribution", "policies.json"))
     assert not os.path.isdir(fx.tempdir)
+
+    if not mozinfo.isMac:
+        assert _mock_codesign_verify.call_count == 0
+        assert _mock_codesign_sign.call_count == 0
+    else:
+        assert _mock_codesign_sign.call_count == sign_call_count
 
 
 class TestFennecLauncher(unittest.TestCase):

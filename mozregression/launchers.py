@@ -197,10 +197,12 @@ class MozRunnerLauncher(Launcher):
             return CodesignResult.PASS
         elif exit_code == 1:
             if b"code object is not signed at all" in output:
+                # NOTE: this output message was tested on macOS 11, 12, and 13.
                 return CodesignResult.UNSIGNED
             else:
                 return CodesignResult.INVALID
-        # Remaining codes normally mean the command was called with incorrect arguments.
+        # NOTE: Remaining codes normally mean the command was called with incorrect
+        # arguments or if there is any other unforeseen issue with running the command.
         return CodesignResult.OTHER
 
     @staticmethod
@@ -208,6 +210,8 @@ class MozRunnerLauncher(Launcher):
         """Calls `codesign` to sign `appdir` with ad-hoc identity."""
         if mozinfo.os != "mac":
             raise Exception("_codesign_sign should only be called on macOS.")
+        # NOTE: The `codesign` command appears to have maintained all the same
+        # arguments since macOS 10, however this was tested on macOS 12.
         return call(["codesign", "--force", "--deep", "--sign", "-", appdir])
 
     def _install(self, dest):

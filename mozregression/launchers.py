@@ -11,7 +11,8 @@ import sys
 import time
 import zipfile
 from abc import ABCMeta, abstractmethod
-from subprocess import call
+from enum import Enum
+from subprocess import STDOUT, CalledProcessError, call, check_output
 from threading import Thread
 
 import mozinfo
@@ -28,6 +29,9 @@ from mozregression.errors import LauncherError, LauncherNotRunnable
 from mozregression.tempdir import safe_mkdtemp
 
 LOG = get_proxy_logger("Test Runner")
+
+# This enum is used to transform output from codesign (on macs).
+CodesignResult = Enum("Result", "PASS UNSIGNED INVALID OTHER")
 
 
 class Launcher(metaclass=ABCMeta):
@@ -173,6 +177,43 @@ class MozRunnerLauncher(Launcher):
     app_name = "undefined"
     binary = None
 
+    @staticmethod
+    def _codesign_verify(appdir):
+        """Calls `codesign` to verify signature, and returns state."""
+        if mozinfo.os != "mac":
+            raise Exception("_codesign_verify should only be called on macOS.")
+
+        try:
+            output = check_output(["codesign", "-v", appdir], stderr=STDOUT)
+        except CalledProcessError as e:
+            output = e.output
+            exit_code = e.returncode
+        else:
+            exit_code = 0
+
+        LOG.debug(f"codesign verify exit code: {exit_code}")
+
+        if exit_code == 0:
+            return CodesignResult.PASS
+        elif exit_code == 1:
+            if b"code object is not signed at all" in output:
+                # NOTE: this output message was tested on macOS 11, 12, and 13.
+                return CodesignResult.UNSIGNED
+            else:
+                return CodesignResult.INVALID
+        # NOTE: Remaining codes normally mean the command was called with incorrect
+        # arguments or if there is any other unforeseen issue with running the command.
+        return CodesignResult.OTHER
+
+    @staticmethod
+    def _codesign_sign(appdir):
+        """Calls `codesign` to sign `appdir` with ad-hoc identity."""
+        if mozinfo.os != "mac":
+            raise Exception("_codesign_sign should only be called on macOS.")
+        # NOTE: The `codesign` command appears to have maintained all the same
+        # arguments since macOS 10, however this was tested on macOS 12.
+        return call(["codesign", "--force", "--deep", "--sign", "-", appdir])
+
     def _install(self, dest):
         self.tempdir = safe_mkdtemp()
         try:
@@ -182,6 +223,12 @@ class MozRunnerLauncher(Launcher):
         except Exception:
             remove(self.tempdir)
             raise
+
+        binarydir = os.path.dirname(self.binary)
+        appdir = os.path.normpath(os.path.join(binarydir, "..", ".."))
+        if mozinfo.os == "mac" and self._codesign_verify(appdir) == CodesignResult.UNSIGNED:
+            LOG.debug(f"codesign verification failed for {appdir}, resigning...")
+            self._codesign_sign(appdir)
 
     def _disableUpdateByPolicy(self):
         updatePolicy = {"policies": {"DisableAppUpdate": True}}
@@ -193,7 +240,7 @@ class MozRunnerLauncher(Launcher):
             # we need policies.json in:
             #     PackageName.app/Contents/Resources/distribution
             installdir = os.path.normpath(os.path.join(installdir, "..", "Resources"))
-        os.mkdir(os.path.join(installdir, "distribution"))
+        os.makedirs(os.path.join(installdir, "distribution"))
         policyFile = os.path.join(installdir, "distribution", "policies.json")
         with open(policyFile, "w") as fp:
             json.dump(updatePolicy, fp, indent=2)

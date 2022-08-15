@@ -402,6 +402,10 @@ class ThunderbirdRegressionProfile(ThunderbirdProfile):
 class ThunderbirdLauncher(MozRunnerLauncher):
     profile_class = ThunderbirdRegressionProfile
 
+    def _install(self, dest):
+        super(ThunderbirdLauncher, self)._install(dest)
+        self._disableUpdateByPolicy()
+
 
 class AndroidLauncher(Launcher):
     app_info = None

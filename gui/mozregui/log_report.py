@@ -2,9 +2,16 @@ from datetime import datetime
 
 from mozlog import get_default_logger
 from mozlog.structuredlog import log_levels
-from PySide2.QtCore import QObject, Signal, Slot
-from PySide2.QtGui import QColor, QTextBlockUserData, QTextCharFormat, QTextCursor
-from PySide2.QtWidgets import QAction, QActionGroup, QMenu, QPlainTextEdit
+from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtGui import (
+    QAction,
+    QActionGroup,
+    QColor,
+    QTextBlockUserData,
+    QTextCharFormat,
+    QTextCursor,
+)
+from PySide6.QtWidgets import QMenu, QPlainTextEdit
 
 COLORS = {
     "DEBUG": QColor(6, 146, 6),  # green

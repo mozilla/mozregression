@@ -42,7 +42,7 @@ setup(
         """,
     package_data={"mozregression": ["*.yaml"]},
     platforms=["Any"],
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     setup_requires=["setuptools_scm"],
     install_requires=DEPENDENCIES,
     classifiers=[

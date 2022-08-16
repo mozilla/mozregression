@@ -1,5 +1,5 @@
 import pytest
-from PySide2.QtCore import QDate
+from PySide6.QtCore import QDate
 
 from mozregression.fetch_configs import CommonConfig
 from mozregui.wizard import (
@@ -39,14 +39,15 @@ def test_wizard(mocker, qtbot, os, bits, wizard_class, pages):
     wizard = wizard_class()
     qtbot.addWidget(wizard)
     wizard.show()
-    qtbot.waitForWindowShown(wizard)
+    with qtbot.waitExposed(wizard):
+        pass
 
     for page_class in pages:
         assert isinstance(wizard.currentPage(), page_class)
         wizard.next()
 
     # everything has been visited
-    assert wizard.visitedPages() == wizard.pageIds()
+    assert wizard.visitedIds() == wizard.pageIds()
 
     fetch_config, options = wizard.options()
 

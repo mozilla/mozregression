@@ -1,6 +1,6 @@
-from PySide2.QtCore import Qt, Signal
-from PySide2.QtGui import QBrush
-from PySide2.QtWidgets import (
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QBrush
+from PySide6.QtWidgets import (
     QDialog,
     QGraphicsRectItem,
     QGraphicsScene,
@@ -117,7 +117,7 @@ class SkipDialog(QDialog):
         return self.scene.build_range.future_build_infos.index(item.future_build_info)
 
     def choose_next_build(self):
-        if self.exec_() == self.Accepted:
+        if self.exec() == self.Accepted:
             items = self.scene.selectedItems()
             assert len(items) == 1
             return self.build_index(items[0])
@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
     build_range = BuildRange(None, [FInfo(None, i) for i in range(420)])
 
-    from PySide2.QtWidgets import QApplication, QMainWindow
+    from PySide6.QtWidgets import QApplication, QMainWindow
 
     app = QApplication([])
     win = QMainWindow()

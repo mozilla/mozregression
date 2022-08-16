@@ -1,6 +1,6 @@
-from PySide2.QtCore import QObject, Qt, QThread, QUrl, Slot
-from PySide2.QtGui import QDesktopServices
-from PySide2.QtWidgets import QLabel
+from PySide6.QtCore import QObject, Qt, QThread, QUrl, Slot
+from PySide6.QtGui import QDesktopServices
+from PySide6.QtWidgets import QLabel
 
 from mozregression import __version__ as mozregression_version
 from mozregression.network import retry_get

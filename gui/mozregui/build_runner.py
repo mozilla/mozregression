@@ -1,4 +1,4 @@
-from PySide2.QtCore import QObject, QThread, QTimer, Signal, Slot
+from PySide6.QtCore import QObject, QThread, QTimer, Signal, Slot
 
 from mozregression.download_manager import BuildDownloadManager
 from mozregression.errors import LauncherError, MozRegressionError

@@ -9,7 +9,7 @@ import pytest
 from mozregression.config import get_config, write_config
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def tmp():
     temp_dir = tempfile.mkdtemp()
     yield temp_dir

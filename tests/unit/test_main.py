@@ -40,7 +40,7 @@ class AppCreator(object):
             self.app.clear()
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def create_app(mocker):
     """allow to create an Application and ensure that clear() is called"""
     creator = AppCreator(mocker.patch("mozregression.main.LOG"))

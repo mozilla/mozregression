@@ -1,8 +1,8 @@
 import sys
 import threading
 
-from PySide2.QtCore import QObject, QTimer, Signal, Slot
-from PySide2.QtWidgets import QMessageBox
+from PySide6.QtCore import QObject, QTimer, Signal, Slot
+from PySide6.QtWidgets import QMessageBox
 
 from mozregression.approx_persist import ApproxPersistChooser
 from mozregression.bisector import (

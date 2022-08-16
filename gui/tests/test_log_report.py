@@ -12,7 +12,8 @@ def log_view(qtbot):
     widget.log_model = log_report.LogModel()
     widget.log_model.log.connect(widget.on_log_received)
     widget.show()
-    qtbot.waitForWindowShown(widget)
+    with qtbot.waitExposed(widget):
+        pass
     return widget
 
 

@@ -1,7 +1,7 @@
 import pytest
-from PySide2.QtCore import Qt
-from PySide2.QtGui import QCloseEvent
-from PySide2.QtWidgets import QMessageBox
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QCloseEvent
+from PySide6.QtWidgets import QMessageBox
 
 from mozregression.build_range import BuildRange, FutureBuildInfo
 from mozregui.skip_chooser import SkipDialog
@@ -11,17 +11,18 @@ class DialogBuilder(object):
     def __init__(self, qtbot):
         self.qtbot = qtbot
 
-    def build(self, nb_builds, return_exec_code=SkipDialog.Accepted):
+    def build(self, nb_builds, return_execcode=SkipDialog.Accepted):
         class FInfo(FutureBuildInfo):
             def _fetch(self):
                 return self.data
 
         build_range = BuildRange(None, [FInfo(None, i) for i in range(nb_builds)])
         dialog = SkipDialog(build_range)
-        dialog.exec_ = lambda: return_exec_code
+        dialog.exec = lambda: return_execcode
         self.qtbot.addWidget(dialog)
         dialog.show()
-        self.qtbot.waitForWindowShown(dialog)
+        with self.qtbot.waitExposed(dialog):
+            pass
         return dialog
 
 
@@ -70,7 +71,7 @@ def test_dbl_click_btn(qtbot, dialog_builder):
 @pytest.mark.parametrize("close", [True, False])
 def test_close_event(mocker, dialog_builder, close):
     dialog = dialog_builder.build(5)
-    warning = mocker.patch("PySide2.QtWidgets.QMessageBox.warning")
+    warning = mocker.patch("PySide6.QtWidgets.QMessageBox.warning")
     warning.return_value = QMessageBox.Yes if close else QMessageBox.No
     evt = QCloseEvent()
 

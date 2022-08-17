@@ -1,8 +1,8 @@
 import sys
 
 from mozlog.structuredlog import StructuredLogger, set_default_logger
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QApplication
 
 from mozregression.log import init_python_redirect_logger
 
@@ -43,7 +43,7 @@ def main():
     log_model.log.connect(win.ui.log_view.on_log_received)
     win.show()
     # Enter Qt application main loop
-    sys.exit(app.exec())
+    sys.exit(app.exec_())
 
 
 if __name__ == "__main__":

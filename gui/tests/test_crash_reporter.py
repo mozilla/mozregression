@@ -1,6 +1,6 @@
 import pytest
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication, QPushButton
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QApplication, QPushButton
 
 from mozregui.crash_reporter import CrashDialog, CrashReporter
 
@@ -9,12 +9,12 @@ class CrashDlgTest(CrashDialog):
     INSTANCE = None
 
     # do not block
-    def exec(self):
+    def exec_(self):
         self.show()
         CrashDlgTest.INSTANCE = self
 
 
-@pytest.fixture
+@pytest.yield_fixture
 def crash_reporter():
     reporter = CrashReporter(QApplication.instance())
     reporter.DIALOG_CLASS = CrashDlgTest
@@ -36,11 +36,7 @@ class CrashingButton(QPushButton):
 def test_report_exception(crash_reporter, qtbot, mocker):
     btn = CrashingButton()
     qtbot.addWidget(btn)
-
-    btn.show()
-
-    with qtbot.waitExposed(btn):
-        pass
+    qtbot.waitForWindowShown(btn)
 
     with qtbot.waitSignal(crash_reporter.got_exception):
         qtbot.mouseClick(btn, Qt.LeftButton)
@@ -48,7 +44,6 @@ def test_report_exception(crash_reporter, qtbot, mocker):
     while not CrashDlgTest.INSTANCE:
         crash_reporter.app.processEvents()
     dlg = CrashDlgTest.INSTANCE
-    with qtbot.waitExposed(dlg):
-        pass
+    qtbot.waitForWindowShown(dlg)
     text = str(dlg.ui.information.toPlainText())
     assert "oh, no!" in text

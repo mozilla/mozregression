@@ -5,7 +5,7 @@ import tempfile
 import mozfile
 import pytest
 from mock import patch
-from PySide6.QtCore import Qt
+from PySide2.QtCore import Qt
 
 from mozregui.addons_editor import AddonsWidgetEditor
 
@@ -17,8 +17,7 @@ def addons_editor(qtbot):
     widget = AddonsWidgetEditor()
     qtbot.addWidget(widget)
     widget.show()
-    with qtbot.waitExposed(widget):
-        pass
+    qtbot.waitForWindowShown(widget)
     return widget
 
 

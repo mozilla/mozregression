@@ -5,7 +5,7 @@ from mozregui.check_release import CheckRelease, QLabel, QUrl
 from mozregui.main import MainWindow
 
 
-@pytest.fixture
+@pytest.yield_fixture
 def mainwindow(qtbot):
     main = MainWindow()
     qtbot.addWidget(main)

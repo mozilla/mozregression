@@ -13,7 +13,7 @@ on:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
@@ -25,8 +25,8 @@ jobs:
           python -m venv env
           source env/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install -r requirements/requirements-3.9-Linux.txt
-          python -m pip install -e .
+          pip install -r requirements/requirements-3.9-Linux.txt
+          pip install -e .
       - name: Lint
         run: |
           source env/bin/activate
@@ -39,14 +39,10 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-20.04
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+          - ubuntu-18.04
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
     steps:
       - uses: actions/checkout@v2
-      - name: setup
-        run: |
-          sudo apt-get update
-          sudo apt-get install libegl-dev -y
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -56,8 +52,8 @@ jobs:
           python -m venv env
           source env/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install -r requirements/requirements-${{ matrix.python-version }}-${{ runner.os }}.txt
-          python -m pip install -e .
+          pip install -r requirements/requirements-${{ matrix.python-version }}-${{ runner.os }}.txt
+          pip install -e .
       - name: Test
         run: |
           source env/bin/activate
@@ -65,7 +61,7 @@ jobs:
           coveralls --service=github
 
   build-and-test-linux-gui:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
     env:
       DISPLAY: ":99.0"
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -74,8 +70,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: setup
         run: |
-          sudo apt-get update
-          sudo apt install libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 libegl-dev -y
+          sudo apt install libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
           /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -86,8 +81,8 @@ jobs:
           python -m venv env
           source env/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install -r requirements/requirements-3.9-Linux.txt
-          python -m pip install -e .
+          pip install -r requirements/requirements-3.9-Linux.txt
+          pip install -e .
       - name: Build
         run: |
           source env/bin/activate

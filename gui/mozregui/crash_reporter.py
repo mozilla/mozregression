@@ -2,8 +2,8 @@ import platform
 import sys
 import traceback
 
-from PySide6.QtCore import QObject, Qt, Signal, Slot
-from PySide6.QtWidgets import QDialog
+from PySide2.QtCore import QObject, Qt, Signal, Slot
+from PySide2.QtWidgets import QDialog
 
 import mozregression
 
@@ -74,5 +74,5 @@ class CrashReporter(QObject):
             self.on_prevent_dialog_checked
         )
         self.current_dialog.set_exception(*err)
-        self.current_dialog.exec()
+        self.current_dialog.exec_()
         self.current_dialog = None

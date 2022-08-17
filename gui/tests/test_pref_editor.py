@@ -3,7 +3,7 @@ import tempfile
 import mozfile
 import pytest
 from mock import patch
-from PySide6.QtCore import Qt
+from PySide2.QtCore import Qt
 
 from mozregui.pref_editor import PreferencesWidgetEditor
 
@@ -13,8 +13,7 @@ def pref_editor(qtbot):
     widget = PreferencesWidgetEditor()
     qtbot.addWidget(widget)
     widget.show()
-    with qtbot.waitExposed(widget):
-        pass
+    qtbot.waitForWindowShown(widget)
     return widget
 
 

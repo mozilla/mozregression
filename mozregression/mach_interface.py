@@ -8,6 +8,7 @@ break mach!
 from __future__ import absolute_import
 
 from argparse import Namespace
+from packaging import version
 
 from mozregression import __version__
 from mozregression.cli import create_parser
@@ -25,7 +26,7 @@ def new_release_on_pypi():
         pypi_version = pypi_latest_version()
     except Exception:
         return
-    if pypi_version != __version__:
+    if version.parse(__version__) < version.parse(pypi_version):
         return pypi_version
 
 

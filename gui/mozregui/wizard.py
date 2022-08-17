@@ -3,8 +3,8 @@ from __future__ import absolute_import
 import datetime
 
 import mozinfo
-from PySide6.QtCore import SIGNAL, QDate, QStringListModel, Qt, Slot
-from PySide6.QtWidgets import QApplication, QCompleter, QMessageBox, QWizard, QWizardPage
+from PySide2.QtCore import SIGNAL, QDate, QStringListModel, Qt, Slot
+from PySide2.QtWidgets import QApplication, QCompleter, QMessageBox, QWizard, QWizardPage
 
 from mozregression.branches import get_branches
 from mozregression.dates import to_datetime

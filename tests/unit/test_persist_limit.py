@@ -26,7 +26,7 @@ class TempCreator(object):
         os.utime(fname, (atime, atime))
 
 
-@pytest.fixture
+@pytest.yield_fixture
 def temp():
     tmp = TempCreator()
     yield tmp

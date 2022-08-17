@@ -1,7 +1,7 @@
 import os
 
 from mock import patch
-from PySide6.QtCore import QTimer
+from PySide2.QtCore import QTimer
 
 from mozregui import main  # noqa
 

@@ -1,5 +1,5 @@
-from PySide6.QtCore import QDir
-from PySide6.QtWidgets import (
+from PySide2.QtCore import QDir
+from PySide2.QtWidgets import (
     QCompleter,
     QFileDialog,
     QFileSystemModel,

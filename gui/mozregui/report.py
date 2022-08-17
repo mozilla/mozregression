@@ -1,6 +1,6 @@
-from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt, QUrl, Signal, Slot
-from PySide6.QtGui import QColor, QDesktopServices
-from PySide6.QtWidgets import QTableView, QTextBrowser
+from PySide2.QtCore import QAbstractTableModel, QModelIndex, Qt, QUrl, Signal, Slot
+from PySide2.QtGui import QColor, QDesktopServices
+from PySide2.QtWidgets import QTableView, QTextBrowser
 
 from mozregression.bisector import NightlyHandler
 

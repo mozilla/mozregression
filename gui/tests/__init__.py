@@ -1,7 +1,7 @@
 import os
 import sys
 
-from PySide6.QtWidgets import QApplication
+from PySide2.QtWidgets import QApplication
 
 if sys.platform == "linux":
     os.environ["QT_QPA_PLATFORM"] = "offscreen"

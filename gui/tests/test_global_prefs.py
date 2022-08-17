@@ -3,12 +3,12 @@ import tempfile
 
 import pytest
 from mock import Mock
-from PySide6.QtWidgets import QDialog
+from PySide2.QtWidgets import QDialog
 
 from mozregui import global_prefs
 
 
-@pytest.fixture
+@pytest.yield_fixture
 def write_default_conf():
     default_file = global_prefs.DEFAULT_CONF_FNAME
     conf_file = tempfile.NamedTemporaryFile(delete=False)
@@ -36,8 +36,7 @@ persist-size-limit = 2.5
     pref_dialog = global_prefs.ChangePrefsDialog()
     qtbot.add_widget(pref_dialog)
     pref_dialog.show()
-    with qtbot.waitExposed(pref_dialog):
-        pass
+    qtbot.waitForWindowShown(pref_dialog)
 
     # defaults are set
     assert str(pref_dialog.ui.persist.line_edit.text()) == ""
@@ -59,7 +58,7 @@ def test_change_prefs_dialog_saves_prefs(dlg_result, saved, mocker):
     Dlg = mocker.patch("mozregui.global_prefs.ChangePrefsDialog")
     dlg = Mock()
     Dlg.return_value = dlg
-    dlg.exec.return_value = dlg_result
+    dlg.exec_.return_value = dlg_result
 
     global_prefs.change_prefs_dialog()
     assert dlg.save_prefs.called == saved

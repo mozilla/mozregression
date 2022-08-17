@@ -1,6 +1,6 @@
 from mozprofile.prefs import Preferences
-from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt, Slot
-from PySide6.QtWidgets import QFileDialog, QWidget
+from PySide2.QtCore import QAbstractTableModel, QModelIndex, Qt, Slot
+from PySide2.QtWidgets import QFileDialog, QWidget
 
 from mozregui.ui.pref_editor import Ui_PrefEditor
 
@@ -113,9 +113,9 @@ class PreferencesWidgetEditor(QWidget):
 
 
 if __name__ == "__main__":
-    from PySide6.QtWidgets import QApplication
+    from PySide2.QtWidgets import QApplication
 
     app = QApplication([])
     view = PreferencesWidgetEditor()
     view.show()
-    app.exec()
+    app.exec_()

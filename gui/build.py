@@ -71,7 +71,7 @@ def do_uic(options, force=False):
             or (os.path.getmtime(uifile) > os.path.getmtime(pyfile))
         ):
             print("uic'ing %s -> %s" % (uifile, pyfile))
-            os.system("pyside6-uic {} > {}".format(uifile, pyfile))
+            os.system("pyside2-uic {} > {}".format(uifile, pyfile))
 
 
 def do_rcc(options, force=False):
@@ -83,7 +83,7 @@ def do_rcc(options, force=False):
         or (os.path.getmtime(rccfile) > os.path.getmtime(pyfile))
     ):
         print("rcc'ing %s -> %s" % (rccfile, pyfile))
-        call("pyside6-rcc", "-o", pyfile, rccfile)
+        call("pyside2-rcc", "-o", pyfile, rccfile)
 
 
 def do_run(options):
@@ -113,7 +113,7 @@ def do_bundle(options):
     # create a bundle for the application
     call("pyinstaller", "gui.spec")
 
-    # remove any pyside6 files we don't need
+    # remove any pyside2 files we don't need
     unwanted_re = "|".join(UNWANTED_PYSIDE_LIBRARIES)
     for root, dirs, filenames in os.walk("dist"):
         qt_filenames = [
@@ -151,7 +151,7 @@ def do_bundle(options):
     else:
         # seems like some qml stuff is also bundled on Linux
         try:
-            shutil.rmtree(os.path.join("dist", "mozregression-gui", "PySide6", "qml"))
+            shutil.rmtree(os.path.join("dist", "mozregression-gui", "PySide2", "qml"))
         except FileNotFoundError:
             pass
         with tarfile.open("mozregression-gui.tar.gz", "w:gz") as tar:

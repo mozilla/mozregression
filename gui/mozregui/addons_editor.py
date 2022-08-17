@@ -1,5 +1,5 @@
-from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, Slot
-from PySide6.QtWidgets import QFileDialog, QWidget
+from PySide2.QtCore import QAbstractListModel, QModelIndex, Qt, Slot
+from PySide2.QtWidgets import QFileDialog, QWidget
 
 from mozregui.ui.addons_editor import Ui_AddonsEditor
 
@@ -72,9 +72,9 @@ class AddonsWidgetEditor(QWidget):
 
 
 if __name__ == "__main__":
-    from PySide6.QtWidgets import QApplication
+    from PySide2.QtWidgets import QApplication
 
     app = QApplication([])
     view = AddonsWidgetEditor()
     view.show()
-    app.exec()
+    app.exec_()

@@ -5,7 +5,7 @@ import unittest
 
 import pytest
 from mock import Mock, patch
-from PySide6.QtCore import QObject, QThread, Signal, Slot
+from PySide2.QtCore import QObject, QThread, Signal, Slot
 
 from mozregression.fetch_configs import create_config
 from mozregression.persist_limit import PersistLimit

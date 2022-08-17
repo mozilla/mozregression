@@ -1,8 +1,8 @@
 from tempfile import mkdtemp
 
 import mozfile
-from PySide6.QtCore import QSettings, Slot
-from PySide6.QtWidgets import QMainWindow, QMessageBox
+from PySide2.QtCore import QSettings, Slot
+from PySide2.QtWidgets import QMainWindow, QMessageBox
 
 from mozregression import __version__ as mozregression_version
 from mozregression.telemetry import initialize_telemetry
@@ -92,7 +92,7 @@ class MainWindow(QMainWindow):
 
     def _start_runner(self, wizard_class, runner):
         wizard = wizard_class(self)
-        if wizard.exec() == wizard.Accepted:
+        if wizard.exec_() == wizard.Accepted:
             self.current_runner = runner
             # clear the report model
             self.ui.report_view.model().clear()

@@ -1,5 +1,5 @@
-from PySide6.QtCore import QObject, Signal, Slot
-from PySide6.QtWidgets import QMessageBox
+from PySide2.QtCore import QObject, Signal, Slot
+from PySide2.QtWidgets import QMessageBox
 
 from mozregression.dates import is_date_or_datetime
 from mozregression.errors import MozRegressionError

@@ -1,5 +1,5 @@
 from mock import Mock
-from PySide2.QtCore import Qt
+from PySide6.QtCore import Qt
 
 from mozregression.build_info import NightlyBuildInfo
 from mozregui.report import ReportView
@@ -15,7 +15,8 @@ def test_report_basic(qtbot):
     view.step_report_changed.connect(slot)
     # show the widget
     view.show()
-    qtbot.waitForWindowShown(view)
+    with qtbot.waitExposed(view):
+        pass
     # start the bisection
     view.model().started()
     view.model().step_started(Mock())

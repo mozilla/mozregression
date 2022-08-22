@@ -1,76 +1,21 @@
-name: Build and test
+name: Build and upload GUI packages
 
 on:
-  pull_request:
-    branches:
-        - main
+  release:
+    types: [published]
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-      - name: Install dependencies
-        run: |
-          python -m venv env
-          source env/bin/activate
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements/requirements-3.9-Linux.txt
-          python -m pip install -e .
-      - name: Lint
-        run: |
-          source env/bin/activate
-          ./bin/lint-check.sh || (echo "Lint fix results:" && ./bin/lint-fix.sh && git diff && false)
-
-  build-and-test-linux-base:
-    runs-on: ${{ matrix.os }}
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    strategy:
-      matrix:
-        os:
-          - ubuntu-20.04
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
-    steps:
-      - uses: actions/checkout@v2
-      - name: setup
-        run: |
-          sudo apt-get update
-          sudo apt-get install libegl-dev -y
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m venv env
-          source env/bin/activate
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements/requirements-${{ matrix.python-version }}-${{ runner.os }}.txt
-          python -m pip install -e .
-      - name: Test
-        run: |
-          source env/bin/activate
-          coverage run -m pytest tests
-          coveralls --service=github
-
-  build-and-test-linux-gui:
+  build-and-publish-linux-gui:
     runs-on: ubuntu-20.04
     env:
       DISPLAY: ":99.0"
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      TAG: ${{ github.event.release.tag_name }}
     steps:
       - uses: actions/checkout@v2
       - name: setup
         run: |
           sudo apt-get update
-          sudo apt install libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 libegl-dev -y
-          /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
+          sudo apt install libxcb-xinerama0 libegl-dev -y
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -87,13 +32,15 @@ jobs:
           source env/bin/activate
           python gui/build.py bundle
           ls -alh gui/mozregression-gui.tar.gz
-      - name: Test
-        run: |
-          source env/bin/activate
-          coverage run -m pytest -v gui/tests
-          coveralls --service=github
+      - name: Upload
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./gui/mozregression-gui.tar.gz
+          asset_name: mozregression-gui.tar.gz
+          asset_content_type: application/gzip
 
-  build-and-test-mac-gui:
+  build-and-publish-mac-gui:
     runs-on: macos-latest
     env:
       # We need the official Python, because the GA ones only support newer macOS versions
@@ -124,12 +71,14 @@ jobs:
           source env/bin/activate
           python gui/build.py bundle
           ls -alh gui/dist/mozregression-gui.dmg
-      - name: Test
-        run: |
-          source env/bin/activate
-          coverage run -m pytest -v gui/tests
-          coveralls --service=github
-  build-and-test-windows-gui:
+      - name: Upload
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./gui/dist/mozregression-gui.dmg
+          asset_name: mozregression-gui.dmg
+          asset_content_type: application/octet-stream
+  build-and-publish-windows-gui:
     runs-on: windows-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -150,3 +99,10 @@ jobs:
         run: |
           python gui\build.py bundle --nsis-path "C:\\Program Files (x86)\\NSIS"
           python gui\build.py test
+      - name: Upload
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./gui/wininst/mozregression-gui.exe
+          asset_name: mozregression-gui.exe
+          asset_content_type: application/octet-stream

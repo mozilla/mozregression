@@ -11,7 +11,8 @@ def build_selection(qtbot):
     widget = BuildSelection()
     qtbot.addWidget(widget)
     widget.show()
-    qtbot.waitForWindowShown(widget)
+    with qtbot.waitExposed(widget):
+        pass
     return widget
 
 

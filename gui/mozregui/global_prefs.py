@@ -2,7 +2,7 @@ import os
 
 from configobj import ConfigObj
 from glean import Glean
-from PySide2.QtWidgets import QDialog
+from PySide6.QtWidgets import QDialog
 
 from mozregression.config import ARCHIVE_BASE_URL, DEFAULT_CONF_FNAME, get_config
 from mozregression.network import set_http_session
@@ -132,5 +132,5 @@ def change_prefs_dialog(parent=None):
     A dialog to change global prefs. This does not apply the prefs.
     """
     dlg = ChangePrefsDialog(parent)
-    if dlg.exec_() == QDialog.Accepted:
+    if dlg.exec() == QDialog.Accepted:
         dlg.save_prefs()

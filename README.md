@@ -15,7 +15,6 @@ You can start using mozregression today:
 Build status:
 
 - Linux:
-  [![Linux Build Status](https://travis-ci.org/mozilla/mozregression.svg?branch=master)](https://travis-ci.org/mozilla/mozregression)
   [![Coverage Status](https://img.shields.io/coveralls/mozilla/mozregression.svg)](https://coveralls.io/r/mozilla/mozregression)
 
 For more information see:

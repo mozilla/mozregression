@@ -1,0 +1,40 @@
+name: Build and upload to TestPyPI and PyPI
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-publish-to-pypi:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TESTPYPI_TOKEN: ${{ secrets.TESTPYPI_TOKEN }}
+      PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          python -m venv env
+          source env/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install wheel twine
+          python -m pip install -r requirements/requirements-3.10-Linux.txt
+          python -m pip install -e .
+      - name: Build
+        run: |
+          source env/bin/activate
+          python setup.py sdist bdist_wheel
+          ls -alh dist/
+      - name: Upload to TestPyPI
+        run: |
+          source env/bin/activate
+          python -m twine upload -r testpypi dist/* --verbose --username __token__ --password ${TESTPYPI_TOKEN}
+      - name: Upload to PyPI
+        run: |
+          source env/bin/activate
+          python -m twine upload dist/* --verbose --username __token__ --password ${PYPI_TOKEN}

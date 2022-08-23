@@ -2,7 +2,7 @@ PyInstaller==5.3
 beautifulsoup4==4.11.1
 colorama==0.4.5
 configobj==5.0.6
-glean-sdk==35.0.0
+glean-sdk==51.1.0
 importlib-metadata==4.2.0
 mozdevice==4.0.3
 mozfile==2.1.0
@@ -10,10 +10,10 @@ mozinfo==1.2.2
 mozinstall==2.0.1
 mozlog==7.1.0
 mozprofile==2.5.0
-mozrunner==8.1.0
+mozrunner==8.2.0
 mozversion==2.3.0
 redo==2.0.4
-requests==2.25.1
+requests==2.28.1
 setuptools
-setuptools_scm==5.0.2
-taskcluster==42.1.1
+setuptools_scm==7.0.5
+taskcluster==44.18.0

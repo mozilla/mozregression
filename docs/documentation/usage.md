@@ -21,7 +21,7 @@ to date list of available options.
 
         mozregression --profile=/path/to/profile
 
- - Reuse a profile across tested builds
+- Reuse a profile across tested builds
 
         mozregression --profile /path/to/profile --profile-persistence clone-first
 
@@ -29,7 +29,30 @@ to date list of available options.
 
         mozregression --addon /path/to/addon --addon /other/addon
 
--  Forward arguments to tested binary (note that you must use '=' for arguments beginning with '-' so that the     parser doesn't get confused)
+- Set a preference
+
+        mozregression --pref devtools.chrome.enabled:true
+
+- Set multiple preferences with a file (JSON or INI)
+
+        mozregression --preferences /path/to/prefs.json
+
+  - File format (JSON)
+
+        {
+          "boolean.pref": true,
+          "string.pref": "Hello, world!",
+          "integer.pref": 1
+        }
+
+  - File format (INI)
+
+        [DEFAULT]
+        boolean.pref = true
+        string.pref = Hello, world!
+        integer.pref = 1
+
+- Forward arguments to tested binary (note that you must use '=' for arguments beginning with '-' so that the     parser doesn't get confused)
 
         mozregression --arg='-foreground' --arg='-P'
 

@@ -660,10 +660,10 @@ pyside6-addons==6.3.1 \
     --hash=sha256:7a6bb180e41a4c599aa0e93d11e60570d0ebc79c197afccd9c227566dad5d5ef \
     --hash=sha256:9a933fac75c85bea3a9e31b24926e06b1afebae23cd164f10f2001999ea2692c
     # via pyside6
-pyside6-essentials==6.3.1 \
-    --hash=sha256:55696693325a2de7bf5b56274b534f191032d218d61a948baa95933f6e642e59 \
-    --hash=sha256:e27962beb2cc45fe13a1a1c24a454c3c3c3c3082c4a84bc5dcf6b306979ba013 \
-    --hash=sha256:fa825c5396a5dfedf59635e904239187e2f2225c7f65917d4e973062c9a6b916
+pyside6-essentials==6.3.2 \
+    --hash=sha256:67187a9d0f2659c2a4c8c622f3ea82ded737b16d0b7e096a26b2e418f92c5b65 \
+    --hash=sha256:944648e2bb9e423bd52d695aaaf7ea91d6f4663a71bca3a56fa10f5e7eb720c0 \
+    --hash=sha256:a5d6528a0e7bcf4c7b892210f5ee34fdf2cb95ecddfafa1eb77509d924bcbbf1
     # via
     #   pyside6
     #   pyside6-addons

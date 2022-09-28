@@ -8,8 +8,6 @@ build/*
 htmlcov/
 mozregression.egg-info/
 .eggs/
-.vs/
-TestResults/
 
 gui/build/
 gui/dist/

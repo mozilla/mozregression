@@ -265,6 +265,8 @@ def test_get_nightly_range():
         (datetime(2015, 11, 16, 10, 2, 5), date(2015, 11, 19), 4),
         (date(2015, 11, 14), datetime(2015, 11, 16, 10, 2, 5), 3),
         (datetime(2015, 11, 16, 10, 2, 5), datetime(2015, 11, 20, 11, 4, 9), 5),
+        (datetime(2022, 4, 13), datetime(2022, 4, 14), 2),
+        (datetime(2022, 4, 13, 9, 43, 28), datetime(2022, 4, 13, 21, 52, 53), 2),
     ],
 )
 def test_get_nightly_range_datetime(start, end, range_size):

@@ -299,13 +299,11 @@ def get_nightly_range(fetch_config, start_date, end_date, expand=0, interrupt=No
     Creates a BuildRange for nightlies.
     """
     info_fetcher = NightlyInfoFetcher(fetch_config)
-    futures_builds = []
-    # build the build range using only dates
+    futures_builds = [FutureBuildInfo(info_fetcher, start_date)]
+    # Add to the build range only the dates between start and end.
     sd = to_date(start_date)
-    for i in range((to_date(end_date) - sd).days + 1):
+    for i in range(1, (to_date(end_date) - sd).days):
         futures_builds.append(FutureBuildInfo(info_fetcher, sd + datetime.timedelta(days=i)))
-    # and now put back the real start and end dates
-    # in case they were datetime instances (coming from buildid)
-    futures_builds[0].data = start_date
-    futures_builds[-1].data = end_date
+    # Add the specified end date.
+    futures_builds.append(FutureBuildInfo(info_fetcher, end_date))
     return BuildRange(info_fetcher, futures_builds)

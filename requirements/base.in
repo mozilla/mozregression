@@ -1,8 +1,8 @@
-PyInstaller==5.3
+PyInstaller==5.4.1
 beautifulsoup4==4.11.1
 colorama==0.4.5
 configobj==5.0.6
-glean-sdk==51.1.0
+glean-sdk==51.4.0
 importlib-metadata==4.2.0
 mozdevice==4.0.3
 mozfile==2.1.0
@@ -16,4 +16,4 @@ redo==2.0.4
 requests==2.28.1
 setuptools
 setuptools_scm==7.0.5
-taskcluster==44.18.0
+taskcluster==44.21.0

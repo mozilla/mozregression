@@ -34,6 +34,7 @@ jobs:
       matrix:
         os:
           - ubuntu-20.04
+          - ubuntu-22.04
         python-version: ["3.7", "3.8", "3.9", "3.10"]
     steps:
       - uses: actions/checkout@v2
@@ -59,7 +60,12 @@ jobs:
           coveralls --service=github
 
   build-and-test-linux-gui:
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-20.04
+          - ubuntu-22.04
     env:
       DISPLAY: ":99.0"
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

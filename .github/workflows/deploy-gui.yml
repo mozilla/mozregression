@@ -6,7 +6,12 @@ on:
 
 jobs:
   build-and-publish-linux-gui:
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-20.04
+          - ubuntu-22.04
     env:
       DISPLAY: ":99.0"
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -36,8 +41,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./gui/mozregression-gui.tar.gz
-          asset_name: mozregression-gui.tar.gz
+          asset_path: ./gui/mozregression-gui-${{ matrix.os }}.tar.gz
+          asset_name: mozregression-gui-${{ matrix.os }}.tar.gz
           asset_content_type: application/gzip
 
   build-and-publish-mac-gui:

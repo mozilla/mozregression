@@ -159,8 +159,16 @@ class Download(object):
         # this allow to not use a broken file in case things went really bad
         # while downloading the file (ie the python interpreter is killed
         # abruptly)
+
         temp = None
         bytes_so_far = 0
+
+        try:
+            session.head(url)
+            LOG.info(f"Sent HEAD request to {url}.")
+        except Exception:
+            pass
+
         try:
             with closing(session.get(url, stream=True)) as response:
                 total_size = int(response.headers["Content-length"].strip())

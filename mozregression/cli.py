@@ -522,7 +522,7 @@ class Configuration(object):
             try:
                 repo = self.options.repo
                 if get_name(repo) == "mozilla-release" or (
-                    not repo and re.match(r"^\d+\.\d\.\d$", value)
+                    not repo and re.match(r"^\d+\.\d(\.\d)?$", value)
                 ):
                     new_value = tag_of_release(value)
                     if not repo:

@@ -289,7 +289,7 @@ class TestMozRunnerLauncher__codesign(unittest.TestCase):
     [
         (launchers.CodesignResult.PASS, 0),
         (launchers.CodesignResult.UNSIGNED, 1),
-        (launchers.CodesignResult.INVALID, 0),
+        (launchers.CodesignResult.INVALID, 1),
         (launchers.CodesignResult.OTHER, 0),
     ],
 )

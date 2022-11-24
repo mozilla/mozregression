@@ -224,11 +224,11 @@ class MozRunnerLauncher(Launcher):
             remove(self.tempdir)
             raise
 
-        binarydir = os.path.dirname(self.binary)
-        appdir = os.path.normpath(os.path.join(binarydir, "..", ".."))
-        if mozinfo.os == "mac" and self._codesign_verify(appdir) == CodesignResult.UNSIGNED:
-            LOG.debug(f"codesign verification failed for {appdir}, resigning...")
-            self._codesign_sign(appdir)
+        self.binarydir = os.path.dirname(self.binary)
+        self.appdir = os.path.normpath(os.path.join(self.binarydir, "..", ".."))
+        if mozinfo.os == "mac" and self._codesign_verify(self.appdir) == CodesignResult.UNSIGNED:
+            LOG.debug(f"codesign verification failed for {self.appdir}, resigning...")
+            self._codesign_sign(self.appdir)
 
     def _disableUpdateByPolicy(self):
         updatePolicy = {"policies": {"DisableAppUpdate": True}}
@@ -384,6 +384,14 @@ class FirefoxLauncher(MozRunnerLauncher):
     def _install(self, dest):
         super(FirefoxLauncher, self)._install(dest)
         self._disableUpdateByPolicy()
+
+        if (
+            mozinfo.os == "mac"
+            and mozinfo.os_version.version.version[0] >= 13
+            and self._codesign_verify(self.appdir) == CodesignResult.INVALID
+        ):
+            LOG.warning(f"codesign verification failed for {self.appdir}, resigning...")
+            self._codesign_sign(self.appdir)
 
 
 class ThunderbirdRegressionProfile(ThunderbirdProfile):

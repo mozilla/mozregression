@@ -387,7 +387,7 @@ class FirefoxLauncher(MozRunnerLauncher):
 
         if (
             mozinfo.os == "mac"
-            and mozinfo.os_version.version.version[0] >= 13
+            and mozinfo.os_version >= "13.0"
             and self._codesign_verify(self.appdir) == CodesignResult.INVALID
         ):
             LOG.warning(f"codesign verification failed for {self.appdir}, resigning...")

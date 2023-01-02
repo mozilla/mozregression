@@ -345,9 +345,9 @@ importlib-metadata==4.2.0 \
     --hash=sha256:057e92c15bc8d9e8109738a48db0ccb31b4d9d5cfbee5a8670879a30be66304b \
     --hash=sha256:b7e52a1f8dec14a75ea73e0891f3060099ca1d8e6a462a4dff11c3e119ea1b31
     # via -r base.in
-importlib-resources==5.10.1 \
-    --hash=sha256:32bb095bda29741f6ef0e5278c42df98d135391bee5f932841efc0041f748dc3 \
-    --hash=sha256:c09b067d82e72c66f4f8eb12332f5efbebc9b007c0b6c40818108c9870adc363
+importlib-resources==5.10.2 \
+    --hash=sha256:7d543798b0beca10b6a01ac7cafda9f822c54db9e8376a6bf57e0cbd74d486b6 \
+    --hash=sha256:e4a96c8cc0339647ff9a5e0550d9f276fc5a01ffa276012b58ec108cfd7b8484
     # via jsonschema
 iniconfig==1.1.1 \
     --hash=sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3 \

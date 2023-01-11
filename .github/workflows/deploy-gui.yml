@@ -51,13 +51,13 @@ jobs:
     env:
       # We need the official Python, because the GA ones only support newer macOS versions
       # The deployment target is picked up by the Python build tools automatically
-      PYTHON_VERSION: 3.9.1
-      MACOSX_DEPLOYMENT_TARGET: 10.13
+      PYTHON_VERSION: 3.10.9
+      MACOSX_DEPLOYMENT_TARGET: 11
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v2
       - name: Get Python
-        run: curl https://www.python.org/ftp/python/${PYTHON_VERSION}/python-${PYTHON_VERSION}-macosx10.9.pkg -o "python.pkg"
+        run: curl https://www.python.org/ftp/python/${PYTHON_VERSION}/python-${PYTHON_VERSION}-macosx11.pkg -o "python.pkg"
       - name: Install Python
         # See: https://github.com/actions/virtual-environments/issues/1256#issuecomment-770270252
         run: |
@@ -70,7 +70,7 @@ jobs:
         run: |
           source env/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install -r requirements/requirements-3.9-macOS.txt
+          python -m pip install -r requirements/requirements-3.10-macOS.txt
           python -m pip install -e .
       - name: Build
         run: |

@@ -1,4 +1,4 @@
-PyInstaller==5.4.1
+PyInstaller==5.7.0
 beautifulsoup4==4.11.1
 colorama==0.4.5
 configobj==5.0.6

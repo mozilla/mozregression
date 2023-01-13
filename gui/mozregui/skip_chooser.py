@@ -17,9 +17,9 @@ class BuildItem(QGraphicsRectItem):
         QGraphicsRectItem.__init__(self, x, y, self.WIDTH, self.WIDTH)
         self.future_build_info = future_build_info
         if selectable:
-            self.setFlags(self.ItemIsSelectable | self.ItemIsFocusable)
+            self.setFlags(BuildItem.ItemIsSelectable | BuildItem.ItemIsFocusable)
         else:
-            self.setFlags(self.ItemIsFocusable)
+            self.setFlags(BuildItem.ItemIsFocusable)
 
     def __str__(self):
         return "Build %s" % self.future_build_info.data
@@ -117,7 +117,7 @@ class SkipDialog(QDialog):
         return self.scene.build_range.future_build_infos.index(item.future_build_info)
 
     def choose_next_build(self):
-        if self.exec() == self.Accepted:
+        if self.exec() == SkipDialog.Accepted:
             items = self.scene.selectedItems()
             assert len(items) == 1
             return self.build_index(items[0])

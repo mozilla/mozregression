@@ -57,13 +57,13 @@ class LogView(QPlainTextEdit):
         log_message = "%s: %s : %s" % (time_info, data["level"], data["message"])
         message_document = self.document()
         cursor_to_add = QTextCursor(message_document)
-        cursor_to_add.movePosition(cursor_to_add.End)
+        cursor_to_add.movePosition(QTextCursor.End)
         cursor_to_add.insertText(log_message + "\n")
 
         if data["level"] in COLORS:
             fmt = QTextCharFormat()
             fmt.setForeground(COLORS[data["level"]])
-            cursor_to_add.movePosition(cursor_to_add.PreviousBlock)
+            cursor_to_add.movePosition(QTextCursor.PreviousBlock)
             log_lvl_data = LogLevelData(log_levels[data["level"].upper()])
             cursor_to_add.block().setUserData(log_lvl_data)
             cursor_to_add_fmt = message_document.find(data["level"], cursor_to_add.position())

@@ -41,6 +41,7 @@ if IS_MAC:
             bootloader_ignore_signals=False,
             strip=False,
             upx=False,
+            target_arch="universal2",
             console=False)
     app = BUNDLE(exe,
                 a.binaries,

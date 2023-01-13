@@ -1,3 +1,4 @@
+--no-binary pyyaml
 PyInstaller==5.7.0
 beautifulsoup4==4.11.1
 colorama==0.4.5
@@ -17,3 +18,4 @@ requests==2.28.1
 setuptools
 setuptools_scm==7.0.5
 taskcluster==44.21.0
+pyyaml==6.0.0

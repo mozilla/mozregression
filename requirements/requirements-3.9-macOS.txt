@@ -4,6 +4,9 @@
 #
 #    pip-compile --allow-unsafe --generate-hashes --output-file=requirements-3.9-macOS.txt base.in dev.in gui-dev.in gui.in linters.in
 #
+--no-binary coverage
+--no-binary pyyaml
+
 aiohttp==3.8.3 \
     --hash=sha256:02f9a2c72fc95d59b881cf38a4b2be9381b9527f9d328771e90f72ac76f31ad8 \
     --hash=sha256:059a91e88f2c00fe40aed9031b3606c3f311414f86a90d696dd982e7aec48142 \
@@ -756,6 +759,7 @@ pyyaml==6.0 \
     --hash=sha256:e61ceaab6f49fb8bdfaa0f92c4b57bcfbea54c09277b1b4f7ac376bfb7a7c174 \
     --hash=sha256:f84fbc98b019fef2ee9a1cb3ce93e3187a6df0b2538a651bfb890254ba9f90b5
     # via
+    #   -r base.in
     #   glean-parser
     #   yamllint
 redo==2.0.4 \

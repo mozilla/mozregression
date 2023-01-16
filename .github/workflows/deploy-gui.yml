@@ -72,6 +72,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements/requirements-3.11-macOS.txt
           python -m pip install -e .
+          python -m pip uninstall -y glean-sdk
+          python -m pip install wheel
+          python setup.py bdist_wheel --plat-name=macosx-10.9-universal2
+          python -m pip install dist/*.whl
       - name: Build
         run: |
           source env/bin/activate

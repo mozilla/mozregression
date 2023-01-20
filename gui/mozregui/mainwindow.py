@@ -92,7 +92,7 @@ class MainWindow(QMainWindow):
 
     def _start_runner(self, wizard_class, runner):
         wizard = wizard_class(self)
-        if wizard.exec() == wizard.Accepted:
+        if wizard.exec() == wizard_class.Accepted:
             self.current_runner = runner
             # clear the report model
             self.ui.report_view.model().clear()

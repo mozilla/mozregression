@@ -13,7 +13,7 @@ from colorama import Back, Fore, Style
 from mozlog.handlers import LogLevelFilter, StreamHandler
 from mozlog.structuredlog import StructuredLogger, set_default_logger
 
-ALLOW_COLOR = sys.stdout.isatty()
+ALLOW_COLOR = sys.stdout.isatty() if sys.stdout is not None else False
 
 
 def _format_seconds(total):

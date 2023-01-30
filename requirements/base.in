@@ -1,7 +1,7 @@
 --no-binary pyyaml
 PyInstaller==5.7.0
 beautifulsoup4==4.11.1
-colorama==0.4.5
+colorama==0.4.6
 configobj==5.0.6
 glean-sdk==52.0.1; sys.platform != 'darwin'
 # See https://github.com/pypa/pip/issues/11573.

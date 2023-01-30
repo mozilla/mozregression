@@ -13,7 +13,7 @@ mozinfo==1.2.2
 mozinstall==2.0.1
 mozlog==7.1.0
 mozprofile==2.5.0
-mozrunner==8.2.0
+mozrunner==8.2.1
 mozversion==2.3.0
 redo==2.0.4
 requests==2.28.1

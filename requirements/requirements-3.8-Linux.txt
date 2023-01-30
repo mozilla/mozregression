@@ -451,9 +451,9 @@ mozprofile==2.5.0 \
     # via
     #   -r base.in
     #   mozrunner
-mozrunner==8.2.0 \
-    --hash=sha256:52a95ceca203dca0a3b07f5b3ae70f140fd357514eddd0eda764ae14591bf3b6 \
-    --hash=sha256:e680d4d41104adb211597447f791ed9f0a413f2e82085911742f38829bd702fb
+mozrunner==8.2.1 \
+    --hash=sha256:35a7d2cf3abee1d8651e92f870f75159605810ba8ea442defae41a5eec462c29 \
+    --hash=sha256:4ee4d44123c1daa7f3648e8b3b0e3a8c1712b3e1ea254d9a4bf80295ea795d41
     # via -r base.in
 mozterm==1.0.0 \
     --hash=sha256:b1e91acec188de07c704dbb7b0100a7be5c1e06567b3beb67f6ea11d00a483a4 \

@@ -11,7 +11,7 @@ mozdevice>=4.1.0,<5
 mozfile==2.1.0
 mozinfo==1.2.2
 mozinstall==2.0.1
-mozlog==7.1.0
+mozlog==7.1.1
 mozprofile==2.5.0
 mozrunner==8.2.1
 mozversion==2.3.0

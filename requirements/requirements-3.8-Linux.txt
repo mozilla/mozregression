@@ -701,9 +701,9 @@ setuptools==65.7.0 \
     #   pyinstaller
     #   setuptools-scm
     #   yamllint
-setuptools-scm==7.0.5 \
-    --hash=sha256:031e13af771d6f892b941adb6ea04545bbf91ebc5ce68c78aaf3fff6e1fb4844 \
-    --hash=sha256:7930f720905e03ccd1e1d821db521bff7ec2ac9cf0ceb6552dd73d24a45d3b02
+setuptools-scm==7.1.0 \
+    --hash=sha256:6c508345a771aad7d56ebff0e70628bf2b0ec7573762be9960214730de278f27 \
+    --hash=sha256:73988b6d848709e2af142aa48c986ea29592bbcfca5375678064708205253d8e
     # via -r base.in
 shiboken6==6.4.2 \
     --hash=sha256:0616c1a12d1e51e680595b3940b986275c1df952a751416a0730a59e5b90105f \

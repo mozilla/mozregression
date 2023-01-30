@@ -6,7 +6,7 @@ configobj==5.0.6
 glean-sdk==52.0.1; sys.platform != 'darwin'
 # See https://github.com/pypa/pip/issues/11573.
 https://files.pythonhosted.org/packages/ca/c2/960b918ec5cc4c2d45c33771da91ebd9109e6d2ba700e4debcac72569bab/glean_sdk-52.0.1-cp36-abi3-macosx_10_7_universal2.whl; sys.platform == 'darwin'
-importlib-metadata==4.2.0
+importlib-metadata==6.0.0
 mozdevice>=4.1.0,<5
 mozfile==2.1.0
 mozinfo==1.2.2

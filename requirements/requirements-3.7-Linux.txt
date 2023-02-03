@@ -125,28 +125,40 @@ attrs==22.2.0 \
     #   aiohttp
     #   jsonschema
     #   pytest
-beautifulsoup4==4.11.1 \
-    --hash=sha256:58d5c3d29f5a36ffeb94f02f0d786cd53014cf9b3b3951d42e0080d8a9498d30 \
-    --hash=sha256:ad9aa55b65ef2808eb405f46cf74df7fcb7044d5cbc26487f96eb2ef2e436693
+beautifulsoup4==4.11.2 \
+    --hash=sha256:0e79446b10b3ecb499c1556f7e228a53e64a2bfcebd455f370d8927cb5b59e39 \
+    --hash=sha256:bc4bdda6717de5a2987436fb8d72f45dc90dd856bdfd512a1314ce90349a0106
     # via -r base.in
-black==22.12.0 \
-    --hash=sha256:101c69b23df9b44247bd88e1d7e90154336ac4992502d4197bdac35dd7ee3320 \
-    --hash=sha256:159a46a4947f73387b4d83e87ea006dbb2337eab6c879620a3ba52699b1f4351 \
-    --hash=sha256:1f58cbe16dfe8c12b7434e50ff889fa479072096d79f0a7f25e4ab8e94cd8350 \
-    --hash=sha256:229351e5a18ca30f447bf724d007f890f97e13af070bb6ad4c0a441cd7596a2f \
-    --hash=sha256:436cc9167dd28040ad90d3b404aec22cedf24a6e4d7de221bec2730ec0c97bcf \
-    --hash=sha256:559c7a1ba9a006226f09e4916060982fd27334ae1998e7a38b3f33a37f7a2148 \
-    --hash=sha256:7412e75863aa5c5411886804678b7d083c7c28421210180d67dfd8cf1221e1f4 \
-    --hash=sha256:77d86c9f3db9b1bf6761244bc0b3572a546f5fe37917a044e02f3166d5aafa7d \
-    --hash=sha256:82d9fe8fee3401e02e79767016b4907820a7dc28d70d137eb397b92ef3cc5bfc \
-    --hash=sha256:9eedd20838bd5d75b80c9f5487dbcb06836a43833a37846cf1d8c1cc01cef59d \
-    --hash=sha256:c116eed0efb9ff870ded8b62fe9f28dd61ef6e9ddd28d83d7d264a38417dcee2 \
-    --hash=sha256:d30b212bffeb1e252b31dd269dfae69dd17e06d92b87ad26e23890f3efea366f
+black==23.1.0 \
+    --hash=sha256:0052dba51dec07ed029ed61b18183942043e00008ec65d5028814afaab9a22fd \
+    --hash=sha256:0680d4380db3719ebcfb2613f34e86c8e6d15ffeabcf8ec59355c5e7b85bb555 \
+    --hash=sha256:121ca7f10b4a01fd99951234abdbd97728e1240be89fde18480ffac16503d481 \
+    --hash=sha256:162e37d49e93bd6eb6f1afc3e17a3d23a823042530c37c3c42eeeaf026f38468 \
+    --hash=sha256:2a951cc83ab535d248c89f300eccbd625e80ab880fbcfb5ac8afb5f01a258ac9 \
+    --hash=sha256:2bf649fda611c8550ca9d7592b69f0637218c2369b7744694c5e4902873b2f3a \
+    --hash=sha256:382998821f58e5c8238d3166c492139573325287820963d2f7de4d518bd76958 \
+    --hash=sha256:49f7b39e30f326a34b5c9a4213213a6b221d7ae9d58ec70df1c4a307cf2a1580 \
+    --hash=sha256:57c18c5165c1dbe291d5306e53fb3988122890e57bd9b3dcb75f967f13411a26 \
+    --hash=sha256:7a0f701d314cfa0896b9001df70a530eb2472babb76086344e688829efd97d32 \
+    --hash=sha256:8178318cb74f98bc571eef19068f6ab5613b3e59d4f47771582f04e175570ed8 \
+    --hash=sha256:8b70eb40a78dfac24842458476135f9b99ab952dd3f2dab738c1881a9b38b753 \
+    --hash=sha256:9880d7d419bb7e709b37e28deb5e68a49227713b623c72b2b931028ea65f619b \
+    --hash=sha256:9afd3f493666a0cd8f8df9a0200c6359ac53940cbde049dcb1a7eb6ee2dd7074 \
+    --hash=sha256:a29650759a6a0944e7cca036674655c2f0f63806ddecc45ed40b7b8aa314b651 \
+    --hash=sha256:a436e7881d33acaf2536c46a454bb964a50eff59b21b51c6ccf5a40601fbef24 \
+    --hash=sha256:a59db0a2094d2259c554676403fa2fac3473ccf1354c1c63eccf7ae65aac8ab6 \
+    --hash=sha256:a8471939da5e824b891b25751955be52ee7f8a30a916d570a5ba8e0f2eb2ecad \
+    --hash=sha256:b0bd97bea8903f5a2ba7219257a44e3f1f9d00073d6cc1add68f0beec69692ac \
+    --hash=sha256:b6a92a41ee34b883b359998f0c8e6eb8e99803aa8bf3123bf2b2e6fec505a221 \
+    --hash=sha256:bb460c8561c8c1bec7824ecbc3ce085eb50005883a6203dcfb0122e95797ee06 \
+    --hash=sha256:bfffba28dc52a58f04492181392ee380e95262af14ee01d4bc7bb1b1c6ca8d27 \
+    --hash=sha256:c1c476bc7b7d021321e7d93dc2cbd78ce103b84d5a4cf97ed535fbc0d6660648 \
+    --hash=sha256:c91dfc2c2a4e50df0026f88d2215e166616e0c80e86004d0003ece0488db2739 \
+    --hash=sha256:e6663f91b6feca5d06f2ccd49a10f254f9298cc1f7f49c46e498a0771b507104
     # via flake8-black
-blessings==1.7 \
-    --hash=sha256:98e5854d805f50a5b58ac2333411b0482516a8210f23f43308baeb58d77c157d \
-    --hash=sha256:b1fdd7e7a675295630f9ae71527a8ebc10bfefa236b3d6aa4932ee4462c17ba3 \
-    --hash=sha256:caad5211e7ba5afe04367cdd4cfc68fa886e2e08f6f35e76b7387d2109ccea6e
+blessed==1.19.1 \
+    --hash=sha256:63b8554ae2e0e7f43749b6715c734cc8f3883010a809bf16790102563e6cf25b \
+    --hash=sha256:9a0d099695bf621d4680dd6c73f6ad547f6a3442fbdbe80c4b1daa1edbc492fc
     # via mozlog
 certifi==2022.12.7 \
     --hash=sha256:35824b4c3a97115964b408844d64aa14db1cc518f6562e8d7261699d1350a9e3 \
@@ -168,8 +180,9 @@ colorama==0.4.6 \
     --hash=sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44 \
     --hash=sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6
     # via -r base.in
-configobj==5.0.6 \
-    --hash=sha256:a2f5650770e1c87fb335af19a9b7eb73fc05ccf22144eb68db7d00cd2bcb0902
+configobj==5.0.8 \
+    --hash=sha256:6f704434a07dc4f4dc7c9a745172c1cad449feb548febd9f7fe362629c627a97 \
+    --hash=sha256:a7a8c6ab7daade85c3f329931a807c8aee750a2494363934f8ea84d8a54c87ea
     # via -r base.in
 coverage==6.5.0 \
     --hash=sha256:f642e90754ee3e06b0e7e51bce3379590e76b7f76b708e1a71ff043f87025c84
@@ -191,7 +204,11 @@ distro==1.8.0 \
 docopt==0.6.2 \
     --hash=sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491
     # via coveralls
-flake8==5.0.4 \
+exceptiongroup==1.1.0 \
+    --hash=sha256:327cbda3da756e2de031a3107b81ab7b3770a602c4d16ca618298c526f4bec1e \
+    --hash=sha256:bcb67d800a4497e1b404c2dd44fca47d3b7a5e5433dbab67f96c1a685cdfdf23
+    # via pytest
+flake8==5.0.4 ; python_version < "3.8" \
     --hash=sha256:6fbe320aad8d6b95cec8b8e47bc933004678dc63095be98528b7bdd2a9f510db \
     --hash=sha256:7a1cf6b73744f5806ab95e526f6f0d8c01c66d7bbe349562d22dfca20610b248
     # via
@@ -279,20 +296,20 @@ frozenlist==1.3.3 \
     # via
     #   aiohttp
     #   aiosignal
-glean-parser==6.4.0 \
-    --hash=sha256:011c187aeb655af03a24bf1970aeac685e29a8ff1cbdfe9ccbd441bca9d7005e \
-    --hash=sha256:f7e53d911324710634b636a8e8f9a2d124ea874c70d29154d3fc595e56b090a3
+glean-parser==7.0.0 \
+    --hash=sha256:c48960dd6fc0dc506f54e1229ff92ed10766cc65e598e9b9c8b798be81a4ccd5 \
+    --hash=sha256:c9df09b8cbe149e840125153e0ffebda264f45cd9e51805dbc0288bf203c54ab
     # via
     #   -r linters.in
     #   glean-sdk
-glean-sdk==52.0.1 ; sys_platform != "darwin" \
-    --hash=sha256:0483c24602084b58b133790705d7c130369beefa11f8355a9d14152ec88425c1 \
-    --hash=sha256:9945ad5594fa291875e1a6764b7948506fa341342f7aa00791980f0ef6fb2ddc \
-    --hash=sha256:b506320d9084fd0b6c8be3db02c186546dbc1f4c80f438a5c73a7737f32ad9a9 \
-    --hash=sha256:cdbc2405ebb7b7dc43a7f0edf0bd8af946dafbf413ec330f551cd65c4ec3e510 \
-    --hash=sha256:de35fe4b2f1638c85b6a065f8a9e0fd92c82c17223d66e76f2290153ff378298 \
-    --hash=sha256:e652d3ed188d98b2802e2472a02955c8bf4186b19abe58ffa8bff2a977ace967 \
-    --hash=sha256:e922db4bbbf3255fd0093cdf5423ad4e89fcf65831a8fb6faee1a37a2e8b3998
+glean-sdk==52.2.0 ; sys_platform != "darwin" \
+    --hash=sha256:226079e19be2c461f117d4c0120e9f31cb134923ce1678211ec555b4e3ec1b65 \
+    --hash=sha256:54f747597a495abdcade1b84fbd27cc95b4135342214eee2862b1301630e9e85 \
+    --hash=sha256:700b77aa6f6206114de2a9382f2505049d15b82c2b1cfc27340fd32c82da012b \
+    --hash=sha256:896e37d98b59b511945a26b7dcbb27bbe690b9e761049761f1d677d053e0e959 \
+    --hash=sha256:b385e7af970248d7e7abfab91bb09f4c4520fa997a7cca7aa5cf8d0ddecebf6d \
+    --hash=sha256:ca4591c2d9ad2ceb2e451a8084ccafc58459b9c1d57c7d9d5475cbbfd33b22d2 \
+    --hash=sha256:cda6b7a36fe4fa9d4a5c9eb2439ae0d75e87226acad87fac6c1c154e3695a9fb
     # via -r base.in
 idna==3.4 \
     --hash=sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4 \
@@ -300,7 +317,7 @@ idna==3.4 \
     # via
     #   requests
     #   yarl
-importlib-metadata==4.2.0 \
+importlib-metadata==4.2.0 ; python_version < "3.8" \
     --hash=sha256:057e92c15bc8d9e8109738a48db0ccb31b4d9d5cfbee5a8670879a30be66304b \
     --hash=sha256:b7e52a1f8dec14a75ea73e0891f3060099ca1d8e6a462a4dff11c3e119ea1b31
     # via
@@ -425,8 +442,9 @@ mozdevice==4.1.0 \
     # via
     #   -r base.in
     #   mozrunner
-mozfile==2.1.0 \
-    --hash=sha256:e5dc835582ea150e35ecd57e9d86cb707d3aa3b2505679db7332326dd49fd6b8
+mozfile==3.0.0 \
+    --hash=sha256:3b0afcda2fa8b802ef657df80a56f21619008f61fcc14b756124028d7b7adf5c \
+    --hash=sha256:92ca1a786abbdf5e6a7aada62d3a4e28f441ef069c7623223add45268e53c789
     # via
     #   -r base.in
     #   mozinfo
@@ -445,8 +463,9 @@ mozinstall==2.0.1 \
     --hash=sha256:0b14000a88d6a45c37b877eedf897655f665e89410ca629dd500415406ed465e \
     --hash=sha256:ec364cfefd3435fb155edd48be9e71819834e4dcacc6c3294c7f2452e200095b
     # via -r base.in
-mozlog==7.1.0 \
-    --hash=sha256:54b9a1e781ce31fc10079dc8aec509fff7feca83714edeae6c981e279ceb796f
+mozlog==7.1.1 \
+    --hash=sha256:080c0a7fdf01cc9a3c9dc8dc527ec8adfb447ca0cd05c5f5fe5c944ceeaec3ff \
+    --hash=sha256:dc389dc861be3fe9ad1db561893a34015935bd203548685000c84ee5177ce05a
     # via
     #   -r base.in
     #   mozdevice
@@ -561,6 +580,7 @@ packaging==23.0 \
     --hash=sha256:714ac14496c3e68c99c29b00845f7a2b85f3bb6f1078fd9f72fd20f0570002b2 \
     --hash=sha256:b6ad297f8907de0fa2fe1ccbd26fdaf387f5f47c7275fedf8cce89f99446cf97
     # via
+    #   black
     #   pytest
     #   setuptools-scm
 pathspec==0.11.0 \
@@ -580,10 +600,6 @@ platformdirs==2.6.2 \
 pluggy==1.0.0 \
     --hash=sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159 \
     --hash=sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3
-    # via pytest
-py==1.11.0 \
-    --hash=sha256:51c75c4126074b472f746a24399ad32f6053d1b34b68d2fa41e558e6f4a98719 \
-    --hash=sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378
     # via pytest
 pycodestyle==2.9.1 \
     --hash=sha256:2c9607871d58c76354b697b42f5d57e1ada7d261c261efac224b664affdc5785 \
@@ -668,9 +684,9 @@ pyside6-essentials==6.4.2 \
     # via
     #   pyside6
     #   pyside6-addons
-pytest==7.1.3 \
-    --hash=sha256:1377bda3466d70b55e3f5cecfa55bb7cfcf219c7964629b967c37cf0bda818b7 \
-    --hash=sha256:4f365fec2dff9c1162f834d9f18af1ba13062db0c708bf7b946f8a5c76180c39
+pytest==7.2.1 \
+    --hash=sha256:c7c6ca206e93355074ae32f7403e8ea12163b1163c976fee7d4d84027c162be5 \
+    --hash=sha256:d45e0952f3727241918b8fd0f376f5ff6b301cc0777c6f9a556935c92d8a7d42
     # via
     #   -r dev.in
     #   pytest-mock
@@ -679,10 +695,14 @@ pytest-mock==3.10.0 \
     --hash=sha256:f4c973eeae0282963eb293eb173ce91b091a79c1334455acfac9ddee8a1c784b \
     --hash=sha256:fbbdb085ef7c252a326fd8cdcac0aa3b1333d8811f131bdcc701002e1be7ed4f
     # via -r dev.in
-pytest-qt==4.1.0 \
-    --hash=sha256:027f3d3f5dd04af0530d846cf50fb858f719f7e87c2e4a1c686abd4e0f72172a \
-    --hash=sha256:edd08dae3b207405edddfc482d4dda4b848e85a8e6a0e7c36f20bac11ab328de
+pytest-qt==4.2.0 \
+    --hash=sha256:00a17b586dd530b6d7a9399923a40489ca4a9a309719011175f55dc6b5dc8f41 \
+    --hash=sha256:a7659960a1ab2af8fc944655a157ff45d714b80ed7a6af96a4b5bb99ecf40a22
     # via -r gui-dev.in
+python-dateutil==2.8.2 \
+    --hash=sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86 \
+    --hash=sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9
+    # via taskcluster
 pyyaml==6.0 \
     --hash=sha256:68fb519c14306fec9720a2a5b45bc9f0c8d1b9c72adf45c37baedfcd949c35a2
     # via
@@ -705,14 +725,6 @@ semver==2.13.0 \
     --hash=sha256:ced8b23dceb22134307c1b8abfa523da14198793d9787ac838e70e29e77458d4 \
     --hash=sha256:fa0fe2722ee1c3f57eac478820c3a5ae2f624af8264cbdf9000c980ff7f75e3f
     # via glean-sdk
-setuptools==67.0.0 \
-    --hash=sha256:883131c5b6efa70b9101c7ef30b2b7b780a4283d5fc1616383cdf22c83cbefe6 \
-    --hash=sha256:9d790961ba6219e9ff7d9557622d2fe136816a264dd01d5997cfc057d804853d
-    # via
-    #   -r base.in
-    #   pyinstaller
-    #   setuptools-scm
-    #   yamllint
 setuptools-scm==7.1.0 \
     --hash=sha256:6c508345a771aad7d56ebff0e70628bf2b0ec7573762be9960214730de278f27 \
     --hash=sha256:73988b6d848709e2af142aa48c986ea29592bbcfca5375678064708205253d8e
@@ -732,7 +744,7 @@ six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
     # via
-    #   blessings
+    #   blessed
     #   configobj
     #   mohawk
     #   mozfile
@@ -742,6 +754,7 @@ six==1.16.0 \
     #   mozrunner
     #   mozterm
     #   mozversion
+    #   python-dateutil
 slugid==2.0.0 \
     --hash=sha256:a950d98b72691178bdd4d6c52743c4a2aa039207cf7a97d71060a111ff9ba297 \
     --hash=sha256:aec8b0e01c4ad32e38e12d609eab3ec912fd129aaf6b2ded0199b56a5f8fd67c
@@ -750,9 +763,9 @@ soupsieve==2.3.2.post1 \
     --hash=sha256:3b2503d3c7084a42b1ebd08116e5f81aadfaea95863628c80a3b774a11b7c759 \
     --hash=sha256:fc53893b3da2c33de295667a0e19f078c14bf86544af307354de5fcf12a3f30d
     # via beautifulsoup4
-taskcluster==44.21.0 \
-    --hash=sha256:351574da5bf737653152b79a5163137fe3cab5cffbd884982695b8871f9ebe80 \
-    --hash=sha256:598596475e19d34c77329b3ab9b2a536a191a99203278e63c7fe9c86b69f17d6
+taskcluster==47.0.3 \
+    --hash=sha256:1cb8b13b9facd87cad5be9ab30eecae01ff822068773ba51ec7f4ff2d7e0e0b3 \
+    --hash=sha256:9ed7a8eba7a362e209e919caf8dcf757d3902dad11e41f39bae2a0a127801cef
     # via -r base.in
 taskcluster-urls==13.0.1 \
     --hash=sha256:5e25e7e6818e8877178b175ff43d2e6548afad72694aa125f404a7329ece0973 \
@@ -809,6 +822,10 @@ urllib3==1.26.14 \
     --hash=sha256:076907bf8fd355cde77728471316625a4d2f7e713c125f51953bb5b3eecf4f72 \
     --hash=sha256:75edcdc2f7d85b137124a6c3c9fc3933cdeaa12ecb9a6a959f22797a0feca7e1
     # via requests
+wcwidth==0.2.6 \
+    --hash=sha256:795b138f6875577cd91bba52baf9e445cd5118fd32723b460e30a0af30ea230e \
+    --hash=sha256:a5220780a404dbe3353789870978e472cfe477761f06ee55077256e509b156d0
+    # via blessed
 yamllint==1.29.0 \
     --hash=sha256:5153bf9f8205aa9dc6af6217e38bd4f5baf09d9a7c6f4ae1e23f90d9c00c49c5 \
     --hash=sha256:66a755d5fbcbb8831f1a9568676329b5bac82c37995bcc9afd048b6459f9fa48
@@ -895,3 +912,13 @@ zipp==3.12.0 \
     # via
     #   importlib-metadata
     #   importlib-resources
+
+# The following packages are considered to be unsafe in a requirements file:
+setuptools==67.1.0 \
+    --hash=sha256:a7687c12b444eaac951ea87a9627c4f904ac757e7abdc5aac32833234af90378 \
+    --hash=sha256:e261cdf010c11a41cb5cb5f1bf3338a7433832029f559a6a7614bd42a967c300
+    # via
+    #   -r base.in
+    #   pyinstaller
+    #   setuptools-scm
+    #   yamllint

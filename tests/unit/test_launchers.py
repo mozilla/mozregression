@@ -331,7 +331,6 @@ def test_firefox_install(
 
 
 class TestFennecLauncher(unittest.TestCase):
-
     test_root = "/sdcard/tmp"
 
     def setUp(self):

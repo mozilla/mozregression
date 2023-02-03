@@ -1,17 +1,18 @@
 --no-binary pyyaml
 PyInstaller==5.7.0
-beautifulsoup4==4.11.1
+beautifulsoup4==4.11.2
 colorama==0.4.6
-configobj==5.0.6
-glean-sdk==52.0.1; sys.platform != 'darwin'
+configobj==5.0.8
+glean-sdk==52.2.0; sys.platform != 'darwin'
 # See https://github.com/pypa/pip/issues/11573.
-https://files.pythonhosted.org/packages/ca/c2/960b918ec5cc4c2d45c33771da91ebd9109e6d2ba700e4debcac72569bab/glean_sdk-52.0.1-cp36-abi3-macosx_10_7_universal2.whl; sys.platform == 'darwin'
-importlib-metadata==4.2.0
+https://files.pythonhosted.org/packages/2c/5e/41d95b300d052a6484cbdc345e8a0b20a75a10123ad119d592762eef4dde/glean_sdk-52.2.0-cp36-abi3-macosx_10_7_universal2.whl; sys.platform == 'darwin'
+importlib-metadata==6.0.0; python_version >= '3.8'
+importlib-metadata==4.2.0; python_version < '3.8'
 mozdevice>=4.1.0,<5
-mozfile==2.1.0
+mozfile==3.0.0
 mozinfo==1.2.2
 mozinstall==2.0.1
-mozlog==7.1.0
+mozlog==7.1.1
 mozprofile==2.5.0
 mozrunner==8.2.1
 mozversion==2.3.0
@@ -19,5 +20,5 @@ redo==2.0.4
 requests==2.28.2
 setuptools
 setuptools_scm==7.1.0
-taskcluster==44.21.0
+taskcluster==47.0.3
 pyyaml==6.0.0

@@ -7,7 +7,7 @@ usage:
     description: >
       The variant of mozregression used to perform the bisection (gui,
       console, mach, etc.)
-    notification_emails: [wlachance@mozilla.com]
+    notification_emails: [zeid@mozilla.com]
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1581647
     data_reviews:
@@ -19,7 +19,7 @@ usage:
     type: string
     description: >
       The name of the app being used (firefox, gve, etc.)
-    notification_emails: [wlachance@mozilla.com]
+    notification_emails: [zeid@mozilla.com]
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1581647
     data_reviews:
@@ -31,7 +31,7 @@ usage:
     type: string
     description: >
       The build type being bisected (asan, debug, opt, pgo, shippable, ...)
-    notification_emails: [wlachance@mozilla.com]
+    notification_emails: [zeid@mozilla.com]
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
     data_reviews:
@@ -45,7 +45,7 @@ usage:
     description: >
       The good date parameter used in a bisection, if present and specified
       as a date
-    notification_emails: [wlachance@mozilla.com]
+    notification_emails: [zeid@mozilla.com]
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
     data_reviews:
@@ -59,7 +59,7 @@ usage:
     description: >
       The bad date parameter used in a bisection, if present and specified as
       a date
-    notification_emails: [wlachance@mozilla.com]
+    notification_emails: [zeid@mozilla.com]
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
     data_reviews:
@@ -73,7 +73,7 @@ usage:
     description: >
       The launch parameter used when running a single build, if present
       and specified as a date
-    notification_emails: [wlachance@mozilla.com]
+    notification_emails: [zeid@mozilla.com]
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1651401
     data_reviews:

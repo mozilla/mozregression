@@ -7,6 +7,7 @@ DEPENDENCIES = [
     "beautifulsoup4>=4.7.1",
     "colorama>=0.4.1",
     "configobj>=5.0.6",
+    "distro>=1.8.0",
     "mozdevice>=4.1.0,<5",
     "mozfile>=2.0.0",
     "mozinfo>=1.1.0",

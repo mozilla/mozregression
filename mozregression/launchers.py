@@ -395,7 +395,7 @@ class FirefoxLauncher(MozRunnerLauncher):
         self._disableUpdateByPolicy()
 
         if self._codesign_invalid_on_macOS_13:
-            LOG.warning(f"codesign verification failed for {self.appdir}, resigning...")
+            LOG.warning(f"codesign verification failed for {self.appdir}, re-signing...")
             self._codesign_sign(self.appdir)
 
 
@@ -420,7 +420,7 @@ class ThunderbirdLauncher(MozRunnerLauncher):
         self._disableUpdateByPolicy()
 
         if self._codesign_invalid_on_macOS_13:
-            LOG.warning(f"codesign verification failed for {self.appdir}, resigning...")
+            LOG.warning(f"codesign verification failed for {self.appdir}, re-signing...")
             self._codesign_sign(self.appdir)
 
 

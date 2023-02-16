@@ -216,7 +216,7 @@ class MozRunnerLauncher(Launcher):
 
     @property
     def _codesign_invalid_on_macOS_13(self):
-        """Return True if codesign verify fails on macOS 13+, otherwise reutrn False."""
+        """Return True if codesign verify fails on macOS 13+, otherwise return False."""
         return (
             mozinfo.os == "mac"
             and mozinfo.os_version >= "13.0"

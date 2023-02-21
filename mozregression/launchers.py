@@ -214,6 +214,15 @@ class MozRunnerLauncher(Launcher):
         # arguments since macOS 10, however this was tested on macOS 12.
         return call(["codesign", "--force", "--deep", "--sign", "-", appdir])
 
+    @property
+    def _codesign_invalid_on_macOS_13(self):
+        """Return True if codesign verify fails on macOS 13+, otherwise return False."""
+        return (
+            mozinfo.os == "mac"
+            and mozinfo.os_version >= "13.0"
+            and self._codesign_verify(self.appdir) == CodesignResult.INVALID
+        )
+
     def _install(self, dest):
         self.tempdir = safe_mkdtemp()
         try:
@@ -385,12 +394,8 @@ class FirefoxLauncher(MozRunnerLauncher):
         super(FirefoxLauncher, self)._install(dest)
         self._disableUpdateByPolicy()
 
-        if (
-            mozinfo.os == "mac"
-            and mozinfo.os_version >= "13.0"
-            and self._codesign_verify(self.appdir) == CodesignResult.INVALID
-        ):
-            LOG.warning(f"codesign verification failed for {self.appdir}, resigning...")
+        if self._codesign_invalid_on_macOS_13:
+            LOG.warning(f"codesign verification failed for {self.appdir}, re-signing...")
             self._codesign_sign(self.appdir)
 
 
@@ -413,6 +418,10 @@ class ThunderbirdLauncher(MozRunnerLauncher):
     def _install(self, dest):
         super(ThunderbirdLauncher, self)._install(dest)
         self._disableUpdateByPolicy()
+
+        if self._codesign_invalid_on_macOS_13:
+            LOG.warning(f"codesign verification failed for {self.appdir}, re-signing...")
+            self._codesign_sign(self.appdir)
 
 
 class AndroidLauncher(Launcher):

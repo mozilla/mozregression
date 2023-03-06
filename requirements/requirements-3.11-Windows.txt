@@ -304,14 +304,14 @@ glean-parser==7.0.0 \
     # via
     #   -r linters.in
     #   glean-sdk
-glean-sdk==52.3.0 ; sys_platform != "darwin" \
-    --hash=sha256:2a21cb261779795d8c7e2490f92933b35239725d254e5b0c256a983069ce2fad \
-    --hash=sha256:774e9d2ecc1691f226b64ee24dd317219a48c15a42e0167aeeec7bfb9a21a53a \
-    --hash=sha256:7a8a03c29a1563b4a72a1db6262b6949e69ce37ef5dbef50c2d0e335c7e18732 \
-    --hash=sha256:817507936db8051bb6adf9737acbf33da8438f29526dddb34b2adfb163835dee \
-    --hash=sha256:a940482664853ff9e466b5584ef8b36b92dd9bfeafa45c3a4d1eded42aceda30 \
-    --hash=sha256:aaf0307f171c806c80e530b7d9dca16817f065faa85cfb0124ca76537fcc6ef5 \
-    --hash=sha256:d79fa6775be1aa252f0bcdab9d8d51aef7ad122a9e820a15f0e8acf512a1d8a7
+glean-sdk==52.3.1 ; sys_platform != "darwin" \
+    --hash=sha256:05a4c412ba0d1f06f5f2e97e30e00f103d4479cb495b5139278c52253d1c52b3 \
+    --hash=sha256:1cb40f5ff2429eb2b4beed3d79e222c2403dbcdc22b587d1b5467baed053db35 \
+    --hash=sha256:6a304d16823af0fb3e52c1f8e4b046182c2e842fef76d261327a7740bebb9c9b \
+    --hash=sha256:84696bdb1d36c610c12b24ef1ba13bc79415124de5307c12e9ec424baef671bd \
+    --hash=sha256:c1dfbb528f10b9e9e058a794e9da7cd91809d5618cb622ae66ac922606c98a6e \
+    --hash=sha256:cfafb7ecae996b5c0b5a1f82695a7e39d7cfe9200cac950a4454a8ced407a887 \
+    --hash=sha256:efdd54eb3f86e2336281d9b3c80dcf1d5d7eb28c7232f17ab4317f8209367997
     # via -r base.in
 idna==3.4 \
     --hash=sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4 \

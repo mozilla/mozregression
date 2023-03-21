@@ -625,9 +625,9 @@ pyinstaller==5.9.0 \
     --hash=sha256:dcd348b174fd72c4df271790ac582969c9423cb099fe92db9ec131a8a9243d5a \
     --hash=sha256:e7a4c292810285c2466f3bdcb1e03ba2170177ebe3d7054ff1af3bb348bf61a4
     # via -r base.in
-pyinstaller-hooks-contrib==2023.0 \
-    --hash=sha256:29d052eb73e0ab8f137f11df8e73d464c1c6d4c3044d9dc8df2af44639d8bfbf \
-    --hash=sha256:bd578781cd6a33ef713584bf3726f7cd60a3e656ec08a6cc7971e39990808cc0
+pyinstaller-hooks-contrib==2023.1 \
+    --hash=sha256:ab56c192e7cd4472ff6b840cda4fc42bceccc7fb4234f064fc834a3248c0afdd \
+    --hash=sha256:d2ea40a7105651aa525bfe5fe309aa264d4d9bb49f839b862243dcf0a56c34cd
     # via pyinstaller
 pyrsistent==0.19.3 \
     --hash=sha256:016ad1afadf318eb7911baa24b049909f7f3bb2c5b1ed7b6a8f21db21ea3faa8 \

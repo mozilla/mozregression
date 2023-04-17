@@ -660,9 +660,9 @@ pyside6-essentials==6.4.2 \
     # via
     #   pyside6
     #   pyside6-addons
-pytest==7.2.2 \
-    --hash=sha256:130328f552dcfac0b1cec75c12e3f005619dc5f874f0a06e8ff7263f0ee6225e \
-    --hash=sha256:c99ab0c73aceb050f68929bc93af19ab6db0558791c6a0715723abe9d0ade9d4
+pytest==7.3.1 \
+    --hash=sha256:3799fa815351fea3a5e96ac7e503a96fa51cc9942c3753cda7651b93c1cfa362 \
+    --hash=sha256:434afafd78b1d78ed0addf160ad2b77a30d35d4bdf8af234fe621919d9ed15e3
     # via
     #   -r dev.in
     #   pytest-mock

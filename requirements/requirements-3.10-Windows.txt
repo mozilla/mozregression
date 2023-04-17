@@ -125,9 +125,9 @@ attrs==23.1.0 \
     #   aiohttp
     #   jsonschema
     #   pytest
-beautifulsoup4==4.12.0 \
-    --hash=sha256:2130a5ad7f513200fae61a17abb5e338ca980fa28c439c0571014bc0217e9591 \
-    --hash=sha256:c5fceeaec29d09c84970e47c65f2f0efe57872f7cff494c9691a26ec0ff13234
+beautifulsoup4==4.12.2 \
+    --hash=sha256:492bbc69dca35d12daac71c4db1bfff0c876c00ef4a2ffacce226d4638eb72da \
+    --hash=sha256:bd2520ca0d9d7d12694a53d44ac482d181b4ec1888909b035a3dbf40d0f57d4a
     # via -r base.in
 black==23.3.0 \
     --hash=sha256:064101748afa12ad2291c2b91c960be28b817c0c7eaa35bec09cc63aa56493c5 \

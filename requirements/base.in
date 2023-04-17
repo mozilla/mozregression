@@ -3,7 +3,7 @@ PyInstaller==5.9.0
 beautifulsoup4==4.12.2
 colorama==0.4.6
 configobj==5.0.8
-glean-sdk==52.3.0; sys.platform != 'darwin'
+glean-sdk==52.5.0; sys.platform != 'darwin'
 # See https://github.com/pypa/pip/issues/11573.
 https://files.pythonhosted.org/packages/2c/5e/41d95b300d052a6484cbdc345e8a0b20a75a10123ad119d592762eef4dde/glean_sdk-52.2.0-cp36-abi3-macosx_10_7_universal2.whl; sys.platform == 'darwin'
 importlib-metadata==6.0.0; python_version >= '3.8'

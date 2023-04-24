@@ -1,5 +1,5 @@
 --no-binary pyyaml
-PyInstaller==5.9.0
+PyInstaller==5.10.1
 beautifulsoup4==4.12.2
 colorama==0.4.6
 configobj==5.0.8

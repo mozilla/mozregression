@@ -2,6 +2,7 @@ from tempfile import mkdtemp
 
 import mozfile
 from PySide6.QtCore import QSettings, Slot
+from PySide6.QtGui import QGuiApplication, QIcon, QPalette
 from PySide6.QtWidgets import QMainWindow, QMessageBox
 
 from mozregression import __version__ as mozregression_version
@@ -74,6 +75,13 @@ class MainWindow(QMainWindow):
         self.ui.toolBar.setVisible(True)
         self.ui.log_view.setVisible(True)
         self.ui.logDockWidget.setVisible(True)
+
+        # Use better toolbar icons in dark mode
+        dark_mode_enabled = QGuiApplication.palette().color(QPalette.Window).lightness() < 128
+        if dark_mode_enabled:
+            self.ui.actionRun_a_single_build.setIcon(QIcon(":/s_white.png"))
+            self.ui.actionStart_a_new_bisection.setIcon(QIcon(":/cutting_white.png"))
+            self.ui.actionStop_the_bisection.setIcon(QIcon(":/stop_white.png"))
 
     @Slot()
     def clear(self):

@@ -1,16 +1,23 @@
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt, QUrl, Signal, Slot
-from PySide6.QtGui import QColor, QDesktopServices
+from PySide6.QtGui import QColor, QDesktopServices, QGuiApplication, QPalette
 from PySide6.QtWidgets import QTableView, QTextBrowser
 
 from mozregression.bisector import NightlyHandler
 
 # Custom colors
 GRAY_WHITE = QColor(243, 243, 243)
+DARK_GRAY = QColor(28, 28, 28)
 VERDICT_TO_ROW_COLORS = {
     "g": QColor(152, 251, 152),  # light green
     "b": QColor(250, 113, 113),  # light red
     "s": QColor(253, 248, 107),  # light yellow
     "r": QColor(225, 225, 225),  # light gray
+}
+VERDICT_TO_ROW_COLORS_DARK_MODE = {
+    "g": QColor(48, 209, 88),  # green
+    "b": QColor(255, 70, 58),  # red
+    "s": QColor(160, 90, 0),  # yellow
+    "r": QColor(45, 45, 45),  # gray
 }
 
 
@@ -163,11 +170,17 @@ class ReportModel(QAbstractTableModel):
 
     def data(self, index, role=Qt.DisplayRole):
         item = self.items[index.row()]
+        dark_mode_enabled = QGuiApplication.palette().color(QPalette.Window).lightness() < 128
         if role == Qt.DisplayRole:
             return item.status_text()
         elif role == Qt.BackgroundRole:
             if isinstance(item, StepItem) and item.verdict:
-                return VERDICT_TO_ROW_COLORS.get(str(item.verdict), GRAY_WHITE)
+                if dark_mode_enabled:
+                    return VERDICT_TO_ROW_COLORS_DARK_MODE.get(str(item.verdict), DARK_GRAY)
+                else:
+                    return VERDICT_TO_ROW_COLORS.get(str(item.verdict), GRAY_WHITE)
+            elif dark_mode_enabled:
+                return DARK_GRAY
             else:
                 return GRAY_WHITE
 

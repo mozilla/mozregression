@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QBrush
+from PySide6.QtGui import QBrush, QGuiApplication, QPalette, QPen
 from PySide6.QtWidgets import (
     QDialog,
     QGraphicsRectItem,
@@ -53,6 +53,10 @@ class SkipChooserScene(QGraphicsScene):
                 self.mid_build = item
             elif i in bounds:
                 item.setBrush(QBrush(Qt.lightGray))
+
+            dark_mode_enabled = QGuiApplication.palette().color(QPalette.Window).lightness() < 128
+            if dark_mode_enabled:
+                item.setPen(QPen(Qt.white))
             self.addItem(item)
 
 

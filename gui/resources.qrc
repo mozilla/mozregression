@@ -4,5 +4,8 @@
     <file alias="stop.png">icons/cross106.png</file>
     <file alias="cutting.png">icons/cutting10.png</file>
     <file alias="s.png">icons/letter52.png</file>
+    <file alias="stop_white.png">icons/cross106_white.png</file>
+    <file alias="cutting_white.png">icons/cutting10_white.png</file>
+    <file alias="s_white.png">icons/letter52_white.png</file>
   </qresource>
 </RCC>

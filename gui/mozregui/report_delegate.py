@@ -1,5 +1,5 @@
 from PySide6.QtCore import QRect, Qt, Signal
-from PySide6.QtGui import QIcon, QPainter, QPixmap
+from PySide6.QtGui import QGuiApplication, QIcon, QPainter, QPalette, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
     QStyle,
@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from mozregui.report import VERDICT_TO_ROW_COLORS
+from mozregui.report import VERDICT_TO_ROW_COLORS, VERDICT_TO_ROW_COLORS_DARK_MODE
 from mozregui.ui.ask_verdict import Ui_AskVerdict
 
 VERDICTS = ("good", "bad", "skip", "retry", "other...")
@@ -23,10 +23,14 @@ class AskVerdict(QWidget):
         self.emitted = False
         self.ui = Ui_AskVerdict()
         self.ui.setupUi(self)
+        dark_mode_enabled = QGuiApplication.palette().color(QPalette.Window).lightness() < 128
         # build verdict icons
         if not AskVerdict.icons_cache:
             for text in VERDICTS:
-                color = VERDICT_TO_ROW_COLORS.get(text[0])
+                if dark_mode_enabled:
+                    color = VERDICT_TO_ROW_COLORS_DARK_MODE.get(text[0])
+                else:
+                    color = VERDICT_TO_ROW_COLORS.get(text[0])
                 pixmap = QPixmap(16, 16)
                 pixmap.fill(Qt.transparent)
                 if color:

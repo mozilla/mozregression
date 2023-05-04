@@ -16,7 +16,6 @@ jobs:
       python: '["3.7", "3.8", "3.9", "3.10", "3.11"]'
 
   call-compile-requirements-windows:
-    needs: call-compile-requirements-linux
     uses: ./.github/workflows/compile-requirements.yml
     with:
       requirements_files: '["base.in dev.in gui-dev.in gui.in linters.in"]'
@@ -24,7 +23,6 @@ jobs:
       python: '["3.9", "3.10", "3.11"]'
 
   call-compile-requirements-macos:
-    needs: call-compile-requirements-windows
     uses: ./.github/workflows/compile-requirements.yml
     with:
       requirements_files: '["base.in dev.in gui-dev.in gui.in linters.in"]'

@@ -16,9 +16,8 @@ class GuiBuildDownloadManager(QObject, BuildDownloadManager):
     download_finished = Signal(object, str)
 
     def __init__(self, destdir, persist_limit, **kwargs):
-        QObject.__init__(self)
-        BuildDownloadManager.__init__(
-            self, destdir, session=get_http_session(), persist_limit=persist_limit, **kwargs
+        super().__init__(
+            destdir=destdir, session=get_http_session(), persist_limit=persist_limit, **kwargs
         )
 
     def _download_started(self, task):

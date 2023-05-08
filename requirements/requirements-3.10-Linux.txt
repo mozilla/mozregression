@@ -5,6 +5,7 @@
 #    pip-compile --allow-unsafe --generate-hashes --output-file=requirements-3.10-Linux.txt base.in dev.in gui-dev.in gui.in linters.in
 #
 --no-binary coverage
+--no-binary mypy-extensions
 --no-binary pyyaml
 
 aiohttp==3.8.4 \
@@ -120,7 +121,6 @@ attrs==23.1.0 \
     # via
     #   aiohttp
     #   jsonschema
-    #   pytest
 beautifulsoup4==4.12.2 \
     --hash=sha256:492bbc69dca35d12daac71c4db1bfff0c876c00ef4a2ffacce226d4638eb72da \
     --hash=sha256:bd2520ca0d9d7d12694a53d44ac482d181b4ec1888909b035a3dbf40d0f57d4a
@@ -164,6 +164,7 @@ charset-normalizer==2.1.1 \
     --hash=sha256:5a3d016c7c547f69d6f81fb0db9449ce888b418b5b9952cc5e6e66843e9dd845 \
     --hash=sha256:83e9a75d1911279afd89352c68b45348559d1fc0506b054b346651b5e7fee29f
     # via
+    #   -r base.in
     #   aiohttp
     #   requests
 click==8.1.3 \
@@ -298,14 +299,14 @@ glean-parser==7.2.0 \
     # via
     #   -r linters.in
     #   glean-sdk
-glean-sdk==52.3.0 ; sys_platform != "darwin" \
-    --hash=sha256:2a21cb261779795d8c7e2490f92933b35239725d254e5b0c256a983069ce2fad \
-    --hash=sha256:774e9d2ecc1691f226b64ee24dd317219a48c15a42e0167aeeec7bfb9a21a53a \
-    --hash=sha256:7a8a03c29a1563b4a72a1db6262b6949e69ce37ef5dbef50c2d0e335c7e18732 \
-    --hash=sha256:817507936db8051bb6adf9737acbf33da8438f29526dddb34b2adfb163835dee \
-    --hash=sha256:a940482664853ff9e466b5584ef8b36b92dd9bfeafa45c3a4d1eded42aceda30 \
-    --hash=sha256:aaf0307f171c806c80e530b7d9dca16817f065faa85cfb0124ca76537fcc6ef5 \
-    --hash=sha256:d79fa6775be1aa252f0bcdab9d8d51aef7ad122a9e820a15f0e8acf512a1d8a7
+glean-sdk==52.6.0 ; sys_platform != "darwin" \
+    --hash=sha256:06d9a774fcc63ef6b9c1fb417bd83d522a0165f1ac3c78cc4bbb04d786794375 \
+    --hash=sha256:09f32aa6236f9ce5d183d6ed49a13c7a4beff796efba07ca4a8ef43e1171c043 \
+    --hash=sha256:1ef140dfc7719216102713ebf19a3cfec66f42be0786b5533d95da6c89b21d84 \
+    --hash=sha256:3b949a1a7830ef14e079a692c30343909b29b27bbcf5c1a213ffcb70f1f0c71d \
+    --hash=sha256:3f0b66370b97c228fc749c4686952b2a355c586690bbdbd5d4526a3060b8b59d \
+    --hash=sha256:4d357aa327543f6ce710e9bb299125ba03437d13a794f9b20b5f488351fcff03 \
+    --hash=sha256:781e29a94ff0550cd39ac5e7c09622bbaa36d312371dd7be12ad991458e16e42
     # via -r base.in
 idna==3.4 \
     --hash=sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4 \
@@ -313,9 +314,9 @@ idna==3.4 \
     # via
     #   requests
     #   yarl
-importlib-metadata==6.0.0 ; python_version >= "3.8" \
-    --hash=sha256:7efb448ec9a5e313a57655d35aa54cd3e01b7e1fbcf72dce1bf06119420f5bad \
-    --hash=sha256:e354bedeb60efa6affdcc8ae121b73544a7aa74156d047311948f6d711cd378d
+importlib-metadata==6.6.0 ; python_version >= "3.8" \
+    --hash=sha256:43dd286a2cd8995d5eaef7fee2066340423b818ed3fd70adf0bad5f1fac53fed \
+    --hash=sha256:92501cdf9cc66ebd3e612f1b4f0c0765dfa42f0fa38ffb319b6bd84dd675d705
     # via -r base.in
 iniconfig==2.0.0 \
     --hash=sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3 \
@@ -570,9 +571,7 @@ packaging==23.1 \
 pathspec==0.11.1 \
     --hash=sha256:2798de800fa92780e33acca925945e9a19a133b715067cf165b8866c15a31687 \
     --hash=sha256:d8af70af76652554bd134c22b3e8a1cc46ed7d91edcdd721ef1a0c51a84a5293
-    # via
-    #   black
-    #   yamllint
+    # via black
 platformdirs==3.2.0 \
     --hash=sha256:d5b638ca397f25f979350ff789db335903d7ea010ab28903f57b27e1b16c2b08 \
     --hash=sha256:ebe11c0d7a805086e99506aa331612429a72ca7cd52a1f0d277dc4adc20cb10e
@@ -591,19 +590,19 @@ pyflakes==3.0.1 \
     # via
     #   -r linters.in
     #   flake8
-pyinstaller==5.9.0 \
-    --hash=sha256:12ca6567be457826e14416637ea54485a185d0ce7a5a044df0d0daf588fff6d1 \
-    --hash=sha256:2ba42038b3bd83e1fba7c8eb9e7cde43bd5938e37ca542c89e8779355d213f52 \
-    --hash=sha256:2bde16a8d664e8eba9aa7b84f729f7ab005c1793be4fe1986b3c9cad6c486622 \
-    --hash=sha256:3b2c34c3c3ddf38f68d9f5afbed82abe0f89d53014c56892326fef10172ee652 \
-    --hash=sha256:4b21b0298db44f5f07fc04d8ff81ec31efa47b72798efaecc4e811c50a102111 \
-    --hash=sha256:6cf6c032c72ef78fd9aa5e47d8952e784db45b2c3f7862bd44a99df68c216f64 \
-    --hash=sha256:8476538aec8a0a3be4f74b93388bd6989b91cc437ff86d6f0d3a68961176dce6 \
-    --hash=sha256:93d7e8443a6b60745d42aa50f08730f6b419410832b4c616c4f1bb315f087661 \
-    --hash=sha256:c7dd156c2438f197c168b990bbce03c97d3fb758dd9bbc3ca93626c2f4473a47 \
-    --hash=sha256:d1ff94347183ae3755cfb8f02e64744eb7fe384469bd61e453c6ff59a81665d6 \
-    --hash=sha256:dcd348b174fd72c4df271790ac582969c9423cb099fe92db9ec131a8a9243d5a \
-    --hash=sha256:e7a4c292810285c2466f3bdcb1e03ba2170177ebe3d7054ff1af3bb348bf61a4
+pyinstaller==5.10.1 \
+    --hash=sha256:247b99c52dc3cf69eba905da30dbca0a8ea309e1058cab44658ac838d9b8f2f0 \
+    --hash=sha256:2d16641a495593d174504263b038a6d3d46b3b15a381ccb216cf6cce67723512 \
+    --hash=sha256:333b4ffda38d9c0a561c38429dd9848d37aa78f3b8ea8a6f2b2e69a60d523c02 \
+    --hash=sha256:6afc7aa4885ffd3e6121a8cf2138830099f874c18cb5869bed8c1a42db82d060 \
+    --hash=sha256:6ecc464bf56919bf2d6bff275f38d85ff08ae747b8ead3a0c26cf85573b3c723 \
+    --hash=sha256:7a1db833bb0302b66ae3ae337fbd5487699658ce869ca4d538b5359b8179e83a \
+    --hash=sha256:85e39e36d03355423636907a26a9bfa06fdc93cb1086441b19d2d0ca448479fa \
+    --hash=sha256:915a502802c751bafd92d568ac57468ec6cdf252b8308aa9a167bbc2c565ad2d \
+    --hash=sha256:9e9a38f41f8280c8e29b294716992852281b41fbe64ba330ebab671efe27b26d \
+    --hash=sha256:bb7de35cd209a0a0358aec761a273ae951d2161c03728f15d9a640d06a88e472 \
+    --hash=sha256:df97aaf1103a1c485aa3c9947792a86675e370f5ce9b436b4a84e34a4180c8d2 \
+    --hash=sha256:f677fbc151db1eb00ada94e86ed128e7b359cbd6bf3f6ea815afdde687692d46
     # via -r base.in
 pyinstaller-hooks-contrib==2023.1 \
     --hash=sha256:ab56c192e7cd4472ff6b840cda4fc42bceccc7fb4234f064fc834a3248c0afdd \
@@ -638,29 +637,29 @@ pyrsistent==0.19.3 \
     --hash=sha256:f0774bf48631f3a20471dd7c5989657b639fd2d285b861237ea9e82c36a415a9 \
     --hash=sha256:f0e7c4b2f77593871e918be000b96c8107da48444d57005b6a6bc61fb4331b2c
     # via jsonschema
-pyside6==6.4.2 \
-    --hash=sha256:0985a75aa5ff42f93e5e0a0034d2c00f4dfc9a5cda3d63a8f9c5da3096dc7e04 \
-    --hash=sha256:40830c2a5d1a19cedb33638f85b505831e172fa2630b95f11e993614187e8562 \
-    --hash=sha256:59dafe1f608d5363afa17d318377ac78d686907d6a1292754887b9229632f36e \
-    --hash=sha256:74b49be890662511eb8f279cf4862f7452c1ec7dbb61839f6a9baa0efdefce66 \
-    --hash=sha256:b9f132133e0681c5d1d47d533108cc9d35f96486251a9f23bdac6f3b6aa53a1c \
-    --hash=sha256:e5f8f413743cc28b18e10b3d35a50f1410ed2874a376cd136ffa6030e5ed78fa
+pyside6==6.5.0 \
+    --hash=sha256:13e8e96aa7a89840575505f50b9635e6450bf413ff46288d1085b3a9f8b225c1 \
+    --hash=sha256:5102c57841b15facb0aeca1f23d689ebc528a609bf5fb907f1ef2747f6415001 \
+    --hash=sha256:7242fe09aaeb3399152fa1c6c25098b93df945620a4bd81a37de0ecb2f64fd5d \
+    --hash=sha256:c1c7244a4e83b3a4ea965f4a85776ebc64fa3c9b4af77ad70b22e64ccec3d451 \
+    --hash=sha256:cb059a0f3d4b763451a1e8dec440784dff1728e9ace6cb81c541cc1354c5f3dc \
+    --hash=sha256:f30e1d0319ea4d2ddac654c58377079a40f38c4cac7b6fd631902f91190c1fc8
     # via -r gui.in
-pyside6-addons==6.4.2 \
-    --hash=sha256:03245466c3844681cdd7d350c1c94444cafff4c86394b44b6bff32643a9668c6 \
-    --hash=sha256:101bfe096a426eab15cc02f4d5755ace564ce53693cb44b3fc66223709d999b5 \
-    --hash=sha256:5c06fa0e1bc6269b9e80e004f928eadc4c7f07bca51e41b375f79f3dc17c94ea \
-    --hash=sha256:9fddedee6d5d3c0c98677f421530402a4107f4b4ad773c596d5dd21366f88abf \
-    --hash=sha256:e94d3d6385723c6c3c78b321498e6ab7331f67c77d6233d314c98b89cc629449 \
-    --hash=sha256:f5160f28cec8068f717150d7e9a054c6ae0034c75e404b9ae198f620e8bcc7c3
+pyside6-addons==6.5.0 \
+    --hash=sha256:1a9545df3e77c656a3708eaa3584d98ff41720c7dadf344d5126d66e83d0ab5a \
+    --hash=sha256:29551ca63a1cbc0fcd17fa9e477282857e2c66c3a55fdb9754b75519d5adf89a \
+    --hash=sha256:9ed197a05f1c279d1589d8535040fe5e21b92fa19933e38de962050cb58f6c05 \
+    --hash=sha256:d29e84d0b54c5fdeb6cc405d537788a648da975cc58e37f0df3a17cd11a67f1d \
+    --hash=sha256:db7a6117c3f944b4827204ed7f346030fc10c602521f278310a78021567df28f \
+    --hash=sha256:fd5bc46cfffac7afa2f76c3dc6cb6f567a0ad1276d8177797c1bc152aec50f35
     # via pyside6
-pyside6-essentials==6.4.2 \
-    --hash=sha256:0b00979a37a2cf0b848d5ac1eb595e4480687f0ddd34d82cbc738dfe7e8976bc \
-    --hash=sha256:459202678a5217d1b1ad44ca6da2033e73082d702eafd842c1bf6952e243eb65 \
-    --hash=sha256:7d01e1fd4136cbc3f5516d1c7187a694dd5b6d09a4be3de6e184d0845070ba85 \
-    --hash=sha256:8061b68d7eb4ace0ad4443c66747ebac92f686ba704ac343f58e9e9eed8f1c0f \
-    --hash=sha256:8c3d37cca6e27f6da12b50b20e741d593ccc857bdcdb82d97f8f7c8bfe53639a \
-    --hash=sha256:8f208567e27c9caede517f07ec53cb6b3f9472d72866080393f3150393683c46
+pyside6-essentials==6.5.0 \
+    --hash=sha256:0287ec94ee1923d430bb20836bc649a5c76a59281245de469d7f759cc73c5ea7 \
+    --hash=sha256:4517e27fc540d9e645ea12dea82c8b29c042d66aaef46960a125cccdf0079800 \
+    --hash=sha256:58a88a099171c55a7e41e519208c9ca93661d277bb73c5897a2e3f2cbe5248b7 \
+    --hash=sha256:987c2ec04c35481c841de9b25931d2d074eb7d2e591aa5628041b2ca2df96d0e \
+    --hash=sha256:bc2e0a9dafe383ab965e98b6ddf73f709da3736197dea8eab265fd3e524db993 \
+    --hash=sha256:f00d4f10758cdc3f49f94465ead788ad294dac7d9cc5e1cc0610e97c2bdfc8d7
     # via
     #   pyside6
     #   pyside6-addons
@@ -688,7 +687,6 @@ pyyaml==6.0 \
     # via
     #   -r base.in
     #   glean-parser
-    #   yamllint
 redo==2.0.4 \
     --hash=sha256:81066955041c853b0e6491eb65a0877dce45131c4cfa3d42d923fc2aa8f7a043 \
     --hash=sha256:c76e4c23ab2f8840261736a851323cd98493710e7a9d36a1058535dca501f293
@@ -709,13 +707,13 @@ setuptools-scm==7.1.0 \
     --hash=sha256:6c508345a771aad7d56ebff0e70628bf2b0ec7573762be9960214730de278f27 \
     --hash=sha256:73988b6d848709e2af142aa48c986ea29592bbcfca5375678064708205253d8e
     # via -r base.in
-shiboken6==6.4.2 \
-    --hash=sha256:0616c1a12d1e51e680595b3940b986275c1df952a751416a0730a59e5b90105f \
-    --hash=sha256:0c706fd0e6eeb49d807aaef08f078526eb35bee1d84209cf66cb1ff70508b93a \
-    --hash=sha256:2278f8d6ab6f3377e82f72b6305e06bd53e9e479729de489e7a5205296bdb74e \
-    --hash=sha256:58511b2d0f77f3153b0371e0da2730db38195cb72e5d450e32a52db25c6af06d \
-    --hash=sha256:6131d32cce4114924dabea313fc345745f95ce567631349f2fad170ebff4bfee \
-    --hash=sha256:d66bfdd80bbb3c8f9165afad4bb8786434a75456a36f8ee90b583c31ef311a50
+shiboken6==6.5.0 \
+    --hash=sha256:1bba668221a5cf40186cea93ced018cf788d7476d50968a3f073ebbe41ce712d \
+    --hash=sha256:2d7fe6534a51ec9c96b82fc6275cf75e85ab29276a9778aed756465f81adf0c1 \
+    --hash=sha256:46ff977f96c9d45dba3c3a313628356fd40e4423bb65bf2d9870b73396fad8be \
+    --hash=sha256:6e2874ea013d4cea7819935977bffa4c634ebcaabcb5287798df9f0c2f10c4c0 \
+    --hash=sha256:72888ebc5ef7295df27197c0af726bd6731e2a883b346e448e2c740b3e34bc2f \
+    --hash=sha256:aee9708517821aaef547c83d689bf524d6f217d47232cb313d9af9e630215eed
     # via
     #   pyside6
     #   pyside6-addons
@@ -772,10 +770,6 @@ wcwidth==0.2.6 \
     --hash=sha256:795b138f6875577cd91bba52baf9e445cd5118fd32723b460e30a0af30ea230e \
     --hash=sha256:a5220780a404dbe3353789870978e472cfe477761f06ee55077256e509b156d0
     # via blessed
-yamllint==1.31.0 \
-    --hash=sha256:15f4bdb645e6a4a0a22fe5415bc38b4a934c51419b30104896d2f3f95e329185 \
-    --hash=sha256:2d83f1d12f733e162a87e06b176149d7bb9c5bae4a9e5fce1c771d7f703f7a65
-    # via glean-parser
 yarl==1.9.1 \
     --hash=sha256:01a073c9175481dfed6b40704a1b67af5a9435fc4a58a27d35fd6b303469b0c7 \
     --hash=sha256:01cf88cb80411978a14aa49980968c1aeb7c18a90ac978c778250dd234d8e0ba \
@@ -865,4 +859,3 @@ setuptools==67.7.2 \
     #   -r base.in
     #   pyinstaller
     #   setuptools-scm
-    #   yamllint

@@ -20,5 +20,5 @@ redo==2.0.4
 requests==2.30.0
 setuptools
 setuptools_scm==7.1.0
-taskcluster==49.1.1
+taskcluster==49.2.0
 pyyaml==6.0.0

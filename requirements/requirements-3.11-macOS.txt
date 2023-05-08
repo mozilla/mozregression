@@ -689,9 +689,9 @@ redo==2.0.4 \
     --hash=sha256:81066955041c853b0e6491eb65a0877dce45131c4cfa3d42d923fc2aa8f7a043 \
     --hash=sha256:c76e4c23ab2f8840261736a851323cd98493710e7a9d36a1058535dca501f293
     # via -r base.in
-requests==2.28.2 \
-    --hash=sha256:64299f4909223da747622c030b781c0d7811e359c37124b4bd368fb8c6518baa \
-    --hash=sha256:98b1b2782e3c6c4904938b84c0eb932721069dfdb9134313beff7c83c2df24bf
+requests==2.30.0 \
+    --hash=sha256:10e94cc4f3121ee6da529d358cdaeaff2f1c409cd377dbc72b825852f2f7e294 \
+    --hash=sha256:239d7d4458afcb28a692cdd298d87542235f4ca8d36d03a15bfc128a6559a2f4
     # via
     #   -r base.in
     #   coveralls

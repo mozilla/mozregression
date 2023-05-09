@@ -1,5 +1,5 @@
-from PySide6.QtCore import QRect, Qt, Signal
-from PySide6.QtGui import QGuiApplication, QIcon, QPainter, QPalette, QPixmap
+from PySide6.QtCore import QEvent, QRect, Qt, Signal
+from PySide6.QtGui import QIcon, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
     QStyle,
@@ -8,8 +8,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from mozregui.report import VERDICT_TO_ROW_COLORS, VERDICT_TO_ROW_COLORS_DARK_MODE
+from mozregui.report import VERDICT_TO_ROW_COLORS
 from mozregui.ui.ask_verdict import Ui_AskVerdict
+from mozregui.utils import is_dark_mode_enabled
 
 VERDICTS = ("good", "bad", "skip", "retry", "other...")
 
@@ -23,23 +24,9 @@ class AskVerdict(QWidget):
         self.emitted = False
         self.ui = Ui_AskVerdict()
         self.ui.setupUi(self)
-        dark_mode_enabled = QGuiApplication.palette().color(QPalette.Window).lightness() < 128
         # build verdict icons
         if not AskVerdict.icons_cache:
-            for text in VERDICTS:
-                if dark_mode_enabled:
-                    color = VERDICT_TO_ROW_COLORS_DARK_MODE.get(text[0])
-                else:
-                    color = VERDICT_TO_ROW_COLORS.get(text[0])
-                pixmap = QPixmap(16, 16)
-                pixmap.fill(Qt.transparent)
-                if color:
-                    painter = QPainter(pixmap)
-                    painter.setPen(Qt.black)
-                    painter.setBrush(color)
-                    painter.drawEllipse(0, 0, 15, 15)
-                    painter.end()
-                AskVerdict.icons_cache[text] = QIcon(pixmap)
+            self._build_icon_cache()
 
         # set combo verdict
         for text in ("other...", "skip", "retry"):
@@ -55,6 +42,29 @@ class AskVerdict(QWidget):
         self.ui.badVerdict.clicked.connect(self.on_good_bad_button_clicked)
         self.ui.badVerdict.setIcon(AskVerdict.icons_cache["bad"])
 
+    def _build_icon_cache(self):
+        for text in VERDICTS:
+            if is_dark_mode_enabled():
+                color = VERDICT_TO_ROW_COLORS.get(text[0] + "_dark")
+            else:
+                color = VERDICT_TO_ROW_COLORS.get(text[0])
+            pixmap = QPixmap(16, 16)
+            pixmap.fill(Qt.transparent)
+            if color:
+                painter = QPainter(pixmap)
+                painter.setPen(QPen(self.palette().windowText().color()))
+                painter.setBrush(color)
+                painter.drawEllipse(0, 0, 15, 15)
+                painter.end()
+            AskVerdict.icons_cache[text] = QIcon(pixmap)
+
+    def _update_icons(self):
+        self.ui.goodVerdict.setIcon(AskVerdict.icons_cache["good"])
+        self.ui.badVerdict.setIcon(AskVerdict.icons_cache["bad"])
+        for i in range(self.ui.comboVerdict.count()):
+            text = str(self.ui.comboVerdict.itemText(i))
+            self.ui.comboVerdict.setItemIcon(i, AskVerdict.icons_cache[text])
+
     def on_dropdown_item_activated(self):
         self.delegate.got_verdict.emit(str(self.ui.comboVerdict.currentText())[0].lower())
         self.emitted = True
@@ -62,6 +72,13 @@ class AskVerdict(QWidget):
     def on_good_bad_button_clicked(self):
         self.delegate.got_verdict.emit(str(self.sender().text())[0].lower())
         self.emitted = True
+
+    def event(self, event: QEvent) -> bool:
+        if event.type() == QEvent.PaletteChange:
+            self._build_icon_cache()
+            self._update_icons()
+            return True
+        return super().event(event)
 
 
 class ReportItemDelegate(QStyledItemDelegate):

@@ -4,7 +4,7 @@ beautifulsoup4==4.12.2
 charset-normalizer<3
 colorama==0.4.6
 configobj==5.0.8
-glean-sdk==52.6.0; sys.platform != 'darwin'
+glean-sdk==52.7.0; sys.platform != 'darwin'
 # See https://github.com/pypa/pip/issues/11573.
 https://files.pythonhosted.org/packages/04/6c/39adef2ae69ecfd3318980eb7c31d8bfaeba07a5fee521ac7d4db638d2d9/glean_sdk-52.6.0-cp36-abi3-macosx_10_7_universal2.whl; sys.platform == 'darwin'
 importlib-metadata==6.6.0; python_version >= '3.8'

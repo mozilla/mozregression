@@ -297,8 +297,8 @@ glean-parser==7.2.1 \
     # via
     #   -r linters.in
     #   glean-sdk
-glean-sdk @ https://files.pythonhosted.org/packages/04/6c/39adef2ae69ecfd3318980eb7c31d8bfaeba07a5fee521ac7d4db638d2d9/glean_sdk-52.6.0-cp36-abi3-macosx_10_7_universal2.whl ; sys_platform == "darwin" \
-    --hash=sha256:09f32aa6236f9ce5d183d6ed49a13c7a4beff796efba07ca4a8ef43e1171c043
+glean-sdk @ https://files.pythonhosted.org/packages/3b/95/ac29f457e7efafd85f16dfb6bff96a63d4a163add8bde2f7b6bdb2395a8e/glean_sdk-52.7.0-cp36-abi3-macosx_10_7_universal2.whl ; sys_platform == "darwin" \
+    --hash=sha256:9137bd3754a461e91a70820564cd042666e5a4df216009d3a4ac9d46fda187f6
     # via -r base.in
 idna==3.4 \
     --hash=sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4 \
@@ -553,9 +553,8 @@ multidict==6.0.4 \
     # via
     #   aiohttp
     #   yarl
-mypy-extensions==0.4.3 \
-    --hash=sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d \
-    --hash=sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8
+mypy-extensions==1.0.0 \
+    --hash=sha256:75dbf8955dc00442a438fc4d0666508a9a97b6bd41aa2f0ffe9d2f2725af0782
     # via black
 packaging==23.1 \
     --hash=sha256:994793af429502c4ea2ebf6bf664629d07c1a9fe974af92966e4b8d2df7edc61 \
@@ -750,9 +749,9 @@ typing-extensions==4.5.0 \
     --hash=sha256:5cb5f4a79139d699607b3ef622a1dedafa84e115ab0024e0d9c044a9479ca7cb \
     --hash=sha256:fb33085c39dd998ac16d1431ebc293a8b3eedd00fd4a32de0ff79002c19511b4
     # via setuptools-scm
-urllib3==1.26.15 \
-    --hash=sha256:8a388717b9476f934a21484e8c8e61875ab60644d29b9b39e11e4b9dc1c6b305 \
-    --hash=sha256:aa751d169e23c7479ce47a0cb0da579e3ede798f994f5816a74e4f4500dcea42
+urllib3==2.0.2 \
+    --hash=sha256:61717a1095d7e155cdb737ac7bb2f4324a858a1e2e6466f6d03ff630ca68d3cc \
+    --hash=sha256:d055c2f9d38dc53c808f6fdc8eab7360b6fdbbde02340ed25cfbcd817c62469e
     # via requests
 wcwidth==0.2.6 \
     --hash=sha256:795b138f6875577cd91bba52baf9e445cd5118fd32723b460e30a0af30ea230e \

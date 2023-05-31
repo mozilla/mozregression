@@ -14,7 +14,7 @@ class SingleBuildWorker(QObject):
     error = Signal(object)
 
     def __init__(self, fetch_config, test_runner, download_manager):
-        QObject.__init__(self)
+        super().__init__()
         self.fetch_config = fetch_config
         self.test_runner = test_runner
         self.download_manager = download_manager

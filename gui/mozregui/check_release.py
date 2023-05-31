@@ -22,7 +22,7 @@ class CheckReleaseThread(QThread):
 
 class CheckRelease(QObject):
     def __init__(self, mainwindow):
-        QObject.__init__(self, mainwindow)
+        super().__init__()
         self.mainwindow = mainwindow
         self.thread = CheckReleaseThread()
         self.thread.finished.connect(self.on_release_found)

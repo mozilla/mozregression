@@ -54,7 +54,7 @@ class GuiTestRunner(QObject):
     evaluate_finished = Signal()
 
     def __init__(self):
-        QObject.__init__(self)
+        super().__init__()
         self.verdict = None
         self.launcher = None
         self.launcher_kwargs = {}
@@ -97,7 +97,7 @@ class AbstractBuildRunner(QObject):
     worker_class = None
 
     def __init__(self, mainwindow):
-        QObject.__init__(self)
+        super().__init__()
         self.mainwindow = mainwindow
         self.thread = None
         self.worker = None

@@ -33,8 +33,12 @@ class GuiBisector(QObject, Bisector):
     handle_merge = Signal(object, str, str, str)
 
     def __init__(self, fetch_config, test_runner, download_manager, download_in_background=True):
-        QObject.__init__(self)
-        Bisector.__init__(self, fetch_config, test_runner, download_manager)
+        super().__init__(
+            fetch_config,
+            test_runner,
+            download_manager,
+            download_in_background,
+        )
         self.bisection = None
         self.mid = None
         self.build_infos = None

@@ -1,7 +1,8 @@
 from tempfile import mkdtemp
 
 import mozfile
-from PySide6.QtCore import QSettings, Slot
+from PySide6.QtCore import QEvent, QSettings, Slot
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QMainWindow, QMessageBox
 
 from mozregression import __version__ as mozregression_version
@@ -11,6 +12,7 @@ from mozregui.global_prefs import change_prefs_dialog, get_prefs
 from mozregui.report_delegate import ReportItemDelegate
 from mozregui.single_runner import SingleBuildRunner
 from mozregui.ui.mainwindow import Ui_MainWindow
+from mozregui.utils import is_dark_mode_enabled
 from mozregui.wizard import BisectionWizard, SingleRunWizard
 
 ABOUT_TEXT = """\
@@ -39,6 +41,7 @@ class MainWindow(QMainWindow):
         MainWindow.INSTANCE = self
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self._update_palette()
 
         self.bisect_runner = BisectRunner(self)
         self.single_runner = SingleBuildRunner(self)
@@ -101,6 +104,16 @@ class MainWindow(QMainWindow):
 
             runner.start(*wizard.options())
 
+    def _update_palette(self):
+        if is_dark_mode_enabled():
+            self.ui.actionRun_a_single_build.setIcon(QIcon(":/s_white.png"))
+            self.ui.actionStart_a_new_bisection.setIcon(QIcon(":/cutting_white.png"))
+            self.ui.actionStop_the_bisection.setIcon(QIcon(":/stop_white.png"))
+        else:
+            self.ui.actionRun_a_single_build.setIcon(QIcon(":/s.png"))
+            self.ui.actionStart_a_new_bisection.setIcon(QIcon(":/cutting.png"))
+            self.ui.actionStop_the_bisection.setIcon(QIcon(":/stop.png"))
+
     @Slot()
     def start_bisection_wizard(self):
         self._start_runner(BisectionWizard, self.bisect_runner)
@@ -122,3 +135,10 @@ class MainWindow(QMainWindow):
     @Slot()
     def edit_global_prefs(self):
         change_prefs_dialog(self)
+
+    def event(self, event: QEvent) -> bool:
+        if event.type() == QEvent.PaletteChange:
+            self._update_palette()
+            return True
+
+        return super().event(event)

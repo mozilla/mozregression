@@ -1,5 +1,5 @@
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QBrush
+from PySide6.QtCore import QEvent, Qt, Signal
+from PySide6.QtGui import QBrush, QPen
 from PySide6.QtWidgets import (
     QDialog,
     QGraphicsRectItem,
@@ -53,7 +53,21 @@ class SkipChooserScene(QGraphicsScene):
                 self.mid_build = item
             elif i in bounds:
                 item.setBrush(QBrush(Qt.lightGray))
+
+            pen = QPen(self.palette().windowText().color())
+            item.setPen(pen)
             self.addItem(item)
+
+    def _update_palette(self):
+        for item in self.items():
+            pen = QPen(self.palette().windowText().color())
+            item.setPen(pen)
+
+    def event(self, event: QEvent) -> bool:
+        if event.type() == QEvent.PaletteChange:
+            self._update_palette()
+            return True
+        return super().event(event)
 
 
 class SkipChooserView(QGraphicsView):

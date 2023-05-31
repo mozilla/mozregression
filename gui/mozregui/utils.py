@@ -1,4 +1,5 @@
 from PySide6.QtCore import QDir
+from PySide6.QtGui import QGuiApplication, QPalette
 from PySide6.QtWidgets import (
     QCompleter,
     QFileDialog,
@@ -85,3 +86,10 @@ class BuildSelection(QWidget):
                 raise DateFormatError(buildid, "Not a valid build id: `%s`")
         elif currentw == self.ui.s_changeset:
             return self.ui.changeset.text().strip()
+
+
+def is_dark_mode_enabled():
+    """
+    Return True if dark mode is being used.
+    """
+    return QGuiApplication.palette().color(QPalette.Window).lightness() < 128

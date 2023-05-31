@@ -3,14 +3,20 @@ from PySide6.QtGui import QColor, QDesktopServices
 from PySide6.QtWidgets import QTableView, QTextBrowser
 
 from mozregression.bisector import NightlyHandler
+from mozregui.utils import is_dark_mode_enabled
 
 # Custom colors
 GRAY_WHITE = QColor(243, 243, 243)
+DARK_GRAY = QColor(28, 28, 28)
 VERDICT_TO_ROW_COLORS = {
     "g": QColor(152, 251, 152),  # light green
     "b": QColor(250, 113, 113),  # light red
     "s": QColor(253, 248, 107),  # light yellow
     "r": QColor(225, 225, 225),  # light gray
+    "g_dark": QColor(48, 209, 88),  # green
+    "b_dark": QColor(255, 70, 58),  # red
+    "s_dark": QColor(160, 90, 0),  # yellow
+    "r_dark": QColor(45, 45, 45),  # gray
 }
 
 
@@ -167,7 +173,12 @@ class ReportModel(QAbstractTableModel):
             return item.status_text()
         elif role == Qt.BackgroundRole:
             if isinstance(item, StepItem) and item.verdict:
-                return VERDICT_TO_ROW_COLORS.get(str(item.verdict), GRAY_WHITE)
+                if is_dark_mode_enabled():
+                    return VERDICT_TO_ROW_COLORS.get(str(item.verdict) + "_dark", DARK_GRAY)
+                else:
+                    return VERDICT_TO_ROW_COLORS.get(str(item.verdict), GRAY_WHITE)
+            elif is_dark_mode_enabled():
+                return DARK_GRAY
             else:
                 return GRAY_WHITE
 

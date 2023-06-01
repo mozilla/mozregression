@@ -44,7 +44,7 @@ class CrashReporter(QObject):
     got_exception = Signal(tuple)
 
     def __init__(self, app):
-        QObject.__init__(self, app)
+        super().__init__(app)
         self._sys_except_hook = sys.excepthook
         self.app = app
         self.allow_dialog = True

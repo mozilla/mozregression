@@ -91,18 +91,12 @@ def do_bundle(options):
         call(makensis_path, "wininst.nsi", cwd="wininst")
     elif IS_MAC:
         os.chdir("dist")
-        # create a mozregression-gui subdirectory and make the dmg bundle that
-        os.mkdir("mozregression-gui")
-        os.rename(
-            "mozregression GUI.app", os.path.join("mozregression-gui", "mozregression GUI.app")
-        )
         call(
-            "hdiutil",
-            "create",
+            "dmgbuild",
+            "-s",
+            "../dmg_settings.py",
+            "mozregression GUI",
             "mozregression-gui.dmg",
-            "-srcfolder",
-            "mozregression-gui",
-            "-ov",
         )
     else:
         # seems like some qml stuff is also bundled on Linux

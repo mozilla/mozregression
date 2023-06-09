@@ -90,14 +90,16 @@ def do_bundle(options):
         makensis_path = os.path.join(options.nsis_path, "makensis.exe")
         call(makensis_path, "wininst.nsi", cwd="wininst")
     elif IS_MAC:
-        os.chdir("dist")
-        call(
-            "dmgbuild",
-            "-s",
-            "../dmg_settings.py",
-            "mozregression GUI",
-            "mozregression-gui.dmg",
-        )
+        with tarfile.open("mozregression-gui-app-bundle.tar.gz", "w:gz") as tar:
+            tar.add(r"dist", arcname="mozregression-gui-app-bundle")
+        # os.chdir("dist")
+        # call(
+        #     "dmgbuild",
+        #     "-s",
+        #     "../dmg_settings.py",
+        #     "mozregression GUI",
+        #     "mozregression-gui.dmg",
+        # )
     else:
         # seems like some qml stuff is also bundled on Linux
         try:

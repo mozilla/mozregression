@@ -129,7 +129,7 @@ jobs:
         run: |
           source env/bin/activate
           python gui/build.py bundle
-          ls -alh gui/dist/mozregression-gui.dmg
+          ls -alh gui/mozregression-gui-app-bundle.tar.gz
       - name: Test
         run: |
           source env/bin/activate

@@ -76,13 +76,13 @@ jobs:
         run: |
           source env/bin/activate
           python gui/build.py bundle
-          ls -alh gui/dist/mozregression-gui.dmg
+          ls -alh gui/mozregression-gui-app-bundle.tar.gz
       - name: Upload
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./gui/dist/mozregression-gui.dmg
-          asset_name: mozregression-gui.dmg
+          asset_path: ./gui/mozregression-gui-app-bundle.tar.gz
+          asset_name: mozregression-gui-app-bundle.tar.gz
           asset_content_type: application/octet-stream
   build-and-publish-windows-gui:
     runs-on: windows-latest

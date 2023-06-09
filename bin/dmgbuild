@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+source env/bin/activate
+cd gui/dist
+dmgbuild -s ../dmg_settings.py "mozregression GUI" mozregression-gui.dmg
+cd ../..
+echo "Finished building dmg."
+ls -alh gui/dist |grep dmg

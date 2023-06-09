@@ -11,6 +11,7 @@ mozregression.egg-info/
 
 gui/build/
 gui/dist/
+gui/*.tar.gz
 gui/venv/
 gui/mozregression-gui.spec
 gui/mozregui/ui/*.py

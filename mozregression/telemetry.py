@@ -36,6 +36,7 @@ UsageMetrics = namedtuple(
 
 def get_system_info():
     """Return a dictionary with various information about the system."""
+    UNKNOWN = "unknown"
     info = {
         "windows_version": None,
         "mac_version": None,
@@ -50,21 +51,22 @@ def get_system_info():
             # See https://docs.python.org/3/library/platform.html#macos-platform.
             info["mac_version"] = platform.mac_ver()[0]
         except (AttributeError, IndexError):
-            pass
+            info["mac_version"] = UNKNOWN
     elif mozinfo.os == "windows":
         try:
             # Fetch "version" from tuple containing Windows version information.
             # See https://docs.python.org/3/library/platform.html#windows-platform.
             info["windows_version"] = platform.win32_ver()[1]
         except (AttributeError, IndexError):
-            pass
-    else:
+            info["windows_version"] = UNKNOWN
+    elif mozinfo.os == "linux":
         distro_info = distro.info()
         try:
             info["linux_version"] = distro_info["version"]
             info["linux_distro"] = distro_info["id"]
         except KeyError:
-            pass
+            info["linux_version"] = UNKNOWN
+            info["linux_distro"] = UNKNOWN
     info["python_version"] = platform.python_version()
     return info
 

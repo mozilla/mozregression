@@ -28,7 +28,7 @@ from mozregression.json_pushes import JsonPushes
 from mozregression.launchers import REGISTRY as APP_REGISTRY
 from mozregression.network import set_http_session
 from mozregression.persist_limit import PersistLimit
-from mozregression.telemetry import UsageMetrics, send_telemetry_ping_oop
+from mozregression.telemetry import UsageMetrics, get_system_info, send_telemetry_ping_oop
 from mozregression.tempdir import safe_mkdtemp
 from mozregression.test_runner import CommandTestRunner, ManualTestRunner
 
@@ -338,6 +338,7 @@ def main(
                 good=config.options.good,
                 bad=config.options.bad,
                 launch=config.options.launch,
+                **get_system_info(),
             ),
             config.enable_telemetry,
         )

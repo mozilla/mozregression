@@ -14,6 +14,7 @@ line_length = 100
 skip_glob = "**/gui/mozregui/ui/*"
 default_section = "THIRDPARTY"
 known_first_party = "mozregression,mozregui"
+known_third_party = "taskcluster"
 # For compatibility with black:
 multi_line_output = 3
 include_trailing_comma = "True"

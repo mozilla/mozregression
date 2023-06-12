@@ -11,7 +11,7 @@ from mock import ANY, MagicMock, Mock, call, patch
 from mozregression import __version__, config, errors, main
 from mozregression.bisector import Bisection, Bisector, IntegrationHandler, NightlyHandler
 from mozregression.download_manager import BuildDownloadManager
-from mozregression.telemetry import UsageMetrics
+from mozregression.telemetry import UsageMetrics, get_system_info
 from mozregression.test_runner import CommandTestRunner, ManualTestRunner
 
 
@@ -267,6 +267,7 @@ class TestMain(unittest.TestCase):
                         self.app.options.good,
                         self.app.options.bad,
                         self.app.options.launch,
+                        **get_system_info(),
                     ),
                     telemetry_enabled,
                 ),

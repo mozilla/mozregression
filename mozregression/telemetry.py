@@ -1,7 +1,10 @@
+import platform
 from collections import namedtuple
 from multiprocessing import Process
 from pathlib import Path
 
+import distro
+import mozinfo
 from glean import Configuration, Glean, load_metrics, load_pings
 from mozlog import get_proxy_logger
 from pkg_resources import resource_filename
@@ -14,8 +17,58 @@ PINGS = load_pings(resource_filename(__name__, "pings.yaml"))
 METRICS = load_metrics(resource_filename(__name__, "metrics.yaml"))
 
 UsageMetrics = namedtuple(
-    "UsageMetrics", ["variant", "appname", "build_type", "good", "bad", "launch"]
+    "UsageMetrics",
+    [
+        "variant",
+        "appname",
+        "build_type",
+        "good",
+        "bad",
+        "launch",
+        "windows_version",
+        "mac_version",
+        "linux_version",
+        "linux_distro",
+        "python_version",
+    ],
 )
+
+
+def get_system_info():
+    """Return a dictionary with various information about the system."""
+    UNKNOWN = "unknown"
+    info = {
+        "windows_version": None,
+        "mac_version": None,
+        "linux_version": None,
+        "linux_distro": None,
+        "python_version": None,
+    }
+
+    if mozinfo.os == "mac":
+        try:
+            # Fetch the "release" from tuple containing macOS version information.
+            # See https://docs.python.org/3/library/platform.html#macos-platform.
+            info["mac_version"] = platform.mac_ver()[0]
+        except (AttributeError, IndexError):
+            info["mac_version"] = UNKNOWN
+    elif mozinfo.os == "windows":
+        try:
+            # Fetch "version" from tuple containing Windows version information.
+            # See https://docs.python.org/3/library/platform.html#windows-platform.
+            info["windows_version"] = platform.win32_ver()[1]
+        except (AttributeError, IndexError):
+            info["windows_version"] = UNKNOWN
+    elif mozinfo.os == "linux":
+        distro_info = distro.info()
+        try:
+            info["linux_version"] = distro_info["version"]
+            info["linux_distro"] = distro_info["id"]
+        except KeyError:
+            info["linux_version"] = UNKNOWN
+            info["linux_distro"] = UNKNOWN
+    info["python_version"] = platform.python_version()
+    return info
 
 
 def initialize_telemetry(upload_enabled, allow_multiprocessing=False):
@@ -39,6 +92,13 @@ def _send_telemetry_ping(metrics):
         METRICS.usage.bad_date.set(to_datetime(metrics.bad))
     if is_date_or_datetime(metrics.launch):
         METRICS.usage.launch_date.set(to_datetime(metrics.launch))
+
+    # System information metrics.
+    METRICS.usage.mac_version.set(metrics.mac_version)
+    METRICS.usage.linux_version.set(metrics.linux_version)
+    METRICS.usage.linux_distro.set(metrics.linux_distro)
+    METRICS.usage.windows_version.set(metrics.windows_version)
+    METRICS.usage.python_version.set(metrics.python_version)
     PINGS.usage.submit()
 
 

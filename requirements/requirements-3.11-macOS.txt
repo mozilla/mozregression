@@ -458,9 +458,8 @@ mozinstall==2.0.1 \
     --hash=sha256:0b14000a88d6a45c37b877eedf897655f665e89410ca629dd500415406ed465e \
     --hash=sha256:ec364cfefd3435fb155edd48be9e71819834e4dcacc6c3294c7f2452e200095b
     # via -r base.in
-mozlog==7.1.1 \
-    --hash=sha256:080c0a7fdf01cc9a3c9dc8dc527ec8adfb447ca0cd05c5f5fe5c944ceeaec3ff \
-    --hash=sha256:dc389dc861be3fe9ad1db561893a34015935bd203548685000c84ee5177ce05a
+mozlog==8.0.0 \
+    --hash=sha256:26e5e9586afe2d6359a3d75aa6ea25aa2904d0062d0a158418682e44458d98e9
     # via
     #   -r base.in
     #   mozdevice

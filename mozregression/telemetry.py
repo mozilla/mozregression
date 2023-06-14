@@ -52,7 +52,7 @@ def get_system_info():
             info["mac_version"] = platform.mac_ver()[0]
         except (AttributeError, IndexError):
             info["mac_version"] = UNKNOWN
-    elif mozinfo.os == "windows":
+    elif mozinfo.os == "win":
         try:
             # Fetch "version" from tuple containing Windows version information.
             # See https://docs.python.org/3/library/platform.html#windows-platform.

@@ -5,7 +5,7 @@ charset-normalizer<3
 colorama==0.4.6
 configobj==5.0.8
 dmgbuild==1.6.1
-glean-sdk==52.7.0; sys.platform != 'darwin'
+glean-sdk==53.0.0; sys.platform != 'darwin'
 # See https://github.com/pypa/pip/issues/11573.
 https://files.pythonhosted.org/packages/3b/95/ac29f457e7efafd85f16dfb6bff96a63d4a163add8bde2f7b6bdb2395a8e/glean_sdk-52.7.0-cp36-abi3-macosx_10_7_universal2.whl; sys.platform == 'darwin'
 importlib-metadata==6.7.0; python_version >= '3.8'

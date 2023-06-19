@@ -121,3 +121,14 @@ Follow the following conventions for pre-releases:
 - For alpha, beta, or release candidates, tags should be appended with aN, bN, or rcN, starting with N=0. For example, 6.2.1a0.dev4, 6.2.1rc2, etc...
 
 For more info, see [PEP 440](https://peps.python.org/pep-0440/).
+
+#### Signing and notarizing macOS releases
+
+Uploading the signed artifacts is a manual process at this time. To sign and notarize a macOS release, follow these steps:
+
+- Copy the signing manifest output from the build job.
+- Create a pull request to update `signing-manifests/mozregression-macOS.yml` in the [adhoc-signing](https://github.com/mozilla-releng/adhoc-signing) repo with those changes.
+- Wait for pull request to be merged, and the signing task to finish.
+- After the signing task is finished, download `mozregression-gui-app-bundle.tar.gz` and extract it in `gui/dist`.
+- Run `./bin/dmgbuild`.
+- Upload new dmg artifact (gui/dist/mozregression-gui.dmg) to the corresponding release.

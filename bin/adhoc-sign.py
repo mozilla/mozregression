@@ -29,18 +29,20 @@ def main(args: argparse.Namespace):
         if response.status_code != 200:
             raise ValueError(f"Could not fetch {url} ({response.status_code})")
 
-        params[os] = {}
-        params[os]["artifact-name"] = url.split("/")[-1]
-        params[os]["bug"] = int(args.bug)
-        params[os]["fetch"] = {"url": url}
-        params[os]["filesize"] = len(response.content)
-        params[os]["private-artifact"] = False
-        params[os]["product"] = "mozregression"
-        params[os]["reason"] = f"Sign application bundle for mozregression {release}."
-        params[os]["requestor"] = args.requestor
-        params[os]["sha256"] = hashlib.sha256(response.content).hexdigest()
-        params[os]["signing-formats"] = signing_formats
-        params[os]["signingscript-notarization"] = True
+        params[os] = {
+            "artifact-name": url.split("/")[-1],
+            "bug": int(args.bug),
+            "fetch": {"url": url},
+            "filesize": len(response.content),
+            "private-artifact": False,
+            "product": "mozregression",
+            "reason": f"Sign application bundle for mozregression {release}.",
+            "requestor": args.requestor,
+            "sha256": hashlib.sha256(response.content).hexdigest(),
+            "signing-formats": signing_formats,
+            "signingscript-notarization": True,
+        }
+
         if os == "macOS":
             params[os]["mac-behavior"] = "mac_sign"
 

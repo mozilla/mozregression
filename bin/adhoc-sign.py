@@ -17,34 +17,32 @@ def main(args: argparse.Namespace):
         f"/releases/download/{release}/mozregression-gui.exe",
     }
 
-    # Windows signing is not yet supported by adhoc-signing for mozregression.
-    signing_formats = {
-        # "windows": ["autograph_authenticode"],
+    operating_systems = {
         "macOS": ["macapp"],
     }
 
     params = {}
 
-    for signing_format in signing_formats:
-        params[signing_format] = {}
-        url = urls[signing_format]
+    for os, signing_formats in operating_systems.items():
+        url = urls[os]
         response = requests.get(url)
         if response.status_code != 200:
             raise ValueError(f"Could not fetch {url} ({response.status_code})")
 
-        params[signing_format]["artifact-name"] = url.split("/")[-1]
-        params[signing_format]["bug"] = int(args.bug)
-        params[signing_format]["fetch"] = {"url": url}
-        params[signing_format]["filesize"] = len(response.content)
-        params[signing_format]["private-artifact"] = False
-        params[signing_format]["product"] = "mozregression"
-        params[signing_format]["reason"] = f"Sign application bundle for mozregression {release}."
-        params[signing_format]["requestor"] = args.requestor
-        params[signing_format]["sha256"] = hashlib.sha256(response.content).hexdigest()
-        params[signing_format]["signing-formats"] = signing_formats[signing_format]
-        params[signing_format]["signingscript-notarization"] = True
-        if signing_format == "macOS":
-            params[signing_format]["mac-behavior"] = "mac_sign"
+        params[os] = {}
+        params[os]["artifact-name"] = url.split("/")[-1]
+        params[os]["bug"] = int(args.bug)
+        params[os]["fetch"] = {"url": url}
+        params[os]["filesize"] = len(response.content)
+        params[os]["private-artifact"] = False
+        params[os]["product"] = "mozregression"
+        params[os]["reason"] = f"Sign application bundle for mozregression {release}."
+        params[os]["requestor"] = args.requestor
+        params[os]["sha256"] = hashlib.sha256(response.content).hexdigest()
+        params[os]["signing-formats"] = signing_formats
+        params[os]["signingscript-notarization"] = True
+        if os == "macOS":
+            params[os]["mac-behavior"] = "mac_sign"
 
     print(yaml.dump_all(params.values()))
 

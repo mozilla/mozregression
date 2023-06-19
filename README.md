@@ -130,5 +130,5 @@ Uploading the signed artifacts is a manual process at this time. To sign and not
 - Create a pull request to update `signing-manifests/mozregression-macOS.yml` in the [adhoc-signing](https://github.com/mozilla-releng/adhoc-signing) repo with those changes.
 - Wait for pull request to be merged, and the signing task to finish.
 - After the signing task is finished, download `mozregression-gui-app-bundle.tar.gz` and extract it in `gui/dist`.
-- Run bin/dmgbuild.
+- Run `./bin/dmgbuild`.
 - Upload new dmg artifact (gui/dist/mozregression-gui.dmg) to the corresponding release.

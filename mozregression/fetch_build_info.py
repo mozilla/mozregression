@@ -13,9 +13,9 @@ import re
 from datetime import datetime
 from threading import Lock, Thread
 
+import requests
 import taskcluster
 from mozlog import get_proxy_logger
-from requests import HTTPError
 from taskcluster.exceptions import TaskclusterFailure
 
 from mozregression.build_info import IntegrationBuildInfo, NightlyBuildInfo
@@ -154,6 +154,14 @@ class IntegrationInfoFetcher(InfoFetcher):
             raise BuildInfoNotFound(
                 "unable to find a build url for the" " changeset %r" % changeset
             )
+
+        if self.fetch_config.app_name == "gve":
+            # Check taskcluster URL to make sure artifact is still around.
+            # build_url is an alias that redirects via a 303 status code.
+            status_code = requests.head(build_url, allow_redirects=True).status_code
+            if status_code != 200:
+                error = f"Taskcluster file {build_url} could not be fetched ({status_code})."
+                raise BuildInfoNotFound(error)
         return IntegrationBuildInfo(
             self.fetch_config,
             build_url=build_url,
@@ -247,7 +255,7 @@ class NightlyInfoFetcher(InfoFetcher):
         try:
             build_urls = self._get_urls(date)
             LOG.debug("got build_urls %s" % build_urls)
-        except HTTPError as exc:
+        except requests.HTTPError as exc:
             raise BuildInfoNotFound(str(exc))
         build_info = None
 

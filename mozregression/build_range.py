@@ -9,8 +9,10 @@ import copy
 import datetime
 from threading import Thread
 
+import requests
 from mozlog import get_proxy_logger
 
+from mozregression.build_info import BuildInfo
 from mozregression.dates import is_date_or_datetime, to_date, to_datetime
 from mozregression.errors import BuildInfoNotFound
 from mozregression.fetch_build_info import IntegrationInfoFetcher, NightlyInfoFetcher
@@ -35,7 +37,21 @@ class FutureBuildInfo(object):
         if self._build_info is None:
             try:
                 self._build_info = self._fetch()
-            except BuildInfoNotFound as exc:
+                if (
+                    isinstance(self._build_info, BuildInfo)
+                    and self._build_info.task_id
+                    and self._build_info.app_name == "gve"
+                ):
+                    # This is a taskcluster build, check if artifact is available.
+                    # See bug 1841685.
+
+                    # URL is an alias that redirects via a 303 status code.
+                    original_url = requests.head(self._build_info.build_url)
+                    redirect_url = original_url.headers["location"]
+                    test = requests.head(redirect_url)
+                    if test.status_code == 403:
+                        raise ValueError(f"Taskcluster file {redirect_url} no longer exists")
+            except (BuildInfoNotFound, ValueError) as exc:
                 LOG.warning("Skipping build %s: %s" % (self.data, exc))
                 self._build_info = False
         return self._build_info

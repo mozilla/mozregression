@@ -339,9 +339,9 @@ importlib-metadata==4.2.0 ; python_version < "3.8" \
     #   pyinstaller
     #   pytest
     #   setuptools-scm
-importlib-resources==5.9.0 \
-    --hash=sha256:5481e97fb45af8dcf2f798952625591c58fe599d0735d86b10f54de086a61681 \
-    --hash=sha256:f78a8df21a79bcc30cfd400bdc38f314333de7c0fb619763f6b9dabab8268bb7
+importlib-resources==6.0.0 \
+    --hash=sha256:4cf94875a8368bd89531a756df9a9ebe1f150e0f885030b461237bc7f2d905f2 \
+    --hash=sha256:d952faee11004c045f785bb5636e8f885bed30dc3c940d5d42798a2a4541c185
     # via
     #   dmgbuild
     #   jsonschema

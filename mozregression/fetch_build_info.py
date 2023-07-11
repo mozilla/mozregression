@@ -160,7 +160,7 @@ class IntegrationInfoFetcher(InfoFetcher):
             # build_url is an alias that redirects via a 303 status code.
             status_code = requests.head(build_url, allow_redirects=True).status_code
             if status_code != 200:
-                error = f"Taskcluster file {build_url} could not be fetched ({status_code})."
+                error = f"Taskcluster file {build_url} not available (status code: {status_code})."
                 raise BuildInfoNotFound(error)
         return IntegrationBuildInfo(
             self.fetch_config,

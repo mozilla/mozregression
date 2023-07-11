@@ -229,3 +229,60 @@ class TestIntegrationInfoFetcher(unittest.TestCase):
                 "123456789",
             )
         push.assert_called_with("123456789")
+
+
+class TestIntegrationInfoFetcherGVE(unittest.TestCase):
+    def setUp(self):
+        self.fetch_config = fetch_configs.create_config("gve", "linux", 64, None)
+
+    @patch("mozregression.fetch_build_info.requests.head")
+    @patch("taskcluster.Index")
+    @patch("taskcluster.Queue")
+    def test_find_build_info(self, Queue, Index, requests_head):
+        Index.return_value.findTask.return_value = {"taskId": "task1"}
+        Queue.return_value.status.return_value = {
+            "status": {
+                "runs": [{"state": "completed", "runId": 0, "resolved": "2015-06-01T22:13:02.115Z"}]
+            }
+        }
+        Queue.return_value.listArtifacts.return_value = {
+            "artifacts": [
+                {"name": "geckoview_example.apk"},
+            ]
+        }
+        Queue.return_value.buildUrl.return_value = "http://geckoview_example.apk"
+
+        requests_head().status_code = 200
+
+        self.info_fetcher = fetch_build_info.IntegrationInfoFetcher(self.fetch_config)
+        self.info_fetcher._fetch_txt_info = Mock(return_value={"changeset": "123456789"})
+
+        result = self.info_fetcher.find_build_info(create_push("123456789", 1))
+        self.assertEqual(result.build_url, "http://geckoview_example.apk")
+        self.assertEqual(result.changeset, "123456789")
+        self.assertEqual(result.build_type, "integration")
+
+    @patch("mozregression.fetch_build_info.requests.head")
+    @patch("taskcluster.Index")
+    @patch("taskcluster.Queue")
+    def test_find_build_info_artifact_unavailable(self, Queue, Index, requests_head):
+        Index.return_value.findTask.return_value = {"taskId": "task1"}
+        Queue.return_value.status.return_value = {
+            "status": {
+                "runs": [{"state": "completed", "runId": 0, "resolved": "2015-06-01T22:13:02.115Z"}]
+            }
+        }
+        Queue.return_value.listArtifacts.return_value = {
+            "artifacts": [
+                {"name": "geckoview_example.apk"},
+            ]
+        }
+        Queue.return_value.buildUrl.return_value = "http://geckoview_example.apk"
+
+        requests_head().status_code = 403
+
+        self.info_fetcher = fetch_build_info.IntegrationInfoFetcher(self.fetch_config)
+        self.info_fetcher._fetch_txt_info = Mock(return_value={"changeset": "123456789"})
+
+        with self.assertRaises(errors.BuildInfoNotFound):
+            self.info_fetcher.find_build_info(create_push("123456789", 1))

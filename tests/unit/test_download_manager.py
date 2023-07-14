@@ -17,7 +17,7 @@ def mock_session():
     return session, response
 
 
-def mock_response(response, data, wait=0):
+def mock_response(response, data, wait=0, alternate_content_length=False):
     def iter_content(chunk_size=4):
         rest = data
         while rest:
@@ -26,7 +26,13 @@ def mock_response(response, data, wait=0):
             rest = rest[chunk_size:]
             yield chunk
 
-    response.headers = {"Content-length": str(len(data))}
+    if alternate_content_length is False:
+        response.headers = {"Content-length": str(len(data))}
+    elif alternate_content_length is True:
+        response.headers = {"x-goog-stored-content-length": str(len(data))}
+    elif alternate_content_length is None:
+        response.headers = {}
+
     response.iter_content = iter_content
 
 
@@ -52,8 +58,8 @@ class TestDownload(unittest.TestCase):
         self.assertEqual(self.dl.get_url(), "http://url")
         self.assertEqual(self.dl.get_dest(), self.tempfile)
 
-    def create_response(self, data, wait=0):
-        mock_response(self.session_response, data, wait)
+    def create_response(self, data, wait=0, alternate_content_length=False):
+        mock_response(self.session_response, data, wait, alternate_content_length)
 
     def test_download(self):
         self.create_response(b"1234" * 4, 0.01)
@@ -114,6 +120,56 @@ class TestDownload(unittest.TestCase):
                 (self.dl, 12, 16),
                 (self.dl, 16, 16),
             ],
+        )
+        # file has been downloaded
+        with open(self.tempfile) as f:
+            self.assertEqual(f.read(), "1234" * 4)
+        # finished callback was called
+        self.finished.assert_called_with(self.dl)
+
+    def test_download_with_progress_alternate_content_length_header(self):
+        data = []
+
+        def update_progress(_dl, current, total):
+            data.append((_dl, current, total))
+
+        self.create_response(b"1234" * 4, alternate_content_length=True)
+
+        self.dl.set_progress(update_progress)
+        self.dl.start()
+        self.dl.wait()
+
+        self.assertEqual(
+            data,
+            [
+                (self.dl, 0, 16),
+                (self.dl, 4, 16),
+                (self.dl, 8, 16),
+                (self.dl, 12, 16),
+                (self.dl, 16, 16),
+            ],
+        )
+        # file has been downloaded
+        with open(self.tempfile) as f:
+            self.assertEqual(f.read(), "1234" * 4)
+        # finished callback was called
+        self.finished.assert_called_with(self.dl)
+
+    def test_download_with_progress_no_content_length_header(self):
+        data = []
+
+        def update_progress(_dl, current, total):
+            data.append((_dl, current, total))
+
+        self.create_response(b"1234" * 4, alternate_content_length=None)
+
+        self.dl.set_progress(update_progress)
+        self.dl.start()
+        self.dl.wait()
+
+        self.assertEqual(
+            data,
+            [],
         )
         # file has been downloaded
         with open(self.tempfile) as f:

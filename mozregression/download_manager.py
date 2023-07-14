@@ -163,8 +163,18 @@ class Download(object):
         bytes_so_far = 0
         try:
             with closing(session.get(url, stream=True)) as response:
-                total_size = int(response.headers["Content-length"].strip())
-                self._update_progress(bytes_so_far, total_size)
+                # GCP storage does not always return a Content-length header, check alternates.
+                content_length_headers = [
+                    "Content-length",
+                    "x-goog-stored-content-length",
+                ]
+                total_size = 0
+                for header in content_length_headers:
+                    if header in response.headers:
+                        total_size = int(response.headers[header].strip())
+
+                if total_size:
+                    self._update_progress(bytes_so_far, total_size)
                 # we use NamedTemporaryFile as raw open() call was causing
                 # issues on windows - see:
                 # https://bugzilla.mozilla.org/show_bug.cgi?id=1185756
@@ -177,7 +187,8 @@ class Download(object):
                         if chunk:
                             temp.write(chunk)
                         bytes_so_far += len(chunk)
-                        self._update_progress(bytes_so_far, total_size)
+                        if total_size:
+                            self._update_progress(bytes_so_far, total_size)
             response.raise_for_status()
         except Exception:
             self.__error = sys.exc_info()

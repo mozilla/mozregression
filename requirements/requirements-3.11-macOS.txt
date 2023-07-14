@@ -466,9 +466,9 @@ mozlog==8.0.0 \
     #   mozprofile
     #   mozrunner
     #   mozversion
-mozprocess==1.3.0 \
-    --hash=sha256:e64591d02899f6fd50fe391f5635236c5c604d8faae08ab4aafed9c3a66e3966 \
-    --hash=sha256:e8093fe990bafd4ff3e2e49641b182c8085ea9cee2a28c7bdf9fabc2ff9f618f
+mozprocess==1.3.1 \
+    --hash=sha256:7dc38ec3c11693e9944ade1558392c04f37fd8df68d3ec7a20372dfe96b2e5bb \
+    --hash=sha256:ae343fabb72840195278b73ad426fb04d35d66b15a664f5c47221f4e4f0842e5
     # via mozrunner
 mozprofile==2.5.0 \
     --hash=sha256:5b93462c16ba7c6cd7010035765627d565c2adc7c58ac8bf82a3b1b2c14f0daa \

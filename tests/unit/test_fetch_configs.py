@@ -541,3 +541,17 @@ def test_set_firefox_build_type_pgo(os, bits, processor, tc_suffix):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+@pytest.mark.parametrize(
+    "arch,tk_name",
+    [
+        ("aarch64", "android-aarch64"),
+        ("arm", "android-api-11"),
+        ("x86_64", "android-x86_64"),
+        (None, "android-api-11"),
+    ],
+)
+def test_create_config_tk_name(arch, tk_name):
+    config = create_config("gve", "linux", None, "x86", arch)
+    assert config.tk_name == tk_name

@@ -625,11 +625,13 @@ class GeckoViewExampleConfig(CommonConfig, FennecNightlyConfigMixin, FennecInteg
         return ()
 
     def available_archs(self):
-        return ["arm", "x86_64"]
+        return ["arm", "x86_64", "aarch64"]
 
     def set_arch(self, arch):
         CommonConfig.set_arch(self, arch)
-        if arch == "x86_64":
+        if arch == "aarch64":
+            self.tk_name = "android-aarch64"
+        elif arch == "x86_64":
             self.tk_name = "android-x86_64"
         else:
             self.tk_name = "android-api-11"

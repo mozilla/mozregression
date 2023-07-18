@@ -149,6 +149,22 @@ class Download(object):
         """
         return self.__url
 
+    @staticmethod
+    def get_total_size(headers):
+        """
+        Returns content length (integer) from response headers, if available.
+
+        :param headers: A :class:`requests.structures.CaseInsensitiveDict` object
+                        representing response headers.
+        """
+        for header in ["content-length", "x-goog-stored-content-length"]:
+            if header in headers:
+                total_size = int(headers[header])
+                break
+        else:
+            total_size = 0
+        return total_size
+
     def _update_progress(self, current, total):
         with self._lock:
             if self.__progress:
@@ -164,12 +180,7 @@ class Download(object):
         try:
             with closing(session.get(url, stream=True)) as response:
                 # GCP storage does not always return a content-length header, check alternates.
-                for header in ["content-length", "x-goog-stored-content-length"]:
-                    if header in response.headers:
-                        total_size = int(response.headers[header])
-                        break
-                else:
-                    total_size = 0
+                total_size = self.get_total_size(response.headers)
 
                 if total_size:
                     self._update_progress(bytes_so_far, total_size)

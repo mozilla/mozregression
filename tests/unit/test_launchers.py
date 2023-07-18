@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import os
+import sys
 import tempfile
 import unittest
 from subprocess import CalledProcessError
@@ -243,6 +244,10 @@ class TestMozRunnerLauncher__codesign(unittest.TestCase):
         call.assert_called_with(["codesign", "--force", "--deep", "--sign", "-", "/"])
         call.assert_called_once()
 
+    @pytest.mark.skipif(
+        sys.platform == "win32",
+        reason="os.path.normpath behaviour on Windows interferes with this test",
+    )
     @patch("mozregression.launchers.mozinfo")
     @patch("mozregression.launchers.mozinstall")
     def test__codesign_assert_resigned_if_unsigned(self, mozinstall, mozinfo):
@@ -268,6 +273,10 @@ class TestMozRunnerLauncher__codesign(unittest.TestCase):
                 _codesign_sign.assert_not_called()
                 _codesign_verify.assert_not_called()
 
+    @pytest.mark.skipif(
+        sys.platform == "win32",
+        reason="os.path.normpath behaviour on Windows interferes with this test",
+    )
     @patch("mozregression.launchers.mozinfo")
     @patch("mozregression.launchers.mozinstall")
     def test__codesign_assert_not_resigned_if_not_unsigned(self, mozinstall, mozinfo):

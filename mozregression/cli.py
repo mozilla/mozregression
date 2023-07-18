@@ -276,9 +276,9 @@ def create_parser(defaults):
 
     parser.add_argument(
         "--arch",
-        choices=("arm", "x86_64"),
+        choices=("arm", "x86_64", "aarch64"),
         default=None,
-        help=("Force x86_64 build (only applies to GVE app). Default: arm"),
+        help=("Force alternate build (only applies to GVE app). Default: arm"),
     )
 
     parser.add_argument(

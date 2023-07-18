@@ -124,6 +124,7 @@ def test_persist_filename(klass, extra, result):
 @pytest.mark.parametrize(
     "arch,result",
     [
+        ("aarch64", "2015-09-01--mozilla-central--aarch64--url"),
         ("arm", "2015-09-01--mozilla-central--arm--url"),
         ("x86_64", "2015-09-01--mozilla-central--x86_64--url"),
         (None, "2015-09-01--mozilla-central--arm--url"),

@@ -27,7 +27,7 @@ def mock_response(response, data, wait=0, alternate_content_length=False):
             yield chunk
 
     if alternate_content_length is False:
-        response.headers = {"Content-length": str(len(data))}
+        response.headers = {"content-length": str(len(data))}
     elif alternate_content_length is True:
         response.headers = {"x-goog-stored-content-length": str(len(data))}
     elif alternate_content_length is None:
@@ -178,7 +178,7 @@ class TestDownload(unittest.TestCase):
         self.finished.assert_called_with(self.dl)
 
     def test_download_error_in_thread(self):
-        self.session_response.headers = {"Content-length": "24"}
+        self.session_response.headers = {"content-length": "24"}
         self.session_response.iter_content.side_effect = IOError
 
         self.dl.start()

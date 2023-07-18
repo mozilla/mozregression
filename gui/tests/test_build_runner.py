@@ -33,7 +33,7 @@ def mock_response(response, data, wait=0):
             rest = rest[chunk_size:]
             yield chunk
 
-    response.headers = {"Content-length": str(len(data))}
+    response.headers = {"content-length": str(len(data))}
     response.iter_content = iter_content
 
 

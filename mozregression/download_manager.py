@@ -163,8 +163,8 @@ class Download(object):
         bytes_so_far = 0
         try:
             with closing(session.get(url, stream=True)) as response:
-                # GCP storage does not always return a Content-length header, check alternates.
-                for header in ["Content-length", "x-goog-stored-content-length"]:
+                # GCP storage does not always return a content-length header, check alternates.
+                for header in ["content-length", "x-goog-stored-content-length"]:
                     if header in response.headers:
                         total_size = int(response.headers[header])
                         break

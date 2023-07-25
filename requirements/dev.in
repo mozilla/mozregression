@@ -1,6 +1,6 @@
 --no-binary coverage
 coverage==6.5.0
 coveralls==3.3.1
-mock==5.0.2
+mock==5.1.0
 pytest==7.4.0
 pytest-mock==3.11.1

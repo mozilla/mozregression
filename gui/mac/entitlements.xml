@@ -4,6 +4,10 @@
      Entitlements to apply during codesigning of mozregression builds.
 -->
 <plist version="1.0">
-  <dict>
-  </dict>
+    <dict>
+        <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+        <true/>
+        <key>com.apple.security.cs.disable-library-validation</key>
+        <true/>
+    </dict>
 </plist>

@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+from pathlib import Path
 
 IS_WIN = os.name == "nt"
 IS_MAC = sys.platform == "darwin"
@@ -90,6 +91,7 @@ def do_bundle(options):
         makensis_path = os.path.join(options.nsis_path, "makensis.exe")
         call(makensis_path, "wininst.nsi", cwd="wininst")
     elif IS_MAC:
+        Path("dist/mozregression GUI").unlink()
         with tarfile.open("mozregression-gui-app-bundle.tar.gz", "w:gz") as tar:
             tar.add(r"dist", arcname="mozregression-gui-app-bundle")
     else:

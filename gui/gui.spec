@@ -1,6 +1,9 @@
 # -*- mode: python -*-
 import sys
+
 from PyInstaller.utils.hooks import collect_all, collect_submodules
+
+from mozregression.pyinstaller import BUNDLE_WITH_TK
 
 IS_MAC = sys.platform == "darwin"
 
@@ -19,7 +22,7 @@ a = Analysis(
     datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],
-    runtime_hooks=[],
+    runtime_hooks=["splash_hook.py"],
     excludes=[],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
@@ -64,7 +67,7 @@ if IS_MAC:
         console=False,
         target_arch="universal2",
     )
-    app = BUNDLE(
+    app = BUNDLE_WITH_TK(
         exe,
         strip=False,
         upx=False,

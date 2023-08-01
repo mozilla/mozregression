@@ -42,7 +42,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip==23.1.2  # See bug 1846600.
           python -m pip install --upgrade pip-tools
       - name: Generate
         # Generate filename based on Python version and OS.

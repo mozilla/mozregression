@@ -13,7 +13,7 @@ importlib-metadata==4.2.0; python_version < '3.8'
 mozdevice>=4.1.0,<5
 mozfile==3.0.0
 mozinfo==1.2.2
-mozinstall==2.0.1
+mozinstall==2.1.0
 mozlog==8.0.0
 mozprofile==2.5.0
 mozrunner==8.2.1

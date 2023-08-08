@@ -457,8 +457,9 @@ mozfile==3.0.0 \
     #   mozlog
     #   mozprofile
     #   mozrunner
-mozinfo==1.2.2 \
-    --hash=sha256:4961ebef3c5474b9ca470142f88b5de774a069f4e105663a5152b0ef4659785a
+mozinfo==1.2.3 \
+    --hash=sha256:5d2b8a5f1b362692f221e33eb3ff47454a580db1a1384614cdc637b31131b438 \
+    --hash=sha256:90e0cfb377fc2cc3fad023d38c1f6d60a9135400ff5684a04abf79ca5cc3c521
     # via
     #   -r base.in
     #   mozinstall

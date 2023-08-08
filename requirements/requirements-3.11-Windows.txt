@@ -465,9 +465,9 @@ mozinfo==1.2.2 \
     #   mozinstall
     #   mozprocess
     #   mozrunner
-mozinstall==2.0.1 \
-    --hash=sha256:0b14000a88d6a45c37b877eedf897655f665e89410ca629dd500415406ed465e \
-    --hash=sha256:ec364cfefd3435fb155edd48be9e71819834e4dcacc6c3294c7f2452e200095b
+mozinstall==2.1.0 \
+    --hash=sha256:40f18e0c4ef84e2d75cccda53c01c00214a3ef5e4cf5519dba5a926f131bcb0f \
+    --hash=sha256:8abc26e37b1976eb3d815ee2a42bb6bbb10926e16620eabb6f8f1ed764b0c0fe
     # via -r base.in
 mozlog==8.0.0 \
     --hash=sha256:26e5e9586afe2d6359a3d75aa6ea25aa2904d0062d0a158418682e44458d98e9

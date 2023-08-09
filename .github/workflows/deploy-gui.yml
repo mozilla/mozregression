@@ -119,5 +119,4 @@ jobs:
           asset_content_type: application/octet-stream
       - name: Print signing manifest
         run: |
-          source env/bin/activate
-          ./bin/adhoc-sign.py --os windows ${{ github.event.release.tag_name }}
+          python ./bin/adhoc-sign.py --os windows ${{ github.event.release.tag_name }}

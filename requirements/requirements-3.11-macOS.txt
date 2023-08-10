@@ -485,9 +485,9 @@ mozterm==1.0.0 \
     --hash=sha256:b1e91acec188de07c704dbb7b0100a7be5c1e06567b3beb67f6ea11d00a483a4 \
     --hash=sha256:f5eafa25c23d391e2a2bb1dd45ee928fc9e3c811977a3856b5a5a0778011053c
     # via mozlog
-mozversion==2.3.0 \
-    --hash=sha256:42f2ce3c23e1835071d1d6f52ebec524d0bfcc036d043cfa854439f6d1dacff0 \
-    --hash=sha256:fe8e90ba54e8172113400ea10ea984827638ddd7c8329ca74426fc55c6886159
+mozversion==2.4.0 \
+    --hash=sha256:5b11ceb280c519cd92f450b91a750ae8b7f7c8258f6e93c7e520592d85ffbf07 \
+    --hash=sha256:d9a0b997ff48a979f694af9e6fd3fb819f411e8199045a0b362d6ba112cb5676
     # via -r base.in
 multidict==6.0.4 \
     --hash=sha256:01a3a55bd90018c9c080fbb0b9f4891db37d148a0a18722b42f94694f8b6d4c9 \

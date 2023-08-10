@@ -86,7 +86,8 @@ def do_bundle(options):
     if IS_WIN:
         if options.upx_path:
             call(
-                options.upx_path, os.path.join("dist", "mozregression-gui", "mozregression-gui.exe")
+                options.upx_path,
+                os.path.join("dist", "mozregression-gui", "mozregression-gui.exe"),
             )
         makensis_path = os.path.join(options.nsis_path, "makensis.exe")
         call(makensis_path, "wininst.nsi", cwd="wininst")

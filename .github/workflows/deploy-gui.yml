@@ -87,7 +87,7 @@ jobs:
       - name: Print signing manifest
         run: |
           source env/bin/activate
-          ./bin/adhoc-sign.py ${{ github.event.release.tag_name }}
+          ./bin/adhoc-sign.py --os macOS ${{ github.event.release.tag_name }}
 
   build-and-publish-windows-gui:
     runs-on: windows-latest
@@ -115,5 +115,8 @@ jobs:
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./gui/wininst/mozregression-gui.exe
-          asset_name: mozregression-gui.exe
+          asset_name: mozregression-gui-unsigned.exe
           asset_content_type: application/octet-stream
+      - name: Print signing manifest
+        run: |
+          python ./bin/adhoc-sign.py --os windows ${{ github.event.release.tag_name }}

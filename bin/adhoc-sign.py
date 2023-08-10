@@ -30,7 +30,7 @@ def main(args: argparse.Namespace):
     url = urls[os]
     response = requests.get(url)
     if response.status_code != 200:
-        raise ValueError(f"Could not fetch {url} ({response.status_code})")
+        response.raise_for_status()
 
     params[os] = {
         "artifact-name": url.split("/")[-1],
@@ -56,7 +56,12 @@ def create_parser():
     parser = argparse.ArgumentParser(description="print ad-hoc signing manifest")
     parser.add_argument("release", nargs=1, help="signing manifest release tag")
     parser.add_argument("--bug", default="0", help="optional bug number to include")
-    parser.add_argument("--os", default="macOS", help="os (windows or macOS)")
+    parser.add_argument(
+        "--os",
+        default="macOS",
+        help="operating system build to fetch",
+        choices=("windows", "macOS"),
+    )
     parser.add_argument(
         "--requestor",
         default="Zeid Zabaneh <zeid@mozilla.com>",

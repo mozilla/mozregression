@@ -57,12 +57,7 @@ class Splash:
             self.win.after(self.CHECK_MILLISECONDS, self.check_doneness)
 
 
-def splash():
-    """Create a Splash instance."""
-    Splash()
-
-
 if __name__ == "__main__":
     mp.set_start_method("fork")
-    p = mp.Process(target=splash, args=())
+    p = mp.Process(target=Splash)
     p.start()

@@ -1,7 +1,8 @@
-from mozregression import version
 import multiprocessing as mp
 import os
 import subprocess
+
+from mozregression import version
 
 
 class Splash:

@@ -20,17 +20,17 @@ jobs:
       - name: setup
         run: |
           sudo apt-get update
-          sudo apt install libxcb-xinerama0 libegl-dev -y
+          sudo apt install libxcb-xinerama0 libxcb-cursor0 libegl-dev qt6-qpa-plugins -y
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: "3.10"
       - name: Install dependencies
         run: |
           python -m venv env
           source env/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install -r requirements/requirements-3.9-Linux.txt
+          python -m pip install -r requirements/requirements-3.10-Linux.txt
           python -m pip install -e .
       - name: Build
         run: |

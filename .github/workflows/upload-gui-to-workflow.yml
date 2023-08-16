@@ -18,10 +18,16 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v2
-      - name: setup
+      - name: setup Ubuntu 20.04
+        if: matrix.os == 'ubuntu-20.04'
         run: |
           sudo apt-get update
           sudo apt install libxcb-xinerama0 libegl-dev -y
+      - name: setup Ubuntu 22.04
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt install libxcb-xinerama0 libxcb-cursor0 libegl-dev qt6-qpa-plugins -y
       - name: Set up Python
         uses: actions/setup-python@v2
         with:

@@ -1,5 +1,5 @@
 --no-binary pyyaml
-PyInstaller==5.13.0
+PyInstaller==5.13.1
 beautifulsoup4==4.12.2
 charset-normalizer<3
 colorama==0.4.6
@@ -12,15 +12,15 @@ importlib-metadata==6.7.0; python_version >= '3.8'
 importlib-metadata==4.2.0; python_version < '3.8'
 mozdevice>=4.1.0,<5
 mozfile==3.0.0
-mozinfo==1.2.2
-mozinstall==2.0.1
+mozinfo==1.2.3
+mozinstall==2.1.0
 mozlog==8.0.0
-mozprofile==2.5.0
-mozrunner==8.2.1
-mozversion==2.3.0
+mozprofile==2.6.0
+mozrunner==8.3.0
+mozversion==2.4.0
 redo==2.0.4
 requests==2.31.0
 setuptools
 setuptools_scm==7.1.0
-taskcluster==54.4.0
+taskcluster==54.4.2
 pyyaml==6.0.1

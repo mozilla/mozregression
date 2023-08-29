@@ -14,37 +14,40 @@ def main(args: argparse.Namespace):
         "macOS": "https://github.com/mozilla/mozregression"
         f"/releases/download/{release}/{filename}",
         "windows": "https://github.com/mozilla/mozregression"
-        f"/releases/download/{release}/mozregression-gui.exe",
+        f"/releases/download/{release}/mozregression-gui-unsigned.exe",
     }
 
     operating_systems = {
         "macOS": ["macapp"],
+        "windows": ["autograph_authenticode_sha2"],
     }
 
     params = {}
 
-    for os, signing_formats in operating_systems.items():
-        url = urls[os]
-        response = requests.get(url)
-        if response.status_code != 200:
-            raise ValueError(f"Could not fetch {url} ({response.status_code})")
+    os = args.os
+    signing_formats = operating_systems[os]
 
-        params[os] = {
-            "artifact-name": url.split("/")[-1],
-            "bug": int(args.bug),
-            "fetch": {"url": url},
-            "filesize": len(response.content),
-            "private-artifact": False,
-            "product": "mozregression",
-            "reason": f"Sign application bundle for mozregression {release}.",
-            "requestor": args.requestor,
-            "sha256": hashlib.sha256(response.content).hexdigest(),
-            "signing-formats": signing_formats,
-            "signingscript-notarization": True,
-        }
+    url = urls[os]
+    response = requests.get(url)
+    if response.status_code != 200:
+        response.raise_for_status()
 
-        if os == "macOS":
-            params[os]["mac-behavior"] = "mac_sign"
+    params[os] = {
+        "artifact-name": url.split("/")[-1],
+        "bug": int(args.bug),
+        "fetch": {"url": url},
+        "filesize": len(response.content),
+        "private-artifact": False,
+        "product": "mozregression",
+        "reason": f"Sign application bundle for mozregression {release}.",
+        "requestor": args.requestor,
+        "sha256": hashlib.sha256(response.content).hexdigest(),
+        "signing-formats": signing_formats,
+    }
+
+    if os == "macOS":
+        params[os]["mac-behavior"] = "mac_sign"
+        params[os]["signingscript-notarization"] = True
 
     print(yaml.dump_all(params.values()))
 
@@ -53,6 +56,12 @@ def create_parser():
     parser = argparse.ArgumentParser(description="print ad-hoc signing manifest")
     parser.add_argument("release", nargs=1, help="signing manifest release tag")
     parser.add_argument("--bug", default="0", help="optional bug number to include")
+    parser.add_argument(
+        "--os",
+        default="macOS",
+        help="operating system build to fetch",
+        choices=("windows", "macOS"),
+    )
     parser.add_argument(
         "--requestor",
         default="Zeid Zabaneh <zeid@mozilla.com>",

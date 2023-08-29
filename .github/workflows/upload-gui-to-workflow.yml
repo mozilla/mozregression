@@ -1,8 +1,9 @@
-name: Build and upload GUI packages
+name: Build and upload GUI packages to workflow
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - build-*
 
 jobs:
   build-and-publish-linux-gui:
@@ -16,7 +17,7 @@ jobs:
       DISPLAY: ":99.0"
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
       - name: setup Ubuntu 20.04
         if: matrix.os == 'ubuntu-20.04'
         run: |
@@ -28,15 +29,15 @@ jobs:
           sudo apt-get update
           sudo apt install libxcb-xinerama0 libxcb-cursor0 libegl-dev qt6-qpa-plugins -y
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v2
         with:
-          python-version: "3.10"
+          python-version: 3.9
       - name: Install dependencies
         run: |
           python -m venv env
           source env/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install -r requirements/requirements-3.10-Linux.txt
+          python -m pip install -r requirements/requirements-3.9-Linux.txt
           python -m pip install -e .
       - name: Build
         run: |
@@ -45,12 +46,10 @@ jobs:
           mv gui/mozregression-gui.tar.gz gui/mozregression-gui-${{ matrix.os }}.tar.gz
           ls -alh gui/mozregression-gui-${{ matrix.os }}.tar.gz
       - name: Upload
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./gui/mozregression-gui-${{ matrix.os }}.tar.gz
-          asset_name: mozregression-gui-${{ matrix.os }}.tar.gz
-          asset_content_type: application/gzip
+          path: ./gui/mozregression-gui-${{ matrix.os }}.tar.gz
+          name: mozregression-gui-${{ matrix.os }}.tar.gz
 
   build-and-publish-mac-gui:
     runs-on: macos-latest
@@ -61,7 +60,7 @@ jobs:
       MACOSX_DEPLOYMENT_TARGET: 10.13
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
       - name: Get Python
         run: curl https://www.python.org/ftp/python/${PYTHON_VERSION}/python-${PYTHON_VERSION}-macos11.pkg -o "python.pkg"
       - name: Install Python
@@ -84,27 +83,21 @@ jobs:
           python gui/build.py bundle
           ls -alh gui/mozregression-gui-app-bundle.tar.gz
       - name: Upload
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./gui/mozregression-gui-app-bundle.tar.gz
-          asset_name: mozregression-gui-app-bundle.tar.gz
-          asset_content_type: application/octet-stream
-      - name: Print signing manifest
-        run: |
-          source env/bin/activate
-          ./bin/adhoc-sign.py --os macOS ${{ github.event.release.tag_name }}
+          path: ./gui/mozregression-gui-app-bundle.tar.gz
+          name: mozregression-gui-app-bundle.tar.gz
 
   build-and-publish-windows-gui:
     runs-on: windows-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           persist-credentials: false
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v2
         with:
           python-version: "3.10"
       - name: Install dependencies
@@ -117,12 +110,7 @@ jobs:
           python gui\build.py bundle --nsis-path "C:\\Program Files (x86)\\NSIS"
           python gui\build.py test
       - name: Upload
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./gui/wininst/mozregression-gui.exe
-          asset_name: mozregression-gui-unsigned.exe
-          asset_content_type: application/octet-stream
-      - name: Print signing manifest
-        run: |
-          python ./bin/adhoc-sign.py --os windows ${{ github.event.release.tag_name }}
+          path: ./gui/wininst/mozregression-gui.exe
+          name: mozregression-gui-unsigned.exe

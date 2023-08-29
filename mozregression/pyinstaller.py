@@ -41,7 +41,7 @@ class BUNDLE_WITH_TK(BUNDLE):
         """Collect tcl/tk library/module files and add them to the bundle."""
 
         # These files will not be needed (originally excluded by PyInstaller).
-        EXCLUDES = ["demos", "*.lib", "*Config.sh"]
+        excluded_files = ["demos", "*.lib", "*Config.sh"]
 
         # Discover location of tcl/tk dynamic library files (i.e., dylib).
         _tkinter_file = _tkinter.__file__
@@ -51,13 +51,13 @@ class BUNDLE_WITH_TK(BUNDLE):
         tcl_root, tk_root = _find_tcl_tk(_tkinter_file)
 
         # Determine original prefixes to put all the library files in.
-        tcl_prefix, tk_prefix = Path(tcl_root).parts[-1], Path(tk_root).parts[-1]
+        tcl_prefix, tk_prefix = Path(tcl_root).name, Path(tk_root).name
 
         # Create Tree objects with all the files that need to be included in the bundle.
         # Tree objects are a way of creating a table of contents describing everything in
         # the provided root directory.
-        tcltree = Tree(tcl_root, prefix=tcl_prefix, excludes=EXCLUDES)
-        tktree = Tree(tk_root, prefix=tk_prefix, excludes=EXCLUDES)
+        tcltree = Tree(tcl_root, prefix=tcl_prefix, excludes=excluded_files)
+        tktree = Tree(tk_root, prefix=tk_prefix, excludes=excluded_files)
         tclmodulestree = _collect_tcl_modules(tcl_root)
         tcl_tk_files = tcltree + tktree + tclmodulestree
 

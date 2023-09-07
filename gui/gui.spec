@@ -18,18 +18,21 @@ for pkgname in ['glean', 'glean_parser', 'mozregression', 'yamllint', 'bs4']:
 # https://github.com/pypa/setuptools/issues/1963
 hiddenimports.extend(collect_submodules('pkg_resources'))
 
-a = Analysis(['mozregression-gui.py'],
-             pathex=['/Users/wlach/src/mozregression/gui'],
-             binaries=binaries,
-             datas=datas,
-             hiddenimports=hiddenimports,
-             hookspath=[],
-             runtime_hooks=["splash_hook.py"],
-             excludes=[],
-             win_no_prefer_redirects=False,
-             win_private_assemblies=False,
-             cipher=block_cipher,
-             noarchive=False)
+analysis_kwargs = {
+    "binaries": binaries,
+    "datas": datas,
+    "hiddenimports": hiddenimports,
+    "hookspath": [],
+    "excludes": [],
+    "win_no_prefer_redirects": False,
+    "win_private_assemblies": False,
+    "cipher": block_cipher,
+    "noarchive": False
+}
+if IS_MAC:
+    analysis_kwargs["runtime_hooks"] = ["splash_hook.py"]
+
+a = Analysis(['mozregression-gui.py'], **analysis_kwargs)
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
 if IS_MAC:

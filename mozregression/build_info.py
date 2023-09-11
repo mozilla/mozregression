@@ -35,6 +35,7 @@ class BuildInfo(object):
         task_id=None,
     ):
         self._fetch_config = fetch_config
+        self._force_update = False  # will be set True by SnapHandler
         self._build_type = build_type
         self._build_url = build_url
         self._build_date = build_date
@@ -135,9 +136,9 @@ class BuildInfo(object):
 
         This helps to build the pushlog url for old nightlies.
         """
-        if self._changeset is None:
+        if self._changeset is None or self._force_update is True:
             self._changeset = app_info.get("application_changeset")
-        if self._repo_url is None:
+        if self._repo_url is None or self._force_update is True:
             self._repo_url = app_info.get("application_repository")
 
     def persist_filename_for(self, data, regex=True):

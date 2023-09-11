@@ -382,6 +382,19 @@ class FennecNightlyConfigMixin(NightlyConfigMixin):
         return self._get_nightly_repo_regex(date, repo)
 
 
+class FenixNightlyConfigMixin(NightlyConfigMixin):
+    nightly_base_repo_name = "fenix"
+    arch_regex_bits = ""
+
+    def _get_nightly_repo(self, date):
+        return "fenix"
+
+    def get_nightly_repo_regex(self, date):
+        repo = self.get_nightly_repo(date)
+        repo += self.arch_regex_bits  # e.g., ".*arm64.*".
+        return self._get_nightly_repo_regex(date, repo)
+
+
 class IntegrationConfigMixin(metaclass=ABCMeta):
     """
     Define the integration-related required configuration.
@@ -605,6 +618,38 @@ class FennecConfig(CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConf
 
     def available_bits(self):
         return ()
+
+
+@REGISTRY.register("fenix")
+class FenixConfig(CommonConfig, FenixNightlyConfigMixin):
+    BUILD_TYPES = ("shippable", "opt")
+
+    def build_regex(self):
+        return r"fenix-.*\.apk"
+
+    def available_bits(self):
+        return ()
+
+    def available_archs(self):
+        return [
+            "arm64-v8a",
+            "armeabi-v7a",
+            "x86",
+            "x86_64",
+        ]
+
+    def set_arch(self, arch):
+        CommonConfig.set_arch(self, arch)
+        mapping = {
+            "arm64-v8a": "-.+-android-arm64-v8a",
+            "armeabi-v7a": "-.+-android-armeabi-v7a",
+            "x86": "-.+-android-x86",
+            "x86_64": "-.+-android-x86_64",
+        }
+        self.arch_regex_bits = mapping[self.arch]
+
+    def should_use_archive(self):
+        return True
 
 
 @REGISTRY.register("gve")

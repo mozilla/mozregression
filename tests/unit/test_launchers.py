@@ -371,8 +371,15 @@ class TestFennecLauncher(unittest.TestCase):
         self.adb.exists.assert_called_once_with(self.remote_profile_path)
         self.adb.rm.assert_called_once_with(self.remote_profile_path, recursive=True)
         self.adb.push.assert_called_once_with(self.profile.profile, self.remote_profile_path)
-        self.adb.launch_fennec.assert_called_once_with(
-            "org.mozilla.fennec", extra_args=["-profile", self.remote_profile_path]
+        self.adb.launch_application.assert_called_once_with(
+            "org.mozilla.fennec",
+            "org.mozilla.gecko.BrowserApp",
+            "android.intent.action.VIEW",
+            url=None,
+            extras={"args": f"-profile {self.remote_profile_path}"},
+            wait=True,
+            fail_if_running=True,
+            timeout=None,
         )
         # ensure get_app_info returns something
         self.assertIsNotNone(launcher.get_app_info())
@@ -387,8 +394,15 @@ class TestFennecLauncher(unittest.TestCase):
         launcher = self.create_launcher(version_value={"package_name": pkg_name})
         self.adb.uninstall_app.assert_called_once_with(pkg_name)
         launcher.start(profile="my_profile")
-        self.adb.launch_fennec.assert_called_once_with(
-            pkg_name, extra_args=["-profile", self.remote_profile_path]
+        self.adb.launch_application.assert_called_once_with(
+            pkg_name,
+            "org.mozilla.gecko.BrowserApp",
+            "android.intent.action.VIEW",
+            url=None,
+            extras={"args": f"-profile {self.remote_profile_path}"},
+            wait=True,
+            fail_if_running=True,
+            timeout=None,
         )
         launcher.stop()
         self.adb.stop_application.assert_called_once_with(pkg_name)

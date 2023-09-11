@@ -276,9 +276,16 @@ def create_parser(defaults):
 
     parser.add_argument(
         "--arch",
-        choices=("arm", "x86_64", "aarch64"),
+        choices=(
+            "aarch64",
+            "arm",
+            "arm64-v8a",
+            "armeabi-v7a",
+            "x86",
+            "x86_64",
+        ),
         default=None,
-        help=("Force alternate build (only applies to GVE app). Default: arm"),
+        help=("Force alternate build (applies to GVE and Fenix)."),
     )
 
     parser.add_argument(
@@ -554,12 +561,32 @@ class Configuration(object):
         """
         options = self.options
 
+        arch_options = {
+            "gve": [
+                "aarch64",
+                "arm",
+                "x86_64",
+            ],
+            "fenix": [
+                "arm64-v8a",
+                "armeabi-v7a",
+                "x86",
+                "x86_64",
+            ],
+        }
+
         user_defined_bits = options.bits is not None
         options.bits = parse_bits(options.bits or mozinfo.bits)
         if options.arch is not None:
-            if options.app != "gve":
+            if options.app not in ("gve", "fenix"):
                 self.logger.warning("--arch ignored for non-GVE app.")
                 options.arch = None
+            else:
+                if options.arch not in arch_options[options.app]:
+                    raise MozRegressionError(
+                        f"Invalid arch ({options.arch}) specified for app ({options.app}). "
+                        f"Valid options are: {', '.join(arch_options[options.app])}."
+                    )
 
         fetch_config = create_config(
             options.app, mozinfo.os, options.bits, mozinfo.processor, options.arch

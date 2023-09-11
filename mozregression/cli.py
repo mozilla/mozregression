@@ -417,6 +417,21 @@ def create_parser(defaults):
         help="Helps to write the configuration file.",
     )
 
+    parser.add_argument(
+        "--allow-sudo",
+        action="store_true",
+        help=(
+            "[Snap] Allow the use of sudo for Snap install/remove operations (otherwise,"
+            " you will be prompted on each)"
+        ),
+    )
+
+    parser.add_argument(
+        "--disable-snap-connect",
+        action="store_true",
+        help="[Snap] Do not automatically perform 'snap connect'",
+    )
+
     parser.add_argument("--debug", "-d", action="store_true", help="Show the debug output.")
 
     return parser
@@ -589,6 +604,11 @@ class Configuration(object):
                 "x86",
                 "x86_64",
             ],
+            "firefox-snap": [
+                "aarch64",  # will be morphed into arm64
+                "arm",  # will be morphed into armf
+                "x86_64",  # will be morphed into amd64
+            ],
         }
 
         user_defined_bits = options.bits is not None
@@ -607,6 +627,10 @@ class Configuration(object):
                 self.logger.warning(
                     "--arch ignored for Firefox for macOS as it uses unified binary."
                 )
+            elif options.app in ("firefox-snap"):
+                self.logger.warning(
+                    "--arch ignored for Firefox Snap package."
+                )
                 options.arch = None
             elif options.arch not in arch_options[options.app]:
                 raise MozRegressionError(
@@ -617,6 +641,29 @@ class Configuration(object):
             raise MozRegressionError(
                 f"`--arch` required for specified app ({options.app}). "
                 f"Please specify one of {', '.join(arch_options[options.app])}."
+            )
+        elif options.app == "firefox-snap" and options.allow_sudo is False:
+            self.logger.warning(
+                "Bisection on Snap package without --allow-sudo, you will be prompted for"
+                " credential on each 'snap' command."
+            )
+        elif options.allow_sudo is True and options.app != "firefox-snap":
+            raise MozRegressionError(
+                f"--allow-sudo specified for app ({options.app}), but only valid for "
+                f"firefox-snap. Please verify your config."
+            )
+        elif options.disable_snap_connect is True and options.app != "firefox-snap":
+            raise MozRegressionError(
+                f"--disable-snap-conncet specified for app ({options.app}), but only valid for "
+                f"firefox-snap. Please verify your config."
+            )
+
+        if options.app == "firefox-snap" and (
+            options.repo is None or not options.repo.startswith("snap-")
+        ):
+            raise MozRegressionError(
+                f"--repo not specified for app ({options.app}), or not starting with snap-. "
+                f"Please use correct repo for bisecting Snap package."
             )
 
         fetch_config = create_config(

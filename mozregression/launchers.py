@@ -4,14 +4,17 @@ Define the launcher classes, responsible of running the tested applications.
 
 from __future__ import absolute_import, print_function
 
+import hashlib
 import json
 import os
 import stat
+import subprocess
 import sys
 import time
 import zipfile
 from abc import ABCMeta, abstractmethod
 from enum import Enum
+from shutil import move
 from subprocess import STDOUT, CalledProcessError, call, check_output
 from threading import Thread
 
@@ -22,7 +25,7 @@ from mozdevice import ADBDeviceFactory, ADBError, ADBHost
 from mozfile import remove
 from mozlog.structured import get_default_logger, get_proxy_logger
 from mozprofile import Profile, ThunderbirdProfile
-from mozrunner import Runner
+from mozrunner import GeckoRuntimeRunner, Runner
 
 from mozregression.class_registry import ClassRegistry
 from mozregression.errors import LauncherError, LauncherNotRunnable
@@ -338,11 +341,15 @@ class MozRunnerLauncher(Launcher):
 REGISTRY = ClassRegistry("app_name")
 
 
-def create_launcher(buildinfo):
+def create_launcher(buildinfo, launcher_args=None):
     """
     Create and returns an instance launcher for the given buildinfo.
     """
-    return REGISTRY.get(buildinfo.app_name)(buildinfo.build_file, task_id=buildinfo.task_id)
+    return REGISTRY.get(buildinfo.app_name)(
+        buildinfo.build_file,
+        task_id=buildinfo.task_id,
+        launcher_args=launcher_args,
+    )
 
 
 class FirefoxRegressionProfile(Profile):
@@ -616,3 +623,168 @@ class JsShellLauncher(Launcher):
             # always remove tempdir
             if self.tempdir is not None:
                 remove(self.tempdir)
+
+
+# Should this be part of mozrunner ?
+class SnapRunner(GeckoRuntimeRunner):
+    _allow_sudo = False
+    _snap_pkg = None
+
+    def __init__(self, binary, cmdargs, allow_sudo=False, snap_pkg=None, **runner_args):
+        self._allow_sudo = allow_sudo
+        self._snap_pkg = snap_pkg
+        super().__init__(binary, cmdargs, **runner_args)
+
+    @property
+    def command(self):
+        """
+        Rewrite the command for performing the actual execution with
+        "snap run PKG", keeping everything else
+        """
+        self._command = FirefoxSnapLauncher._get_snap_command(
+            self._allow_sudo, "run", [self._snap_pkg] + super().command[1:]
+        )
+        return self._command
+
+
+@REGISTRY.register("firefox-snap")
+class FirefoxSnapLauncher(MozRunnerLauncher):
+    profile_class = FirefoxRegressionProfile
+    instanceKey = None
+    snap_pkg = None
+    binary = None
+    allow_sudo = False
+    disable_snap_connect = False
+    runner = None
+
+    def __init__(self, dest, **kwargs):
+        self.allow_sudo = kwargs["launcher_args"]["allow_sudo"]
+        self.disable_snap_connect = kwargs["launcher_args"]["disable_snap_connect"]
+
+        if not self.allow_sudo:
+            LOG.info("Working with snap requires several 'sudo snap' commands. Not allowing the use of sudo will trigger many password confirmation dialog boxes.")
+        else:
+            LOG.info("Usage of sudo enabled, you should be prompted for your password once.")
+
+        super().__init__(dest)
+
+    def get_snap_command(self, action, extra):
+        return FirefoxSnapLauncher._get_snap_command(self.allow_sudo, action, extra)
+
+    def _get_snap_command(allow_sudo, action, extra):
+        if action not in ("connect", "install", "run", "refresh", "remove"):
+            raise LauncherError(f"Snap operation {action} unsupported")
+
+        cmd = []
+        if allow_sudo and action in ("connect", "install", "refresh", "remove"):
+            cmd += ["sudo"]
+
+        cmd += ["snap", action]
+        cmd += extra
+
+        return cmd
+
+    def _install(self, dest):
+        # From https://snapcraft.io/docs/parallel-installs#heading--naming
+        #  - The instance key needs to be manually appended to the snap name,
+        #    and takes the following format: <snap>_<instance-key>
+        #  - The instance key must match the following regular expression:
+        #    ^[a-z0-9]{1,10}$.
+        self.instanceKey = hashlib.sha1(os.path.basename(dest).encode("utf8")).hexdigest()[0:9]
+        self.snap_pkg = "firefox_{}".format(self.instanceKey)
+        self.binary = "/snap/{}/current/usr/lib/firefox/firefox".format(self.snap_pkg)
+
+        subprocess.run(
+            self.get_snap_command(
+                "install", ["--name", self.snap_pkg, "--dangerous", "{}".format(dest)]
+            ),
+            check=True,
+        )
+        self._fix_connections()
+
+        self.binarydir = os.path.dirname(self.binary)
+        self.appdir = os.path.normpath(os.path.join(self.binarydir, "..", ".."))
+
+        LOG.debug(f"snap package: {self.snap_pkg} {self.binary}")
+
+        # On Snap updates are already disabled
+
+    def _fix_connections(self):
+        if self.disable_snap_connect:
+            return
+
+        existing = {}
+        for line in subprocess.getoutput("snap connections {}".format(self.snap_pkg)).splitlines()[
+            1:
+        ]:
+            interface, plug, slot, _ = line.split()
+            existing[plug] = slot
+
+        for line in subprocess.getoutput("snap connections firefox").splitlines()[1:]:
+            interface, plug, slot, _ = line.split()
+            ex_plug = plug.replace("firefox:", "{}:".format(self.snap_pkg))
+            ex_slot = slot.replace("firefox:", "{}:".format(self.snap_pkg))
+            if existing[ex_plug] == "-":
+                if ex_plug != "-" and ex_slot != "-":
+                    cmd = self.get_snap_command(
+                        "connect", ["{}".format(ex_plug), "{}".format(ex_slot)]
+                    )
+                    LOG.debug(f"snap connect: {cmd}")
+                    subprocess.run(cmd, check=True)
+
+    def _create_profile(self, profile=None, addons=(), preferences=None):
+        """
+        Let's create a profile as usual, but rewrite its path to be in Snap's
+        dir because it looks like MozProfile class will consider a profile=xxx
+        to be a pre-existing one
+        """
+        real_profile = super()._create_profile(profile, addons, preferences)
+        snap_profile_dir = os.path.abspath(
+            os.path.expanduser("~/snap/{}/common/.mozilla/firefox/".format(self.snap_pkg))
+        )
+        if not os.path.exists(snap_profile_dir):
+            os.makedirs(snap_profile_dir)
+        profile_dir_name = os.path.basename(real_profile.profile)
+        snap_profile = os.path.join(snap_profile_dir, profile_dir_name)
+        move(real_profile.profile, snap_profile_dir)
+        real_profile.profile = snap_profile
+        return real_profile
+
+    def _start(
+        self,
+        profile=None,
+        addons=(),
+        cmdargs=(),
+        preferences=None,
+        adb_profile_dir=None,
+        allow_sudo=False,
+        disable_snap_connect=False,
+    ):
+        profile = self._create_profile(profile=profile, addons=addons, preferences=preferences)
+
+        LOG.info("Launching %s [%s]" % (self.binary, self.allow_sudo))
+        self.runner = SnapRunner(
+            binary=self.binary,
+            cmdargs=cmdargs,
+            profile=profile,
+            allow_sudo=self.allow_sudo,
+            snap_pkg=self.snap_pkg,
+        )
+        self.runner.start()
+
+    def _wait(self):
+        self.runner.wait()
+
+    def _stop(self):
+        self.runner.stop()
+        # release the runner since it holds a profile reference
+        del self.runner
+
+    def cleanup(self):
+        try:
+            Launcher.cleanup(self)
+        finally:
+            subprocess.run(self.get_snap_command("remove", [self.snap_pkg]))
+
+    def get_app_info(self):
+        return safe_get_version(binary=self.binary)

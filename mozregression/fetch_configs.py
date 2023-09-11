@@ -812,3 +812,89 @@ class JsShellConfig(FirefoxConfig):
             part = "mac"
         psuffix = "-asan" if "asan" in self.build_type else ""
         return r"jsshell-%s%s\.zip$" % (part, psuffix)
+
+
+TIMESTAMP_SNAP_UPSTREAM_BUILD = to_utc_timestamp(datetime.datetime(2023, 7, 26, 9, 39, 21))
+TIMESTAMP_SNAP_INDEX_RENAME = to_utc_timestamp(datetime.datetime(2023, 11, 17, 21, 46, 39))
+# This needs to be updated when we land cross-compilation on treeherder
+TIMESTAMP_SNAP_CROSS_COMPILATION = to_utc_timestamp(datetime.datetime(3023, 11, 21, 15, 15, 00))
+
+
+class FirefoxSnapNightlyConfigMixin(NightlyConfigMixin):
+    def _get_nightly_repo(self, date):
+        return "mozilla-central"
+
+
+class FirefoxSnapIntegrationConfigMixin(IntegrationConfigMixin):
+    def _idx_key(self, date):
+        branch_name = self.integration_branch.split("-")[-1]
+        valid_branches = ("nightly", "beta", "stable", "esr")
+        if branch_name not in valid_branches:
+            raise errors.MozRegressionError(
+                f"No such branch available ({branch_name}), valid are ','.join(valid_branches)"
+                " (prefix with snap- for --repo)"
+            )
+
+        if date < TIMESTAMP_SNAP_UPSTREAM_BUILD:
+            raise errors.MozRegressionError("No build before this date")
+        elif date >= TIMESTAMP_SNAP_UPSTREAM_BUILD and date < TIMESTAMP_SNAP_INDEX_RENAME:
+            index_base = ""
+        elif date >= TIMESTAMP_SNAP_INDEX_RENAME:
+            index_base = "{}-".format(self.arch)
+
+        if self.arch != "amd64" and date < TIMESTAMP_SNAP_CROSS_COMPILATION:
+            raise errors.MozRegressionError(f"No support for build other than amd64 ({self.arch}) provided")
+
+        return "{}{}".format(index_base, branch_name)
+
+    def tk_routes(self, push):
+        for build_type in self.build_types:
+            name = "gecko.v2.mozilla-central.revision.{}.firefox.{}{}".format(
+                push.changeset,
+                self._idx_key(push.timestamp),
+                "-{}".format(build_type)
+                if build_type != "opt" and build_type != "shippable"
+                else "",
+            )
+            yield name
+            self._inc_used_build()
+        return
+
+
+class SnapCommonConfig(CommonConfig):
+    def should_use_archive(self):
+        # We only want to use TaskCluster builds
+        return False
+
+    def build_regex(self):
+        return r"(firefox_.*)\.snap"
+
+
+@REGISTRY.register("firefox-snap")
+class FirefoxSnapConfig(
+    SnapCommonConfig, FirefoxSnapIntegrationConfigMixin, FirefoxSnapNightlyConfigMixin
+):
+    BUILD_TYPES = ("shippable", "opt", "debug")
+    BUILD_TYPE_FALLBACKS = {
+        "shippable": ("opt",),
+        "opt": ("shippable",),
+    }
+
+    def __init__(self, os, bits, processor, arch):
+        super(FirefoxSnapConfig, self).__init__(os, bits, processor, arch)
+        self.set_build_type("shippable")
+
+    def available_archs(self):
+        return [
+            "aarch64",
+            "arm",
+            "x86_64",
+        ]
+
+    def set_arch(self, arch):
+        mapping = {
+            "aarch64": "arm64",
+            "arm": "armhf",
+            "x86_64": "amd64",
+        }
+        self.arch = mapping.get(arch, "amd64")

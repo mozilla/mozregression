@@ -17,7 +17,13 @@ from requests.exceptions import HTTPError, RequestException
 
 from mozregression import __version__
 from mozregression.approx_persist import ApproxPersistChooser
-from mozregression.bisector import Bisection, Bisector, IntegrationHandler, NightlyHandler
+from mozregression.bisector import (
+    Bisection,
+    Bisector,
+    IntegrationHandler,
+    NightlyHandler,
+    SnapHandler,
+)
 from mozregression.bugzilla import bug_url, find_bugids_in_push
 from mozregression.cli import cli
 from mozregression.config import DEFAULT_EXPAND, TC_CREDENTIALS_FNAME
@@ -89,6 +95,8 @@ class Application(object):
                         cmdargs=self.options.cmdargs,
                         preferences=self.options.preferences,
                         adb_profile_dir=self.options.adb_profile_dir,
+                        allow_sudo=self.options.allow_sudo,
+                        disable_snap_connect=self.options.disable_snap_connect,
                     )
                 )
             else:
@@ -163,9 +171,8 @@ class Application(object):
             "Getting %s builds between %s and %s"
             % (self.fetch_config.integration_branch, good_rev, bad_rev)
         )
-        handler = IntegrationHandler(
-            find_fix=self.options.find_fix, ensure_good_and_bad=ensure_good_and_bad
-        )
+        handler_class = IntegrationHandler if not self.options.app else SnapHandler
+        handler = handler_class(find_fix=self.options.find_fix, ensure_good_and_bad=ensure_good_and_bad)
         result = self._do_bisect(handler, good_rev, bad_rev, expand=expand)
         if result == Bisection.FINISHED:
             LOG.info("No more integration revisions, bisection finished.")

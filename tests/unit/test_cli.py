@@ -110,6 +110,40 @@ class TestCli(unittest.TestCase):
             warns,
         )
 
+    def test_snap_no_repo(self):
+        with self.assertRaisesRegex(
+            errors.MozRegressionError, "Please use correct repo for bisecting Snap package."
+        ):
+            conf = cli.cli(["--app", "firefox-snap"])
+            conf.validate()
+
+    def test_snap_defaults(self):
+        conf = cli.cli(["--app", "firefox-snap", "--repo", "snap-beta"])
+        warns = []
+        conf.logger.warning = warns.append
+        conf.validate()
+        self.assertIn(
+            "Bisection on Snap package without --allow-sudo, you will be prompted"
+            " for credential on each 'snap' command.",
+            warns,
+        )
+        assert conf.options.allow_sudo is False
+        assert conf.options.disable_snap_connect is False
+
+    def test_snap_allow_sudo(self):
+        conf = cli.cli(["--app", "firefox-snap", "--repo", "snap-beta", "--allow-sudo"])
+        warns = []
+        conf.logger.warning = warns.append
+        conf.validate()
+        assert conf.options.allow_sudo is True
+
+    def test_snap_disable_snap_connect(self):
+        conf = cli.cli(["--app", "firefox-snap", "--repo", "snap-beta", "--disable-snap-connect"])
+        warns = []
+        conf.logger.warning = warns.append
+        conf.validate()
+        assert conf.options.disable_snap_connect is True
+
 
 def do_cli(*argv, conf_file=None):
     conf = cli.cli(argv, conf_file=conf_file)

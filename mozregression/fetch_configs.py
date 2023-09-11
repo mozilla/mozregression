@@ -812,3 +812,54 @@ class JsShellConfig(FirefoxConfig):
             part = "mac"
         psuffix = "-asan" if "asan" in self.build_type else ""
         return r"jsshell-%s%s\.zip$" % (part, psuffix)
+
+
+TIMESTAMP_SNAP_UPSTREAM = to_utc_timestamp(datetime.datetime(2025, 4, 23, 16, 1, 56))
+
+
+class FirefoxSnapIntegrationConfigMixin(IntegrationConfigMixin):
+    def tk_routes(self, push):
+        for build_type in self.build_types:
+            yield "gecko.v2.{}.revision.{}.firefox.snap-{}-{}".format(
+                self.integration_branch,
+                push.changeset,
+                self.arch,
+                build_type,
+            )
+            self._inc_used_build()
+        return
+
+
+class SnapCommonConfig(CommonConfig):
+    def should_use_archive(self):
+        # We only want to use TaskCluster builds
+        return False
+
+    def build_regex(self):
+        return r"(firefox_.*)\.snap"
+
+
+@REGISTRY.register("firefox-snap")
+class FirefoxSnapConfig(
+    SnapCommonConfig, FirefoxSnapIntegrationConfigMixin, FirefoxNightlyConfigMixin
+):
+    BUILD_TYPES = ("opt", "debug")
+
+    def __init__(self, os, bits, processor, arch):
+        super(FirefoxSnapConfig, self).__init__(os, bits, processor, arch)
+        self.set_build_type("opt")
+
+    def available_archs(self):
+        return [
+            "aarch64",
+            "arm",
+            "x86_64",
+        ]
+
+    def set_arch(self, arch):
+        mapping = {
+            "aarch64": "arm64",
+            "arm": "armhf",
+            "x86_64": "amd64",
+        }
+        self.arch = mapping.get(arch, "amd64")

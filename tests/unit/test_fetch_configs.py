@@ -190,31 +190,41 @@ class TestThunderbirdConfigWin(TestThunderbirdConfig):
             TestThunderbirdConfig.test_nightly_repo_regex_before_2009_01_09(self)
 
 
-class TestFennecConfig(unittest.TestCase):
-    def setUp(self):
-        self.conf = create_config("fennec", "linux", 64, None)
+@pytest.mark.parametrize("app_name", ["fennec", "fenix"])
+class TestExtendedAndroidConfig:
+    def test_get_nightly_repo_regex(self, app_name):
+        if app_name == "fennec":
+            conf = create_config("fennec", "linux", 64, None)
+            regex = conf.get_nightly_repo_regex(datetime.date(2014, 12, 5))
+            assert "mozilla-central-android" in regex
+            regex = conf.get_nightly_repo_regex(datetime.date(2014, 12, 10))
+            assert "mozilla-central-android-api-10" in regex
+            regex = conf.get_nightly_repo_regex(datetime.date(2015, 1, 1))
+            assert "mozilla-central-android-api-11" in regex
+            regex = conf.get_nightly_repo_regex(datetime.date(2016, 1, 28))
+            assert "mozilla-central-android-api-11" in regex
+            regex = conf.get_nightly_repo_regex(datetime.date(2016, 1, 29))
+            assert "mozilla-central-android-api-15" in regex
+            regex = conf.get_nightly_repo_regex(datetime.date(2017, 8, 30))
+            assert "mozilla-central-android-api-16" in regex
+        else:
+            conf = create_config(app_name, "linux", 64, None)
+            date = datetime.date(2023, 1, 1)
+            regex = conf.get_nightly_repo_regex(date)
+            assert regex == f"/{date.isoformat()}-[\\d-]+{app_name}/$"
 
-    def test_get_nightly_repo_regex(self):
-        regex = self.conf.get_nightly_repo_regex(datetime.date(2014, 12, 5))
-        self.assertIn("mozilla-central-android", regex)
-        regex = self.conf.get_nightly_repo_regex(datetime.date(2014, 12, 10))
-        self.assertIn("mozilla-central-android-api-10", regex)
-        regex = self.conf.get_nightly_repo_regex(datetime.date(2015, 1, 1))
-        self.assertIn("mozilla-central-android-api-11", regex)
-        regex = self.conf.get_nightly_repo_regex(datetime.date(2016, 1, 28))
-        self.assertIn("mozilla-central-android-api-11", regex)
-        regex = self.conf.get_nightly_repo_regex(datetime.date(2016, 1, 29))
-        self.assertIn("mozilla-central-android-api-15", regex)
-        regex = self.conf.get_nightly_repo_regex(datetime.date(2017, 8, 30))
-        self.assertIn("mozilla-central-android-api-16", regex)
+    def test_build_regex(self, app_name):
+        conf = create_config(app_name, "linux", 64, None)
+        regex = re.compile(conf.build_regex())
+        assert bool(regex.match(f"{app_name}-110.0b1.multi.android-arm64-v8a.apk")) is True
 
-    def test_build_regex(self):
-        regex = re.compile(self.conf.build_regex())
-        self.assertTrue(regex.match("fennec-36.0a1.multi.android-arm.apk"))
-
-    def test_build_info_regex(self):
-        regex = re.compile(self.conf.build_info_regex())
-        self.assertTrue(regex.match("fennec-36.0a1.multi.android-arm.txt"))
+    def test_build_info_regex(self, app_name):
+        if app_name != "fennec":
+            # This test is currently only applicable to Fennec.
+            return
+        conf = create_config(app_name, "linux", 64, None)
+        regex = re.compile(conf.build_info_regex())
+        assert bool(regex.match(f"{app_name}-36.0a1.multi.android-arm.txt")) is True
 
 
 class TestGVEConfig(unittest.TestCase):

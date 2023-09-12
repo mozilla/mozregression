@@ -395,6 +395,13 @@ class FenixNightlyConfigMixin(NightlyConfigMixin):
         return self._get_nightly_repo_regex(date, repo)
 
 
+class FocusNightlyConfigMixin(FenixNightlyConfigMixin):
+    nightly_base_repo_name = "focus"
+
+    def _get_nightly_repo(self, date):
+        return "focus"
+
+
 class IntegrationConfigMixin(metaclass=ABCMeta):
     """
     Define the integration-related required configuration.
@@ -625,7 +632,7 @@ class FenixConfig(CommonConfig, FenixNightlyConfigMixin):
     BUILD_TYPES = ("shippable", "opt")
 
     def build_regex(self):
-        return r"fenix-.*\.apk"
+        return r"fenix-.+\.apk"
 
     def available_bits(self):
         return ()
@@ -650,6 +657,12 @@ class FenixConfig(CommonConfig, FenixNightlyConfigMixin):
 
     def should_use_archive(self):
         return True
+
+
+@REGISTRY.register("focus")
+class FocusConfig(FenixConfig, FocusNightlyConfigMixin):
+    def build_regex(self):
+        return r"focus-.+\.apk"
 
 
 @REGISTRY.register("gve")

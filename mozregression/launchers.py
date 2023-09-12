@@ -542,6 +542,19 @@ class FenixLauncher(AndroidLauncher):
         self.launch_browser(self.package_name, ".IntentReceiverActivity")
 
 
+@REGISTRY.register("focus")
+class FocusLauncher(AndroidLauncher):
+    def _get_package_name(self):
+        return "org.mozilla.focus.nightly"
+
+    def _launch(self):
+        LOG.debug("Launching focus")
+        self.launch_browser(
+            self.package_name,
+            "org.mozilla.focus.activity.IntentReceiverActivity",
+        )
+
+
 @REGISTRY.register("gve")
 class GeckoViewExampleLauncher(AndroidLauncher):
     def _get_package_name(self):

@@ -285,7 +285,7 @@ def create_parser(defaults):
             "x86_64",
         ),
         default=None,
-        help=("Force alternate build (applies to GVE and Fenix)."),
+        help=("Force alternate build (applies to GVE, Fenix, and Focus)."),
     )
 
     parser.add_argument(
@@ -573,12 +573,18 @@ class Configuration(object):
                 "x86",
                 "x86_64",
             ],
+            "focus": [
+                "arm64-v8a",
+                "armeabi-v7a",
+                "x86",
+                "x86_64",
+            ],
         }
 
         user_defined_bits = options.bits is not None
         options.bits = parse_bits(options.bits or mozinfo.bits)
         if options.arch is not None:
-            if options.app not in ("gve", "fenix"):
+            if options.app not in ("gve", "fenix", "focus"):
                 self.logger.warning("--arch ignored for non-GVE app.")
                 options.arch = None
             else:

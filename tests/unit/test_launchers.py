@@ -344,6 +344,11 @@ def test_firefox_install(
     [
         (launchers.FennecLauncher, "org.mozilla.fennec", "org.mozilla.gecko.BrowserApp"),
         (launchers.FenixLauncher, "org.mozilla.fenix", ".IntentReceiverActivity"),
+        (
+            launchers.FocusLauncher,
+            "org.mozilla.focus.nightly",
+            "org.mozilla.focus.activity.IntentReceiverActivity",
+        ),
     ],
 )
 class TestExtendedAndroidLauncher:

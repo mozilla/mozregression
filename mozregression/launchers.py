@@ -482,7 +482,14 @@ class AndroidLauncher(Launcher):
             self.adb.rm(self.remote_profile, recursive=True)
         LOG.debug("Pushing profile to device (%s -> %s)" % (profile.profile, self.remote_profile))
         self.adb.push(profile.profile, self.remote_profile)
-        self._launch()
+        if cmdargs and len(cmdargs) == 1 and not cmdargs[0].startswith("-"):
+            url = cmdargs[0]
+        else:
+            url = None
+        if isinstance(self, FenixLauncher) or isinstance(self, FocusLauncher):
+            self._launch(url)
+        else:
+            self._launch()
 
     def _wait(self):
         while self.adb.process_exist(self.package_name):
@@ -537,9 +544,9 @@ class FenixLauncher(AndroidLauncher):
     def _get_package_name(self):
         return "org.mozilla.fenix"
 
-    def _launch(self):
+    def _launch(self, url=None):
         LOG.debug("Launching fenix")
-        self.launch_browser(self.package_name, ".IntentReceiverActivity")
+        self.launch_browser(self.package_name, ".IntentReceiverActivity", url=url)
 
 
 @REGISTRY.register("focus")
@@ -547,11 +554,12 @@ class FocusLauncher(AndroidLauncher):
     def _get_package_name(self):
         return "org.mozilla.focus.nightly"
 
-    def _launch(self):
+    def _launch(self, url=None):
         LOG.debug("Launching focus")
         self.launch_browser(
             self.package_name,
             "org.mozilla.focus.activity.IntentReceiverActivity",
+            url=url,
         )
 
 

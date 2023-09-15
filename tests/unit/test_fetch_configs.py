@@ -13,6 +13,7 @@ from mozregression.fetch_configs import (
     TIMESTAMP_FENNEC_API_16,
     FirefoxConfig,
     FirefoxL10nConfig,
+    ThunderbirdL10nConfig,
     create_config,
     errors,
     get_build_regex,
@@ -188,6 +189,44 @@ class TestThunderbirdConfigWin(TestThunderbirdConfig):
     def test_nightly_repo_regex_before_2009_01_09(self):
         with self.assertRaises(errors.WinTooOldBuildError):
             TestThunderbirdConfig.test_nightly_repo_regex_before_2009_01_09(self)
+
+
+class TestThunderbirdl10nConfig(unittest.TestCase):
+    app_name = "thunderbird-l10n"
+    os = "linux"
+    bits = 64
+    processor = "x86_64"
+    lang = "ar"
+
+    instance_type = ThunderbirdL10nConfig
+
+    build_examples = ["thunderbird-110.0a1.ar.linux-x86_64.tar.bz2"]
+    build_info_examples = ["thunderbird-110.0a1.en-US.linux-x86_64.txt"]
+
+    def setUp(self):
+        self.conf = create_config(self.app_name, self.os, self.bits, self.processor)
+        self.conf.set_lang(self.lang)
+
+    def test_instance(self):
+        self.assertIsInstance(self.conf, self.instance_type)
+
+    def test_build_regex(self):
+        for example in self.build_examples:
+            res = re.match(self.conf.build_regex(), example)
+            self.assertIsNotNone(res)
+
+    def test_build_info_regex(self):
+        for example in self.build_info_examples:
+            res = re.match(self.conf.build_info_regex(), example)
+            self.assertIsNotNone(res)
+
+    def test_nightly_repo_regex(self):
+        repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2023, 1, 1))
+        self.assertEqual(repo_regex, "/2023-01-01-[\\d-]+comm-central-l10n/$")
+
+    def test_nightly_repo_regex_before_2015_10_08(self):
+        with self.assertRaises(errors.MozRegressionError):
+            self.conf.get_nightly_repo_regex(datetime.date(2015, 1, 1))
 
 
 @pytest.mark.parametrize("app_name", ["fennec", "fenix", "focus"])

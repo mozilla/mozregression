@@ -253,7 +253,7 @@ def create_parser(defaults):
     parser.add_argument(
         "--lang",
         metavar="[ar|es-ES|he|ja|zh-CN|...]",
-        help=("build language. Only valid when app is firefox-l10n."),
+        help=("build language. Only valid when app is firefox-l10n or thunderbird-l10n."),
     )
 
     parser.add_argument(
@@ -597,11 +597,13 @@ class Configuration(object):
             options.app, mozinfo.os, options.bits, mozinfo.processor, options.arch
         )
         if options.lang:
-            if options.app != "firefox-l10n":
-                raise MozRegressionError("--lang is only valid with --app=firefox-l10n")
+            if options.app not in ("firefox-l10n", "thunderbird-l10n"):
+                raise MozRegressionError(
+                    "--lang is only valid with --app=firefox-l10n|thunderbird-l10n"
+                )
             fetch_config.set_lang(options.lang)
-        elif options.app == "firefox-l10n":
-            raise MozRegressionError("app 'firefox-l10n' requires a --lang argument")
+        elif options.app in ("firefox-l10n", "thunderbird-l10n"):
+            raise MozRegressionError(f"app {options.app} requires a --lang argument")
         if options.build_type:
             try:
                 fetch_config.set_build_type(options.build_type)

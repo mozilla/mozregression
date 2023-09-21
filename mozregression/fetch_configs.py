@@ -638,6 +638,7 @@ class FenixConfig(CommonConfig, FenixNightlyConfigMixin):
 
     def set_arch(self, arch):
         CommonConfig.set_arch(self, arch)
+        # Map "arch" value to one that can be used in the nightly repo regex lookup.
         mapping = {
             "arm64-v8a": "-.+-android-arm64-v8a",
             "armeabi-v7a": "-.+-android-armeabi-v7a",

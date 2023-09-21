@@ -581,12 +581,11 @@ class Configuration(object):
             if options.app not in ("gve", "fenix"):
                 self.logger.warning("--arch ignored for non Android apps.")
                 options.arch = None
-            else:
-                if options.arch not in arch_options[options.app]:
-                    raise MozRegressionError(
-                        f"Invalid arch ({options.arch}) specified for app ({options.app}). "
-                        f"Valid options are: {', '.join(arch_options[options.app])}."
-                    )
+            elif options.arch not in arch_options[options.app]:
+                raise MozRegressionError(
+                    f"Invalid arch ({options.arch}) specified for app ({options.app}). "
+                    f"Valid options are: {', '.join(arch_options[options.app])}."
+                )
 
         fetch_config = create_config(
             options.app, mozinfo.os, options.bits, mozinfo.processor, options.arch

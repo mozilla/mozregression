@@ -216,7 +216,7 @@ class TestExtendedAndroidConfig:
     def test_build_regex(self, app_name):
         conf = create_config(app_name, "linux", 64, None)
         regex = re.compile(conf.build_regex())
-        assert bool(regex.match(f"{app_name}-110.0b1.multi.android-arm64-v8a.apk")) is True
+        assert regex.match(f"{app_name}-110.0b1.multi.android-arm64-v8a.apk") is not None
 
     def test_build_info_regex(self, app_name):
         if app_name != "fennec":

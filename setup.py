@@ -29,7 +29,6 @@ http://mozilla.github.io/mozregression/"""
 
 setup(
     name="mozregression",
-    use_scm_version=True,
     description=desc,
     long_description=long_desc,
     author="Mozilla Automation and Tools Team",
@@ -44,7 +43,6 @@ setup(
     package_data={"mozregression": ["*.yaml"]},
     platforms=["Any"],
     python_requires=">=3.7",
-    setup_requires=["setuptools_scm"],
     install_requires=DEPENDENCIES,
     classifiers=[
         "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",

@@ -1,3 +1,3 @@
-from .version import version
+from mozregression.version import version
 
 __version__ = version

@@ -300,7 +300,7 @@ idna==3.4 \
     # via
     #   requests
     #   yarl
-importlib-metadata==6.8.0 ; python_version >= "3.8" \
+importlib-metadata==6.8.0 \
     --hash=sha256:3ebb78df84a805d7698245025b975d9d67053cd94c79245ba4b3eb694abe68bb \
     --hash=sha256:dbace7892d8c0c4ac1ad096662232f831d4e64f4c4545bd53016a3e9d4654743
     # via -r base.in
@@ -701,9 +701,9 @@ semver==3.0.1 \
     --hash=sha256:2a23844ba1647362c7490fe3995a86e097bb590d16f0f32dfc383008f19e4cdf \
     --hash=sha256:9ec78c5447883c67b97f98c3b6212796708191d22e4ad30f4570f840171cbce1
     # via glean-sdk
-setuptools-scm==7.1.0 \
-    --hash=sha256:6c508345a771aad7d56ebff0e70628bf2b0ec7573762be9960214730de278f27 \
-    --hash=sha256:73988b6d848709e2af142aa48c986ea29592bbcfca5375678064708205253d8e
+setuptools-scm==8.0.3 \
+    --hash=sha256:0169fd70197efda2f8c4d0b2a7a3d614431b488116f37b79d031e9e7ec884d8c \
+    --hash=sha256:813822234453438a13c78d05c8af29918fbc06f88efb33d38f065340bbb48c39
     # via -r base.in
 shiboken6==6.5.1.1 \
     --hash=sha256:1c7ba82093d66ace5c7a07ed9c7b4ea57a311ddbfecbe44aff7ed023efc8a380 \
@@ -748,10 +748,6 @@ taskcluster-urls==13.0.1 \
     --hash=sha256:b25e122ecec249c4299ac7b20b08db76e3e2025bdaeb699a9d444556de5fd367 \
     --hash=sha256:f66dcbd6572a6216ab65949f0fa0b91f2df647918028436c384e6af5cd12ae2b
     # via taskcluster
-typing-extensions==4.8.0 \
-    --hash=sha256:8f92fc8806f9a6b641eaa5318da32b44d401efaac0f6678c9bc448ba3605faa0 \
-    --hash=sha256:df8e4339e9cb77357558cbdbceca33c303714cf861d1eef15e1070055ae8b7ef
-    # via setuptools-scm
 urllib3==2.0.5 \
     --hash=sha256:13abf37382ea2ce6fb744d4dad67838eec857c9f4f57009891805e0b5e123594 \
     --hash=sha256:ef16afa8ba34a1f989db38e1dbbe0c302e4289a47856990d0682e374563ce35e

@@ -190,7 +190,7 @@ class TestThunderbirdConfigWin(TestThunderbirdConfig):
             TestThunderbirdConfig.test_nightly_repo_regex_before_2009_01_09(self)
 
 
-@pytest.mark.parametrize("app_name", ["fennec", "fenix"])
+@pytest.mark.parametrize("app_name", ["fennec", "fenix", "focus"])
 class TestExtendedAndroidConfig:
     def test_get_nightly_repo_regex(self, app_name):
         if app_name == "fennec":

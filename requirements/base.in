@@ -6,7 +6,7 @@ colorama>=0.4.1
 configobj>=5.0.6
 distro>=1.8.0
 dmgbuild==1.*
-glean-sdk==53.0.0; sys.platform != 'darwin'
+glean-sdk==54.0.0; sys.platform != 'darwin'
 # See https://github.com/pypa/pip/issues/11573.
 https://files.pythonhosted.org/packages/d2/eb/c6a4269ff5f293274d736bd99f40c8e3d47c989a3e2eeabb78677cb785ed/glean_sdk-53.0.0-cp36-abi3-macosx_10_7_universal2.whl; sys.platform == 'darwin'
 importlib-metadata==6.8.0

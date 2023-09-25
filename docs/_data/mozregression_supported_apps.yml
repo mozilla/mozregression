@@ -9,3 +9,7 @@
 - name: fennec
   url: https://wiki.mozilla.org/Mobile/Fennec
   description: Firefox for Android
+
+- name: fenix
+  url: https://github.com/mozilla-mobile/firefox-android/blob/main/fenix/README.md
+  description: Firefox for Android

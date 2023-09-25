@@ -339,87 +339,122 @@ def test_firefox_install(
         assert _mock_codesign_sign.call_count == sign_call_count
 
 
-class TestFennecLauncher(unittest.TestCase):
+@pytest.mark.parametrize(
+    "launcher_class,package_name,intended_activity",
+    [
+        (launchers.FennecLauncher, "org.mozilla.fennec", "org.mozilla.gecko.BrowserApp"),
+        (launchers.FenixLauncher, "org.mozilla.fenix", ".IntentReceiverActivity"),
+    ],
+)
+class TestExtendedAndroidLauncher:
     test_root = "/sdcard/tmp"
 
-    def setUp(self):
+    def setup_method(self):
         self.profile = Profile()
-        self.addCleanup(self.profile.cleanup)
         self.remote_profile_path = self.test_root + "/" + os.path.basename(self.profile.profile)
+
+    def teardown_method(self):
+        self.profile.cleanup()
 
     @patch("mozregression.launchers.mozversion.get_version")
     @patch("mozregression.launchers.ADBDeviceFactory")
-    def create_launcher(self, ADBDeviceFactory, get_version, **kwargs):
+    def create_launcher(self, ADBDeviceFactory, get_version, launcher_class=None, **kwargs):
         self.adb = Mock(test_root=self.test_root)
         if kwargs.get("uninstall_error"):
             self.adb.uninstall_app.side_effect = launchers.ADBError
         ADBDeviceFactory.return_value = self.adb
         get_version.return_value = kwargs.get("version_value", {})
-        return launchers.FennecLauncher("/binary")
+        return launcher_class("/binary")
 
-    def test_install(self):
-        self.create_launcher()
-        self.adb.uninstall_app.assert_called_with("org.mozilla.fennec")
+    def test_install(self, launcher_class, package_name, intended_activity):
+        self.create_launcher(launcher_class=launcher_class)
+        self.adb.uninstall_app.assert_called_with(package_name)
         self.adb.install_app.assert_called_with("/binary")
 
-    @patch("mozregression.launchers.FennecLauncher._create_profile")
-    def test_start_stop(self, _create_profile):
-        # Force use of existing profile
-        _create_profile.return_value = self.profile
-        launcher = self.create_launcher()
-        launcher.start(profile="my_profile")
-        self.adb.exists.assert_called_once_with(self.remote_profile_path)
-        self.adb.rm.assert_called_once_with(self.remote_profile_path, recursive=True)
-        self.adb.push.assert_called_once_with(self.profile.profile, self.remote_profile_path)
-        self.adb.launch_fennec.assert_called_once_with(
-            "org.mozilla.fennec", extra_args=["-profile", self.remote_profile_path]
-        )
-        # ensure get_app_info returns something
-        self.assertIsNotNone(launcher.get_app_info())
-        launcher.stop()
-        self.adb.stop_application.assert_called_once_with("org.mozilla.fennec")
+    def test_start_stop(self, launcher_class, package_name, intended_activity, **kwargs):
+        with patch(
+            f"mozregression.launchers.{launcher_class.__name__}._create_profile"
+        ) as _create_profile:
+            # Force use of existing profile
+            _create_profile.return_value = self.profile
+            launcher = self.create_launcher(launcher_class=launcher_class)
+            launcher.start(profile="my_profile")
+            self.adb.exists.assert_called_once_with(self.remote_profile_path)
+            self.adb.rm.assert_called_once_with(self.remote_profile_path, recursive=True)
+            self.adb.push.assert_called_once_with(self.profile.profile, self.remote_profile_path)
+            self.adb.launch_application.assert_called_once_with(
+                package_name,
+                intended_activity,
+                "android.intent.action.VIEW",
+                url=None,
+                extras={"args": f"-profile {self.remote_profile_path}"},
+                wait=True,
+                fail_if_running=True,
+                timeout=None,
+            )
+            # ensure get_app_info returns something
+            assert launcher.get_app_info() is not None
+            launcher.stop()
+            self.adb.stop_application.assert_called_once_with(package_name)
 
-    @patch("mozregression.launchers.FennecLauncher._create_profile")
-    def test_adb_calls_with_custom_package_name(self, _create_profile):
-        # Force use of existing profile
-        _create_profile.return_value = self.profile
-        pkg_name = "org.mozilla.custom"
-        launcher = self.create_launcher(version_value={"package_name": pkg_name})
-        self.adb.uninstall_app.assert_called_once_with(pkg_name)
-        launcher.start(profile="my_profile")
-        self.adb.launch_fennec.assert_called_once_with(
-            pkg_name, extra_args=["-profile", self.remote_profile_path]
-        )
-        launcher.stop()
-        self.adb.stop_application.assert_called_once_with(pkg_name)
+    def test_adb_calls_with_custom_package_name(
+        self, launcher_class, package_name, intended_activity
+    ):
+        with patch(
+            f"mozregression.launchers.{launcher_class.__name__}._create_profile"
+        ) as _create_profile:
+            # Force use of existing profile
+            _create_profile.return_value = self.profile
+            pkg_name = "org.mozilla.custom"
+            launcher = self.create_launcher(
+                version_value={"package_name": pkg_name}, launcher_class=launcher_class
+            )
+            self.adb.uninstall_app.assert_called_once_with(pkg_name)
+            launcher.start(profile="my_profile")
+            self.adb.launch_application.assert_called_once_with(
+                pkg_name,
+                intended_activity,
+                "android.intent.action.VIEW",
+                url=None,
+                extras={"args": f"-profile {self.remote_profile_path}"},
+                wait=True,
+                fail_if_running=True,
+                timeout=None,
+            )
+            launcher.stop()
+            self.adb.stop_application.assert_called_once_with(pkg_name)
 
     @patch("mozregression.launchers.LOG")
-    def test_adb_first_uninstall_fail(self, log):
-        self.create_launcher(uninstall_error=True)
+    def test_adb_first_uninstall_fail(self, log, launcher_class, package_name, intended_activity):
+        self.create_launcher(uninstall_error=True, launcher_class=launcher_class)
         log.warning.assert_called_once_with(ANY)
         self.adb.install_app.assert_called_once_with(ANY)
 
     @patch("mozregression.launchers.ADBHost")
-    def test_check_is_runnable(self, ADBHost):
+    def test_check_is_runnable(self, ADBHost, launcher_class, package_name, intended_activity):
         devices = Mock(return_value=True)
         ADBHost.return_value = Mock(devices=devices)
         # this won't raise errors
-        launchers.FennecLauncher.check_is_runnable()
+        launcher_class.check_is_runnable()
 
         # exception raised if there is no device
         devices.return_value = False
-        self.assertRaises(LauncherNotRunnable, launchers.FennecLauncher.check_is_runnable)
+        with pytest.raises(LauncherNotRunnable):
+            launcher_class.check_is_runnable()
 
         # or if ADBHost().devices() raise an unexpected IOError
         devices.side_effect = ADBError()
-        self.assertRaises(LauncherNotRunnable, launchers.FennecLauncher.check_is_runnable)
+        with pytest.raises(LauncherNotRunnable):
+            launcher_class.check_is_runnable()
 
     @patch("time.sleep")
-    @patch("mozregression.launchers.FennecLauncher._create_profile")
-    def test_wait(self, _create_profile, sleep):
-        # Force use of existing profile
-        _create_profile.return_value = self.profile
-        launcher = self.create_launcher()
+    def test_wait(self, sleep, launcher_class, package_name, intended_activity):
+        with patch(
+            f"mozregression.launchers.{launcher_class.__name__}._create_profile"
+        ) as _create_profile:
+            # Force use of existing profile
+            _create_profile.return_value = self.profile
+        launcher = self.create_launcher(launcher_class=launcher_class)
 
         passed = []
 
@@ -432,7 +467,7 @@ class TestFennecLauncher(unittest.TestCase):
         self.adb.process_exist = Mock(side_effect=proc_exists)
         launcher.start()
         launcher.wait()
-        self.adb.process_exist.assert_called_with("org.mozilla.fennec")
+        self.adb.process_exist.assert_called_with(package_name)
 
 
 class Zipfile(object):

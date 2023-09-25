@@ -493,6 +493,31 @@ class AndroidLauncher(Launcher):
         if self.adb.exists(self.remote_profile):
             self.adb.rm(self.remote_profile, recursive=True)
 
+    def launch_browser(
+        self,
+        app_name,
+        activity,
+        intent="android.intent.action.VIEW",
+        moz_env=None,
+        url=None,
+        wait=True,
+        fail_if_running=True,
+        timeout=None,
+    ):
+        extras = {}
+        extras["args"] = f"-profile {self.remote_profile}"
+
+        self.adb.launch_application(
+            app_name,
+            activity,
+            intent,
+            url=url,
+            extras=extras,
+            wait=wait,
+            fail_if_running=fail_if_running,
+            timeout=timeout,
+        )
+
     def get_app_info(self):
         return self.app_info
 
@@ -504,7 +529,17 @@ class FennecLauncher(AndroidLauncher):
 
     def _launch(self):
         LOG.debug("Launching fennec")
-        self.adb.launch_fennec(self.package_name, extra_args=["-profile", self.remote_profile])
+        self.launch_browser(self.package_name, "org.mozilla.gecko.BrowserApp")
+
+
+@REGISTRY.register("fenix")
+class FenixLauncher(AndroidLauncher):
+    def _get_package_name(self):
+        return "org.mozilla.fenix"
+
+    def _launch(self):
+        LOG.debug("Launching fenix")
+        self.launch_browser(self.package_name, ".IntentReceiverActivity")
 
 
 @REGISTRY.register("gve")

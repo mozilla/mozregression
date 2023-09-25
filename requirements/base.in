@@ -9,8 +9,7 @@ dmgbuild==1.*
 glean-sdk==53.0.0; sys.platform != 'darwin'
 # See https://github.com/pypa/pip/issues/11573.
 https://files.pythonhosted.org/packages/d2/eb/c6a4269ff5f293274d736bd99f40c8e3d47c989a3e2eeabb78677cb785ed/glean_sdk-53.0.0-cp36-abi3-macosx_10_7_universal2.whl; sys.platform == 'darwin'
-importlib-metadata==6.8.0; python_version >= '3.8'
-importlib-metadata==4.2.0; python_version < '3.8'
+importlib-metadata==6.8.0
 # Pinned on darwin because later versions depend on a package that has no universal2 binary.
 jsonschema==4.17.3; sys.platform == 'darwin'
 mozdevice>=4.1.0,<5
@@ -25,6 +24,6 @@ mozversion>=2.1.0
 redo>=2.0.2
 requests>=2.21.0
 setuptools
-setuptools_scm==7.*
+setuptools_scm==8.*
 taskcluster>=6.0.0
 pyyaml==6.*

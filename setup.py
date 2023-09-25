@@ -42,7 +42,7 @@ setup(
         """,
     package_data={"mozregression": ["*.yaml"]},
     platforms=["Any"],
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     install_requires=DEPENDENCIES,
     classifiers=[
         "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
@@ -50,10 +50,10 @@ setup(
         "Environment :: Console",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3 :: Only",
     ],
 )

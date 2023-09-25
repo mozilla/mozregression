@@ -25,6 +25,6 @@ mozversion>=2.1.0
 redo>=2.0.2
 requests>=2.21.0
 setuptools
-setuptools_scm==7.*
+setuptools_scm==8.*
 taskcluster>=6.0.0
 pyyaml==6.*

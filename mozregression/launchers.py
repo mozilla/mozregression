@@ -487,7 +487,7 @@ class AndroidLauncher(Launcher):
         else:
             url = None
         if isinstance(self, (FenixLauncher, FennecLauncher, FocusLauncher)):
-            self._launch(url)
+            self._launch(url=url)
         else:
             self._launch()
 

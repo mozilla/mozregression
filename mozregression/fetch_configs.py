@@ -360,6 +360,18 @@ class ThunderbirdNightlyConfigMixin(NightlyConfigMixin):
             return "comm-central"
 
 
+class ThunderbirdL10nNightlyConfigMixin(ThunderbirdNightlyConfigMixin):
+    has_build_info = False
+    oldest_builds = datetime.date(2015, 10, 8)
+
+    def _get_nightly_repo(self, date):
+        if date < self.oldest_builds:
+            raise errors.MozRegressionError(
+                "thunderbird-l10n builds not available before {}".format(self.oldest_builds)
+            )
+        return "comm-central-l10n"
+
+
 class FennecNightlyConfigMixin(NightlyConfigMixin):
     nightly_base_repo_name = "mobile"
 
@@ -551,6 +563,24 @@ def create_config(name, os, bits, processor, arch=None):
     return REGISTRY.get(name)(os, bits, processor, arch)
 
 
+class L10nMixin:
+    def set_lang(self, lang):
+        LOG.info("setting lang to {}".format(lang))
+        self.lang = lang
+
+    def build_regex(self):
+        return (
+            get_build_regex(
+                self.app_name,
+                self.os,
+                self.bits,
+                self.processor,
+                platprefix=r".*\." + self.lang + r"\.",
+            )
+            + "$"
+        )
+
+
 @REGISTRY.register("firefox")
 class FirefoxConfig(CommonConfig, FirefoxNightlyConfigMixin, FirefoxIntegrationConfigMixin):
     BUILD_TYPES = (
@@ -584,28 +614,19 @@ class FirefoxConfig(CommonConfig, FirefoxNightlyConfigMixin, FirefoxIntegrationC
 
 
 @REGISTRY.register("firefox-l10n", attr_value="firefox")
-class FirefoxL10nConfig(CommonConfig, FirefoxL10nNightlyConfigMixin):
-    def set_lang(self, lang):
-        LOG.info("setting lang to {}".format(lang))
-        self.lang = lang
-
-    def build_regex(self):
-        return (
-            get_build_regex(
-                self.app_name,
-                self.os,
-                self.bits,
-                self.processor,
-                platprefix=r".*\." + self.lang + r"\.",
-            )
-            + "$"
-        )
+class FirefoxL10nConfig(CommonConfig, FirefoxL10nNightlyConfigMixin, L10nMixin):
+    pass
 
 
 @REGISTRY.register("thunderbird")
 class ThunderbirdConfig(
     CommonConfig, ThunderbirdNightlyConfigMixin, ThunderbirdIntegrationConfigMixin
 ):
+    pass
+
+
+@REGISTRY.register("thunderbird-l10n", attr_value="thunderbird")
+class ThunderbirdL10nConfig(L10nMixin, CommonConfig, ThunderbirdL10nNightlyConfigMixin):
     pass
 
 

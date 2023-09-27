@@ -153,9 +153,9 @@ class AbstractBuildRunner(QObject):
         if options.get("url") and fetch_config.app_name != "thunderbird":
             launcher_kwargs["cmdargs"] += [options["url"]]
 
-        # Lang only works for firefox-l10n
+        # Lang only works for firefox-l10n and thunderbird-l10n.
         if options.get("lang"):
-            if options["application"] == "firefox-l10n":
+            if options["application"] in ("firefox-l10n", "thunderbird-l10n"):
                 fetch_config.set_lang(options["lang"])
             else:
                 raise MozRegressionError("Invalid lang argument")

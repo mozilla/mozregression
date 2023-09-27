@@ -148,8 +148,8 @@ class IntroPage(WizardPage):
             self.ui.url.setEnabled(True)
             self.ui.url_label.setEnabled(True)
 
-        # lang only makes sense for firefox-l10n, and repo doesn't
-        if app_name == "firefox-l10n":
+        # lang only makes sense for firefox-l10n and thunderbird-l10n, and repo doesn't
+        if app_name in ("firefox-l10n", "thunderbird-l10n"):
             self.ui.lang.setEnabled(True)
             self.ui.lang_label.setEnabled(True)
             self.ui.repository.setDisabled(True)

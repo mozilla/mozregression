@@ -474,6 +474,25 @@ class TestExtendedAndroidLauncher:
         launcher.wait()
         self.adb.process_exist.assert_called_with(package_name)
 
+    def test_start_with_url(self, launcher_class, package_name, intended_activity, **kwargs):
+        with patch(
+            f"mozregression.launchers.{launcher_class.__name__}._create_profile"
+        ) as _create_profile:
+            # Force use of existing profile
+            _create_profile.return_value = self.profile
+            launcher = self.create_launcher(launcher_class=launcher_class)
+            launcher.start(profile="my_profile", cmdargs=("https://example.org/",))
+            self.adb.launch_application.assert_called_once_with(
+                package_name,
+                intended_activity,
+                "android.intent.action.VIEW",
+                url="https://example.org/",
+                extras={"args": f"-profile {self.remote_profile_path}"},
+                wait=True,
+                fail_if_running=True,
+                timeout=None,
+            )
+
 
 class Zipfile(object):
     def __init__(self, *a):

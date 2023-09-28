@@ -25,6 +25,6 @@ jobs:
   call-compile-requirements-macos:
     uses: ./.github/workflows/compile-requirements.yml
     with:
-      requirements_files: '["base.in dev.in gui-dev.in gui.in linters.in"]'
+      requirements_files: '["base.in base.universal2.in dev.in gui-dev.in gui.in linters.in"]'
       os: '["macos-latest"]'
       python: '["3.9", "3.10", "3.11"]'

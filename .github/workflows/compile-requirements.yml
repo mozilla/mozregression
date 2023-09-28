@@ -79,4 +79,5 @@ jobs:
           find temp-requirements -name "requirements-*" -type f -exec mv -f -t requirements {} +
           git add -A
           git commit -m "Automatically generated requirements"
-          until git push -f https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git; do git pull --rebase; done
+          until git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git; do git pull --rebase; done
+          until [ "$(git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git)" != "Everything up-to-date" ]; do git pull --rebase; done

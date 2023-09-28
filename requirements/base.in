@@ -6,12 +6,8 @@ colorama>=0.4.1
 configobj>=5.0.6
 distro>=1.8.0
 dmgbuild==1.*
-glean-sdk==53.0.0; sys.platform != 'darwin'
-# See https://github.com/pypa/pip/issues/11573.
-https://files.pythonhosted.org/packages/d2/eb/c6a4269ff5f293274d736bd99f40c8e3d47c989a3e2eeabb78677cb785ed/glean_sdk-53.0.0-cp36-abi3-macosx_10_7_universal2.whl; sys.platform == 'darwin'
+glean-sdk==54.0.0; sys.platform != 'darwin'
 importlib-metadata==6.8.0
-# Pinned on darwin because later versions depend on a package that has no universal2 binary.
-jsonschema==4.17.3; sys.platform == 'darwin'
 mozdevice>=4.1.0,<5
 mozfile>=2.0.0
 mozinfo>=1.1.0
@@ -21,9 +17,9 @@ mozprocess>=1.3.1
 mozprofile>=2.2.0
 mozrunner>=8.0.2
 mozversion>=2.1.0
+pyyaml==6.*
 redo>=2.0.2
 requests>=2.21.0
 setuptools
 setuptools_scm==8.*
 taskcluster>=6.0.0
-pyyaml==6.*

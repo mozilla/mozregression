@@ -288,20 +288,21 @@ frozenlist==1.4.0 \
     # via
     #   aiohttp
     #   aiosignal
-glean-parser==7.2.1 \
-    --hash=sha256:11496ac004fe421b914c7fbdc9a1d620e4821d56e1d9f65523d3858cdb907bbd \
-    --hash=sha256:651cfee34422ea1db90bbf1cb03732bd8c598773bf95daa289a62addeaf10295
+glean-parser==8.1.1 \
+    --hash=sha256:5fdd123d9711032a4e2acfa7983cbbfa6a53a29f7270dbe52be9e5ee1790a0f8 \
+    --hash=sha256:6d49e0c0aac34a1e9eda7fc63b12f1513efed1c827e0ac94078493114049021e
     # via
     #   -r linters.in
     #   glean-sdk
-glean-sdk==53.0.0 ; sys_platform != "darwin" \
-    --hash=sha256:0995ea815cfdea5d658c26c3fdeaa036626bd5ba1c437d0c2c882ea7d7a0eade \
-    --hash=sha256:2f97584df51baf9495d2beaa22c1109a5af42c96e686ed88155263c7cdb3b043 \
-    --hash=sha256:6225e2ae36dcc0c7af72357b783d117a8b1f9de10c9bc4b505f98ebce44806f3 \
-    --hash=sha256:825ceecd2369b23e01e22deef9e28b60b66582dd81c422267551177dbf435895 \
-    --hash=sha256:99d67d5e52a967fc02205f477a521818a680214b3a56d6547df9fb90fc54109b \
-    --hash=sha256:bda1090fcfb03aa76e63f59ea2f2b825761ec93253506dcbe8b0ffa2a9a0f874 \
-    --hash=sha256:be5722360d8a4186979bd0f7fca20f648b2d5c56b1ac0be61a1b616c7444c3e1
+glean-sdk==54.0.0 ; sys_platform != "darwin" \
+    --hash=sha256:32979762ac817ba97080e09be42154a68320b29da2282696decbfa95c9a01153 \
+    --hash=sha256:3ec60a498c3a4976d51bb04eb3f736a72b62e09a244d8cbf11cdfb71b12ed377 \
+    --hash=sha256:435ebf7ba38d8f61890c4d09c0ec0645ebce12031a8771458bccb76a7e13e59c \
+    --hash=sha256:5dcfb927266bf0f2295ca5e6bb098443df32141d484bffeaed8f0b8f456ae71a \
+    --hash=sha256:66175dc6b21226ba0382fda9101dbb8666b181998899f3204eddcf870cf4f325 \
+    --hash=sha256:74c9e34d961d553c5ba82302c23df6601f6a1ffddfcc084c2f18ea22baeb193b \
+    --hash=sha256:8a8864246b06976f17293b686892a50698feb37a9a0054dfdb6f7dd81319a162 \
+    --hash=sha256:960d861e9a25fbf7be98840c90642bf731600f11bdf6f87e15dbe2242cbe4cd1
     # via -r base.in
 idna==3.4 \
     --hash=sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4 \
@@ -825,9 +826,9 @@ soupsieve==2.5 \
     --hash=sha256:5663d5a7b3bfaeee0bc4372e7fc48f9cff4940b3eec54a6451cc5299f1097690 \
     --hash=sha256:eaa337ff55a1579b6549dc679565eac1e3d000563bcb1c8ab0d0fefbc0c2cdc7
     # via beautifulsoup4
-taskcluster==55.3.0 \
-    --hash=sha256:2468b9597547ea11a773e81563a5c2ae155b3710ce119c41f4cfeaf28827bb55 \
-    --hash=sha256:50378160bf3ae1094ac93b7535ecd8c21531337b9bf285342115e18fb9790c5e
+taskcluster==55.3.2 \
+    --hash=sha256:cf3a238e704991529f73bc103cddfdcb3a395fb5716a1d05a91f784cee97cc5b \
+    --hash=sha256:e9e298f3d4ba3aa51191f462ee63a666dfeb0a22c90ddeda7d92872fa1f07e7a
     # via -r base.in
 taskcluster-urls==13.0.1 \
     --hash=sha256:5e25e7e6818e8877178b175ff43d2e6548afad72694aa125f404a7329ece0973 \

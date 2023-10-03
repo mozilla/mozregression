@@ -8,7 +8,19 @@ IS_MAC = sys.platform == "darwin"
 block_cipher = None
 
 datas, binaries, hiddenimports = [], [], []
-for pkgname in ["glean", "glean_parser", "mozregression", "yamllint", "bs4"]:
+for pkgname in [
+    "glean",
+    "glean_parser",
+    "mozregression",
+    "yamllint",
+    "bs4",
+    "redo",
+    "taskcluster",
+    "mozinstall",
+    "mozversion",
+    "mozdevice",
+    "mozrunner",
+]:
     pkg_datas, pkg_binaries, pkg_hiddenimports = collect_all(pkgname)
     datas.extend(pkg_datas)
     binaries.extend(pkg_binaries)

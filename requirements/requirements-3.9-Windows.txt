@@ -847,9 +847,9 @@ soupsieve==2.5 \
     --hash=sha256:5663d5a7b3bfaeee0bc4372e7fc48f9cff4940b3eec54a6451cc5299f1097690 \
     --hash=sha256:eaa337ff55a1579b6549dc679565eac1e3d000563bcb1c8ab0d0fefbc0c2cdc7
     # via beautifulsoup4
-taskcluster==55.3.2 \
-    --hash=sha256:cf3a238e704991529f73bc103cddfdcb3a395fb5716a1d05a91f784cee97cc5b \
-    --hash=sha256:e9e298f3d4ba3aa51191f462ee63a666dfeb0a22c90ddeda7d92872fa1f07e7a
+taskcluster==55.3.3 \
+    --hash=sha256:d79af276117bce80f569e2b56a2df31239eedf09886f3c01d06920501d8971ec \
+    --hash=sha256:d7e3a946736adb696b4c4e9aa8b48eb942c5237a0372826e15f28212cecde15f
     # via -r base.in
 taskcluster-urls==13.0.1 \
     --hash=sha256:5e25e7e6818e8877178b175ff43d2e6548afad72694aa125f404a7329ece0973 \

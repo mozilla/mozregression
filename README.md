@@ -42,7 +42,7 @@ a virtual development environment.
 
 After checking out the mozregression repository from GitHub, this is a two step process:
 
-1. Be sure you are using Python 3.6 or above: earlier versions are not supported (if you
+1. Be sure you are using Python 3.8 or above: earlier versions are not supported (if you
    are not sure, run `python --version` or `python3 --version` on the command line).
 
 2. From inside your mozregression checkout, create a virtual environment, activate it, and install the dependencies. The instructions are slightly different depending on whether you are using Windows or Linux/MacOS.

@@ -583,6 +583,7 @@ class Configuration(object):
 
         user_defined_bits = options.bits is not None
         options.bits = parse_bits(options.bits or mozinfo.bits)
+
         if options.arch is not None:
             if options.app not in ("gve", "fenix", "focus"):
                 self.logger.warning("--arch ignored for non Android apps.")
@@ -592,6 +593,11 @@ class Configuration(object):
                     f"Invalid arch ({options.arch}) specified for app ({options.app}). "
                     f"Valid options are: {', '.join(arch_options[options.app])}."
                 )
+        elif options.app in ("fenix", "focus"):
+            raise MozRegressionError(
+                f"`--arch` required for specified app ({options.app}). "
+                f"Please specify one of {', '.join(arch_options[options.app])}."
+            )
 
         fetch_config = create_config(
             options.app, mozinfo.os, options.bits, mozinfo.processor, options.arch

@@ -33,8 +33,8 @@ For the graphical interface, we provide a simple installation process:
 
 ## mozregression
 
-The original command line tool, mozregression, is a Python (3.6+)
-package installable via [pip]. You can find it on pypi, as
+The original command line tool, mozregression, is a Python
+package installable via [pip]. You can find it on PyPI, as
 [mozregression](https://pypi.org/project/mozregression/).
 
 Note that you will need a reasonably current version of pip to install mozregression to be able to download the [Glean] dependency.

@@ -489,9 +489,9 @@ requests==2.31.0 \
     #   coveralls
     #   mozinstall
     #   taskcluster
-semver==3.0.1 \
-    --hash=sha256:2a23844ba1647362c7490fe3995a86e097bb590d16f0f32dfc383008f19e4cdf \
-    --hash=sha256:9ec78c5447883c67b97f98c3b6212796708191d22e4ad30f4570f840171cbce1
+semver==3.0.2 \
+    --hash=sha256:6253adb39c70f6e51afed2fa7152bcd414c411286088fb4b9effb133885ab4cc \
+    --hash=sha256:b1ea4686fe70b981f85359eda33199d60c53964284e0cfb4977d243e37cf4bf4
     # via glean-sdk
 setuptools-scm==8.0.3 \
     --hash=sha256:0169fd70197efda2f8c4d0b2a7a3d614431b488116f37b79d031e9e7ec884d8c \

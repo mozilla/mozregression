@@ -312,9 +312,9 @@ importlib-metadata==6.8.0 \
     # via
     #   -r base.in
     #   pyinstaller
-importlib-resources==5.9.0 \
-    --hash=sha256:5481e97fb45af8dcf2f798952625591c58fe599d0735d86b10f54de086a61681 \
-    --hash=sha256:f78a8df21a79bcc30cfd400bdc38f314333de7c0fb619763f6b9dabab8268bb7
+importlib-resources==6.1.0 \
+    --hash=sha256:9d48dcccc213325e810fd723e7fbb45ccb39f6cf5c31f00cf2b965f5f10f3cb9 \
+    --hash=sha256:aa50258bbfa56d4e33fbd8aa3ef48ded10d1735f11532b8df95388cc6bdb7e83
     # via
     #   dmgbuild
     #   jsonschema

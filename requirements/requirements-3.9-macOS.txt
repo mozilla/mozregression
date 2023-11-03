@@ -142,14 +142,14 @@ frozenlist @ https://files.pythonhosted.org/packages/bb/43/201d3e19dbd570411a29d
     #   -r base.universal2.in
     #   aiohttp
     #   aiosignal
-glean-parser==8.1.1 \
-    --hash=sha256:5fdd123d9711032a4e2acfa7983cbbfa6a53a29f7270dbe52be9e5ee1790a0f8 \
-    --hash=sha256:6d49e0c0aac34a1e9eda7fc63b12f1513efed1c827e0ac94078493114049021e
+glean-parser==10.0.3 \
+    --hash=sha256:d57359629d295f9ee570068a2846966892e3fedb722259ecbcd8cc376d299b51 \
+    --hash=sha256:f8fddd87b24552541318ac037e33750d27d0045131e4f8a60ec13a159fcbdd5c
     # via
     #   -r linters.in
     #   glean-sdk
-glean-sdk @ https://files.pythonhosted.org/packages/2e/2d/09acfde2661ef63aa1400554163117dee88d70dd7bac65585f5641fef953/glean_sdk-54.0.0-py3-none-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl ; sys_platform == "darwin" \
-    --hash=sha256:3ec60a498c3a4976d51bb04eb3f736a72b62e09a244d8cbf11cdfb71b12ed377
+glean-sdk @ https://files.pythonhosted.org/packages/37/01/19f977767538225329f78964b422ee51ac4f7da7a7fc198b4f3212752b6c/glean_sdk-55.0.0-py3-none-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl ; sys_platform == "darwin" \
+    --hash=sha256:b7961b76b5c6bc2f89450a85514727f13ec81ddecfbbb408f7a1b88d47ebb1f8
     # via -r base.universal2.in
 idna==3.4 \
     --hash=sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4 \
@@ -261,9 +261,7 @@ markupsafe==2.0.1 \
     --hash=sha256:f8ba0e8349a38d3001fae7eadded3f6606f0da5d748ee53cc1dab1d6527b9509 \
     --hash=sha256:f9081981fe268bd86831e5c75f7de206ef275defcb82bc70740ae6dc507aee51 \
     --hash=sha256:fa130dd50c57d53368c9d59395cb5526eda596d3ffe36666cd81a44d56e48872
-    # via
-    #   glean-parser
-    #   jinja2
+    # via jinja2
 mccabe==0.7.0 \
     --hash=sha256:348e0240c33b60bbdf4e523192ef919f28cb2c3d7d5c7794f74009290f236325 \
     --hash=sha256:6c2d30ab6be0e4a46919781807b4f0d834ebdd6c6e3dca0bda5a15f863427b6e

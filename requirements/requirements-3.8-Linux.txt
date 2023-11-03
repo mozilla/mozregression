@@ -284,21 +284,21 @@ frozenlist==1.4.0 \
     # via
     #   aiohttp
     #   aiosignal
-glean-parser==8.1.1 \
-    --hash=sha256:5fdd123d9711032a4e2acfa7983cbbfa6a53a29f7270dbe52be9e5ee1790a0f8 \
-    --hash=sha256:6d49e0c0aac34a1e9eda7fc63b12f1513efed1c827e0ac94078493114049021e
+glean-parser==10.0.3 \
+    --hash=sha256:d57359629d295f9ee570068a2846966892e3fedb722259ecbcd8cc376d299b51 \
+    --hash=sha256:f8fddd87b24552541318ac037e33750d27d0045131e4f8a60ec13a159fcbdd5c
     # via
     #   -r linters.in
     #   glean-sdk
-glean-sdk==54.0.0 ; sys_platform != "darwin" \
-    --hash=sha256:32979762ac817ba97080e09be42154a68320b29da2282696decbfa95c9a01153 \
-    --hash=sha256:3ec60a498c3a4976d51bb04eb3f736a72b62e09a244d8cbf11cdfb71b12ed377 \
-    --hash=sha256:435ebf7ba38d8f61890c4d09c0ec0645ebce12031a8771458bccb76a7e13e59c \
-    --hash=sha256:5dcfb927266bf0f2295ca5e6bb098443df32141d484bffeaed8f0b8f456ae71a \
-    --hash=sha256:66175dc6b21226ba0382fda9101dbb8666b181998899f3204eddcf870cf4f325 \
-    --hash=sha256:74c9e34d961d553c5ba82302c23df6601f6a1ffddfcc084c2f18ea22baeb193b \
-    --hash=sha256:8a8864246b06976f17293b686892a50698feb37a9a0054dfdb6f7dd81319a162 \
-    --hash=sha256:960d861e9a25fbf7be98840c90642bf731600f11bdf6f87e15dbe2242cbe4cd1
+glean-sdk==55.0.0 ; sys_platform != "darwin" \
+    --hash=sha256:171e9c03b5eee78a3a0cd0a2837c79b42da4fce2673660bbd7c971ba956bd7f6 \
+    --hash=sha256:298ece0d9aca1707b80ba139402997d9dbd63ec05fb7f89e5dd99363b5d9f5ff \
+    --hash=sha256:5cce2724d5246ee0f906e71837c31046bf6d542cf9c1f0a0fad17bfacfeb96b1 \
+    --hash=sha256:723f0f1c11b9487a2686e9a32b8bf1b763a82611dc8d4b0d8fdd8a84dea06de9 \
+    --hash=sha256:ae587e789af42187886d6965d4f69450b59fbed45a1d6afc3a50ee604c31b0c8 \
+    --hash=sha256:b57b42bdfb1bad646fcd0319d3b6448e0bc65d053b4e2e3a5c6a9e05cb3bddfb \
+    --hash=sha256:b7961b76b5c6bc2f89450a85514727f13ec81ddecfbbb408f7a1b88d47ebb1f8 \
+    --hash=sha256:eaea8593912a25a7b7eda9a537944fd3c43c7e4b5e5b21cd54b4b8f676732b33
     # via -r base.in
 idna==3.4 \
     --hash=sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4 \
@@ -415,9 +415,7 @@ markupsafe==2.0.1 \
     --hash=sha256:f8ba0e8349a38d3001fae7eadded3f6606f0da5d748ee53cc1dab1d6527b9509 \
     --hash=sha256:f9081981fe268bd86831e5c75f7de206ef275defcb82bc70740ae6dc507aee51 \
     --hash=sha256:fa130dd50c57d53368c9d59395cb5526eda596d3ffe36666cd81a44d56e48872
-    # via
-    #   glean-parser
-    #   jinja2
+    # via jinja2
 mccabe==0.7.0 \
     --hash=sha256:348e0240c33b60bbdf4e523192ef919f28cb2c3d7d5c7794f74009290f236325 \
     --hash=sha256:6c2d30ab6be0e4a46919781807b4f0d834ebdd6c6e3dca0bda5a15f863427b6e

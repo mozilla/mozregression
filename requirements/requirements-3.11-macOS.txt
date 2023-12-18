@@ -173,9 +173,9 @@ jinja2==3.1.2 \
     --hash=sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852 \
     --hash=sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61
     # via glean-parser
-jsonschema==4.17.3 ; sys_platform == "darwin" \
-    --hash=sha256:0f864437ab8b6076ba6707453ef8f98a6a0d512a80e93f8abdb676f737ecb60d \
-    --hash=sha256:a870ad254da1a8ca84b6a2905cac29d265f805acc57af304784962a2aa6508f6
+jsonschema==4.20.0 ; sys_platform == "darwin" \
+    --hash=sha256:4f614fd46d8d61258610998997743ec5492a648b33cf478c1ddc23ed4598a5fa \
+    --hash=sha256:ed6231f0429ecf966f5bc8dfef245998220549cbbcf140f913b7464c52c3b6b3
     # via
     #   -r base.universal2.in
     #   glean-parser

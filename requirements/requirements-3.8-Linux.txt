@@ -335,9 +335,9 @@ jinja2==3.1.2 \
     --hash=sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852 \
     --hash=sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61
     # via glean-parser
-jsonschema==4.19.2 \
-    --hash=sha256:c9ff4d7447eed9592c23a12ccee508baf0dd0d59650615e847feb6cdca74f392 \
-    --hash=sha256:eee9e502c788e89cb166d4d37f43084e3b64ab405c795c03d343a4dbc2c810fc
+jsonschema==4.20.0 \
+    --hash=sha256:4f614fd46d8d61258610998997743ec5492a648b33cf478c1ddc23ed4598a5fa \
+    --hash=sha256:ed6231f0429ecf966f5bc8dfef245998220549cbbcf140f913b7464c52c3b6b3
     # via glean-parser
 jsonschema-specifications==2023.11.2 \
     --hash=sha256:9472fc4fea474cd74bea4a2b190daeccb5a9e4db2ea80efcf7a1b582fc9a81b8 \

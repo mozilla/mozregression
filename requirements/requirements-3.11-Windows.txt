@@ -333,9 +333,9 @@ jinxed==1.2.1 \
     --hash=sha256:30c3f861b73279fea1ed928cfd4dfb1f273e16cd62c8a32acfac362da0f78f3f \
     --hash=sha256:37422659c4925969c66148c5e64979f553386a4226b9484d910d3094ced37d30
     # via blessed
-jsonschema==4.19.2 \
-    --hash=sha256:c9ff4d7447eed9592c23a12ccee508baf0dd0d59650615e847feb6cdca74f392 \
-    --hash=sha256:eee9e502c788e89cb166d4d37f43084e3b64ab405c795c03d343a4dbc2c810fc
+jsonschema==4.20.0 \
+    --hash=sha256:4f614fd46d8d61258610998997743ec5492a648b33cf478c1ddc23ed4598a5fa \
+    --hash=sha256:ed6231f0429ecf966f5bc8dfef245998220549cbbcf140f913b7464c52c3b6b3
     # via glean-parser
 jsonschema-specifications==2023.11.2 \
     --hash=sha256:9472fc4fea474cd74bea4a2b190daeccb5a9e4db2ea80efcf7a1b582fc9a81b8 \

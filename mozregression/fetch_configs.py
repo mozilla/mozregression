@@ -614,7 +614,7 @@ class FirefoxConfig(CommonConfig, FirefoxNightlyConfigMixin, FirefoxIntegrationC
 
 
 @REGISTRY.register("firefox-l10n", attr_value="firefox")
-class FirefoxL10nConfig(CommonConfig, FirefoxL10nNightlyConfigMixin, L10nMixin):
+class FirefoxL10nConfig(L10nMixin, FirefoxL10nNightlyConfigMixin, CommonConfig):
     pass
 
 

@@ -626,7 +626,7 @@ class ThunderbirdConfig(
 
 
 @REGISTRY.register("thunderbird-l10n", attr_value="thunderbird")
-class ThunderbirdL10nConfig(L10nMixin, CommonConfig, ThunderbirdL10nNightlyConfigMixin):
+class ThunderbirdL10nConfig(L10nMixin, ThunderbirdL10nNightlyConfigMixin, CommonConfig):
     pass
 
 

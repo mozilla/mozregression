@@ -614,7 +614,7 @@ class FirefoxConfig(CommonConfig, FirefoxNightlyConfigMixin, FirefoxIntegrationC
 
 
 @REGISTRY.register("firefox-l10n", attr_value="firefox")
-class FirefoxL10nConfig(CommonConfig, FirefoxL10nNightlyConfigMixin, L10nMixin):
+class FirefoxL10nConfig(L10nMixin, FirefoxL10nNightlyConfigMixin, CommonConfig):
     pass
 
 
@@ -626,7 +626,7 @@ class ThunderbirdConfig(
 
 
 @REGISTRY.register("thunderbird-l10n", attr_value="thunderbird")
-class ThunderbirdL10nConfig(L10nMixin, CommonConfig, ThunderbirdL10nNightlyConfigMixin):
+class ThunderbirdL10nConfig(L10nMixin, ThunderbirdL10nNightlyConfigMixin, CommonConfig):
     pass
 
 

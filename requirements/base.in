@@ -1,7 +1,7 @@
 --no-binary pyyaml
 PyInstaller==6.*
 beautifulsoup4>=4.7.1
-charset-normalizer<3
+charset-normalizer<4
 colorama>=0.4.1
 configobj>=5.0.6
 distro>=1.8.0

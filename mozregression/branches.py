@@ -78,6 +78,12 @@ def create_branches():
     ):
         for alias in aliases:
             branches.set_alias(alias, name)
+
+    branches.set_branch("snap-nightly", "mozilla-central")
+    branches.set_branch("snap-beta", "mozilla-central")
+    branches.set_branch("snap-stable", "mozilla-central")
+    branches.set_branch("snap-esr", "mozilla-central")
+
     return branches
 
 

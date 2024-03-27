@@ -126,3 +126,5 @@ jobs:
       - name: Print signing manifest
         run: |
           python ./bin/adhoc-sign.py --os windows ${{ github.event.release.tag_name }}
+      - name: Test binary for viruses
+        run: ./bin/virustotal-scan.py ${{ secrets.VIRUSTOTAL_API_KEY }}

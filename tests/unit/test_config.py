@@ -43,6 +43,10 @@ def tmp():
             True,
             {"persist": "", "persist-size-limit": "0.0", "bits": "32"},
         ),
+        # persist directory with some ascii characters
+        ("mac", 64, ["abcdefg", ""], False, {"persist": "abcdefg", "persist-size-limit": "20.0"}),
+        # persist directory with some unicode characters
+        ("mac", 64, ["åbcdefg", ""], False, {"persist": "åbcdefg", "persist-size-limit": "20.0"}),
     ],
 )
 def test_write_config(tmp, mocker, os_, bits, inputs, conf_dir_exists, results):
@@ -56,9 +60,11 @@ def test_write_config(tmp, mocker, os_, bits, inputs, conf_dir_exists, results):
     if not conf_dir_exists:
         mozfile.remove(conf_path)
     write_config(conf_path)
-    if "persist" in results and results["persist"] is None:
-        # default persist is base on the directory of the conf file
+    if "persist" in results and results["persist"]:
+        results["persist"] = os.path.realpath(results["persist"])
+    elif "persist" in results and results["persist"] is None:
         results["persist"] = os.path.join(tmp, "persist")
+
     conf = get_config(conf_path)
     for key in results:
         assert conf[key] == results[key]

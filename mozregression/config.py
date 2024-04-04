@@ -137,7 +137,7 @@ def write_config(conf_path):
     if not os.path.isdir(conf_dir):
         os.makedirs(conf_dir)
 
-    config = ConfigObj(conf_path)
+    config = ConfigObj(conf_path, encoding="UTF8")
     if not config.initial_comment:
         config.initial_comment = CONF_HELP.splitlines()
 

@@ -1,6 +1,7 @@
 """
 The BuildInfo classes, that are used to store information a build.
 """
+
 from __future__ import absolute_import
 
 import datetime

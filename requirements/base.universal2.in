@@ -4,21 +4,25 @@ https://files.pythonhosted.org/packages/3d/92/7fd0f03180efe1bc7f90f1341823793aeb
 https://files.pythonhosted.org/packages/44/78/df7d448524402cdc91c1b4e42ebbf6ac483783d2eba7682fe74fc13bf28d/frozenlist-1.4.0-cp38-cp38-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.8'
 https://files.pythonhosted.org/packages/c3/c5/b583cd706f88ef57811229b67d6c4c0fcda56bee49a913156dd401aaa729/multidict-6.0.4-cp38-cp38-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.8'
 https://files.pythonhosted.org/packages/e8/3b/38f2427f7ee497e169d7f8bd74c92a6ace98594c6a921b619ccc57703fe5/yarl-1.9.2-cp38-cp38-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.8'
+https://files.pythonhosted.org/packages/f8/ff/2c942a82c35a49df5de3a630ce0a8456ac2969691b230e530ac12314364c/MarkupSafe-2.1.5-cp38-cp38-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.8'
 
 https://files.pythonhosted.org/packages/04/10/dd1e480800b7375c18da30f69e591906565822328a7518fbd17e07bdf1ea/aiohttp-3.8.5-cp39-cp39-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.9'
 https://files.pythonhosted.org/packages/bb/43/201d3e19dbd570411a29d33f88c287e7a7ff7011fd44df860d5b5a4d76f9/frozenlist-1.4.0-cp39-cp39-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.9'
 https://files.pythonhosted.org/packages/2f/38/e0514ddb9b454b06fc8b29eb8b45ae1861cf1850acc2b0f01ad38b047ad3/multidict-6.0.4-cp39-cp39-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.9'
 https://files.pythonhosted.org/packages/31/2c/e6af0f7710412e4ed49c1641f04ed1af334d448d51c55150235e3381f0a7/yarl-1.9.2-cp39-cp39-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.9'
+https://files.pythonhosted.org/packages/0f/31/780bb297db036ba7b7bbede5e1d7f1e14d704ad4beb3ce53fb495d22bc62/MarkupSafe-2.1.5-cp39-cp39-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.9'
 
 https://files.pythonhosted.org/packages/4e/56/3bd3f99304be831d798ec3bc424dabc2dac09cb408f37800b29cc96e8eee/aiohttp-3.8.5-cp310-cp310-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.10'
 https://files.pythonhosted.org/packages/6d/6f/86f2c5e34909e72fcbb28d6d27b405b5a685ed7892df3979f83b7a1b2d04/frozenlist-1.4.0-cp310-cp310-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.10'
 https://files.pythonhosted.org/packages/bb/e4/ea5687129b0cb781aba596bd08abb2aca3c8051e41aabf989c966e93af04/multidict-6.0.4-cp310-cp310-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.10'
 https://files.pythonhosted.org/packages/eb/cb/4970008c85810c7d0e154ac5d746451b04476ac1dd85dc538563a1c04698/yarl-1.9.2-cp310-cp310-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.10'
+https://files.pythonhosted.org/packages/e4/54/ad5eb37bf9d51800010a74e4665425831a9db4e7c4e0fde4352e391e808e/MarkupSafe-2.1.5-cp310-cp310-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.10'
 
 https://files.pythonhosted.org/packages/f9/df/0b93fea3d24d4a9c75568861cced9435741df51f9d4fa48a81162c86b0d1/aiohttp-3.8.5-cp311-cp311-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.11'
 https://files.pythonhosted.org/packages/af/3b/824653cfd0c25e41ec4f854ddf74b4428d21a7e2683af1801f12d22b3c56/frozenlist-1.4.0-cp311-cp311-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.11'
 https://files.pythonhosted.org/packages/bb/ec/ea3435f339cfad0d0a5e9e533a362d230325029deea9cdba6730fcfc1e00/multidict-6.0.4-cp311-cp311-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.11'
 https://files.pythonhosted.org/packages/84/c1/eaebee42cbcace2d5b5eb103cae668dec1c239f5c82b90da4b3b20f39419/yarl-1.9.2-cp311-cp311-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.11'
+https://files.pythonhosted.org/packages/11/e7/291e55127bb2ae67c64d66cef01432b5933859dfb7d6949daa721b89d0b3/MarkupSafe-2.1.5-cp311-cp311-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.11'
 
 https://files.pythonhosted.org/packages/37/01/19f977767538225329f78964b422ee51ac4f7da7a7fc198b4f3212752b6c/glean_sdk-55.0.0-py3-none-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl; sys.platform == 'darwin'
 

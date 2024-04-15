@@ -501,8 +501,8 @@ class Configuration(object):
             log_process_output = options.build_type != ""
         else:
             log_process_output = options.process_output == "stdout"
-        get_default_logger("process").component_filter = (
-            lambda data: data if log_process_output else None
+        get_default_logger("process").component_filter = lambda data: (
+            data if log_process_output else None
         )
 
         # filter some mozversion log lines

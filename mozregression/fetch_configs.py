@@ -19,6 +19,7 @@ an instance of :class:`ClassRegistry`. Example: ::
 
   print REGISTRY.names()
 """
+
 from __future__ import absolute_import
 
 import datetime

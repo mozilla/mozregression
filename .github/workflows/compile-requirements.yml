@@ -23,9 +23,13 @@ on:
         description: A string representation of a list of requirement files.
         required: false
         type: string
+      commit_and_push:
+        type: string
+        default: 'false'
 
 jobs:
   compile-requirements:
+    if: ${{ inputs.commit_and_push != 'true' }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -56,7 +60,7 @@ jobs:
           name: ${{ github.sha }}-${{ github.run_number }}-${{ github.run_attempt }}-requirements
           path: requirements/requirements-${{ matrix.python-version }}-${{ runner.os }}.txt
   commit-and-push:
-    needs: compile-requirements
+    if: ${{ inputs.commit_and_push == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -79,4 +83,4 @@ jobs:
           find temp-requirements -name "requirements-*" -type f -exec mv -f -t requirements {} +
           git add -A
           git commit -m "Automatically generated requirements"
-          until git push -f https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git; do git pull --rebase; done
+          git push -f https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git

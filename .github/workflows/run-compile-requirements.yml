@@ -28,3 +28,12 @@ jobs:
       requirements_files: '["base.in base.universal2.in dev.in gui-dev.in gui.in linters.in"]'
       os: '["macos-latest"]'
       python: '["3.9", "3.10", "3.11"]'
+
+  commit-and-push:
+    uses: ./.github/workflows/compile-requirements.yml
+    with:
+      commit_and_push: 'true'
+    needs:
+      - call-compile-requirements-macos
+      - call-compile-requirements-windows
+      - call-compile-requirements-linux

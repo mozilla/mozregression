@@ -146,9 +146,9 @@ frozenlist @ https://files.pythonhosted.org/packages/bb/43/201d3e19dbd570411a29d
     #   -r base.universal2.in
     #   aiohttp
     #   aiosignal
-glean-parser==10.0.3 \
-    --hash=sha256:d57359629d295f9ee570068a2846966892e3fedb722259ecbcd8cc376d299b51 \
-    --hash=sha256:f8fddd87b24552541318ac037e33750d27d0045131e4f8a60ec13a159fcbdd5c
+glean-parser==14.0.1 \
+    --hash=sha256:3275ca235885c99da659fa7d9bf929b8fb020df79d26fcbec317328c369cd039 \
+    --hash=sha256:3e9e5f99ad8592300e364b70d6247b21c445774a73a2ad274677fb58a0065809
     # via
     #   -r linters.in
     #   glean-sdk

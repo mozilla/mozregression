@@ -254,9 +254,8 @@ mozprocess==1.3.1 \
     # via
     #   -r base.in
     #   mozrunner
-mozprofile==2.6.1 \
-    --hash=sha256:2c859fcd91e7a2565773c0b50466ca9dcedf6769a40f813847cd5517e5678b01 \
-    --hash=sha256:47b8e7cd40d3b83a032972e12df8e1ecfd347def7682b11cf6cb07435b3b8cf0
+mozprofile==3.0.0 \
+    --hash=sha256:af661290cc91b15b6a6943d2bf5a2b0f708bc9e0289a8e0bf1da7593eaaab6d0
     # via
     #   -r base.in
     #   mozrunner

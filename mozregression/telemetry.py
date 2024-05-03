@@ -7,14 +7,14 @@ import distro
 import mozinfo
 from glean import Configuration, Glean, load_metrics, load_pings
 from mozlog import get_proxy_logger
-from pkg_resources import resource_filename
+import importlib.resources
 
 from mozregression import __version__
 from mozregression.dates import is_date_or_datetime, to_datetime
 
 LOG = get_proxy_logger("telemetry")
-PINGS = load_pings(resource_filename(__name__, "pings.yaml"))
-METRICS = load_metrics(resource_filename(__name__, "metrics.yaml"))
+PINGS = load_pings(importlib.resources.files(__name__) / "pings.yaml")
+METRICS = load_metrics(importlib.resources.files(__name__) / "metrics.yaml")
 
 UsageMetrics = namedtuple(
     "UsageMetrics",

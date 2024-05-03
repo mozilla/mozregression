@@ -35,7 +35,7 @@ jobs:
         os:
           - ubuntu-20.04
           - ubuntu-22.04
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v3
       - name: setup
@@ -119,11 +119,11 @@ jobs:
           coveralls --service=github
 
   build-and-test-mac-gui:
-    runs-on: macos-latest
+    runs-on: macos-13
     env:
       # We need the official Python, because the GA ones only support newer macOS versions
       # The deployment target is picked up by the Python build tools automatically
-      PYTHON_VERSION: 3.11.1
+      PYTHON_VERSION: 3.12.4
       MACOSX_DEPLOYMENT_TARGET: 10.13
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -142,7 +142,7 @@ jobs:
         run: |
           source env/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install -r requirements/requirements-3.11-macOS.txt
+          python -m pip install -r requirements/requirements-3.12-macOS.txt
           python -m pip install -e .
       - name: Build
         run: |

@@ -172,9 +172,9 @@ coverage==6.5.0 \
     # via
     #   -r dev.in
     #   coveralls
-coveralls==3.3.1 \
-    --hash=sha256:b32a8bb5d2df585207c119d6c01567b81fba690c9c10a753bfe27a335bfc43ea \
-    --hash=sha256:f42015f31d386b351d4226389b387ae173207058832fbf5c8ec4b40e27b16026
+coveralls==4.0.0 \
+    --hash=sha256:401715d244a27d5da03eb1ac614aa585cc7e4dd5b0d4c035113b6349da4e6161 \
+    --hash=sha256:9486f353176d309066053d38edbade3aad6346c5eb8a5edde7090d3116219414
     # via -r dev.in
 diskcache==5.6.3 \
     --hash=sha256:2c3a3fa2743d8535d832ec61c2054a1641f41775aa7c556758a109941e33e4fc \

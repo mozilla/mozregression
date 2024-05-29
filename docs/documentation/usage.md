@@ -148,3 +148,41 @@ to date list of available options.
 - List firefox releases numbers
 
         mozregression --list-releases
+
+## Unprivileged user namespaces
+
+AppArmor can be used to restrict the usage of this kernel feature, which is
+known to have shipped with at least Ubuntu 24.04 [AppArmor Ubuntu 24.04](https://bugs.launchpad.net/ubuntu/+source/apparmor/+bug/2046844).
+
+This restricts the ability of the Firefox sandbox and might impair a
+mozregression bisection because of the difference of behavior. Also, builds
+before [Bug 1884347](https://bugzilla.mozilla.org/show_bug.cgi?id=1884347) will
+just crash their content processes.
+
+You can either disable the AppArmor restriction or install an AppArmor profile,
+e.g. at `/etc/apparmor.d/firefox-mozregression` with the following content that
+will grant the `userns` permission to Firefox binaries under
+`/tmp/mozregression/*`:
+
+        abi <abi/4.0>,
+        include <tunables/global>
+
+        profile firefox-mozregression /tmp/mozregression/*/firefox/firefox{,-bin} flags=(unconfined) {
+          userns,
+
+          # Site-specific additions and overrides. See local/README for details.
+          include if exists <local/firefox>
+        }
+
+Then apply with a
+
+        sudo systemctl restart apparmor.service
+
+You can then prefix your `mozregression` calls with a `TMP=` to make use of the
+aforthmentionned directory where `userns` is granted:
+
+        TMP=/tmp/mozregression/ mozregression [...]
+
+There was a window of time during which Firefox incorrectly tested for that
+feature and it would end up in tab crashing. In case of doubt you can always
+set environment variable `MOZ_ASSUME_USER_NS=0` before running `mozregression`.

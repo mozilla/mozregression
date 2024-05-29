@@ -308,6 +308,120 @@ def check_mozregression_version():
         )
 
 
+def check_unprivileged_userns():
+    """
+    Some distribution started to block unprivileged user namespaces via
+    AppArmor.  This might result in crashes on older builds, and in degraded
+    sandbox behavior.  It is fixed with an AppArmor profile that allows the
+    syscall to proceed, but this is path dependant on the binary we download
+    and needs to be installed at a system level, so we can only advise people
+    of the situation.
+
+    The following sys entry should be enough to verify whether it is blocked or
+    not, but the Ubuntu security team recommend cross-checking with actual
+    syscall.  This code is a simplification of how Firerox does it, cf
+    https://searchfox.org/mozilla-central/rev/23efe2c8c5b3a3182d449211ff9036fb34fe0219/security/sandbox/linux/SandboxInfo.cpp#114-175
+    and has been the most reliable way so far (shell with unshare would not
+    reproduce EPERM like we want).
+
+    We need to build it (via g++) and then run it. It will just return 0 (exit
+    code) but it will print via the child process either "0" if it was OK, orxi
+    "-1:X" with X being the errno. We are interested in errno being EPERM which
+    shows the syscall is blocked.
+    """
+
+    apparmor_file = "/proc/sys/kernel/apparmor_restrict_unprivileged_userns"
+    if not os.path.isfile(apparmor_file):
+        return
+
+    with open(apparmor_file, "r") as f:
+        if f.read().strip() != "1":
+            return
+
+    TEST_PROGRAM = """
+#include <cstdlib>
+#include <cstdio>
+#include <cerrno>
+
+#include <sys/syscall.h>
+#include <unistd.h>
+
+#include <signal.h>
+
+#if !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif
+#include <sched.h>
+
+int main() {
+  pid_t pid = syscall(SYS_clone, SIGCHLD | CLONE_NEWUSER, nullptr, nullptr, nullptr, nullptr);
+  if (pid == 0) {
+    // child side
+    int rv = unshare(CLONE_NEWPID);
+    printf("%d", rv);
+    if (rv < 0) {
+      printf(":%d", errno);
+    }
+  }
+  exit(0);
+}
+"""
+
+    import subprocess
+    import tempfile
+
+    LOG.warning(
+        "Unprivileged user namespaces might be disabled. Checking (requires g++ or clang) ..."
+    )
+
+    selected_compiler = None
+    for compiler in ["clang", "g++"]:
+        LOG.warning("Checking if {} is usable".format(compiler))
+        try:
+            check_compiler = subprocess.run([compiler, "--version"], capture_output=True)
+            if check_compiler.returncode != 0:
+                LOG.warning("Cannot use {}".format(compiler))
+                continue
+            selected_compiler = compiler
+            break
+        except FileNotFoundError:
+            LOG.warning("Cannot find {}".format(compiler))
+            continue
+
+    if selected_compiler is None:
+        LOG.warning(
+            "Unprivileged user namespaces might be disabled, cannot verify because "
+            "none of the compilers are working ..."
+        )
+        return
+
+    LOG.warning(
+        "Unprivileged user namespaces might be disabled. Checking syscall with {} ...".format(
+            selected_compiler
+        )
+    )
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".cc") as source:
+        source.write(TEST_PROGRAM)
+        source.flush()
+        binary = "{}.exe".format(source.name)
+        compiler = [selected_compiler, "-Wall", "-pedantic", "-o", binary, source.name]
+        compile_code = subprocess.run(compiler)
+        assert compile_code.returncode == 0
+        check_EPERM = subprocess.run([binary], capture_output=True)
+        os.unlink(binary)
+        result = check_EPERM.stdout.strip()
+
+        if result != b"-1:1":
+            return
+
+        LOG.warning(
+            "Unprivileged user namespaces are disabled. This is likely because AppArmor policy "
+            "change. Please refer to XXX to learn how to setup AppArmor so that MozRegression "
+            "works correctly. Missing AppArmor profile can lead to crashes or to incorrectly "
+            "sandboxed processes."
+        )
+
+
 def main(
     argv=None,
     namespace=None,
@@ -327,6 +441,15 @@ def main(
         if check_new_version:
             check_mozregression_version()
         config.validate()
+        if (
+            sys.platform
+            in (
+                "linux",
+                "linux2",
+            )
+            and not config.options.dont_check_userns
+        ):
+            check_unprivileged_userns()
         set_http_session(get_defaults={"timeout": config.options.http_timeout})
 
         app = Application(config.fetch_config, config.options)

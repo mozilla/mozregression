@@ -95,7 +95,7 @@ configobj==5.0.8 \
     --hash=sha256:6f704434a07dc4f4dc7c9a745172c1cad449feb548febd9f7fe362629c627a97 \
     --hash=sha256:a7a8c6ab7daade85c3f329931a807c8aee750a2494363934f8ea84d8a54c87ea
     # via -r base.in
-coverage==6.5.0 \
+coverage[toml]==6.5.0 \
     --hash=sha256:f642e90754ee3e06b0e7e51bce3379590e76b7f76b708e1a71ff043f87025c84
     # via
     #   -r dev.in
@@ -145,14 +145,14 @@ frozenlist @ https://files.pythonhosted.org/packages/d3/fb/6f2a22086065bc16797f7
     #   -r base.universal2.in
     #   aiohttp
     #   aiosignal
-glean-parser==10.0.3 \
-    --hash=sha256:d57359629d295f9ee570068a2846966892e3fedb722259ecbcd8cc376d299b51 \
-    --hash=sha256:f8fddd87b24552541318ac037e33750d27d0045131e4f8a60ec13a159fcbdd5c
+glean-parser==14.1.2 \
+    --hash=sha256:38be7d4e0fab0f83340e3427914e08a8631c7fab088a8c60e9b543cab6ea830c \
+    --hash=sha256:c3e87165fe0a0fcbcb28b76bbad025601a86eb447c5779472b62915c46cd44ab
     # via
     #   -r linters.in
     #   glean-sdk
-glean-sdk @ https://files.pythonhosted.org/packages/37/01/19f977767538225329f78964b422ee51ac4f7da7a7fc198b4f3212752b6c/glean_sdk-55.0.0-py3-none-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl ; sys_platform == "darwin" \
-    --hash=sha256:b7961b76b5c6bc2f89450a85514727f13ec81ddecfbbb408f7a1b88d47ebb1f8
+glean-sdk @ https://files.pythonhosted.org/packages/bd/2b/8a22487fc265cb6cb5d61d5f8144c5133d9e6d75e8afd12c63e7acf6d611/glean_sdk-60.3.0-py3-none-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl ; sys_platform == "darwin" \
+    --hash=sha256:bde0dda25cb7b41ded17605ab6f0e873b934cea007a17aa0cc1b0933327fbaf6
     # via -r base.universal2.in
 idna==3.7 \
     --hash=sha256:028ff3aadf0609c1fd278d8ea3089299412a7a8b9bd005dd08b9f8285bcb5cfc \
@@ -475,6 +475,7 @@ tomli==2.0.1 \
     --hash=sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f
     # via
     #   black
+    #   coverage
     #   flake8-black
     #   pytest
     #   setuptools-scm

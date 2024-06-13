@@ -172,7 +172,7 @@ configobj==5.0.8 \
     --hash=sha256:6f704434a07dc4f4dc7c9a745172c1cad449feb548febd9f7fe362629c627a97 \
     --hash=sha256:a7a8c6ab7daade85c3f329931a807c8aee750a2494363934f8ea84d8a54c87ea
     # via -r base.in
-coverage==6.5.0 \
+coverage[toml]==6.5.0 \
     --hash=sha256:f642e90754ee3e06b0e7e51bce3379590e76b7f76b708e1a71ff043f87025c84
     # via
     #   -r dev.in
@@ -293,21 +293,21 @@ frozenlist==1.4.1 \
     # via
     #   aiohttp
     #   aiosignal
-glean-parser==10.0.3 \
-    --hash=sha256:d57359629d295f9ee570068a2846966892e3fedb722259ecbcd8cc376d299b51 \
-    --hash=sha256:f8fddd87b24552541318ac037e33750d27d0045131e4f8a60ec13a159fcbdd5c
+glean-parser==14.1.2 \
+    --hash=sha256:38be7d4e0fab0f83340e3427914e08a8631c7fab088a8c60e9b543cab6ea830c \
+    --hash=sha256:c3e87165fe0a0fcbcb28b76bbad025601a86eb447c5779472b62915c46cd44ab
     # via
     #   -r linters.in
     #   glean-sdk
-glean-sdk==55.0.0 ; sys_platform != "darwin" \
-    --hash=sha256:171e9c03b5eee78a3a0cd0a2837c79b42da4fce2673660bbd7c971ba956bd7f6 \
-    --hash=sha256:298ece0d9aca1707b80ba139402997d9dbd63ec05fb7f89e5dd99363b5d9f5ff \
-    --hash=sha256:5cce2724d5246ee0f906e71837c31046bf6d542cf9c1f0a0fad17bfacfeb96b1 \
-    --hash=sha256:723f0f1c11b9487a2686e9a32b8bf1b763a82611dc8d4b0d8fdd8a84dea06de9 \
-    --hash=sha256:ae587e789af42187886d6965d4f69450b59fbed45a1d6afc3a50ee604c31b0c8 \
-    --hash=sha256:b57b42bdfb1bad646fcd0319d3b6448e0bc65d053b4e2e3a5c6a9e05cb3bddfb \
-    --hash=sha256:b7961b76b5c6bc2f89450a85514727f13ec81ddecfbbb408f7a1b88d47ebb1f8 \
-    --hash=sha256:eaea8593912a25a7b7eda9a537944fd3c43c7e4b5e5b21cd54b4b8f676732b33
+glean-sdk==60.3.0 ; sys_platform != "darwin" \
+    --hash=sha256:0854585f5f280ea23d0bf202edda00fbe0236e57c9c7752dcb364db709329113 \
+    --hash=sha256:446839c50732571485763681b0db16563c46e471f7f479f87bc6bbf47e3a7b79 \
+    --hash=sha256:7b4cdef49a589b474c92267755b3dca3559ea6a960ee8fa7946cb5fd386732b0 \
+    --hash=sha256:88dffde098c32cf8801cbf721008f504336fe7246a21c823b5faa9f2e464a547 \
+    --hash=sha256:8a157cf0c9bb4af16764a6fe3e5216c3c4e9575be8d782b333c32e23e488e140 \
+    --hash=sha256:8ba6b52e08f8f1e53c9e50ca4a4fa4c6504cf16a90a7c461fd30b38b9574c1b2 \
+    --hash=sha256:bde0dda25cb7b41ded17605ab6f0e873b934cea007a17aa0cc1b0933327fbaf6 \
+    --hash=sha256:e8015af3e22620442868822350296aed7bc5da8bb64fffac41227dd31e388faa
     # via -r base.in
 idna==3.7 \
     --hash=sha256:028ff3aadf0609c1fd278d8ea3089299412a7a8b9bd005dd08b9f8285bcb5cfc \

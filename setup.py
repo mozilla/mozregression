@@ -3,7 +3,7 @@ from setuptools import setup
 # we pin these dependencies in the requirements files -- all of these
 # should be python 3 compatible
 DEPENDENCIES = [
-    "glean_sdk>=31.1.3",
+    "glean_sdk>=60.3.0",
     "beautifulsoup4>=4.7.1",
     "colorama>=0.4.1",
     "configobj>=5.0.6",

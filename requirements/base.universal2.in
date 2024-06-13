@@ -30,7 +30,7 @@ https://files.pythonhosted.org/packages/e4/54/ad5eb37bf9d51800010a74e4665425831a
 https://files.pythonhosted.org/packages/11/e7/291e55127bb2ae67c64d66cef01432b5933859dfb7d6949daa721b89d0b3/MarkupSafe-2.1.5-cp311-cp311-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.11'
 https://files.pythonhosted.org/packages/53/bd/583bf3e4c8d6a321938c13f49d44024dbe5ed63e0a7ba127e454a66da974/MarkupSafe-2.1.5-cp312-cp312-macosx_10_9_universal2.whl; sys.platform == 'darwin' and python_version == '3.12'
 
-https://files.pythonhosted.org/packages/37/01/19f977767538225329f78964b422ee51ac4f7da7a7fc198b4f3212752b6c/glean_sdk-55.0.0-py3-none-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl; sys.platform == 'darwin'
+https://files.pythonhosted.org/packages/bd/2b/8a22487fc265cb6cb5d61d5f8144c5133d9e6d75e8afd12c63e7acf6d611/glean_sdk-60.3.0-py3-none-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl; sys.platform == 'darwin'
 
 # Pinned on darwin because later versions depend on a package that has no universal2 binary.
 jsonschema==4.17.3; sys.platform == 'darwin'

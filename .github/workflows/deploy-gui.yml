@@ -78,7 +78,7 @@ jobs:
         run: |
           source env/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install -r requirements/requirements-3.11-macOS.txt
+          python -m pip install -r requirements/requirements-3.12-macOS.txt
           python -m pip install -e .
       - name: Build
         run: |

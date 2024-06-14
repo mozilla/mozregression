@@ -8,6 +8,7 @@ DEPENDENCIES = [
     "colorama>=0.4.1",
     "configobj>=5.0.6",
     "distro>=1.8.0",
+    "importlib_resources>= 5.10",
     "mozdevice>=4.1.0,<5",
     "mozfile>=2.0.0",
     "mozinfo>=1.1.0",
@@ -54,6 +55,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3 :: Only",
     ],
 )

@@ -303,9 +303,9 @@ pluggy==1.5.0 \
     # via
     #   pytest
     #   pytest-qt
-pycodestyle==2.11.1 \
-    --hash=sha256:41ba0e7afc9752dfb53ced5489e89f8186be00e599e712660695b7a75ff2663f \
-    --hash=sha256:44fe31000b2d866f2e41841b18528a505fbd7fef9017b04eff4e2648a0fadc67
+pycodestyle==2.12.0 \
+    --hash=sha256:442f950141b4f43df752dd303511ffded3a04c2b6fb7f65980574f0c31e6e79c \
+    --hash=sha256:949a39f6b86c3e1515ba1787c2022131d165a8ad271b11370a8819aa070269e4
     # via flake8
 pyflakes==3.2.0 \
     --hash=sha256:1c61603ff154621fb2a9172037d84dca3500def8c8b630657d1701f026f8af3f \

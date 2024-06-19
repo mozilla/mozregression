@@ -201,9 +201,9 @@ exceptiongroup==1.2.1 \
     --hash=sha256:5258b9ed329c5bbdd31a309f53cbfb0b155341807f6ff7606a1e801a891b29ad \
     --hash=sha256:a4785e48b045528f5bfe627b6ad554ff32def154f42372786903b7abcfe1aa16
     # via pytest
-flake8==7.0.0 ; python_version >= "3.8" \
-    --hash=sha256:33f96621059e65eec474169085dc92bf26e7b2d47366b70be2f67ab80dc25132 \
-    --hash=sha256:a6dfbb75e03252917f2473ea9653f7cd799c3064e54d4c8140044c5c065f53c3
+flake8==7.1.0 ; python_version >= "3.8" \
+    --hash=sha256:2e416edcc62471a64cea09353f4e7bdba32aeb079b6e360554c659a122b1bc6a \
+    --hash=sha256:48a07b626b55236e0fb4784ee69a465fbf59d79eec1f5b4785c3d3bc57d17aa5
     # via
     #   -r linters.in
     #   flake8-black
@@ -600,9 +600,9 @@ pluggy==1.5.0 \
     # via
     #   pytest
     #   pytest-qt
-pycodestyle==2.11.1 \
-    --hash=sha256:41ba0e7afc9752dfb53ced5489e89f8186be00e599e712660695b7a75ff2663f \
-    --hash=sha256:44fe31000b2d866f2e41841b18528a505fbd7fef9017b04eff4e2648a0fadc67
+pycodestyle==2.12.0 \
+    --hash=sha256:442f950141b4f43df752dd303511ffded3a04c2b6fb7f65980574f0c31e6e79c \
+    --hash=sha256:949a39f6b86c3e1515ba1787c2022131d165a8ad271b11370a8819aa070269e4
     # via flake8
 pyflakes==3.2.0 \
     --hash=sha256:1c61603ff154621fb2a9172037d84dca3500def8c8b630657d1701f026f8af3f \
@@ -628,23 +628,23 @@ pyinstaller-hooks-contrib==2024.7 \
     --hash=sha256:8bf0775771fbaf96bcd2f4dfd6f7ae6c1dd1b1efe254c7e50477b3c08e7841d8 \
     --hash=sha256:fd5f37dcf99bece184e40642af88be16a9b89613ecb958a8bd1136634fc9fac5
     # via pyinstaller
-pyside6==6.6.0 \
-    --hash=sha256:8103f14ed46a05e81acccbfc8388e3321e392fe54f3aa4a13336bd2ed8af5cd4 \
-    --hash=sha256:d41dfcfa32c89502cdaa20206b7e2aba199072f94b424bc6a4d6f50b10f4eb5a \
-    --hash=sha256:d487eab0f9bfc5c9141b474093e16207ff48cd9335e6465a01deb8dff0693fbc \
-    --hash=sha256:f40917b7a0c5c7f0c7faaa87e66ffa3b58d9d1d3d977d30fc07e193b82dd6749
+pyside6==6.6.3.1 \
+    --hash=sha256:35936f06257e5c37ae8993da0cb5a528e5db3ea1fc2bb6b12cdf899a11510966 \
+    --hash=sha256:3d2ebb08a7744b59e1270e57f264a9ef5b45fccdc0328a9aeb50d890d6b3f4f2 \
+    --hash=sha256:d993989a10725c856f5b07f25e0664c5059daa92c259549c9df0972b5b0c7935 \
+    --hash=sha256:f7acd26fe8e1a745ef0be66b49ee49ee8ae50c2a2855d9792db262ebc7916d98
     # via -r gui.in
-pyside6-addons==6.6.0 \
-    --hash=sha256:414864f7cfbdf8ac4c5a745566a515f18b6018d5730bf5489cc2716b5e1fcd9b \
-    --hash=sha256:5c56e963b841aeaacbc9ca8ca34df45308818dbd6fc59faa2b5a00a299e9892b \
-    --hash=sha256:82fe1bb6a1aabf5ab3d8632072dc908aa37fc75b4b46e520258c441bd6b103fb \
-    --hash=sha256:e145514a7c37ee3a6ad0ddd693f805ccff6fbd9640a24fb2ef6b7f852882d3e9
+pyside6-addons==6.6.3.1 \
+    --hash=sha256:31135adc521ed6e3fdc8203507e7e9d72424d6b9ebd245d1189d991e90669d6a \
+    --hash=sha256:3abdc1e21de0c6763e5392af5ed8b2349291318ce235e7c310d84a2f9d5001a9 \
+    --hash=sha256:7373479565e5bd963b9662857c40c20768bc0b5853334e2076a62cb039e91f74 \
+    --hash=sha256:d8fbcd726dbf3e713e5d5ccc45ff0e1a9edfe336d7190c96cf7e7c7598681239
     # via pyside6
-pyside6-essentials==6.6.0 \
-    --hash=sha256:26d27e3e3a18acbc770a69a30774fd345414fe4932fcb89d2cfc4fc130c3eb33 \
-    --hash=sha256:37d5d9c6ee696a17890f07e7ce1f88f890174bd4aca29f47922ecc959ab28352 \
-    --hash=sha256:60284641619f964e1cb4d53cf3169d7a385e0378b74edb75610918d2aea1c4e5 \
-    --hash=sha256:97bbe33f584a09cef6a3fbc1295fb0fd7acaac345bc0f5601bf45d41c91683ac
+pyside6-essentials==6.6.3.1 \
+    --hash=sha256:1f41f357ce2384576581e76c9c3df1c4fa5b38e347f0bcd0cae7c5bce42a917c \
+    --hash=sha256:27034525fdbdd21ef21f20fcd7aaf5c2ffe26f2bcf5269a69dd9492dec7e92aa \
+    --hash=sha256:31f7e70ada44d3cdbe6686670b3df036c720cfeb1dced0f7704e5f5a4be6a764 \
+    --hash=sha256:6c16530b63079711783796584b640cc80a347e0b2dc12651aa2877265df7a008
     # via
     #   pyside6
     #   pyside6-addons
@@ -801,11 +801,11 @@ setuptools-scm==8.1.0 \
     --hash=sha256:42dea1b65771cba93b7a515d65a65d8246e560768a66b9106a592c8e7f26c8a7 \
     --hash=sha256:897a3226a6fd4a6eb2f068745e49733261a21f70b1bb28fce0339feb978d9af3
     # via -r base.in
-shiboken6==6.6.0 \
-    --hash=sha256:456b89fb4b323e0c5002d92e4d346b48bb4e709db801208df8a0d6b4f5efc33d \
-    --hash=sha256:bf23c43e53ffe6097853666ced05358c6640c378e992902a36c4cf77efb0223b \
-    --hash=sha256:e62b2610b84f0ff7ed0181a4c535849cdc0654127097b5ef561cf0a33078f245 \
-    --hash=sha256:fb8c683206c3365f9240fff7f908485384893b02efb089b69ff816b4390baa9a
+shiboken6==6.6.3.1 \
+    --hash=sha256:2a8df586aa9eb629388b368d3157893083c5217ed3eb637bf182d1948c823a0f \
+    --hash=sha256:88494b5e08a1f235efddbe2b0b225a3a66e07d72b6091fcc2fc5448572453649 \
+    --hash=sha256:902d9e126ac57cc3841cdc50ba38d53948b40cf667538172f253c4ae7b2dcb2c \
+    --hash=sha256:b1aeff0d79d84ddbdc9970144c1bbc3a52fcb45618d1b33d17d57f99f1246d45
     # via
     #   pyside6
     #   pyside6-addons
@@ -857,9 +857,9 @@ typing-extensions==4.12.2 \
     # via
     #   black
     #   setuptools-scm
-urllib3==2.2.1 \
-    --hash=sha256:450b20ec296a467077128bff42b73080516e71b56ff59a60a02bef2232c4fa9d \
-    --hash=sha256:d0570876c61ab9e520d776c38acbbb5b05a776d3f9ff98a5c8fd5162a444cf19
+urllib3==2.2.2 \
+    --hash=sha256:a448b2f64d686155468037e1ace9f2d2199776e17f0a46610480d311f73e3472 \
+    --hash=sha256:dd505485549a7a552833da5e6063639d0d177c04f23bc3864e41e5dc5f612168
     # via requests
 wcwidth==0.2.13 \
     --hash=sha256:3da69048e4540d84af32131829ff948f1e022c1c6bdb8d6102117aac784f6859 \
@@ -963,9 +963,9 @@ zipp==3.19.2 \
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==70.0.0 \
-    --hash=sha256:54faa7f2e8d2d11bcd2c07bed282eef1046b5c080d1c32add737d7b5817b1ad4 \
-    --hash=sha256:f211a66637b8fa059bb28183da127d4e86396c991a942b028c6650d4319c3fd0
+setuptools==70.1.0 \
+    --hash=sha256:01a1e793faa5bd89abc851fa15d0a0db26f160890c7102cd8dce643e886b47f5 \
+    --hash=sha256:d9b8b771455a97c8a9f3ab3448ebe0b29b5e105f1228bba41028be116985a267
     # via
     #   -r base.in
     #   pyinstaller

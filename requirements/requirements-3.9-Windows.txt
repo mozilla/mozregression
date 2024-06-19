@@ -643,11 +643,11 @@ pyinstaller-hooks-contrib==2024.7 \
     --hash=sha256:8bf0775771fbaf96bcd2f4dfd6f7ae6c1dd1b1efe254c7e50477b3c08e7841d8 \
     --hash=sha256:fd5f37dcf99bece184e40642af88be16a9b89613ecb958a8bd1136634fc9fac5
     # via pyinstaller
-pyside6==6.6.3.1 \
-    --hash=sha256:35936f06257e5c37ae8993da0cb5a528e5db3ea1fc2bb6b12cdf899a11510966 \
-    --hash=sha256:3d2ebb08a7744b59e1270e57f264a9ef5b45fccdc0328a9aeb50d890d6b3f4f2 \
-    --hash=sha256:d993989a10725c856f5b07f25e0664c5059daa92c259549c9df0972b5b0c7935 \
-    --hash=sha256:f7acd26fe8e1a745ef0be66b49ee49ee8ae50c2a2855d9792db262ebc7916d98
+pyside6==6.7.2 \
+    --hash=sha256:15e7696a09072ee977f6e6179ab1e48184953df8417bcaa83cfadf0b79747242 \
+    --hash=sha256:602debef9ec159b0db48f83b38a0e43e2dad3961f7d99f708d98620f04e9112b \
+    --hash=sha256:6e0acb471535de303f56e3077aa86f53496b4de659b99ecce80520bcee508a63 \
+    --hash=sha256:f73ae0de77d67f51ca3ce8207b12d3a5fa0107d3d5b6e4aeb3b53ee842b0927a
     # via -r gui.in
 pyside6-addons==6.6.3.1 \
     --hash=sha256:31135adc521ed6e3fdc8203507e7e9d72424d6b9ebd245d1189d991e90669d6a \

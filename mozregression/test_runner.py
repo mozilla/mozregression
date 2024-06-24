@@ -20,7 +20,7 @@ from mozregression.launchers import create_launcher as mozlauncher
 LOG = get_proxy_logger("Test Runner")
 
 
-def create_launcher(build_info):
+def create_launcher(build_info, allow_sudo=False, disable_snap_connect=False):
     """
     Create and returns a :class:`mozregression.launchers.Launcher`.
     """
@@ -36,7 +36,7 @@ def create_launcher(build_info):
         )
     LOG.info("Running %s build %s" % (build_info.repo_name, desc))
 
-    return mozlauncher(build_info)
+    return mozlauncher(build_info, allow_sudo, disable_snap_connect)
 
 
 class TestRunner(metaclass=ABCMeta):
@@ -82,6 +82,19 @@ class TestRunner(metaclass=ABCMeta):
         """
         return build_range.mid_point()
 
+    def maybe_snap(self):
+        """
+        Checking if the launcher migth contain Snap specific bits and return
+        them if it's the case, defaulting to False else.
+        """
+        if hasattr(self, "launcher_kwargs") and "allow_sudo" in self.launcher_kwargs.keys():
+            return (
+                self.launcher_kwargs["allow_sudo"],
+                self.launcher_kwargs["disable_snap_connect"],
+            )
+        else:
+            return (False, False)
+
 
 class ManualTestRunner(TestRunner):
     """
@@ -117,7 +130,8 @@ class ManualTestRunner(TestRunner):
         return verdict[0]
 
     def evaluate(self, build_info, allow_back=False):
-        with create_launcher(build_info) as launcher:
+        (allow_sudo, disable_snap_connect) = self.maybe_snap()
+        with create_launcher(build_info, allow_sudo, disable_snap_connect) as launcher:
             launcher.start(**self.launcher_kwargs)
             build_info.update_from_app_info(launcher.get_app_info())
             verdict = self.get_verdict(build_info, allow_back)
@@ -131,7 +145,12 @@ class ManualTestRunner(TestRunner):
         return verdict
 
     def run_once(self, build_info):
-        with create_launcher(build_info) as launcher:
+        (allow_sudo, disable_snap_connect) = self.maybe_snap()
+        with create_launcher(
+            build_info,
+            allow_sudo,
+            disable_snap_connect,
+        ) as launcher:
             launcher.start(**self.launcher_kwargs)
             build_info.update_from_app_info(launcher.get_app_info())
             return launcher.wait()
@@ -190,7 +209,12 @@ class CommandTestRunner(TestRunner):
         self.command = command
 
     def evaluate(self, build_info, allow_back=False):
-        with create_launcher(build_info) as launcher:
+        (allow_sudo, disable_snap_connect) = self.maybe_snap()
+        with create_launcher(
+            build_info,
+            allow_sudo,
+            disable_snap_connect,
+        ) as launcher:
             build_info.update_from_app_info(launcher.get_app_info())
             variables = {k: v for k, v in build_info.to_dict().items()}
             if hasattr(launcher, "binary"):

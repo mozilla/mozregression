@@ -351,6 +351,51 @@ class IntegrationHandler(BisectorHandler):
         return result
 
 
+"""
+We are just using this to make it clear we have no merge to take care of
+We are running an Integration because builds are triggered from cron jobs
+on mozilla-central for all Snap package branches
+"""
+
+
+class SnapHandler(IntegrationHandler):
+    snap_repo = None
+    _build_infos = {}
+    snap_rev = {}
+
+    def __init__(self, **kwargs):
+        super(IntegrationHandler, self).__init__(**kwargs)
+
+    def record_build_infos(self, build_infos):
+        self._build_infos["_changeset"] = build_infos._changeset
+        self._build_infos["_repo_url"] = build_infos._repo_url
+        self.snap_repo = build_infos._repo_url
+
+    def update_build_infos(self, build_infos):
+        # _build_infos here holds the mozilla-central ones,
+        # build_infos should be the snap-specific one
+        self.snap_rev[self._build_infos["_changeset"]] = build_infos.changeset
+        self.snap_repo = build_infos._repo_url
+
+    def get_pushlog_url(self):
+        # somehow, self.found_repo from this class would not reflect
+        first_rev, last_rev = self.get_range()
+        if first_rev == last_rev:
+            return "%s/pushloghtml?changeset=%s" % (self.snap_repo, first_rev)
+        return "%s/pushloghtml?fromchange=%s&tochange=%s" % (
+            self.snap_repo,
+            first_rev,
+            last_rev,
+        )
+
+    def revert_build_infos(self, build_infos):
+        build_infos._changeset = self._build_infos["_changeset"]
+        build_infos._repo_url = self._build_infos["_repo_url"]
+
+    def handle_merge(self):
+        return None
+
+
 class IndexPromise(object):
     """
     A promise to get a build index.
@@ -503,11 +548,29 @@ class Bisection(object):
         return self.build_range.index(bdata)
 
     def evaluate(self, build_infos):
+        # we force getting data from app info for snap since we are building everything
+        # out of mozilla-central
+        if type(self.handler) is SnapHandler:
+            self.handler.record_build_infos(build_infos)
+            build_infos._force_update = True
         verdict = self.test_runner.evaluate(build_infos, allow_back=bool(self.history))
         # old builds do not have metadata about the repo. But once
         # the build is installed, we may have it
         if self.handler.found_repo is None:
             self.handler.found_repo = build_infos.repo_url
+        if type(self.handler) is SnapHandler:
+            # Some Snap nightly builds are missing SourceRepository/SourceStamp
+            # So since we dont have a better source of information, let's get back
+            # what we had
+            if build_infos.repo_url is None:
+                LOG.warning(
+                    "Bisection on a Snap package missing SourceRepository/SourceStamp,"
+                    " falling back to mozilla-central revs."
+                )
+                build_infos._force_update = False
+                self.handler.revert_build_infos(build_infos)
+            else:
+                self.handler.update_build_infos(build_infos)
         return verdict
 
     def ensure_good_and_bad(self):

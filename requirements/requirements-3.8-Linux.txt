@@ -392,9 +392,9 @@ importlib-metadata==8.2.0 \
     #   -r base.in
     #   pyinstaller
     #   pyinstaller-hooks-contrib
-importlib-resources==5.9.0 \
-    --hash=sha256:5481e97fb45af8dcf2f798952625591c58fe599d0735d86b10f54de086a61681 \
-    --hash=sha256:f78a8df21a79bcc30cfd400bdc38f314333de7c0fb619763f6b9dabab8268bb7
+importlib-resources==6.4.3 \
+    --hash=sha256:2d6dfe3b9e055f72495c2085890837fc8c758984e209115c8792bddcb762cd93 \
+    --hash=sha256:4a202b9b9d38563b46da59221d77bb73862ab5d79d461307bcb826d725448b98
     # via
     #   dmgbuild
     #   jsonschema

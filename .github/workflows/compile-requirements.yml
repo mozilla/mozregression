@@ -37,11 +37,11 @@ jobs:
         python-version: ${{ fromJSON(inputs.python) }}
         requirements_file: ${{ fromJSON(inputs.requirements_files) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -55,7 +55,7 @@ jobs:
           python -m piptools compile --verbose ${{ matrix.requirements_file }} --generate-hashes --allow-unsafe --output-file requirements-${{ matrix.python-version }}-${{ runner.os }}.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ github.sha }}-${{ github.run_number }}-${{ github.run_attempt }}-requirements
           path: requirements/requirements-${{ matrix.python-version }}-${{ runner.os }}.txt
@@ -63,10 +63,10 @@ jobs:
     if: ${{ inputs.commit_and_push == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: ${{ github.sha }}-${{ github.run_number }}-${{ github.run_attempt }}-requirements
           path: temp-requirements

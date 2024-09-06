@@ -17,7 +17,7 @@ jobs:
       DISPLAY: ":99.0"
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: setup Ubuntu 20.04
         if: matrix.os == 'ubuntu-20.04'
         run: |
@@ -29,7 +29,7 @@ jobs:
           sudo apt-get update
           sudo apt install libxcb-xinerama0 libxcb-cursor0 libegl-dev qt6-qpa-plugins -y
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.9
       - name: Install dependencies
@@ -46,7 +46,7 @@ jobs:
           mv gui/mozregression-gui.tar.gz gui/mozregression-gui-${{ matrix.os }}.tar.gz
           ls -alh gui/mozregression-gui-${{ matrix.os }}.tar.gz
       - name: Upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ./gui/mozregression-gui-${{ matrix.os }}.tar.gz
           name: mozregression-gui-${{ matrix.os }}.tar.gz
@@ -60,7 +60,7 @@ jobs:
       MACOSX_DEPLOYMENT_TARGET: 10.13
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Get Python
         run: curl https://www.python.org/ftp/python/${PYTHON_VERSION}/python-${PYTHON_VERSION}-macos11.pkg -o "python.pkg"
       - name: Install Python
@@ -83,7 +83,7 @@ jobs:
           python gui/build.py bundle
           ls -alh gui/mozregression-gui-app-bundle.tar.gz
       - name: Upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ./gui/mozregression-gui-app-bundle.tar.gz
           name: mozregression-gui-app-bundle.tar.gz
@@ -93,11 +93,11 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - name: Install dependencies
@@ -110,7 +110,7 @@ jobs:
           python gui\build.py bundle --nsis-path "C:\\Program Files (x86)\\NSIS"
           python gui\build.py test
       - name: Upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ./gui/wininst/mozregression-gui.exe
           name: mozregression-gui-unsigned.exe

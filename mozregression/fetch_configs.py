@@ -47,7 +47,19 @@ TIMESTAMP_FENNEC_API_16 = to_utc_timestamp(datetime.datetime(2017, 8, 29, 18, 28
 TIMESTAMP_GECKOVIEW_ARM = to_utc_timestamp(datetime.datetime(2021, 6, 5, 3, 56, 19))
 
 
-def get_build_regex(name, os, bits, processor, platprefix=r".*", platsuffix="", with_ext=True):
+def infer_arch_from_bits(os, bits, processor):
+    if bits == 64:
+        if processor == "aarch64":
+            return processor
+        else:
+            return "x86_64"
+    else:
+        return "x86"
+
+
+def get_build_regex(
+    name, os, bits, processor, platprefix=r".*", platsuffix="", with_ext=True, arch=None
+):
     """
     Returns a string regexp that can match a build filename.
 
@@ -60,18 +72,23 @@ def get_build_regex(name, os, bits, processor, platprefix=r".*", platsuffix="", 
     :param platsuffix: optional suffix after the platform
     :param with_ext: if True, the build extension will be appended (either
                      .zip, .tar.bz2 or .dmg depending on the os).
+    :param arch: optional arch, either x86, x86_64, aarch64. Inferred from bits if not given.
     """
+    if arch is None:
+        arch = infer_arch_from_bits(os, bits, processor)
+
     if os == "win":
-        if bits == 64:
-            if processor == "aarch64":
-                platform = r"win64-aarch64"
-            else:
-                platform = r"win64(-x86_64)?"
-            ext = r"\.zip"
+        if arch == "aarch64":
+            platform = r"win64-aarch64"
+        elif arch == "x86_64":
+            platform = r"win64(-x86_64)?"
         else:
-            platform, ext = r"win32", r"\.zip"
+            platform = r"win32"
+        ext = r"\.zip"
     elif os == "linux":
-        if bits == 64:
+        if arch == "aarch64":
+            platform, ext = r"linux-aarch64", r"\.tar.bz2"
+        elif arch == "x86_64":
             platform, ext = r"linux-x86_64", r"\.tar.bz2"
         else:
             platform, ext = r"linux-i686", r"\.tar.bz2"
@@ -132,7 +149,9 @@ class CommonConfig(object):
         """
         Returns a string regex that can match a build file on the servers.
         """
-        return get_build_regex(self.app_name, self.os, self.bits, self.processor) + "$"
+        return (
+            get_build_regex(self.app_name, self.os, self.bits, self.processor, arch=self.arch) + "$"
+        )
 
     def build_info_regex(self):
         """
@@ -140,7 +159,9 @@ class CommonConfig(object):
         on the servers.
         """
         return (
-            get_build_regex(self.app_name, self.os, self.bits, self.processor, with_ext=False)
+            get_build_regex(
+                self.app_name, self.os, self.bits, self.processor, with_ext=False, arch=self.arch
+            )
             + r"\.txt$"
         )
 
@@ -577,6 +598,7 @@ class L10nMixin:
                 self.bits,
                 self.processor,
                 platprefix=r".*\." + self.lang + r"\.",
+                arch=self.arch,
             )
             + "$"
         )
@@ -609,14 +631,37 @@ class FirefoxConfig(CommonConfig, FirefoxNightlyConfigMixin, FirefoxIntegrationC
                 self.bits,
                 self.processor,
                 platsuffix="-asan-reporter" if "asan" in self.build_type else "",
+                arch=self.arch,
             )
             + "$"
         )
 
+    def available_bits(self):
+        """
+        Returns the available architectures for this application.
+        """
+        return ()
+
+    def available_archs(self):
+        """
+        Returns the available architectures for this application.
+        """
+        return ["x86", "x86_64", "aarch64"]
+
 
 @REGISTRY.register("firefox-l10n", attr_value="firefox")
 class FirefoxL10nConfig(L10nMixin, FirefoxL10nNightlyConfigMixin, CommonConfig):
-    pass
+    def available_bits(self):
+        """
+        Returns the available architectures for this application.
+        """
+        return ()
+
+    def available_archs(self):
+        """
+        Returns the available architectures for this application.
+        """
+        return ["x86", "x86_64", "aarch64"]
 
 
 @REGISTRY.register("thunderbird")
@@ -731,22 +776,29 @@ class JsShellConfig(FirefoxConfig):
     def build_info_regex(self):
         # the info file is the one for firefox
         return (
-            get_build_regex("firefox", self.os, self.bits, self.processor, with_ext=False)
+            get_build_regex(
+                "firefox", self.os, self.bits, self.processor, with_ext=False, arch=self.arch
+            )
             + r"\.txt$"
         )
 
     def build_regex(self):
+        arch = self.arch
+        if arch is None:
+            arch = infer_arch_from_bits(self.os, self.bits, self.processor)
+
         if self.os == "linux":
-            if self.bits == 64:
+            if arch == "aarch64":
+                part = "linux-aarch64"
+            elif arch == "x86_64":
                 part = "linux-x86_64"
             else:
                 part = "linux-i686"
         elif self.os == "win":
-            if self.bits == 64:
-                if self.processor == "aarch64":
-                    part = "win64-aarch64"
-                else:
-                    part = "win64(-x86_64)?"
+            if arch == "aarch64":
+                part = "win64-aarch64"
+            elif arch == "x86_64":
+                part = "win64(-x86_64)?"
             else:
                 part = "win32"
         else:

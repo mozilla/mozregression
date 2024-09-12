@@ -68,29 +68,6 @@ classifiers=[
 [project.scripts]
 mozregression = "mozregression.main:main"
 
-[project.optional-dependencies]
-dev = [
-  "coverage==7.6.1",
-  "coveralls==4.0.1",
-  "mock==5.1.0",
-  "pytest==8.3.2",
-  "pytest-mock==3.14.0",
-]
-gui = [
-  "PySide6==6.6.*",
-]
-gui-dev = [
-  "pytest-qt==4.4.0",
-]
-linters = [
-  "flake8>=6.0.0",
-  "flake8-black",
-  "glean-parser",
-  "isort",
-  "mccabe",
-  "pyflakes",
-]
-
 [tool.setuptools]
 packages = ["mozregression"]
 platforms = ["Any"]

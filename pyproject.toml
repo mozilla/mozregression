@@ -49,9 +49,9 @@ dependencies = [
 requires-python = ">= 3.8.1"
 license = {text = "MPL 2.0"}
 authors = [
-  { name = "Mozilla Automation and Tools Team", email = "tools@lists.mozilla.org" }
+  {name = "Mozilla Automation and Tools Team", email = "tools@lists.mozilla.org"}
 ]
-classifiers=[
+classifiers = [
   "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",

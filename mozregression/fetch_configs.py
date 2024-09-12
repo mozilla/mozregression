@@ -47,7 +47,13 @@ TIMESTAMP_FENNEC_API_16 = to_utc_timestamp(datetime.datetime(2017, 8, 29, 18, 28
 TIMESTAMP_GECKOVIEW_ARM = to_utc_timestamp(datetime.datetime(2021, 6, 5, 3, 56, 19))
 
 
-def infer_arch_from_bits(os, bits, processor):
+def infer_arch_from_bits(bits, processor):
+    """
+    Infers the processor architecture from the bits argument.
+
+    :param bits: the bits information of the build. Either 32 or 64.
+    :param processor: the architecture of the build.
+    """
     if bits == 64:
         if processor == "aarch64":
             return processor
@@ -75,23 +81,24 @@ def get_build_regex(
     :param arch: optional arch, either x86, x86_64, aarch64. Inferred from bits if not given.
     """
     if arch is None:
-        arch = infer_arch_from_bits(os, bits, processor)
+        arch = infer_arch_from_bits(bits, processor)
 
     if os == "win":
+        ext = r"\.zip"
         if arch == "aarch64":
             platform = r"win64-aarch64"
         elif arch == "x86_64":
             platform = r"win64(-x86_64)?"
         else:
             platform = r"win32"
-        ext = r"\.zip"
     elif os == "linux":
+        ext = r"\.tar.bz2"
         if arch == "aarch64":
-            platform, ext = r"linux-aarch64", r"\.tar.bz2"
+            platform = r"linux-aarch64"
         elif arch == "x86_64":
-            platform, ext = r"linux-x86_64", r"\.tar.bz2"
+            platform = r"linux-x86_64"
         else:
-            platform, ext = r"linux-i686", r"\.tar.bz2"
+            platform = r"linux-i686"
     elif os == "mac":
         platform, ext = r"mac.*", r"\.dmg"
     else:
@@ -785,7 +792,7 @@ class JsShellConfig(FirefoxConfig):
     def build_regex(self):
         arch = self.arch
         if arch is None:
-            arch = infer_arch_from_bits(self.os, self.bits, self.processor)
+            arch = infer_arch_from_bits(self.bits, self.processor)
 
         if self.os == "linux":
             if arch == "aarch64":

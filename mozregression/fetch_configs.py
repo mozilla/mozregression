@@ -638,7 +638,7 @@ class FirefoxConfig(CommonConfig, FirefoxNightlyConfigMixin, FirefoxIntegrationC
 
     def available_bits(self):
         """
-        Returns the available architectures for this application.
+        Returns the available bits for this application.
         """
         return ()
 
@@ -653,7 +653,7 @@ class FirefoxConfig(CommonConfig, FirefoxNightlyConfigMixin, FirefoxIntegrationC
 class FirefoxL10nConfig(L10nMixin, FirefoxL10nNightlyConfigMixin, CommonConfig):
     def available_bits(self):
         """
-        Returns the available architectures for this application.
+        Returns the available bits for this application.
         """
         return ()
 

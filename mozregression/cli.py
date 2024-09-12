@@ -285,7 +285,7 @@ def create_parser(defaults):
             "x86_64",
         ),
         default=None,
-        help=("Force alternate build (applies to Firefox, GVE, Fenix, and Focus)."),
+        help=("Force alternate build (applies to Firefox, Firefox-l10n, GVE, Fenix, and Focus)."),
     )
 
     parser.add_argument(
@@ -603,7 +603,7 @@ class Configuration(object):
             if options.app not in arch_options:
                 self.logger.warning(f"--arch ignored for {options.app}.")
                 options.arch = None
-            elif options.app == "firefox" and mozinfo.os == "mac":
+            elif options.app in ("firefox", "firefox-l10n") and mozinfo.os == "mac":
                 self.logger.warning(
                     "--arch ignored for Firefox for macOS as it uses unified binary."
                 )

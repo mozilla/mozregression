@@ -1,6 +1,6 @@
 # pyproject.toml
 [build-system]
-requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]
+requires = ["setuptools>=61", "wheel", "setuptools_scm[toml]>=3.4"]
 
 [tool.setuptools_scm]
 write_to = "mozregression/version.py"
@@ -20,3 +20,57 @@ multi_line_output = 3
 include_trailing_comma = "True"
 force_grid_wrap = 0
 use_parentheses = "True"
+
+[project]
+name = "mozregression"
+dynamic = ["version"]
+description = "Regression range finder for Mozilla nightly builds"
+readme = "README.md"
+dependencies = [
+  "glean_sdk>=60.3.0",
+  "beautifulsoup4>=4.7.1",
+  "colorama>=0.4.1",
+  "configobj>=5.0.6",
+  "distro>=1.8.0",
+  "importlib_resources>= 5.10",
+  "mozdevice>=4.1.0,<5",
+  "mozfile>=2.0.0",
+  "mozinfo>=1.1.0",
+  "mozinstall>=2.0.0",
+  "mozlog>=4.0",
+  "mozprocess>=1.3.1",
+  "mozprofile>=2.2.0",
+  "mozrunner>=8.0.2",
+  "mozversion>=2.1.0",
+  "redo>=2.0.2",
+  "requests>=2.21.0",
+  "taskcluster>=6.0.0",
+]
+requires-python = ">= 3.8.1"
+license = {text = "MPL 2.0"}
+authors = [
+  {name = "Mozilla Automation and Tools Team", email = "tools@lists.mozilla.org"}
+]
+classifiers = [
+  "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3 :: Only",
+]
+
+[project.scripts]
+mozregression = "mozregression.main:main"
+
+[tool.setuptools]
+packages = ["mozregression"]
+platforms = ["Any"]
+
+[tool.setuptools.package-data]
+mozregression = ["*.yaml"]

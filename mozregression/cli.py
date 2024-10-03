@@ -419,6 +419,12 @@ def create_parser(defaults):
 
     parser.add_argument("--debug", "-d", action="store_true", help="Show the debug output.")
 
+    parser.add_argument(
+        "--dont-check-userns",
+        action="store_true",
+        help="Do not check for unprivileged user namespaces AppArmor blocking.",
+    )
+
     return parser
 
 

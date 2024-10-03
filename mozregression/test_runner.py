@@ -82,6 +82,13 @@ class TestRunner(metaclass=ABCMeta):
         """
         return build_range.mid_point()
 
+    def get_install_params(self, build_info):
+        """Return a dictionary with launcher arguments to be used at install time."""
+        install_params = {"dest": build_info}
+        if build_info.app_name == "firefox":
+            install_params["policy"] = self.launcher_kwargs["policy"]
+        return install_params
+
 
 class ManualTestRunner(TestRunner):
     """
@@ -117,7 +124,7 @@ class ManualTestRunner(TestRunner):
         return verdict[0]
 
     def evaluate(self, build_info, allow_back=False):
-        with create_launcher(build_info) as launcher:
+        with create_launcher(**self.get_install_params(build_info)) as launcher:
             launcher.start(**self.launcher_kwargs)
             build_info.update_from_app_info(launcher.get_app_info())
             verdict = self.get_verdict(build_info, allow_back)
@@ -131,7 +138,7 @@ class ManualTestRunner(TestRunner):
         return verdict
 
     def run_once(self, build_info):
-        with create_launcher(build_info) as launcher:
+        with create_launcher(**self.get_install_params(build_info)) as launcher:
             launcher.start(**self.launcher_kwargs)
             build_info.update_from_app_info(launcher.get_app_info())
             return launcher.wait()
@@ -190,7 +197,7 @@ class CommandTestRunner(TestRunner):
         self.command = command
 
     def evaluate(self, build_info, allow_back=False):
-        with create_launcher(build_info) as launcher:
+        with create_launcher(**self.get_install_params(build_info)) as launcher:
             build_info.update_from_app_info(launcher.get_app_info())
             variables = {k: v for k, v in build_info.to_dict().items()}
             if hasattr(launcher, "binary"):

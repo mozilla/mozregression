@@ -168,9 +168,8 @@ colorama==0.4.6 \
     #   -r base.in
     #   click
     #   pytest
-configobj==5.0.8 \
-    --hash=sha256:6f704434a07dc4f4dc7c9a745172c1cad449feb548febd9f7fe362629c627a97 \
-    --hash=sha256:a7a8c6ab7daade85c3f329931a807c8aee750a2494363934f8ea84d8a54c87ea
+configobj==5.0.9 \
+    --hash=sha256:03c881bbf23aa07bccf1b837005975993c4ab4427ba57f959afdd9d1a2386848
     # via -r base.in
 coverage[toml]==7.6.1 \
     --hash=sha256:06a737c882bd26d0d6ee7269b20b12f14a8704807a01056c80bb881a4b2ce6ca \

@@ -121,7 +121,8 @@ class IntroPage(WizardPage):
 
         self.fetch_config = create_config(app_name, mozinfo.os, bits, mozinfo.processor)
 
-        self.arch_model = QStringListModel(self.fetch_config.available_archs())
+        available_archs = self.fetch_config.available_archs()
+        self.arch_model = QStringListModel(available_archs)
         self.ui.arch_combo.setModel(self.arch_model)
         if not self.arch_model.stringList():
             self.ui.arch_label.setDisabled(True)
@@ -129,6 +130,8 @@ class IntroPage(WizardPage):
         else:
             self.ui.arch_label.setEnabled(True)
             self.ui.arch_combo.setEnabled(True)
+            if mozinfo.processor in available_archs:
+                self.ui.arch_combo.setCurrentIndex(available_archs.index(mozinfo.processor))
 
         self.build_type_model = QStringListModel(self.fetch_config.available_build_types())
         self.ui.build_type.setModel(self.build_type_model)

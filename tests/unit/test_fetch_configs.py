@@ -154,6 +154,34 @@ class TestFirefoxl10nConfig(unittest.TestCase):
             self.conf.get_nightly_repo_regex(datetime.date(2005, 9, 7))
 
 
+class TestFirefoxl10nConfigWithArch(unittest.TestCase):
+    app_name = "firefox-l10n"
+    os = "linux"
+    bits = 64
+    processor = "aarch64"
+    lang = "ar"
+    arch = "x86"
+
+    instance_type = FirefoxL10nConfig
+
+    build_examples = ["firefox-38.0a1.ar.linux-i686.tar.bz2"]
+    build_info_examples = ["firefox-38.0a1.en-US.linux-i686.txt"]
+
+    def setUp(self):
+        self.conf = create_config(self.app_name, self.os, self.bits, self.processor, arch=self.arch)
+        self.conf.set_lang(self.lang)
+
+    def test_build_regex(self):
+        for example in self.build_examples:
+            res = re.match(self.conf.build_regex(), example)
+            self.assertIsNotNone(res)
+
+    def test_build_info_regex(self):
+        for example in self.build_info_examples:
+            res = re.match(self.conf.build_info_regex(), example)
+            self.assertIsNotNone(res)
+
+
 class TestThunderbirdConfig(unittest.TestCase):
     os = "linux"
     bits = 64
@@ -295,6 +323,14 @@ class TestGetBuildUrl(unittest.TestCase):
             get_build_regex("test", "linux", 64, "x86_64", with_ext=False),
             r"(target|test.*linux-x86_64)",
         )
+        self.assertEqual(
+            get_build_regex("test", "linux", 64, "x86_64", arch="x86"),
+            r"(target|test.*linux-i686)\.tar.bz2",
+        )
+        self.assertEqual(
+            get_build_regex("test", "linux", 64, "aarch64"),
+            r"(target|test.*linux-aarch64)\.tar.bz2",
+        )
 
     def test_for_win(self):
         self.assertEqual(get_build_regex("test", "win", 32, "x86"), r"(target|test.*win32)\.zip")
@@ -312,6 +348,14 @@ class TestGetBuildUrl(unittest.TestCase):
         self.assertEqual(
             get_build_regex("test", "win", 64, "aarch64"),
             r"(target|test.*win64-aarch64)\.zip",
+        )
+        self.assertEqual(
+            get_build_regex("test", "win", 64, "aarch64", arch="x86_64"),
+            r"(target|test.*win64(-x86_64)?)\.zip",
+        )
+        self.assertEqual(
+            get_build_regex("test", "win", 64, "aarch64", arch="x86"),
+            r"(target|test.*win32)\.zip",
         )
 
     def test_for_mac(self):
@@ -550,7 +594,10 @@ def test_jsshell_build_info_regex():
     [
         ("linux", 32, "x86", "jsshell-linux-i686.zip"),
         ("linux", 64, "x86_64", "jsshell-linux-x86_64.zip"),
+        ("linux", 32, "aarch64", "jsshell-linux-i686.zip"),
+        ("linux", 64, "aarch64", "jsshell-linux-aarch64.zip"),
         ("mac", 64, "x86_64", "jsshell-mac.zip"),
+        ("mac", 64, "aarch64", "jsshell-mac.zip"),
         ("win", 32, "x86", "jsshell-win32.zip"),
         ("win", 64, "x86_64", "jsshell-win64.zip"),
         ("win", 64, "x86_64", "jsshell-win64-x86_64.zip"),
@@ -566,6 +613,14 @@ def test_jsshell_build_regex(os, bits, processor, name):
 def test_jsshell_x86_64_build_regex():
     conf = create_config("jsshell", "win", 64, "x86_64")
     assert not re.match(conf.build_regex(), "jsshell-win64-aarch64.zip")
+
+
+def test_jsshell_aarch64_build_regex():
+    conf = create_config("jsshell", "win", 64, "aarch64")
+    assert re.match(conf.build_regex(), "jsshell-win64-aarch64.zip")
+
+    conf = create_config("jsshell", "win", 64, "aarch64", arch="x86_64")
+    assert re.match(conf.build_regex(), "jsshell-win64-x86_64.zip")
 
 
 @pytest.mark.parametrize(

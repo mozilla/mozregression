@@ -285,7 +285,7 @@ def create_parser(defaults):
             "x86_64",
         ),
         default=None,
-        help=("Force alternate build (applies to GVE, Fenix, and Focus)."),
+        help=("Force alternate build (applies to Firefox, Firefox-l10n, GVE, Fenix, and Focus)."),
     )
 
     parser.add_argument(
@@ -562,6 +562,16 @@ class Configuration(object):
         options = self.options
 
         arch_options = {
+            "firefox": [
+                "aarch64",
+                "x86",
+                "x86_64",
+            ],
+            "firefox-l10n": [
+                "aarch64",
+                "x86",
+                "x86_64",
+            ],
             "gve": [
                 "aarch64",
                 "arm",
@@ -585,8 +595,18 @@ class Configuration(object):
         options.bits = parse_bits(options.bits or mozinfo.bits)
 
         if options.arch is not None:
-            if options.app not in ("gve", "fenix", "focus"):
-                self.logger.warning("--arch ignored for non Android apps.")
+            if user_defined_bits:
+                self.logger.warning(
+                    "--arch and --bits are passed together. --arch will be preferred."
+                )
+
+            if options.app not in arch_options:
+                self.logger.warning(f"--arch ignored for {options.app}.")
+                options.arch = None
+            elif options.app in ("firefox", "firefox-l10n") and mozinfo.os == "mac":
+                self.logger.warning(
+                    "--arch ignored for Firefox for macOS as it uses unified binary."
+                )
                 options.arch = None
             elif options.arch not in arch_options[options.app]:
                 raise MozRegressionError(
@@ -630,7 +650,7 @@ class Configuration(object):
             self.logger.info("bits option not specified, using 64-bit builds.")
 
         if options.bits == 32 and mozinfo.os == "mac":
-            self.logger.info("only 64-bit builds available for mac, using " "64-bit builds")
+            self.logger.info("only 64-bit builds available for mac, using 64-bit builds.")
 
         if fetch_config.is_integration() and fetch_config.tk_needs_auth():
             creds = tc_authenticate(self.logger)

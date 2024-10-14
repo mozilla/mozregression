@@ -6,7 +6,7 @@ from __future__ import absolute_import
 
 import atexit
 import os
-import pipes
+import shlex
 import sys
 
 import colorama
@@ -265,7 +265,7 @@ class Application(object):
             argv.append("--bad=%s" % handler.bad_revision)
 
         LOG.info("To resume, run:")
-        LOG.info(" ".join([pipes.quote(arg) for arg in argv]))
+        LOG.info(" ".join([shlex.quote(arg) for arg in argv]))
 
     def _on_exit_print_resume_info(self, handler):
         handler.print_range()

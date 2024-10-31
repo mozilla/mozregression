@@ -19,6 +19,9 @@ Location:
 Each option correspond to its command-line counter part (the long form,
 but without the first double dashes, -\-). They are described [here](usage.html).
 
+There is an exception for the `--arg` which can be set in `mozregression.cfg` by using `cmdargs`.
+For example: `cmdargs = "https://mozilla.org",`. Note the trailing comma, it is required to be correctly parsed as a list.
+
 ## Example
 
 {% highlight ini %}

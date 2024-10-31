@@ -64,5 +64,5 @@ def test_wizard(mocker, qtbot, os, bits, wizard_class, pages):
     if isinstance(wizard, SingleRunWizard):
         assert options["launch"] == now.addDays(-3).toPython()
     else:
-        assert options["good"] == now.addYears(-1).toPython()
+        assert options["good"] == now.addMonths(-1).toPython()
         assert options["bad"] == now.toPython()

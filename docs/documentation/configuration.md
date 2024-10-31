@@ -19,6 +19,13 @@ Location:
 Each option correspond to its command-line counter part (the long form,
 but without the first double dashes, -\-). They are described [here](usage.html).
 
+There is an exception for `--arg` which can be set in `mozregression.cfg` by using `cmdargs`.
+For example, to pass a URL at which Firefox will open use
+```
+cmdargs = "https://mozilla.org",
+```
+Note the trailing comma, it is required to be correctly parsed as a list.
+
 ## Example
 
 {% highlight ini %}

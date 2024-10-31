@@ -78,6 +78,11 @@ def create_branches():
     ):
         for alias in aliases:
             branches.set_alias(alias, name)
+
+    # All of the snap packages builds are done on mozilla-central cron jobs
+    for name in ("snap-nightly", "snap-beta", "snap-stable", "snap-esr"):
+        branches.set_branch(name, "mozilla-central")
+
     return branches
 
 

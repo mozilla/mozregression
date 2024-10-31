@@ -7,7 +7,7 @@ See python build.py --help
 import argparse
 import glob
 import os
-import pipes
+import shlex
 import shutil
 import subprocess
 import sys
@@ -19,7 +19,7 @@ IS_MAC = sys.platform == "darwin"
 
 
 def call(*args, **kwargs):
-    print("Executing `%s`" % " ".join(pipes.quote(a) for a in args))
+    print("Executing `%s`" % " ".join(shlex.quote(a) for a in args))
     subprocess.check_call(args, **kwargs)
 
 

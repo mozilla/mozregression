@@ -52,7 +52,7 @@ to date list of available options.
         string.pref = Hello, world!
         integer.pref = 1
 
-- Forward arguments to tested binary (note that you must use '=' for arguments beginning with '-' so that the parser doesn't get confused) (Second note: in the configuration file these are called `cmdargs` instead. See [here](configuration.html).
+- Forward arguments to tested binary. Note that you must use '=' for arguments beginning with '-' so that the parser doesn't get confused. Additionally, this is equivalent to `cmdargs` in the [configuration file](configuration.html).
 
         mozregression --arg='-foreground' --arg='-P'
 

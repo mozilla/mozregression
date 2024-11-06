@@ -1,6 +1,6 @@
 --no-binary coverage
-coverage==7.6.1
-coveralls==4.0.1
-mock==5.1.0
-pytest==8.3.2
-pytest-mock==3.14.0
+coverage
+coveralls
+mock
+pytest
+pytest-mock

@@ -281,8 +281,9 @@ mohawk==1.1.0 \
     --hash=sha256:3ed296a30453d0b724679e0fd41e4e940497f8e461a9a9c3b7f36e43bab0fa09 \
     --hash=sha256:d2a0e3ab10a209cc79e95e28f2dd54bd4a73fd1998ffe27b7ba0f962b6be9723
     # via taskcluster
-mozdevice==4.1.2 \
-    --hash=sha256:50d96ec666d723b41dc010b0e0dcc7b070b255938e17b24a4c0ecfb0e131199d
+mozdevice==4.2.0 \
+    --hash=sha256:7fbb961cda951b2c2dd4abc2e8aef73dfd99aa0ffd852da707f9b631ad760647 \
+    --hash=sha256:d04bd5bb0105d906c9516f58000edece8d397df9726d18c3fda9eb06c4246c21
     # via
     #   -r base.in
     #   mozrunner

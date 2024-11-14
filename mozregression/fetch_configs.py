@@ -92,7 +92,7 @@ def get_build_regex(
         else:
             platform = r"win32"
     elif os == "linux":
-        ext = r"\.tar.bz2"
+        ext = r"\.tar.(bz2|xz)"
         if arch == "aarch64":
             platform = r"linux-aarch64"
         elif arch == "x86_64":

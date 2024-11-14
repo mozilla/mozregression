@@ -91,6 +91,10 @@ class TestFirefoxConfigLinux32(TestFirefoxConfigLinux64):
     build_info_examples = ["firefox-38.0a1.en-US.linux-i686.txt"]
 
 
+class TestFirefoxConfigLinux64xz(TestFirefoxConfigLinux64):
+    build_examples = ["firefox-38.0a1.en-US.linux-x86_64.tar.xz"]
+
+
 class TestFirefoxConfigWin64(TestFirefoxConfigLinux64):
     os = "win"
     build_examples = [
@@ -311,12 +315,12 @@ class TestGetBuildUrl(unittest.TestCase):
     def test_for_linux(self):
         self.assertEqual(
             get_build_regex("test", "linux", 32, "x86"),
-            r"(target|test.*linux-i686)\.tar.bz2",
+            r"(target|test.*linux-i686)\.tar.(bz2|xz)",
         )
 
         self.assertEqual(
             get_build_regex("test", "linux", 64, "x86_64"),
-            r"(target|test.*linux-x86_64)\.tar.bz2",
+            r"(target|test.*linux-x86_64)\.tar.(bz2|xz)",
         )
 
         self.assertEqual(
@@ -325,11 +329,11 @@ class TestGetBuildUrl(unittest.TestCase):
         )
         self.assertEqual(
             get_build_regex("test", "linux", 64, "x86_64", arch="x86"),
-            r"(target|test.*linux-i686)\.tar.bz2",
+            r"(target|test.*linux-i686)\.tar.(bz2|xz)",
         )
         self.assertEqual(
             get_build_regex("test", "linux", 64, "aarch64"),
-            r"(target|test.*linux-aarch64)\.tar.bz2",
+            r"(target|test.*linux-aarch64)\.tar.(bz2|xz)",
         )
 
     def test_for_win(self):

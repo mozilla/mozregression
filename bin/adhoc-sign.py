@@ -19,7 +19,7 @@ def main(args: argparse.Namespace):
 
     operating_systems = {
         "macOS": ["macapp"],
-        "windows": ["autograph_authenticode_sha2"],
+        "windows": ["autograph_authenticode_202404"],
     }
 
     params = {}

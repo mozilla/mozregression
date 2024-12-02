@@ -419,6 +419,12 @@ def create_parser(defaults):
 
     parser.add_argument("--debug", "-d", action="store_true", help="Show the debug output.")
 
+    parser.add_argument(
+        "--dont-check-userns",
+        action="store_true",
+        help="Do not check for unprivileged user namespaces AppArmor blocking.",
+    )
+
     return parser
 
 
@@ -515,6 +521,9 @@ class Configuration(object):
         )
 
         self.enable_telemetry = config["enable-telemetry"] not in ("no", "false", 0)
+        self.dont_check_userns = (
+            config["dont-check-userns"] in ("yes", "true", 1) or self.options.dont_check_userns
+        )
 
         self.action = None
         self.fetch_config = None

@@ -88,6 +88,7 @@ class Application(object):
                         profile=self._global_profile or self.options.profile,
                         cmdargs=self.options.cmdargs,
                         preferences=self.options.preferences,
+                        policy=self.options.policy,
                         adb_profile_dir=self.options.adb_profile_dir,
                     )
                 )

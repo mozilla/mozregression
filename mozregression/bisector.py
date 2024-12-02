@@ -351,6 +351,75 @@ class IntegrationHandler(BisectorHandler):
         return result
 
 
+class SnapHandler(IntegrationHandler):
+    """
+    Snap packages for all snap branches are built from cron jobs on
+    mozilla-central, so it maps into the IntegrationHandler as per the
+    definition of mozregression.
+
+    All branches of the snap package have their own pinning of the source
+    repository / source code information, so the changeset on mozilla-central
+    and other informations are not relevant and it is required to extract it
+    from somewhere else (e.g., application.ini).
+
+    There are also no merge to account for so handle_merge() is a no-op.
+    """
+
+    snap_repo = None
+    _build_infos = {}
+    snap_rev = {}
+
+    def record_build_infos(self, build_infos):
+        """
+        The way the build infos is produced on mozilla-central does not match
+        requirements of snap package: it is required that the information is
+        extracted from a different source since all branches of the snap
+        package are built from mozilla-central. Without this, then the buildid,
+        changeset and repository informations are matching mozilla-central when
+        the build was triggered and not what the snap package was built from.
+        """
+        self._build_infos["_changeset"] = build_infos._changeset
+        self._build_infos["_repo_url"] = build_infos._repo_url
+        self.snap_repo = build_infos._repo_url
+
+    def update_build_infos(self, build_infos):
+        """
+        Keep track of the Snap-specific build infos that have been collected
+        and given in parameter in build_infos, and keep a copy of the
+        mozilla-central ones within _build_infos if it is required to revert
+        later.
+        """
+        self.snap_rev[self._build_infos["_changeset"]] = build_infos.changeset
+        self.snap_repo = build_infos._repo_url
+
+    def get_pushlog_url(self):
+        # somehow, self.found_repo from this class would not reflect
+        first_rev, last_rev = self.get_range()
+        if first_rev == last_rev:
+            return "%s/pushloghtml?changeset=%s" % (self.snap_repo, first_rev)
+        return "%s/pushloghtml?fromchange=%s&tochange=%s" % (
+            self.snap_repo,
+            first_rev,
+            last_rev,
+        )
+
+    def revert_build_infos(self, build_infos):
+        """
+        Some old Snap nightly builds are missing SourceRepository/SourceStamp
+        Since there is not a better source of information, revert to the
+        informations provided by mozilla-central.
+        """
+        build_infos._changeset = self._build_infos["_changeset"]
+        build_infos._repo_url = self._build_infos["_repo_url"]
+
+    def handle_merge(self):
+        """
+        No-op by definition of how the snap packages are built on
+        mozilla-central cron jobs.
+        """
+        return None
+
+
 class IndexPromise(object):
     """
     A promise to get a build index.
@@ -503,11 +572,27 @@ class Bisection(object):
         return self.build_range.index(bdata)
 
     def evaluate(self, build_infos):
+        # we force getting data from app info for snap since we are building everything
+        # out of mozilla-central
+        if isinstance(self.handler, SnapHandler):
+            self.handler.record_build_infos(build_infos)
         verdict = self.test_runner.evaluate(build_infos, allow_back=bool(self.history))
         # old builds do not have metadata about the repo. But once
         # the build is installed, we may have it
         if self.handler.found_repo is None:
             self.handler.found_repo = build_infos.repo_url
+        if isinstance(self.handler, SnapHandler):
+            # Some Snap nightly builds are missing SourceRepository/SourceStamp
+            # So since we dont have a better source of information, let's get back
+            # what we had
+            if build_infos.repo_url is None:
+                LOG.warning(
+                    "Bisection on a Snap package missing SourceRepository/SourceStamp,"
+                    " falling back to mozilla-central revs."
+                )
+                self.handler.revert_build_infos(build_infos)
+            else:
+                self.handler.update_build_infos(build_infos)
         return verdict
 
     def ensure_good_and_bad(self):

@@ -102,9 +102,9 @@ async-timeout==4.0.3 \
     --hash=sha256:4640d96be84d82d02ed59ea2b7105a0f7b33abe8703703cd0ab0bf87c427522f \
     --hash=sha256:7405140ff1230c310e51dc27b3145b9092d659ce68ff733fb0cefe3ee42be028
     # via taskcluster
-attrs==23.2.0 \
-    --hash=sha256:935dc3b529c262f6cf76e50877d35a4bd3c1de194fd41f47a2b7ae8f19971f30 \
-    --hash=sha256:99b87a485a5820b23b879f04c2305b44b951b502fd64be915879d77a7e8fc6f1
+attrs==24.3.0 \
+    --hash=sha256:8f5c07333d543103541ba7be0e2ce16eeee8130cb0b3f9238ab904ce1e85baff \
+    --hash=sha256:ac96cd038792094f438ad1f6ff80837353805ac950cd2aa0e0625ef19850c308
     # via
     #   aiohttp
     #   jsonschema

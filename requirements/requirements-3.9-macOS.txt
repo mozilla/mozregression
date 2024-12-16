@@ -13,9 +13,9 @@ aiohttp @ https://files.pythonhosted.org/packages/f9/9f/5ee4aaf09c95da6e71c9f0d5
     # via
     #   -r base.universal2.in
     #   taskcluster
-aiosignal==1.3.1 \
-    --hash=sha256:54cd96e15e1649b75d6c87526a6ff0b6c1b0dd3459f43d9ca11d48c339b68cfc \
-    --hash=sha256:f8376fb07dd1e86a584e4fcdec80b36b7f81aac666ebc724e2c090300dd83b17
+aiosignal==1.3.2 \
+    --hash=sha256:45cde58e409a301715980c2b01d0c28bdde3770d8290b5eb2173759d9acb31a5 \
+    --hash=sha256:a8c255c66fafb1e499c9351d0bf32ff2d8a0321595ebac3b93713656d2436f54
     # via aiohttp
 altgraph==0.17.4 \
     --hash=sha256:1b5afbb98f6c4dcadb2e2ae6ab9fa994bbb8c1d75f4fa96d340f9437ae454406 \

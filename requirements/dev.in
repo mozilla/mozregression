@@ -2,5 +2,5 @@
 coverage==7.6.8
 coveralls==4.0.1
 mock==5.1.0
-pytest==8.3.4
+pytest==8.3.5
 pytest-mock==3.14.0

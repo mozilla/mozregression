@@ -7,7 +7,7 @@ configobj>=5.0.6
 distro>=1.8.0
 dmgbuild==1.*
 glean-sdk==60.3.0; sys.platform != 'darwin'
-importlib-metadata==8.5.0
+importlib-metadata==8.6.1
 mozdevice>=4.1.0,<5
 mozfile>=2.0.0
 mozinfo>=1.1.0

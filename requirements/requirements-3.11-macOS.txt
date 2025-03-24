@@ -182,9 +182,9 @@ distro==1.9.0 \
     # via
     #   -r base.in
     #   mozinfo
-dmgbuild==1.6.2 \
-    --hash=sha256:dba01d29f10c6804f2d72301600ddd03724daa41cd21a95409c44a3e199b19aa \
-    --hash=sha256:f78200b992027ccd2aa63872ed6ed11464e9149249303b8eee477e65280993d1
+dmgbuild==1.6.5 \
+    --hash=sha256:c5cbeec574bad84a324348aa7c36d4aada04568c99fb104dec18d22ba3259f45 \
+    --hash=sha256:e19ab8c5e8238e6455d9ccb9175817be7fd62b9cdd1eef20f63dd88e0ec469ab
     # via -r base.in
 docopt==0.6.2 \
     --hash=sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491

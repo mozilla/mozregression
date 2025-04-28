@@ -348,8 +348,9 @@ multidict @ https://files.pythonhosted.org/packages/c6/7c/c8f4445389c0bbc5ea85d1
     #   -r base.universal2.in
     #   aiohttp
     #   yarl
-mypy-extensions==1.0.0 \
-    --hash=sha256:75dbf8955dc00442a438fc4d0666508a9a97b6bd41aa2f0ffe9d2f2725af0782
+mypy-extensions==1.1.0 \
+    --hash=sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505 \
+    --hash=sha256:52e68efc3284861e772bbcd66823fde5ae21fd2fdb51c62a211403730b916558
     # via black
 packaging==24.1 \
     --hash=sha256:026ed72c8ed3fcce5bf8950572258698927fd1dbda10a5e981cdf0ac37f4f002 \

@@ -531,8 +531,8 @@ mozprofile==3.0.0 \
     # via
     #   -r base.in
     #   mozrunner
-mozrunner==8.3.1 \
-    --hash=sha256:e9aba623f8611e974c65722ebc1838701230eaedc967da5e81d1ecec85e93802
+mozrunner==8.3.2 \
+    --hash=sha256:90f0e9675c5ee5b97933b896edd4be165547abd56fc8e05f875ac57d3ab58373
     # via -r base.in
 mozterm==1.0.0 \
     --hash=sha256:b1e91acec188de07c704dbb7b0100a7be5c1e06567b3beb67f6ea11d00a483a4 \
@@ -710,9 +710,9 @@ pyside6-essentials==6.6.3.1 \
     # via
     #   pyside6
     #   pyside6-addons
-pytest==8.3.2 \
-    --hash=sha256:4ba08f9ae7dcf84ded419494d229b48d0903ea6407b030eaec46df5e6a73bba5 \
-    --hash=sha256:c132345d12ce551242c87269de812483f5bcc87cdbb4722e48487ba194f9fdce
+pytest==8.3.4 \
+    --hash=sha256:50e16d954148559c9a74109af1eaf0c945ba2d8f30f0a3d3335edde19788b6f6 \
+    --hash=sha256:965370d062bce11e73868e0335abac31b4d3de0e82f4007408d242b4f8610761
     # via
     #   -r dev.in
     #   pytest-mock
@@ -951,9 +951,9 @@ soupsieve==2.6 \
     --hash=sha256:e2e68417777af359ec65daac1057404a3c8a5455bb8abc36f1a9866ab1a51abb \
     --hash=sha256:e72c4ff06e4fb6e4b5a9f0f55fe6e81514581fca1515028625d0f299c602ccc9
     # via beautifulsoup4
-taskcluster==68.0.4 \
-    --hash=sha256:b911708471416c47225110134dbb0b02fcd8a8d96d8f03a4467f5beb554e9cf5 \
-    --hash=sha256:f401f0c30b5f4d0c783b633ce55daabc78c5d004508a9b976756924e7a67727e
+taskcluster==75.0.0 \
+    --hash=sha256:0d39f32bd7cb0ddf75a51827c15fbb5641d1f5922654451ba3ecae72fcfc8e1a \
+    --hash=sha256:f932ec449f265a52dce2fea89a4de5b1607f47e21ce84a6fe33d78afe43c7d42
     # via -r base.in
 taskcluster-urls==13.0.1 \
     --hash=sha256:5e25e7e6818e8877178b175ff43d2e6548afad72694aa125f404a7329ece0973 \

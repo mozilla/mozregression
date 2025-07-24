@@ -46,7 +46,7 @@ dependencies = [
   "requests>=2.21.0",
   "taskcluster>=6.0.0",
 ]
-requires-python = ">= 3.8.1"
+requires-python = ">= 3.9"
 license = {text = "MPL 2.0"}
 authors = [
   {name = "Mozilla Automation and Tools Team", email = "tools@lists.mozilla.org"}
@@ -57,11 +57,11 @@ classifiers = [
   "Environment :: Console",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
-  "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3 :: Only",
 ]
 

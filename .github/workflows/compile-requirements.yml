@@ -57,7 +57,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.sha }}-${{ github.run_number }}-${{ github.run_attempt }}-requirements
+          name: ${{ github.sha }}-${{ github.run_number }}-${{ github.run_attempt }}-requirements-${{ matrix.python-version }}-${{ runner.os }}
           path: requirements/requirements-${{ matrix.python-version }}-${{ runner.os }}.txt
   commit-and-push:
     if: ${{ inputs.commit_and_push == 'true' }}
@@ -68,7 +68,6 @@ jobs:
           persist-credentials: false
       - uses: actions/download-artifact@v4
         with:
-          name: ${{ github.sha }}-${{ github.run_number }}-${{ github.run_attempt }}-requirements
           path: temp-requirements
       - name: Configure git
         run: |

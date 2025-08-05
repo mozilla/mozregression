@@ -176,6 +176,7 @@ class MozRunnerLauncher(Launcher):
     runner = None
     app_name = "undefined"
     binary = None
+    env = ()
 
     @staticmethod
     def _codesign_verify(appdir):
@@ -266,6 +267,7 @@ class MozRunnerLauncher(Launcher):
 
         LOG.info("Launching %s" % self.binary)
         self.runner = Runner(binary=self.binary, cmdargs=cmdargs, profile=profile)
+        self.runner.env.update(self.env)
 
         def _on_exit():
             # if we are stopping the process do not log anything.
@@ -389,6 +391,7 @@ class FirefoxRegressionProfile(Profile):
 @REGISTRY.register("firefox")
 class FirefoxLauncher(MozRunnerLauncher):
     profile_class = FirefoxRegressionProfile
+    env = (("MOZ_DISABLE_SAFE_MODE_KEY", "1"),)
 
     def _install(self, dest):
         super(FirefoxLauncher, self)._install(dest)

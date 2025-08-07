@@ -4,11 +4,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import _tkinter
 import shutil
 import subprocess
 from pathlib import Path
 
+import _tkinter
 import PyInstaller.log as logging
 from PyInstaller.building.datastruct import Tree
 from PyInstaller.building.osx import BUNDLE

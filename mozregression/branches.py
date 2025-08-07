@@ -104,10 +104,18 @@ def find_branch_in_merge_commit(message, current_branch):
 
     Return None if the message does not looks like a merge commit.
     """
+    mapping = {
+        "firefox-autoland": "autoland",
+        "firefox-main": "mozilla-central",
+    }
     match = RE_MERGE_BRANCH.match(message)
     if match:
-        if get_name(match.group(1)) == current_branch:
+        name_1, name_2 = get_name(match.group(1)), get_name(match.group(2))
+        name_1 = mapping.get(name_1, name_1)
+        name_2 = mapping.get(name_2, name_2)
+
+        if name_1 == current_branch:
             LOG.debug("Assuming transposed repos in merge commit message")
-            return get_name(match.group(2))
+            return name_2
         else:
-            return get_name(match.group(1))
+            return name_1

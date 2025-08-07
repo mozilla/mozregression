@@ -8,9 +8,9 @@
 --no-binary mypy-extensions
 --no-binary pyyaml
 
-aiohappyeyeballs==2.4.4 \
-    --hash=sha256:5fdd7d87889c63183afc18ce9271f9b0a7d32c2303e394468dd45d514a757745 \
-    --hash=sha256:a980909d50efcd44795c4afeca523296716d50cd756ddca6af8c65b996e27de8
+aiohappyeyeballs==2.6.1 \
+    --hash=sha256:c3f9d0113123803ccadfdf3f0faa505bc78e6a72d1cc4806cbd719826e943558 \
+    --hash=sha256:f349ba8f4b75cb25c99c5c2d84e997e485204d2902a9597802b0371f09331fb8
     # via aiohttp
 aiohttp==3.10.11 \
     --hash=sha256:0316e624b754dbbf8c872b62fe6dcb395ef20c70e59890dfa0de9eafccd2849d \

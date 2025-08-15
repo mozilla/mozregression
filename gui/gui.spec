@@ -1,7 +1,7 @@
 # -*- mode: python -*-
 import sys
 from PyInstaller.utils.hooks import collect_all, collect_submodules
-from mozregression.pyinstaller import BUNDLE_WITH_TK
+# from mozregression.pyinstaller import BUNDLE_WITH_TK
 
 IS_MAC = sys.platform == "darwin"
 
@@ -63,7 +63,7 @@ if IS_MAC:
         console=False,
         target_arch="universal2",
     )
-    app = BUNDLE_WITH_TK(
+    app = BUNDLE(
         exe,
         strip=False,
         upx=True,

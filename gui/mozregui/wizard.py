@@ -221,7 +221,7 @@ class BuildSelectionPage(WizardPage):
     def __init__(self):
         WizardPage.__init__(self)
         now = QDate.currentDate()
-        self.ui.start.ui.date.setDate(now.addYears(-1))
+        self.ui.start.ui.date.setDate(now.addMonths(-1))
         self.ui.end.ui.date.setDate(now)
         self.ui.find_fix.stateChanged.connect(self.change_labels)
 

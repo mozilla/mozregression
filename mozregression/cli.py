@@ -18,7 +18,7 @@ import mozprofile
 from mozlog.structuredlog import get_default_logger
 
 from mozregression import __version__
-from mozregression.branches import get_name
+from mozregression.branches import get_name, has_branch, set_branch
 from mozregression.config import DEFAULT_CONF_FNAME, get_config, write_config
 from mozregression.dates import is_date_or_datetime, parse_date, to_datetime
 from mozregression.errors import DateFormatError, MozRegressionError, UnavailableRelease
@@ -30,6 +30,7 @@ from mozregression.releases import (
     formatted_valid_release_dates,
     tag_of_beta,
     tag_of_release,
+    tag_of_esr,
 )
 from mozregression.tc_authenticate import tc_authenticate
 
@@ -544,6 +545,18 @@ class Configuration(object):
                     if not repo:
                         self.logger.info("Assuming repo mozilla-beta")
                         self.fetch_config.set_repo("mozilla-beta")
+                    self.logger.info("Using tag %s for release %s" % (new_value, value))
+                    value = new_value
+                elif get_name(repo) == "mozilla-esr" or (
+                    not repo and re.match(r"^\d+(\.\d+)*esr$", value)
+                ):
+                    new_value = tag_of_esr(value)
+                    majorVersion = re.match(r"^(\d+)(\.\d+)*esr$", value).group(1)
+                    new_repo = "mozilla-esr%s" % majorVersion
+                    self.logger.info("Assuming repo %s" % new_repo)
+                    if not has_branch(new_repo):
+                        set_branch(new_repo, "releases/%s" % new_repo, category="releases")
+                    self.fetch_config.set_repo(new_repo)
                     self.logger.info("Using tag %s for release %s" % (new_value, value))
                     value = new_value
                 else:

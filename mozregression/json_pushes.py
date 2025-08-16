@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import datetime
+import re
 
 from mozlog import get_proxy_logger
 
@@ -70,18 +71,22 @@ class JsonPushes(object):
         LOG.debug("Using url: %s" % url)
 
         response = retry_get(url)
-        data = response.json()
 
-        if (
-            response.status_code == 404
-            and data is not None
-            and "error" in data
-            and "unknown revision" in data["error"]
-        ):
-            raise EmptyPushlogError(
-                "The url %r returned a 404 error because the push is not"
-                " in this repo (e.g., not merged yet)." % url
-            )
+        if response.status_code == 404:
+            if re.search(r"specified repository.*unknown", response.text):
+                raise EmptyPushlogError(
+                    "The url %r returned a 404 error because there is no ESR release for that version."
+                    % url
+                )
+            data = response.json()
+            if data is not None and "error" in data and "unknown revision" in data["error"]:
+                raise EmptyPushlogError(
+                    "The url %r returned a 404 error because the push is not"
+                    " in this repo (e.g., not merged yet)." % url
+                )
+        else:
+            data = response.json()
+
         response.raise_for_status()
 
         if not data:

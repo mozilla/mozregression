@@ -12,6 +12,7 @@ from mozregression import branches, errors
         ("mozilla-inbound", "m-i"),
         ("mozilla-central", "mozilla-central"),
         ("mozilla-central", "m-c"),
+        ("mozilla-esr", "esr"),
         ("unknown", "unknown"),
     ],
 )
@@ -25,6 +26,7 @@ def test_branch_name(branch, alias):
         ("m-c", "https://hg.mozilla.org/mozilla-central"),
         ("m-i", "https://hg.mozilla.org/integration/mozilla-inbound"),
         ("mozilla-beta", "https://hg.mozilla.org/releases/mozilla-beta"),
+        ("mozilla-esr128", "https://hg.mozilla.org/releases/mozilla-esr128"),
     ],
 )
 def test_get_urls(branch, url):
@@ -61,6 +63,7 @@ def test_get_url_unknown_branch():
         ("m-i", "integration"),
         ("release", "releases"),
         ("mozilla-beta", "releases"),
+        ("esr", "releases"),
         ("", None),
         (None, None),
     ],

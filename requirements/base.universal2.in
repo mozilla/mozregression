@@ -39,4 +39,4 @@ https://files.pythonhosted.org/packages/dc/d1/8c747fafa558c603c4ca19d8e20b288aa0
 https://files.pythonhosted.org/packages/68/e6/86689936edbf47a007646e394f3091cbf90fadf9dcf265a52ab355acec36/glean_sdk-65.0.1-py3-none-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl; sys.platform == 'darwin'
 
 # Pinned on darwin because later versions depend on a package that has no universal2 binary.
-jsonschema==4.17.3; sys.platform == 'darwin'
+jsonschema==4.25.1; sys.platform == 'darwin'

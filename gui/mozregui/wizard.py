@@ -179,7 +179,7 @@ class ProfilePage(WizardPage):
     TITLE = "Profile selection"
     SUBTITLE = (
         "Choose a specific profile. You can choose an existing profile"
-        ", or let this blank to use a new one."
+        ", or leave this blank to use a new one."
     )
     FIELDS = {
         "profile": "profile_widget.line_edit",

@@ -1045,12 +1045,12 @@ setuptools-scm==8.3.1 \
     --hash=sha256:332ca0d43791b818b841213e76b1971b7711a960761c5bea5fc5cdb5196fbce3 \
     --hash=sha256:3d555e92b75dacd037d32bafdf94f97af51ea29ae8c7b234cf94b7a5bd242a63
     # via -r base.in
-shiboken6==6.9.1 \
-    --hash=sha256:209ccf02c135bd70321143dcbc5023ae0c056aa4850a845955dd2f9b2ff280a9 \
-    --hash=sha256:2a39997ce275ced7853defc89d3a1f19a11c90991ac6eef3435a69bb0b7ff1de \
-    --hash=sha256:40e92afc88da06b5100c56b761e59837ff282166e9531268f3d910b6128e621e \
-    --hash=sha256:efcdfa8655d34aaf8d7a0c7724def3440bd46db02f5ad3b1785db5f6ccb0a8ff \
-    --hash=sha256:efcf75d48a29ae072d0bf54b3cd5a59ae91bb6b3ab7459e17c769355486c2e0b
+shiboken6==6.9.2 \
+    --hash=sha256:3b54c0a12ea1b03b9dc5dcfb603c366e957dc75341bf7cb1cc436d0d848308ee \
+    --hash=sha256:68c33d565cd4732be762d19ff67dfc53763256bac413d392aa8598b524980bc4 \
+    --hash=sha256:8bb1c4326330e53adeac98bfd9dcf57f5173a50318a180938dcc4825d9ca38da \
+    --hash=sha256:a5f5985938f5acb604c23536a0ff2efb3cccb77d23da91fbaff8fd8ded3dceb4 \
+    --hash=sha256:c5b827797b3d89d9b9a3753371ff533fcd4afc4531ca51a7c696952132098054
     # via
     #   pyside6
     #   pyside6-addons

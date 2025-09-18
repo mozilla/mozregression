@@ -89,6 +89,8 @@ class Application(object):
                         cmdargs=self.options.cmdargs,
                         preferences=self.options.preferences,
                         adb_profile_dir=self.options.adb_profile_dir,
+                        allow_sudo=self.options.allow_sudo,
+                        disable_snap_connect=self.options.disable_snap_connect,
                     )
                 )
             else:

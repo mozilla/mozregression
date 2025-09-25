@@ -29,9 +29,28 @@ def test_push(mocker):
     )
 
 
-def test_push_404_error(mocker):
+def test_push_404_error_bad_revision(mocker):
     retry_get = mocker.patch("mozregression.json_pushes.retry_get")
     response = Mock(status_code=404, json=Mock(return_value={"error": "unknown revision"}))
+    retry_get.return_value = response
+
+    jpushes = JsonPushes()
+    with pytest.raises(MozRegressionError):
+        jpushes.push("invalid_changeset")
+
+
+def test_push_404_error_bad_repo(mocker):
+    retry_get = mocker.patch("mozregression.json_pushes.retry_get")
+    response = Mock(
+        status_code=404,
+        json=Mock(
+            return_value="""
+<div class="page_body">
+The specified repository "mozilla-esr160/json-pushes" is unknown, sorry.
+<br/>
+"""
+        ),
+    )
     retry_get.return_value = response
 
     jpushes = JsonPushes()

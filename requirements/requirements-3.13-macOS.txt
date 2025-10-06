@@ -369,12 +369,12 @@ pyrsistent==0.20.0 \
     --hash=sha256:f920385a11207dc372a028b3f1e1038bb244b3ec38d448e6d8e43c6b3ba20e98 \
     --hash=sha256:fed2c3216a605dc9a6ea50c7e84c82906e3684c4e80d2908208f662a6cbf9022
     # via jsonschema
-pyside6==6.9.1 \
-    --hash=sha256:1525d63dc6dc425b8c2dc5bc01a8cb1d67530401449f3a3490c09a14c095b9f9 \
-    --hash=sha256:531a6e67c429b045674d57fe9864b711eb59e4cded753c2640982e368fd468d1 \
-    --hash=sha256:c82dbb7d32bbdd465e01059174f71bddc97de152ab71bded3f1907c40f9a5f16 \
-    --hash=sha256:db44ac08b8f7ac1b421bc1c6a44200d03f08d80dc7b3f68dfdb1684f30f41c17 \
-    --hash=sha256:f843ef39970a2f79757810fffd7b8e93ac42a3de9ea62f2a03648cde57648aed
+pyside6==6.9.3 \
+    --hash=sha256:33fb70addd02e1adaa45573485c431bca43cf12bb7b2596535b824ff169138ce \
+    --hash=sha256:6485aebec8eba4e55d1ec1cebe68ca1413589880cc8ccd8a49acae852ec6cfb3 \
+    --hash=sha256:6fd9fbbc14e2a5707df611bfacbf3f71283c637b8a29b28708801eeb28bfcb69 \
+    --hash=sha256:71b41b9ebd1c044c3777f2b32278d3919f07bda4f15c504bc165b643bc3cec01 \
+    --hash=sha256:8f4ff61b24a64153373b68a96339bd765fc010d02c4d98d0f6dba2a6c9686e11
     # via -r gui.in
 pyside6-addons==6.9.1 \
     --hash=sha256:4f589631bdceb518080ae9c9fa288e64f092cd5bebe25adc8ad89e8eadd4db29 \

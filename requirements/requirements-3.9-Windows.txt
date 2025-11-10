@@ -427,9 +427,9 @@ frozenlist==1.7.0 \
     # via
     #   aiohttp
     #   aiosignal
-glean-parser==14.5.2 \
-    --hash=sha256:3ac165304160b720648e850ae1f06bd9dd1280a416aa10d5997aae31a657e11a \
-    --hash=sha256:ec466d151618938efb03f17c16caeb12666bd889c64562b8e34bcd2d95e072f7
+glean-parser==18.1.0 \
+    --hash=sha256:65a82a00846801927ad06521420cd147b909fd531ece9b513ec7f81d9a916312 \
+    --hash=sha256:a3959b8e3b55e43eed6912bdc9895e3d11cb26217776111b4f48ebf425a4915a
     # via
     #   -r linters.in
     #   glean-sdk

@@ -83,6 +83,10 @@ class TestFirefoxConfigLinux64(unittest.TestCase):
         repo_regex = self.conf.get_nightly_repo_regex(datetime.date(2008, 6, 27))
         self.assertEqual(repo_regex, "/2008-06-27-[\\d-]+mozilla-central/$")
 
+    def test_available_archs(self):
+        # Linux should return full arch list
+        self.assertEqual(self.conf.available_archs(), ["x86", "x86_64", "aarch64"])
+
 
 class TestFirefoxConfigLinux32(TestFirefoxConfigLinux64):
     bits = 32
@@ -118,6 +122,10 @@ class TestFirefoxConfigMac(TestFirefoxConfigLinux64):
     os = "mac"
     build_examples = ["firefox-38.0a1.en-US.mac.dmg"]
     build_info_examples = ["firefox-38.0a1.en-US.mac.txt"]
+
+    def test_available_archs(self):
+        # Mac should return empty list (universal binaries)
+        self.assertEqual(self.conf.available_archs(), [])
 
 
 class TestFirefoxl10nConfig(unittest.TestCase):
@@ -156,6 +164,28 @@ class TestFirefoxl10nConfig(unittest.TestCase):
     def test_nightly_repo_regex_before_2005_10_19(self):
         with self.assertRaises(errors.MozRegressionError):
             self.conf.get_nightly_repo_regex(datetime.date(2005, 9, 7))
+
+    def test_available_archs(self):
+        # Linux should return full arch list
+        self.assertEqual(self.conf.available_archs(), ["x86", "x86_64", "aarch64"])
+
+
+class TestFirefoxl10nConfigMac(unittest.TestCase):
+    app_name = "firefox-l10n"
+    os = "mac"
+    bits = 64
+    processor = "x86_64"
+    lang = "ar"
+
+    instance_type = FirefoxL10nConfig
+
+    def setUp(self):
+        self.conf = create_config(self.app_name, self.os, self.bits, self.processor)
+        self.conf.set_lang(self.lang)
+
+    def test_available_archs(self):
+        # Mac should return empty list (universal binaries)
+        self.assertEqual(self.conf.available_archs(), [])
 
 
 class TestFirefoxl10nConfigWithArch(unittest.TestCase):
@@ -647,10 +677,6 @@ def test_set_firefox_build_type_pgo(os, bits, processor, tc_suffix):
         assert conf.tk_route(create_push(CHSET, TIMESTAMP_TEST)).endswith("." + tc_suffix)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 @pytest.mark.parametrize(
     "arch,tk_name",
     [
@@ -663,3 +689,7 @@ if __name__ == "__main__":
 def test_create_config_tk_name(arch, tk_name):
     config = create_config("gve", "linux", None, "x86", arch)
     assert config.tk_name == tk_name
+
+
+if __name__ == "__main__":
+    unittest.main()

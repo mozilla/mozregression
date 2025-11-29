@@ -21,3 +21,4 @@ gui/htmlcov/
 gui/resources_rc.py
 env/
 mozregression/version.py
+.vscode/

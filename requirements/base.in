@@ -1,5 +1,5 @@
 --no-binary pyyaml
-PyInstaller==6.15.*
+PyInstaller==6.17.*
 beautifulsoup4>=4.7.1
 charset-normalizer<3
 colorama>=0.4.1

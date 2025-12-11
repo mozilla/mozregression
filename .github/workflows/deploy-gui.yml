@@ -48,9 +48,7 @@ jobs:
           asset_content_type: application/gzip
 
   build-and-publish-mac-gui:
-    # macos-13 is the latest runner (as of time of writing) that does not cause a
-    # _tkinter import error during the build.
-    runs-on: macos-13
+    runs-on: macos-15
     env:
       # We need the official Python, because the GA ones only support newer macOS versions
       # The deployment target is picked up by the Python build tools automatically

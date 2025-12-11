@@ -632,6 +632,18 @@ def test_jsshell_aarch64_build_regex():
     assert re.match(conf.build_regex(), "jsshell-win64-x86_64.zip")
 
 
+def test_nightly_timestamp_parse():
+    conf = create_config("fenix", None, None, None, "arm64-v8a")
+    build_url = (
+        "https://archive.mozilla.org/pub/fenix/nightly/2025/12/"
+        "2025-12-01-10-27-59-fenix-147.0a1-android-arm64-v8a/"
+        "fenix-147.0a1.multi.android-arm64-v8a.apk"
+    )
+    expected_dt = datetime.datetime(2025, 12, 1, 10, 27, 59)
+
+    assert conf.get_nightly_timestamp_from_url(build_url) == expected_dt
+
+
 @pytest.mark.parametrize(
     "os,bits,processor,tc_suffix",
     [

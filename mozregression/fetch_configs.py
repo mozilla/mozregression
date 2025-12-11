@@ -283,6 +283,7 @@ class NightlyConfigMixin(metaclass=ABCMeta):
     nightly_base_repo_name = "firefox"
     nightly_repo = None
     has_build_info = True
+    has_json_pushes = False
 
     def set_base_url(self, url):
         self.archive_base_url = url.rstrip("/")
@@ -338,6 +339,13 @@ class NightlyConfigMixin(metaclass=ABCMeta):
                 repo,
             )
         return r"/%04d-%02d-%02d-[\d-]+%s/$" % (date.year, date.month, date.day, repo)
+
+    def get_nightly_timestamp_from_url(self, url):
+        """
+        Extract the build timestamp from a build url.
+        """
+        matches = re.search(r"/(\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2})-(.*)/", url)
+        return datetime.datetime.strptime(matches.group(1), "%Y-%m-%d-%H-%M-%S")
 
     def can_go_integration(self):
         """
@@ -425,6 +433,8 @@ class FennecNightlyConfigMixin(NightlyConfigMixin):
 
 class FenixNightlyConfigMixin(NightlyConfigMixin):
     nightly_base_repo_name = "fenix"
+    has_build_info = False
+    has_json_pushes = True
 
     def _get_nightly_repo(self, date):
         return "mozilla-central"

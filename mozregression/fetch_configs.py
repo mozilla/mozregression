@@ -604,6 +604,21 @@ class FennecIntegrationConfigMixin(IntegrationConfigMixin):
         return
 
 
+class FenixIntegrationConfigMixin(IntegrationConfigMixin):
+    tk_name = "fenix"
+
+    def tk_routes(self, push):
+        for build_type in self.build_types:
+            yield "gecko.v2.{}.revision.{}.mobile.{}-{}".format(
+                self.integration_branch,
+                push.changeset,
+                self.tk_name,
+                build_type,
+            )
+            self._inc_used_build()
+        return
+
+
 class ThunderbirdIntegrationConfigMixin(IntegrationConfigMixin):
     default_integration_branch = "comm-central"
 
@@ -748,9 +763,14 @@ class FennecConfig(CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConf
 
 
 @REGISTRY.register("fenix")
-class FenixConfig(CommonConfig, FenixNightlyConfigMixin):
+class FenixConfig(CommonConfig, FenixNightlyConfigMixin, FenixIntegrationConfigMixin):
+    BUILD_TYPES = ("shippable",)
+    BUILD_TYPE_FALLBACKS = {
+        "shippable": ("nightly", "nightly-simulation"),
+    }
+
     def build_regex(self):
-        return r"fenix-.+\.apk"
+        return r"(target.{}|fenix-.*)\.apk".format(self.arch)
 
     def build_info_regex(self):
         return r"(?!)"  # Match nothing
@@ -772,8 +792,12 @@ class FenixConfig(CommonConfig, FenixNightlyConfigMixin):
 
 @REGISTRY.register("focus")
 class FocusConfig(FenixConfig):
+    BUILD_TYPE_FALLBACKS = {
+        "shippable": ("nightly",),
+    }
+
     def build_regex(self):
-        return r"focus-.+\.apk"
+        return r"(target.{}|focus-.*)\.apk".format(self.arch)
 
     # https://archive.mozilla.org/pub/focus/
     nightly_base_repo_name = "focus"
@@ -787,6 +811,9 @@ class FocusConfig(FenixConfig):
             return "firefox-android"
         # https://hg.mozilla.org/mozilla-central/
         return "mozilla-central"
+
+    # Index: gecko.v2.{repo}.revision.{rev}.mobile.focus-{build_type}
+    tk_name = "focus"
 
 
 @REGISTRY.register("gve")

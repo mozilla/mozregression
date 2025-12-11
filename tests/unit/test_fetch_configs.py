@@ -278,6 +278,11 @@ class TestExtendedAndroidConfig:
             assert "mozilla-central-android-api-15" in regex
             regex = conf.get_nightly_repo_regex(datetime.date(2017, 8, 30))
             assert "mozilla-central-android-api-16" in regex
+        elif app_name in ["fenix", "focus"]:
+            conf = create_config(app_name, None, None, None, "arm64-v8a")
+            date = datetime.date(2022, 1, 1)
+            regex = conf.get_nightly_repo_regex(date)
+            assert regex == f"/{date.isoformat()}-[\\d-]+{app_name}-[^-]+-android-arm64-v8a/$"
         else:
             conf = create_config(app_name, "linux", 64, None)
             date = datetime.date(2023, 1, 1)

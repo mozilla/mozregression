@@ -270,7 +270,7 @@ class NightlyConfigMixin(metaclass=ABCMeta):
     A nightly build url is divided in 2 parts here:
 
     1. the base part as returned by :meth:`get_nightly_base_url`
-    2. the final part, which can be found using :meth:`get_nighly_repo_regex`
+    2. the final part, which can be found using :meth:`get_nightly_repo_regex`
 
     The final part contains a repo name, which is returned by
     :meth:`get_nightly_repo`.
@@ -425,22 +425,19 @@ class FennecNightlyConfigMixin(NightlyConfigMixin):
 
 class FenixNightlyConfigMixin(NightlyConfigMixin):
     nightly_base_repo_name = "fenix"
-    arch_regex_bits = ""
 
     def _get_nightly_repo(self, date):
-        return "fenix"
+        return "mozilla-central"
 
     def get_nightly_repo_regex(self, date):
-        repo = self.get_nightly_repo(date)
-        repo += self.arch_regex_bits  # e.g., ".*arm64.*".
+        repo = f"{self.nightly_base_repo_name}-[^-]+-android"
+        if self.arch:
+            repo += f"-{self.arch}"
         return self._get_nightly_repo_regex(date, repo)
 
 
 class FocusNightlyConfigMixin(FenixNightlyConfigMixin):
     nightly_base_repo_name = "focus"
-
-    def _get_nightly_repo(self, date):
-        return "focus"
 
 
 class IntegrationConfigMixin(metaclass=ABCMeta):
@@ -716,17 +713,6 @@ class FenixConfig(CommonConfig, FenixNightlyConfigMixin):
             "x86",
             "x86_64",
         ]
-
-    def set_arch(self, arch):
-        CommonConfig.set_arch(self, arch)
-        # Map "arch" value to one that can be used in the nightly repo regex lookup.
-        mapping = {
-            "arm64-v8a": "-.+-android-arm64-v8a",
-            "armeabi-v7a": "-.+-android-armeabi-v7a",
-            "x86": "-.+-android-x86",
-            "x86_64": "-.+-android-x86_64",
-        }
-        self.arch_regex_bits = mapping.get(self.arch, "")
 
     def should_use_archive(self):
         return True

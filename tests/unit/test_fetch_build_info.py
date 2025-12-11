@@ -212,6 +212,34 @@ class TestNightlyInfoFetcherL10N:
         assert result.repo_url == repo_url
 
 
+class TestFenixNightlyInfoFetch(unittest.TestCase):
+    def setUp(self):
+        self.fetch_config = fetch_configs.create_config("fenix", None, None, None, "arm64-v8a")
+        self.info_fetcher = fetch_build_info.NightlyInfoFetcher(self.fetch_config)
+
+    @patch("mozregression.fetch_build_info.url_links")
+    def test__find_build_info_from_url(self, url_links):
+        """Test that _fetch_build_info_from_url returns ArchiveBuildUrls for Fenix builds."""
+        build_folder = "2026-01-01-09-03-33-fenix-147.0a1-android-arm64-v8a"
+        build_file = "fenix-147.0a1.multi.android-arm64-v8a.apk"
+        build_url = f"http://foo/{build_folder}/"
+
+        url_links.return_value = [build_url + build_file]
+
+        builds = []
+        self.info_fetcher._fetch_build_info_from_url(build_url, 0, builds)
+
+        # Verify we got one build
+        self.assertEqual(len(builds), 1)
+
+        # Verify the structure: (index, ArchiveBuildUrls)
+        index, archive_urls = builds[0]
+        self.assertEqual(index, 0)
+        self.assertIsInstance(archive_urls, ArchiveBuildUrls)
+        self.assertEqual(archive_urls.build_url, build_url + build_file)
+        self.assertIsNone(archive_urls.build_txt_url)  # Fenix doesn't have .txt files
+
+
 class TestIntegrationInfoFetcher(unittest.TestCase):
     def setUp(self):
         self.fetch_config = fetch_configs.create_config("firefox", "linux", 64, "x86_64")

@@ -348,6 +348,13 @@ class NightlyConfigMixin(metaclass=ABCMeta):
             )
         return r"/%04d-%02d-%02d-[\d-]+%s/$" % (date.year, date.month, date.day, repo)
 
+    def get_nightly_timestamp_from_url(self, url):
+        """
+        Extract the build timestamp from a build url.
+        """
+        matches = re.search(r"/(\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2})-(.*)/", url)
+        return datetime.datetime.strptime(matches.group(1), "%Y-%m-%d-%H-%M-%S")
+
     def can_go_integration(self):
         """
         Indicate if we can bisect integration from this nightly config.
@@ -365,6 +372,18 @@ class NightlyTxtConfigMixin(NightlyConfigMixin):
 
     def get_nightly_changeset(self, archive_urls):
         return ChangesetInfo.from_nightly_txt(archive_urls)
+
+
+class NightlyPushlogConfigMixin(NightlyConfigMixin):
+    """
+    Config mixin when the source of changeset data is the pushlog.
+
+    The meth:`get_nightly_timestamp_from_url` and meth:`get_nightly_repo`
+    methods of the config help generate the query.
+    """
+
+    def get_nightly_changeset(self, archive_urls):
+        return ChangesetInfo.from_pushlog(archive_urls, self)
 
 
 class FirefoxNightlyConfigMixin(NightlyTxtConfigMixin):
@@ -445,7 +464,7 @@ class FennecNightlyConfigMixin(NightlyTxtConfigMixin):
         return self._get_nightly_repo_regex(date, repo)
 
 
-class FenixNightlyConfigMixin(NightlyConfigMixin):
+class FenixNightlyConfigMixin(NightlyPushlogConfigMixin):
     # https://archive.mozilla.org/pub/fenix/
     nightly_base_repo_name = "fenix"
 
@@ -472,10 +491,6 @@ class FenixNightlyConfigMixin(NightlyConfigMixin):
         if self.arch:
             repo += f"-{self.arch}"
         return self._get_nightly_repo_regex(date, repo)
-
-    def get_nightly_changeset(self, archive_urls):
-        # The normal .txt files don't exist for fenix
-        return ChangesetInfo()
 
 
 class IntegrationConfigMixin(metaclass=ABCMeta):

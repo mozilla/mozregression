@@ -270,7 +270,7 @@ class NightlyConfigMixin(metaclass=ABCMeta):
     A nightly build url is divided in 2 parts here:
 
     1. the base part as returned by :meth:`get_nightly_base_url`
-    2. the final part, which can be found using :meth:`get_nighly_repo_regex`
+    2. the final part, which can be found using :meth:`get_nightly_repo_regex`
 
     The final part contains a repo name, which is returned by
     :meth:`get_nightly_repo`.
@@ -281,7 +281,6 @@ class NightlyConfigMixin(metaclass=ABCMeta):
 
     archive_base_url = ARCHIVE_BASE_URL
     nightly_base_repo_name = "firefox"
-    nightly_repo = None
     has_build_info = True
 
     def set_base_url(self, url):
@@ -424,23 +423,32 @@ class FennecNightlyConfigMixin(NightlyConfigMixin):
 
 
 class FenixNightlyConfigMixin(NightlyConfigMixin):
+    # https://archive.mozilla.org/pub/fenix/
     nightly_base_repo_name = "fenix"
-    arch_regex_bits = ""
 
     def _get_nightly_repo(self, date):
-        return "fenix"
+        if date < datetime.date(2023, 2, 13):
+            # https://github.com/mozilla-mobile/fenix
+            return "fenix"
+        if date < datetime.date(2024, 3, 18):
+            # https://github.com/mozilla-mobile/firefox-android
+            return "firefox-android"
+        # https://hg.mozilla.org/mozilla-central/
+        return "mozilla-central"
 
     def get_nightly_repo_regex(self, date):
-        repo = self.get_nightly_repo(date)
-        repo += self.arch_regex_bits  # e.g., ".*arm64.*".
+        # Generated regex matches paths such as:
+        #   2022-06-10-17-01-58-fenix-103.0.0-android-x86_64
+        #   2025-07-01-09-15-43-fenix-142.0a1-android
+        #
+        # Note: This scheme was the same regardless of which
+        #       repo Fenix source code was in.
+        product = self.nightly_base_repo_name
+        version = r"[^-]+"
+        repo = f"{product}-{version}-android"
+        if self.arch:
+            repo += f"-{self.arch}"
         return self._get_nightly_repo_regex(date, repo)
-
-
-class FocusNightlyConfigMixin(FenixNightlyConfigMixin):
-    nightly_base_repo_name = "focus"
-
-    def _get_nightly_repo(self, date):
-        return "focus"
 
 
 class IntegrationConfigMixin(metaclass=ABCMeta):
@@ -713,25 +721,27 @@ class FenixConfig(CommonConfig, FenixNightlyConfigMixin):
             "x86_64",
         ]
 
-    def set_arch(self, arch):
-        CommonConfig.set_arch(self, arch)
-        # Map "arch" value to one that can be used in the nightly repo regex lookup.
-        mapping = {
-            "arm64-v8a": "-.+-android-arm64-v8a",
-            "armeabi-v7a": "-.+-android-armeabi-v7a",
-            "x86": "-.+-android-x86",
-            "x86_64": "-.+-android-x86_64",
-        }
-        self.arch_regex_bits = mapping.get(self.arch, "")
-
     def should_use_archive(self):
         return True
 
 
 @REGISTRY.register("focus")
-class FocusConfig(FenixConfig, FocusNightlyConfigMixin):
+class FocusConfig(FenixConfig):
     def build_regex(self):
         return r"focus-.+\.apk"
+
+    # https://archive.mozilla.org/pub/focus/
+    nightly_base_repo_name = "focus"
+
+    def _get_nightly_repo(self, date):
+        if date < datetime.date(2022, 12, 12):
+            # https://github.com/mozilla-mobile/focus-android
+            return "focus-android"
+        if date < datetime.date(2024, 3, 18):
+            # https://github.com/mozilla-mobile/firefox-android
+            return "firefox-android"
+        # https://hg.mozilla.org/mozilla-central/
+        return "mozilla-central"
 
 
 @REGISTRY.register("gve")

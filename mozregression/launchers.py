@@ -19,7 +19,7 @@ import mozinfo
 import mozinstall
 import mozversion
 from mozdevice import ADBDeviceFactory, ADBError, ADBHost
-from mozfile import remove
+from mozfile import remove, which
 from mozlog.structured import get_default_logger, get_proxy_logger
 from mozprofile import Profile, ThunderbirdProfile
 from mozrunner import Runner
@@ -427,6 +427,34 @@ class ThunderbirdLauncher(MozRunnerLauncher):
             self._codesign_sign(self.appdir)
 
 
+def adb_tool_path():
+    """
+    If adb is not found on the path, try to locate a version installed by
+    `mach bootstrap` as part of a Firefox build.
+    """
+    adb_in_path = which("adb")
+    if adb_in_path:
+        return adb_in_path
+
+    platform_suffix = {"mac": "macosx", "win": "windows", "linux": "linux"}.get(mozinfo.os)
+    if platform_suffix:
+        adb_name = "adb.exe" if mozinfo.os == "win" else "adb"
+        mozbuild_adb = os.path.expanduser(
+            os.path.join(
+                "~",
+                ".mozbuild",
+                f"android-sdk-{platform_suffix}",
+                "platform-tools",
+                adb_name,
+            )
+        )
+        if os.path.exists(mozbuild_adb):
+            return mozbuild_adb
+
+    # Let mozdevice raise a helpful error if adb still cannot be found.
+    return "adb"
+
+
 class AndroidLauncher(Launcher):
     app_info = None
     adb = None
@@ -445,7 +473,7 @@ class AndroidLauncher(Launcher):
     @classmethod
     def check_is_runnable(cls):
         try:
-            devices = ADBHost().devices()
+            devices = ADBHost(adb=adb_tool_path()).devices()
         except ADBError as adb_error:
             raise LauncherNotRunnable(str(adb_error))
         if not devices:
@@ -457,7 +485,7 @@ class AndroidLauncher(Launcher):
         # get info now, as dest may be removed
         self.app_info = safe_get_version(binary=dest)
         self.package_name = self.app_info.get("package_name", self._get_package_name())
-        self.adb = ADBDeviceFactory()
+        self.adb = ADBDeviceFactory(adb=adb_tool_path())
         try:
             self.adb.uninstall_app(self.package_name)
         except ADBError as msg:

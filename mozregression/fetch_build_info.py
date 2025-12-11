@@ -19,7 +19,7 @@ from mozlog import get_proxy_logger
 from taskcluster.exceptions import TaskclusterFailure
 
 from mozregression.build_info import IntegrationBuildInfo, NightlyBuildInfo
-from mozregression.errors import BuildInfoNotFound, MozRegressionError
+from mozregression.errors import BuildInfoNotFound, EmptyPushlogError, MozRegressionError
 from mozregression.json_pushes import JsonPushes, Push
 from mozregression.network import retry_get, url_links
 
@@ -192,6 +192,32 @@ class TxtFetchInfo(FetchInfo):
             matched = re.match(r"^\d+ (\w+)$", response.text.strip())
             if matched:
                 self.changeset = matched.group(1)
+
+
+class PushlogFetchInfo(FetchInfo):
+    """
+    Use the json-pushes API of the source control server to lookup the
+    changeset using the build timestamp.
+    """
+
+    def update_metadata(self, fetch_config):
+        build_dt = fetch_config.get_nightly_timestamp_from_url(self.build_url)
+        branch = fetch_config.get_nightly_repo(build_dt.date())
+
+        try:
+            jpushes = JsonPushes(branch=branch)
+        except MozRegressionError:
+            LOG.info(f"Repo {branch} does not support json-pushes queries")
+            return
+
+        try:
+            push = jpushes.push_by_timestamp(build_dt)[-1]
+        except EmptyPushlogError:
+            LOG.info(f"Unable to fetch push by timestamp for {build_dt}")
+            return
+
+        self.repository = jpushes.repo_url
+        self.changeset = push.changeset
 
 
 class NightlyInfoFetcher(InfoFetcher):

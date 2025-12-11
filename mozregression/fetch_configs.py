@@ -32,7 +32,7 @@ from mozregression import branches, errors
 from mozregression.class_registry import ClassRegistry
 from mozregression.config import ARCHIVE_BASE_URL
 from mozregression.dates import to_utc_timestamp
-from mozregression.fetch_build_info import FetchInfo, TxtFetchInfo
+from mozregression.fetch_build_info import PushlogFetchInfo, TxtFetchInfo
 
 LOG = get_proxy_logger(__name__)
 
@@ -345,6 +345,13 @@ class NightlyConfigMixin(metaclass=ABCMeta):
             )
         return r"/%04d-%02d-%02d-[\d-]+%s/$" % (date.year, date.month, date.day, repo)
 
+    def get_nightly_timestamp_from_url(self, url):
+        """
+        Extract the build timestamp from a build url.
+        """
+        matches = re.search(r"/(\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2})-(.*)/", url)
+        return datetime.datetime.strptime(matches.group(1), "%Y-%m-%d-%H-%M-%S")
+
     def can_go_integration(self):
         """
         Indicate if we can bisect integration from this nightly config.
@@ -456,8 +463,7 @@ class FenixNightlyConfigMixin(NightlyConfigMixin):
         return self._get_nightly_repo_regex(date, repo)
 
     def get_nightly_fetch_info_class(self):
-        # Build metadata not available for Fenix nightly builds
-        return FetchInfo
+        return PushlogFetchInfo
 
 
 class FocusNightlyConfigMixin(FenixNightlyConfigMixin):

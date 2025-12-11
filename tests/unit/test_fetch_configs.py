@@ -7,7 +7,7 @@ import unittest
 import pytest
 
 from mozregression.dates import to_utc_timestamp
-from mozregression.fetch_build_info import FetchInfo
+from mozregression.fetch_build_info import PushlogFetchInfo
 from mozregression.fetch_configs import (
     ARCHIVE_BASE_URL,
     TIMESTAMP_FENNEC_API_15,
@@ -322,7 +322,7 @@ class TestFenixConfig(unittest.TestCase):
         self.conf = create_config("fenix", None, None, None, "arm64-v8a")
 
     def test_fetchinfo_class(self):
-        self.assertEqual(self.conf.get_nightly_fetch_info_class(), FetchInfo)
+        self.assertEqual(self.conf.get_nightly_fetch_info_class(), PushlogFetchInfo)
 
     def test_build_regex(self):
         assert re.match(self.conf.build_regex(), "fenix-148.0a1.multi.android-arm64-v8a.apk")
@@ -645,6 +645,18 @@ def test_jsshell_aarch64_build_regex():
 
     conf = create_config("jsshell", "win", 64, "aarch64", arch="x86_64")
     assert re.match(conf.build_regex(), "jsshell-win64-x86_64.zip")
+
+
+def test_nightly_timestamp_parse():
+    conf = create_config("fenix", None, None, None, "arm64-v8a")
+    build_url = (
+        "https://archive.mozilla.org/pub/fenix/nightly/2025/12/"
+        "2025-12-01-10-27-59-fenix-147.0a1-android-arm64-v8a/"
+        "fenix-147.0a1.multi.android-arm64-v8a.apk"
+    )
+    expected_dt = datetime.datetime(2025, 12, 1, 10, 27, 59)
+
+    assert conf.get_nightly_timestamp_from_url(build_url) == expected_dt
 
 
 @pytest.mark.parametrize(

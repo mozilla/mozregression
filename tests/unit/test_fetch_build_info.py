@@ -7,6 +7,7 @@ import unittest
 from mock import Mock, patch
 
 from mozregression import errors, fetch_build_info, fetch_configs
+from mozregression.json_pushes import Push
 
 from .test_fetch_configs import create_push
 
@@ -147,6 +148,33 @@ class TestNightlyInfoFetcher2(unittest.TestCase):
         builds = []
         self.info_fetcher._fetch_build_info_from_url("http://foo", 0, builds)
         self.assertEqual(builds, [(0, expected)])
+
+
+class TestFenixNightlyInfoFetch(unittest.TestCase):
+    def setUp(self):
+        self.fetch_config = fetch_configs.create_config("fenix", None, None, None, "arm64-v8a")
+        self.info_fetcher = fetch_build_info.NightlyInfoFetcher(self.fetch_config)
+
+    @patch("mozregression.fetch_build_info.url_links")
+    @patch("mozregression.json_pushes.JsonPushes.pushes")
+    def test__find_build_info_from_url(self, pushes, url_links):
+        build_folder = "2026-01-01-09-03-33-fenix"
+        build_path = f"/{build_folder}/fenix-1.0.android-arch64-v8a.apk"
+        url_links.return_value = [build_path]
+        pushes.return_value = [
+            Push("1", {"changesets": ["abc"], "date": 12345}),
+        ]
+
+        expected = fetch_build_info.PushlogFetchInfo(build_path)
+        expected.changeset = "abc"
+        expected.repository = "https://hg.mozilla.org/mozilla-central"
+
+        builds = []
+        self.info_fetcher._fetch_build_info_from_url(f"http://foo/{build_folder}/", 0, builds)
+        self.assertEqual(len(builds), 1)
+        build_info = builds[0][1]
+        build_info.update_metadata(self.fetch_config)
+        self.assertEqual(build_info, expected)
 
 
 class TestIntegrationInfoFetcher(unittest.TestCase):

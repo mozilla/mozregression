@@ -333,12 +333,12 @@ class TestGVEConfig(unittest.TestCase):
         self.conf = create_config("gve", "linux", 64, None)
 
     def test_fallbacking(self):
-        assert self.conf.build_type == "opt"
-        self.conf._inc_used_build()
         assert self.conf.build_type == "shippable"
+        self.conf._inc_used_build()
+        assert self.conf.build_type == "opt"
         # Check we wrap
         self.conf._inc_used_build()
-        assert self.conf.build_type == "opt"
+        assert self.conf.build_type == "shippable"
 
 
 class TestGetBuildUrl(unittest.TestCase):
@@ -511,7 +511,7 @@ CHSET12 = "47856a214918"
             None,
             None,
             TIMESTAMP_FENNEC_API_15 - 1,
-            "gecko.v2.mozilla-central.revision.%s.mobile.android-api-11-opt" % CHSET,
+            "gecko.v2.mozilla-central.shippable.revision.%s.mobile.android-api-11-opt" % CHSET,
         ),
         (
             "fennec",
@@ -520,7 +520,7 @@ CHSET12 = "47856a214918"
             None,
             None,
             TIMESTAMP_FENNEC_API_15,
-            "gecko.v2.mozilla-central.revision.%s.mobile.android-api-15-opt" % CHSET,
+            "gecko.v2.mozilla-central.shippable.revision.%s.mobile.android-api-15-opt" % CHSET,
         ),
         (
             "fennec",
@@ -529,7 +529,7 @@ CHSET12 = "47856a214918"
             None,
             None,
             TIMESTAMP_FENNEC_API_16,
-            "gecko.v2.mozilla-central.revision.%s.mobile.android-api-16-opt" % CHSET,
+            "gecko.v2.mozilla-central.shippable.revision.%s.mobile.android-api-16-opt" % CHSET,
         ),
         # thunderbird
         (

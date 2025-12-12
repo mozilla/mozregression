@@ -130,7 +130,7 @@ class CommonConfig(object):
         self.processor = processor
         self.set_arch(arch)
         self.repo = None
-        self.set_build_type("opt")
+        self.set_build_type(self.BUILD_TYPES[0])
         self._used_build_index = 0
 
     @property
@@ -625,10 +625,6 @@ class FirefoxConfig(CommonConfig, FirefoxNightlyConfigMixin, FirefoxIntegrationC
         "shippable": ("opt", "pgo"),
         "opt": ("shippable", "pgo"),
     }
-
-    def __init__(self, os, bits, processor, arch):
-        super(FirefoxConfig, self).__init__(os, bits, processor, arch)
-        self.set_build_type("shippable")
 
     def build_regex(self):
         return (

@@ -212,6 +212,21 @@ class NightlyInfoFetcher(InfoFetcher):
             with self._fetch_lock:
                 lst.append((index, data))
 
+    def _update_build_info_from_json_pushes(self, date, infos):
+        """
+        If the build info isn't available in text file, we can also try asking the json-pushes
+        API to find the changeset for us using the build timestamp.
+        """
+        build_dt = self.fetch_config.get_nightly_timestamp_from_url(infos["build_url"])
+        try:
+            branch = self.fetch_config.get_nightly_repo(date)
+            jpushes = JsonPushes(branch=branch)
+            push = jpushes.push_by_timestamp(build_dt)[-1]
+            infos["repository"] = jpushes.repo_url
+            infos["changeset"] = push.changeset
+        except Exception:
+            LOG.info(f"Unable to fetch push by timestamp for {build_dt}")
+
     def _get_month_links(self, url):
         with self._lock:
             if url not in self._cache_months:
@@ -223,7 +238,7 @@ class NightlyInfoFetcher(InfoFetcher):
         Get the url list of the build folder for a given date.
 
         This methods needs to be thread-safe as it is used in
-        :meth:`NightlyBuildData.get_build_url`.
+        :meth:`find_build_info`.
         """
         LOG.debug("Get URLs for {}".format(date))
         url = self.fetch_config.get_nightly_base_url(date)
@@ -277,6 +292,8 @@ class NightlyInfoFetcher(InfoFetcher):
                 infos = sorted(valid_builds, key=lambda b: b[0])[0][1]
                 if fetch_txt_info:
                     self._update_build_info_from_txt(infos)
+                if ("changeset" not in infos) and self.fetch_config.has_json_pushes:
+                    self._update_build_info_from_json_pushes(date, infos)
 
                 build_info = NightlyBuildInfo(
                     self.fetch_config,

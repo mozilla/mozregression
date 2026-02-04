@@ -151,9 +151,7 @@ class IntegrationInfoFetcher(InfoFetcher):
                 build_url = meth("getArtifact", task_id, run_id, a["name"])
                 break
         if build_url is None:
-            raise BuildInfoNotFound(
-                "unable to find a build url for the" " changeset %r" % changeset
-            )
+            raise BuildInfoNotFound("unable to find a build url for the changeset %r" % changeset)
 
         if self.fetch_config.app_name == "gve":
             # Check taskcluster URL to make sure artifact is still around.
@@ -205,8 +203,9 @@ class NightlyInfoFetcher(InfoFetcher):
             # required. build_txt_url is optional.
             if "build_url" not in data:
                 raise BuildInfoNotFound(
-                    "Failed to find a build file in directory {} that "
-                    "matches regex '{}'".format(url, self.build_regex.pattern)
+                    "Failed to find a build file in directory {} that matches regex '{}'".format(
+                        url, self.build_regex.pattern
+                    )
                 )
 
             with self._fetch_lock:

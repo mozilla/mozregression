@@ -612,7 +612,7 @@ class L10nMixin:
 
 
 @REGISTRY.register("firefox")
-class FirefoxConfig(CommonConfig, FirefoxNightlyConfigMixin, FirefoxIntegrationConfigMixin):
+class FirefoxConfig(FirefoxNightlyConfigMixin, FirefoxIntegrationConfigMixin, CommonConfig):
     BUILD_TYPES = (
         "shippable",
         "opt",
@@ -669,7 +669,9 @@ class FirefoxL10nConfig(L10nMixin, FirefoxL10nNightlyConfigMixin, CommonConfig):
 
 @REGISTRY.register("thunderbird")
 class ThunderbirdConfig(
-    CommonConfig, ThunderbirdNightlyConfigMixin, ThunderbirdIntegrationConfigMixin
+    ThunderbirdNightlyConfigMixin,
+    ThunderbirdIntegrationConfigMixin,
+    CommonConfig,
 ):
     pass
 
@@ -680,7 +682,7 @@ class ThunderbirdL10nConfig(L10nMixin, ThunderbirdL10nNightlyConfigMixin, Common
 
 
 @REGISTRY.register("fennec")
-class FennecConfig(CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConfigMixin):
+class FennecConfig(FennecNightlyConfigMixin, FennecIntegrationConfigMixin, CommonConfig):
     BUILD_TYPES = ("shippable", "opt", "pgo", "debug")
     BUILD_TYPE_FALLBACKS = {
         "shippable": ("opt", "pgo"),
@@ -698,7 +700,7 @@ class FennecConfig(CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConf
 
 
 @REGISTRY.register("fenix")
-class FenixConfig(CommonConfig, FenixNightlyConfigMixin):
+class FenixConfig(FenixNightlyConfigMixin, CommonConfig):
     def build_regex(self):
         return r"fenix-.+\.apk"
 
@@ -729,13 +731,13 @@ class FenixConfig(CommonConfig, FenixNightlyConfigMixin):
 
 
 @REGISTRY.register("focus")
-class FocusConfig(FenixConfig, FocusNightlyConfigMixin):
+class FocusConfig(FocusNightlyConfigMixin, FenixConfig):
     def build_regex(self):
         return r"focus-.+\.apk"
 
 
 @REGISTRY.register("gve")
-class GeckoViewExampleConfig(CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConfigMixin):
+class GeckoViewExampleConfig(FennecNightlyConfigMixin, FennecIntegrationConfigMixin, CommonConfig):
     BUILD_TYPES = ("shippable", "opt", "debug")
     BUILD_TYPE_FALLBACKS = {
         "shippable": ("opt",),

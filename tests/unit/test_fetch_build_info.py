@@ -4,6 +4,7 @@ import datetime
 import re
 import unittest
 
+import pytest
 from mock import Mock, patch
 
 from mozregression import errors, fetch_build_info, fetch_configs
@@ -131,7 +132,7 @@ bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/",
             self.info_fetcher.find_build_info(datetime.date(2014, 11, 15))
 
 
-class TestNightlyInfoFetcher2(unittest.TestCase):
+class TestNightlyInfoFetcherWin(unittest.TestCase):
     def setUp(self):
         fetch_config = fetch_configs.create_config("firefox", "win", 64, "x86_64")
         self.info_fetcher = fetch_build_info.NightlyInfoFetcher(fetch_config)
@@ -154,6 +155,64 @@ class TestNightlyInfoFetcher2(unittest.TestCase):
         builds = []
         self.info_fetcher._fetch_build_info_from_url("http://foo", 0, builds)
         self.assertEqual(builds, [(0, expected)])
+
+
+@pytest.mark.parametrize("app_name", ["firefox-l10n", "thunderbird-l10n"])
+class TestNightlyInfoFetcherL10N:
+    @patch("mozregression.fetch_build_info.retry_get")
+    @patch("mozregression.fetch_build_info.url_links")
+    def test_find_build_info(self, url_links, retry_get, app_name):
+        lang = "ar"
+        fetch_config = fetch_configs.create_config(app_name, "linux", 64, "x86_64")
+        fetch_config.set_lang(lang)
+        info_fetcher = fetch_build_info.NightlyInfoFetcher(fetch_config)
+
+        if app_name == "firefox-l10n":
+            base_app = "firefox"
+            repo_name = "mozilla-central"
+        elif app_name == "thunderbird-l10n":
+            base_app = "thunderbird"
+            repo_name = "comm-central"
+
+        version = "100.0a1"
+        l10n_suffix = "-l10n"
+        repo_url = f"https://hg.mozilla.org/{repo_name}"
+
+        build_file = f"{base_app}-{version}.{lang}.linux-x86_64.tar.bz2"
+        txt_file = f"{base_app}-{version}.en-US.linux-x86_64.txt"
+
+        l10n_url = (
+            f"https://archive.mozilla.org/pub/{app_name}/nightly/"
+            f"2016/01/2016-01-01-10-02-05-{repo_name}{l10n_suffix}/"
+        )
+        info_url = (
+            f"https://archive.mozilla.org/pub/{base_app}/nightly/"
+            f"2016/01/2016-01-01-10-02-05-{repo_name}/"
+        )
+
+        def mock_url_links(url):
+            if "-l10n/" in url:
+                return [url + build_file]
+            else:
+                return [url + txt_file]
+
+        info_fetcher._get_urls = Mock(return_value=[l10n_url])
+        url_links.side_effect = mock_url_links
+
+        txt_response = Mock(text=f"20160101100205\n{repo_url}/rev/abc123def456\n")
+        retry_get.return_value = txt_response
+
+        result = info_fetcher.find_build_info(datetime.date(2016, 1, 1))
+
+        assert url_links.call_count == 2
+        url_links.assert_any_call(l10n_url)
+        url_links.assert_any_call(info_url)
+
+        retry_get.assert_called_once_with(info_url + txt_file)
+
+        assert result.build_url == l10n_url + build_file
+        assert result.changeset == "abc123def456"
+        assert result.repo_url == repo_url
 
 
 class TestIntegrationInfoFetcher(unittest.TestCase):

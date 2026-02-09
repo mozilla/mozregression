@@ -399,6 +399,9 @@ class ThunderbirdL10nNightlyConfigMixin(ThunderbirdNightlyConfigMixin):
             )
         return "comm-central-l10n"
 
+    def get_nightly_info_url(self, url):
+        return url.replace("-l10n/", "/")
+
 
 class FennecNightlyConfigMixin(NightlyConfigMixin):
     nightly_base_repo_name = "mobile"

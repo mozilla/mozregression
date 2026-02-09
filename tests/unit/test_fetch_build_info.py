@@ -11,10 +11,10 @@ from mozregression import errors, fetch_build_info, fetch_configs
 from .test_fetch_configs import create_push
 
 
-class TestInfoFetcher(unittest.TestCase):
+class TestNightlyInfoFetcher(unittest.TestCase):
     def setUp(self):
         fetch_config = fetch_configs.create_config("firefox", "linux", 64, "x86_64")
-        self.info_fetcher = fetch_build_info.InfoFetcher(fetch_config)
+        self.info_fetcher = fetch_build_info.NightlyInfoFetcher(fetch_config)
 
     @patch("requests.get")
     def test__fetch_txt_info(self, get):
@@ -23,26 +23,19 @@ class TestInfoFetcher(unittest.TestCase):
 mozilla-central/rev/b695d9575654\n"
         )
         get.return_value = response
-        expected = {
-            "repository": "https://hg.mozilla.org/mozilla-central",
-            "changeset": "b695d9575654",
-        }
-        self.assertEqual(self.info_fetcher._fetch_txt_info("http://foo.txt"), expected)
+        fetch_info = fetch_build_info.TxtFetchInfo("http://build.tar.bz2", "http://foo.txt")
+        fetch_info.update_metadata(None)
+        self.assertEqual(fetch_info.repository, "https://hg.mozilla.org/mozilla-central")
+        self.assertEqual(fetch_info.changeset, "b695d9575654")
 
     @patch("requests.get")
     def test__fetch_txt_info_old_format(self, get):
         response = Mock(text="20110126030333 e0fc18b3bc41\n")
         get.return_value = response
-        expected = {
-            "changeset": "e0fc18b3bc41",
-        }
-        self.assertEqual(self.info_fetcher._fetch_txt_info("http://foo.txt"), expected)
-
-
-class TestNightlyInfoFetcher(unittest.TestCase):
-    def setUp(self):
-        fetch_config = fetch_configs.create_config("firefox", "linux", 64, "x86_64")
-        self.info_fetcher = fetch_build_info.NightlyInfoFetcher(fetch_config)
+        fetch_info = fetch_build_info.TxtFetchInfo("http://build.tar.bz2", "http://foo.txt")
+        fetch_info.update_metadata(None)
+        self.assertEqual(fetch_info.changeset, "e0fc18b3bc41")
+        self.assertIsNone(fetch_info.repository)
 
     @patch("mozregression.fetch_build_info.url_links")
     def test__find_build_info_from_url(self, url_links):
@@ -52,10 +45,10 @@ class TestNightlyInfoFetcher(unittest.TestCase):
             "http://foo/firefox01linux-x86_64.txt",
             "http://foo/firefox01linux-x86_64.tar.bz2",
         ]
-        expected = {
-            "build_txt_url": "http://foo/firefox01linux-x86_64.txt",
-            "build_url": "http://foo/firefox01linux-x86_64.tar.bz2",
-        }
+        expected = fetch_build_info.TxtFetchInfo(
+            "http://foo/firefox01linux-x86_64.tar.bz2",
+            "http://foo/firefox01linux-x86_64.txt",
+        )
         builds = []
         self.info_fetcher._fetch_build_info_from_url("http://foo", 0, builds)
         self.assertEqual(builds, [(0, expected)])
@@ -117,10 +110,10 @@ bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/",
             # say only the last build url is invalid
             if url in get_urls.return_value[:-1]:
                 return
-            lst.append((index, {"build_txt_url": url, "build_url": url}))
+            fetch_info = fetch_build_info.TxtFetchInfo(url, url)
+            lst.append((index, fetch_info))
 
         self.info_fetcher._fetch_build_info_from_url = Mock(side_effect=my_find_build_info)
-        self.info_fetcher._fetch_txt_info = Mock(return_value={})
         result = self.info_fetcher.find_build_info(datetime.date(2014, 11, 15))
         # we must have found the last build url valid
         self.assertEqual(result.build_url, get_urls.return_value[-1])
@@ -147,10 +140,10 @@ class TestNightlyInfoFetcher2(unittest.TestCase):
             "http://foo/firefox01win64.txt",
             "http://foo/firefox01win64.zip",
         ]
-        expected = {
-            "build_txt_url": "http://foo/firefox01win64.txt",
-            "build_url": "http://foo/firefox01win64.zip",
-        }
+        expected = fetch_build_info.TxtFetchInfo(
+            "http://foo/firefox01win64.zip",
+            "http://foo/firefox01win64.txt",
+        )
         builds = []
         self.info_fetcher._fetch_build_info_from_url("http://foo", 0, builds)
         self.assertEqual(builds, [(0, expected)])
@@ -180,7 +173,6 @@ class TestIntegrationInfoFetcher(unittest.TestCase):
             "http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2"
         )
         self.info_fetcher = fetch_build_info.IntegrationInfoFetcher(self.fetch_config)
-        self.info_fetcher._fetch_txt_info = Mock(return_value={"changeset": "123456789"})
 
         result = self.info_fetcher.find_build_info(create_push("123456789", 1))
         self.assertEqual(result.build_url, "http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2")
@@ -255,7 +247,6 @@ class TestIntegrationInfoFetcherGVE(unittest.TestCase):
         requests_head().status_code = 200
 
         self.info_fetcher = fetch_build_info.IntegrationInfoFetcher(self.fetch_config)
-        self.info_fetcher._fetch_txt_info = Mock(return_value={"changeset": "123456789"})
 
         result = self.info_fetcher.find_build_info(create_push("123456789", 1))
         self.assertEqual(result.build_url, "http://geckoview_example.apk")

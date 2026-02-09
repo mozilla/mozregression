@@ -32,6 +32,7 @@ from mozregression import branches, errors
 from mozregression.class_registry import ClassRegistry
 from mozregression.config import ARCHIVE_BASE_URL
 from mozregression.dates import to_utc_timestamp
+from mozregression.fetch_build_info import FetchInfo, TxtFetchInfo
 
 LOG = get_proxy_logger(__name__)
 
@@ -262,6 +263,13 @@ class CommonConfig(object):
         """
         return ""
 
+    def get_nightly_fetch_info_class(self):
+        """
+        The FetchInfo class to use for nightly builds. This affects how metadata
+        such as changeset is determined for a build url.
+        """
+        return TxtFetchInfo
+
 
 class NightlyConfigMixin(metaclass=ABCMeta):
     """
@@ -281,7 +289,6 @@ class NightlyConfigMixin(metaclass=ABCMeta):
 
     archive_base_url = ARCHIVE_BASE_URL
     nightly_base_repo_name = "firefox"
-    has_build_info = True
 
     def set_base_url(self, url):
         self.archive_base_url = url.rstrip("/")
@@ -354,7 +361,6 @@ class FirefoxNightlyConfigMixin(NightlyConfigMixin):
 
 
 class FirefoxL10nNightlyConfigMixin(NightlyConfigMixin):
-    has_build_info = False
     oldest_builds = datetime.date(2015, 10, 19)
 
     def _get_nightly_repo(self, date):
@@ -389,7 +395,6 @@ class ThunderbirdNightlyConfigMixin(NightlyConfigMixin):
 
 
 class ThunderbirdL10nNightlyConfigMixin(ThunderbirdNightlyConfigMixin):
-    has_build_info = False
     oldest_builds = datetime.date(2015, 10, 8)
 
     def _get_nightly_repo(self, date):
@@ -449,6 +454,10 @@ class FenixNightlyConfigMixin(NightlyConfigMixin):
         if self.arch:
             repo += f"-{self.arch}"
         return self._get_nightly_repo_regex(date, repo)
+
+    def get_nightly_fetch_info_class(self):
+        # Build metadata not available for Fenix nightly builds
+        return FetchInfo
 
 
 class FocusNightlyConfigMixin(FenixNightlyConfigMixin):
@@ -726,6 +735,9 @@ class FennecConfig(FennecNightlyConfigMixin, FennecIntegrationConfigMixin, Commo
 class FenixConfig(FenixNightlyConfigMixin, CommonConfig):
     def build_regex(self):
         return r"fenix-.+\.apk"
+
+    def build_info_regex(self):
+        return r"(?!)"  # Match nothing
 
     def available_bits(self):
         return ()

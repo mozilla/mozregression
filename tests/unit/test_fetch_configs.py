@@ -7,6 +7,7 @@ import unittest
 import pytest
 
 from mozregression.dates import to_utc_timestamp
+from mozregression.fetch_build_info import FetchInfo
 from mozregression.fetch_configs import (
     ARCHIVE_BASE_URL,
     TIMESTAMP_FENNEC_API_15,
@@ -314,6 +315,20 @@ class TestGVEConfig(unittest.TestCase):
         # Check we wrap
         self.conf._inc_used_build()
         assert self.conf.build_type == "shippable"
+
+
+class TestFenixConfig(unittest.TestCase):
+    def setUp(self):
+        self.conf = create_config("fenix", None, None, None, "arm64-v8a")
+
+    def test_fetchinfo_class(self):
+        self.assertEqual(self.conf.get_nightly_fetch_info_class(), FetchInfo)
+
+    def test_build_regex(self):
+        assert re.match(self.conf.build_regex(), "fenix-148.0a1.multi.android-arm64-v8a.apk")
+        assert not re.match(
+            self.conf.build_info_regex(), "fenix-148.0a1.multi.android-arm64-v8a.txt"
+        )
 
 
 class TestGetBuildUrl(unittest.TestCase):

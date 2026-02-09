@@ -136,7 +136,9 @@ def formatted_valid_release_dates():
     the valid release dates.
     """
     message = "Valid releases: \n"
-    for key, value in releases().items():
+    releases_descending = list(releases().items())
+    releases_descending.sort(reverse=True, key=lambda t: t[0])
+    for key, value in releases_descending:
         message += "% 3s: %s\n" % (key, value)
 
     return message

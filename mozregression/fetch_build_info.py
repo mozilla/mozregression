@@ -32,37 +32,7 @@ class InfoFetcher(object):
         self.build_regex = re.compile(fetch_config.build_regex())
         self.build_info_regex = re.compile(fetch_config.build_info_regex())
 
-    def _update_build_info_from_txt(self, build_info):
-        LOG.debug("Update build info from {}".format(build_info))
-        if "build_txt_url" in build_info:
-            build_info.update(self._fetch_txt_info(build_info["build_txt_url"]))
-
-    def _fetch_txt_info(self, url):
-        """
-        Retrieve information from a build information txt file.
-
-        Returns a dict with keys repository and changeset if information
-        is found.
-        """
-        LOG.debug("Fetching txt info from {}".format(url))
-        data = {}
-        response = retry_get(url)
-        for line in response.text.splitlines():
-            if "/rev/" in line:
-                repository, changeset = line.split("/rev/")
-                data["repository"] = repository
-                data["changeset"] = changeset
-                break
-        if not data:
-            # the txt file could be in an old format:
-            # DATE CHANGESET
-            # we can try to extract that to get the changeset at least.
-            matched = re.match(r"^\d+ (\w+)$", response.text.strip())
-            if matched:
-                data["changeset"] = matched.group(1)
-        return data
-
-    def find_build_info(self, changeset_or_date, fetch_txt_info=True):
+    def find_build_info(self, changeset_or_date):
         """
         Abstract method to retrieve build information over the internet for
         one build.
@@ -172,9 +142,62 @@ class IntegrationInfoFetcher(InfoFetcher):
         )
 
 
+class FetchInfo:
+    """
+    Holds data about a candidate builds fetched from the nightly archive
+    servers.
+    """
+
+    def __init__(self, build_url, build_txt_url=None):
+        self.build_url = build_url
+        self.build_txt_url = build_txt_url
+        self.changeset = None
+        self.repository = None
+
+    def __eq__(self, other):
+        if not isinstance(other, FetchInfo):
+            return False
+        return (
+            self.build_url == other.build_url
+            and self.build_txt_url == other.build_txt_url
+            and self.changeset == other.changeset
+            and self.repository == other.repository
+        )
+
+    def update_metadata(self, fetch_config):
+        """
+        This can be override to fetch additional metadata about the build
+        beyond the build_url, such as the changeset and repository.
+        """
+        pass
+
+
+class TxtFetchInfo(FetchInfo):
+    """
+    Looks up the changeset data in a corresonding .txt file on the archive
+    server if it exists.
+    """
+
+    def update_metadata(self, fetch_config):
+        if self.build_txt_url:
+            LOG.debug("Fetching txt info from {}".format(self.build_txt_url))
+            response = retry_get(self.build_txt_url)
+            for line in response.text.splitlines():
+                if "/rev/" in line:
+                    self.repository, self.changeset = line.split("/rev/")
+                    return
+            # the txt file could be in an old format:
+            # DATE CHANGESET
+            # we can try to extract that to get the changeset at least.
+            matched = re.match(r"^\d+ (\w+)$", response.text.strip())
+            if matched:
+                self.changeset = matched.group(1)
+
+
 class NightlyInfoFetcher(InfoFetcher):
     def __init__(self, fetch_config):
         InfoFetcher.__init__(self, fetch_config)
+
         self._cache_months = {}
         self._lock = Lock()
         self._fetch_lock = Lock()
@@ -183,34 +206,41 @@ class NightlyInfoFetcher(InfoFetcher):
         """
         Retrieve information from a build folder url.
 
-        Stores in a list the url index and a dict instance with keys
+        Stores in a list the url index and a FetchInfo instance with
         build_url and build_txt_url if respectively a build file and a
         build info file are found for the url.
         """
         LOG.debug("Fetching build info from {}".format(url))
-        data = {}
+
         if not url.endswith("/"):
             url += "/"
-        links = url_links(url)
-        if not self.fetch_config.has_build_info:
-            links += url_links(self.fetch_config.get_nightly_info_url(url))
-        for link in links:
-            name = os.path.basename(link)
-            if "build_url" not in data and self.build_regex.match(name):
-                data["build_url"] = link
-            elif "build_txt_url" not in data and self.build_info_regex.match(name):
-                data["build_txt_url"] = link
-        if data:
-            # Check that we found all required data. The URL in build_url is
-            # required. build_txt_url is optional.
-            if "build_url" not in data:
-                raise BuildInfoNotFound(
-                    "Failed to find a build file in directory {} that "
-                    "matches regex '{}'".format(url, self.build_regex.pattern)
-                )
+        info_url = self.fetch_config.get_nightly_info_url(url)
+
+        build_urls = []
+        build_txt_urls = []
+        for folder in {url, info_url}:
+            for link in url_links(folder):
+                name = os.path.basename(link)
+                if self.build_regex.match(name):
+                    build_urls.append(link)
+                if self.build_info_regex.match(name):
+                    build_txt_urls.append(link)
+
+        if build_urls:
+            build = build_urls[0]
+            build_txt = build_txt_urls[0] if build_txt_urls else None
+
+            fetch_info_class = self.fetch_config.get_nightly_fetch_info_class()
+            fetch_info = fetch_info_class(build, build_txt)
 
             with self._fetch_lock:
-                lst.append((index, data))
+                lst.append((index, fetch_info))
+        elif build_txt_urls:
+            raise BuildInfoNotFound(
+                "Failed to find a build file in directory {} that matches regex '{}'".format(
+                    url, self.build_regex.pattern
+                )
+            )
 
     def _get_month_links(self, url):
         with self._lock:
@@ -223,7 +253,7 @@ class NightlyInfoFetcher(InfoFetcher):
         Get the url list of the build folder for a given date.
 
         This methods needs to be thread-safe as it is used in
-        :meth:`NightlyBuildData.get_build_url`.
+        :meth:`find_build_info`.
         """
         LOG.debug("Get URLs for {}".format(date))
         url = self.fetch_config.get_nightly_base_url(date)
@@ -240,7 +270,7 @@ class NightlyInfoFetcher(InfoFetcher):
         matches.reverse()
         return matches
 
-    def find_build_info(self, date, fetch_txt_info=True, max_workers=2):
+    def find_build_info(self, date, max_workers=2):
         """
         Find build info for a nightly build, given a date.
 
@@ -274,16 +304,15 @@ class NightlyInfoFetcher(InfoFetcher):
                     thread.join(0.1)
             LOG.debug("got valid_builds %s" % valid_builds)
             if valid_builds:
-                infos = sorted(valid_builds, key=lambda b: b[0])[0][1]
-                if fetch_txt_info:
-                    self._update_build_info_from_txt(infos)
+                fetch_info = sorted(valid_builds, key=lambda b: b[0])[0][1]
+                fetch_info.update_metadata(self.fetch_config)
 
                 build_info = NightlyBuildInfo(
                     self.fetch_config,
-                    build_url=infos["build_url"],
+                    build_url=fetch_info.build_url,
                     build_date=date,
-                    changeset=infos.get("changeset"),
-                    repo_url=infos.get("repository"),
+                    changeset=fetch_info.changeset,
+                    repo_url=fetch_info.repository,
                 )
                 break
             build_urls = build_urls[max_workers:]

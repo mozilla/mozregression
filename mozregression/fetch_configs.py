@@ -32,6 +32,7 @@ from mozregression import branches, errors
 from mozregression.class_registry import ClassRegistry
 from mozregression.config import ARCHIVE_BASE_URL
 from mozregression.dates import to_utc_timestamp
+from mozregression.fetch_build_info import ChangesetInfo
 
 LOG = get_proxy_logger(__name__)
 
@@ -281,7 +282,6 @@ class NightlyConfigMixin(metaclass=ABCMeta):
 
     archive_base_url = ARCHIVE_BASE_URL
     nightly_base_repo_name = "firefox"
-    has_build_info = True
 
     def set_base_url(self, url):
         self.archive_base_url = url.rstrip("/")
@@ -302,6 +302,16 @@ class NightlyConfigMixin(metaclass=ABCMeta):
         Returns the url for the folder to find the build info .txt
         """
         return url
+
+    def get_nightly_changeset(self, archive_urls):
+        """
+        Retrieve changeset info for a nightly build based on url.
+
+        There is no universal way to determine changeset of a binary build for
+        all the supported products. Subclasses should override with their specific
+        approach if possible.
+        """
+        return ChangesetInfo()
 
     def get_nightly_repo(self, date):
         """
@@ -345,7 +355,19 @@ class NightlyConfigMixin(metaclass=ABCMeta):
         return self.is_integration()
 
 
-class FirefoxNightlyConfigMixin(NightlyConfigMixin):
+class NightlyTxtConfigMixin(NightlyConfigMixin):
+    """
+    Config mixin to use when a .txt file with changeset/repo info should exist.
+
+    The meth:`get_nightly_info_url` and meth:`build_info_regex` methods of the
+    config are used to locate the appropriate build info .txt file.
+    """
+
+    def get_nightly_changeset(self, archive_urls):
+        return ChangesetInfo.from_nightly_txt(archive_urls)
+
+
+class FirefoxNightlyConfigMixin(NightlyTxtConfigMixin):
     def _get_nightly_repo(self, date):
         if date < datetime.date(2008, 6, 17):
             return "trunk"
@@ -353,8 +375,7 @@ class FirefoxNightlyConfigMixin(NightlyConfigMixin):
             return "mozilla-central"
 
 
-class FirefoxL10nNightlyConfigMixin(NightlyConfigMixin):
-    has_build_info = False
+class FirefoxL10nNightlyConfigMixin(NightlyTxtConfigMixin):
     oldest_builds = datetime.date(2015, 10, 19)
 
     def _get_nightly_repo(self, date):
@@ -369,7 +390,7 @@ class FirefoxL10nNightlyConfigMixin(NightlyConfigMixin):
         return url.replace("-l10n/", "/")
 
 
-class ThunderbirdNightlyConfigMixin(NightlyConfigMixin):
+class ThunderbirdNightlyConfigMixin(NightlyTxtConfigMixin):
     nightly_base_repo_name = "thunderbird"
 
     def _get_nightly_repo(self, date):
@@ -389,7 +410,6 @@ class ThunderbirdNightlyConfigMixin(NightlyConfigMixin):
 
 
 class ThunderbirdL10nNightlyConfigMixin(ThunderbirdNightlyConfigMixin):
-    has_build_info = False
     oldest_builds = datetime.date(2015, 10, 8)
 
     def _get_nightly_repo(self, date):
@@ -403,7 +423,7 @@ class ThunderbirdL10nNightlyConfigMixin(ThunderbirdNightlyConfigMixin):
         return url.replace("-l10n/", "/")
 
 
-class FennecNightlyConfigMixin(NightlyConfigMixin):
+class FennecNightlyConfigMixin(NightlyTxtConfigMixin):
     nightly_base_repo_name = "mobile"
 
     def _get_nightly_repo(self, date):
@@ -452,6 +472,10 @@ class FenixNightlyConfigMixin(NightlyConfigMixin):
         if self.arch:
             repo += f"-{self.arch}"
         return self._get_nightly_repo_regex(date, repo)
+
+    def get_nightly_changeset(self, archive_urls):
+        # The normal .txt files don't exist for fenix
+        return ChangesetInfo()
 
 
 class IntegrationConfigMixin(metaclass=ABCMeta):
@@ -712,6 +736,9 @@ class FennecConfig(CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConf
 class FenixConfig(CommonConfig, FenixNightlyConfigMixin):
     def build_regex(self):
         return r"fenix-.+\.apk"
+
+    def build_info_regex(self):
+        return r"(?!)"  # Match nothing
 
     def available_bits(self):
         return ()

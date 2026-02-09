@@ -316,6 +316,17 @@ class TestGVEConfig(unittest.TestCase):
         assert self.conf.build_type == "shippable"
 
 
+class TestFenixConfig(unittest.TestCase):
+    def setUp(self):
+        self.conf = create_config("fenix", None, None, None, "arm64-v8a")
+
+    def test_build_regex(self):
+        assert re.match(self.conf.build_regex(), "fenix-148.0a1.multi.android-arm64-v8a.apk")
+        assert not re.match(
+            self.conf.build_info_regex(), "fenix-148.0a1.multi.android-arm64-v8a.txt"
+        )
+
+
 class TestGetBuildUrl(unittest.TestCase):
     def test_for_linux(self):
         self.assertEqual(

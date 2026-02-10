@@ -7,7 +7,7 @@ main_link: True
 
 # The Basics
 
-With MozRegression, you are trying to find the first "bad" build, which refers to where
+With mozregression, you are trying to find the first "bad" build, which refers to where
 the regression first appears.
 
 When provided with the option to determine the outcome of each test (that you conduct per

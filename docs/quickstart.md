@@ -31,7 +31,7 @@ youtube video by Pascal Chevrel describes how to install and use it:
 # Command line
 
 The command-line version of mozregression is good for power users, or those using Linux,
-or MacOS X.
+or macOS.
 
 Let's say that you just found a bug in the current nightly build, and you know that
 that bug didn't exist in the nightly from a few weeks ago. You want to find the

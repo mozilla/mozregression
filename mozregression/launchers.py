@@ -250,7 +250,7 @@ class MozRunnerLauncher(Launcher):
             # we need policies.json in:
             #     PackageName.app/Contents/Resources/distribution
             installdir = os.path.normpath(os.path.join(installdir, "..", "Resources"))
-        os.makedirs(os.path.join(installdir, "distribution"))
+        os.makedirs(os.path.join(installdir, "distribution"), exist_ok=True)
         policyFile = os.path.join(installdir, "distribution", "policies.json")
         with open(policyFile, "w") as fp:
             json.dump(updatePolicy, fp, indent=2)

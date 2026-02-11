@@ -99,7 +99,7 @@ For the GUI version:
 python gui/build.py test
 ```
 
-Before submitting a pull request, please lint your code for errors and formatting (we use [black](https://black.readthedocs.io/en/stable/), [flake8](https://flake8.pycqa.org/en/latest/) and [isort](https://isort.readthedocs.io/en/latest/))
+Before submitting a pull request, please lint your code for errors and formatting (we use [Ruff](https://docs.astral.sh/ruff/))
 
 ```bash
 ./bin/lint-check.sh

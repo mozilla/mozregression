@@ -303,8 +303,7 @@ def check_mozregression_version():
         )
 
         LOG.warning(
-            "You should consider upgrading via the 'pip install"
-            " --upgrade mozregression' command."
+            "You should consider upgrading via the 'pip install --upgrade mozregression' command."
         )
 
 

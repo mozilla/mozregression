@@ -304,8 +304,7 @@ class IntegrationHandler(BisectorHandler):
             # is just one, we have our answer
             if len(push.changesets) == 2:
                 LOG.info(
-                    "Merge commit has only two revisions (one of which "
-                    "is the merge): we are done"
+                    "Merge commit has only two revisions (one of which is the merge): we are done"
                 )
                 return
 
@@ -515,7 +514,7 @@ class Bisection(object):
         if self.handler.find_fix:
             good, bad = bad, good
 
-        LOG.info("Testing good and bad builds to ensure that they are" " really good and bad...")
+        LOG.info("Testing good and bad builds to ensure that they are really good and bad...")
         self.download_manager.focus_download(good)
         if self.dl_in_background:
             self.download_manager.download_in_background(bad)
@@ -636,7 +635,7 @@ class Bisector(object):
                 return result
             if previous_verdict is None and handler.ensure_good_and_bad:
                 if bisection.ensure_good_and_bad():
-                    LOG.info("Good and bad builds are correct. Let's" " continue the bisection.")
+                    LOG.info("Good and bad builds are correct. Let's continue the bisection.")
                 else:
                     return bisection.USER_EXIT
             bisection.handler.print_range(full=False)

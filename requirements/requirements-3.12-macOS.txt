@@ -235,9 +235,9 @@ glean-parser==17.3.0 \
 glean-sdk @ https://files.pythonhosted.org/packages/68/e6/86689936edbf47a007646e394f3091cbf90fadf9dcf265a52ab355acec36/glean_sdk-65.0.1-py3-none-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl ; sys_platform == "darwin" \
     --hash=sha256:c37fb476dbc036ccabde661e6eb38d435e2a9af05509c1c13632071224bf135e
     # via -r base.universal2.in
-idna==3.10 \
-    --hash=sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9 \
-    --hash=sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3
+idna==3.11 \
+    --hash=sha256:771a87f49d9defaf64091e6e6fe9c18d4833f140bd19464795bc32d966ca37ea \
+    --hash=sha256:795dafcc9c04ed0c1fb032c2aa73654d8e8c5023a7df64a53f39190ada629902
     # via
     #   requests
     #   yarl

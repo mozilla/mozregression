@@ -91,7 +91,7 @@ jobs:
           ./bin/adhoc-sign.py --os macOS ${{ github.event.release.tag_name }}
 
   build-and-publish-windows-gui:
-    runs-on: windows-latest
+    runs-on: windows-2022
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:

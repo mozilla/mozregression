@@ -84,7 +84,7 @@ jobs:
           name: mozregression-gui-app-bundle.tar.gz
 
   build-and-publish-windows-gui:
-    runs-on: windows-latest
+    runs-on: windows-2022
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:

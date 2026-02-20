@@ -13,7 +13,7 @@ class WinTooOldBuildError(MozRegressionError):
     """
 
     def __init__(self):
-        MozRegressionError.__init__(self, "Can't run Windows builds before" " 2010-03-18")
+        MozRegressionError.__init__(self, "Can't run Windows builds before 2010-03-18")
 
 
 class DateFormatError(MozRegressionError):
@@ -53,9 +53,7 @@ class UnavailableRelease(MozRegressionError):
     """
 
     def __init__(self, release):
-        MozRegressionError.__init__(
-            self, "Unable to find a matching date for" " release %s" % release
-        )
+        MozRegressionError.__init__(self, "Unable to find a matching date for release %s" % release)
 
 
 class LauncherError(MozRegressionError):

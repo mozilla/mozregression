@@ -106,7 +106,7 @@ class TestCli(unittest.TestCase):
         conf.logger.warning = warns.append
         conf.validate()
         self.assertIn(
-            "Unable to find a suitable build type 'foo'." " (Defaulting to 'shippable')",
+            "Unable to find a suitable build type 'foo'. (Defaulting to 'shippable')",
             warns,
         )
 

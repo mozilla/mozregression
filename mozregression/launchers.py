@@ -478,7 +478,7 @@ class AndroidLauncher(Launcher):
             raise LauncherNotRunnable(str(adb_error))
         if not devices:
             raise LauncherNotRunnable(
-                "No android device connected." " Connect a device and try again."
+                "No android device connected. Connect a device and try again."
             )
 
     def _install(self, dest):

@@ -310,7 +310,9 @@ def test_firefox_install(
     install_ext, binary_name = (
         ("zip", "firefox.exe")
         if mozinfo.isWin
-        else ("tar.bz2", "firefox") if mozinfo.isLinux else ("dmg", "firefox")  # if mozinfo.ismac
+        else ("tar.bz2", "firefox")
+        if mozinfo.isLinux
+        else ("dmg", "firefox")  # if mozinfo.ismac
     )
 
     installer_file = "firefox.{}".format(install_ext)

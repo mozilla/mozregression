@@ -278,6 +278,11 @@ class TestExtendedAndroidConfig:
             assert "mozilla-central-android-api-15" in regex
             regex = conf.get_nightly_repo_regex(datetime.date(2017, 8, 30))
             assert "mozilla-central-android-api-16" in regex
+        elif app_name in ["fenix", "focus"]:
+            conf = create_config(app_name, None, None, None, "arm64-v8a")
+            date = datetime.date(2022, 1, 1)
+            regex = conf.get_nightly_repo_regex(date)
+            assert regex == f"/{date.isoformat()}-[\\d-]+{app_name}-[^-]+-android-arm64-v8a/$"
         else:
             conf = create_config(app_name, "linux", 64, None)
             date = datetime.date(2023, 1, 1)
@@ -303,12 +308,58 @@ class TestGVEConfig(unittest.TestCase):
         self.conf = create_config("gve", "linux", 64, None)
 
     def test_fallbacking(self):
-        assert self.conf.build_type == "opt"
-        self.conf._inc_used_build()
         assert self.conf.build_type == "shippable"
+        self.conf._inc_used_build()
+        assert self.conf.build_type == "opt"
         # Check we wrap
         self.conf._inc_used_build()
-        assert self.conf.build_type == "opt"
+        assert self.conf.build_type == "shippable"
+
+
+class TestFenixConfig(unittest.TestCase):
+    def setUp(self):
+        self.conf = create_config("fenix", None, None, None, "arm64-v8a")
+
+    def test_get_nightly_changeset_uses_pushlog(self):
+        """Test that get_nightly_changeset for Fenix uses JsonPushes API."""
+        from unittest.mock import Mock, patch
+
+        from mozregression.fetch_build_info import ArchiveBuildUrls, ChangesetInfo
+
+        # Create a sample build URL with timestamp
+        build_url = (
+            "https://archive.mozilla.org/pub/fenix/nightly/2025/12/"
+            "2025-12-01-10-27-59-fenix-147.0a1-android-arm64-v8a/"
+            "fenix-147.0a1.multi.android-arm64-v8a.apk"
+        )
+        archive_urls = ArchiveBuildUrls(build_url, None)
+
+        # Mock JsonPushes to avoid network calls
+        with patch("mozregression.fetch_build_info.JsonPushes") as MockJsonPushes:
+            mock_jpushes_instance = Mock()
+            mock_jpushes_instance.repo_url = "https://hg.mozilla.org/mozilla-central"
+            mock_push = Mock()
+            mock_push.changeset = "abc123def456"
+            mock_jpushes_instance.push_by_timestamp.return_value = [mock_push]
+            MockJsonPushes.return_value = mock_jpushes_instance
+
+            # Call get_nightly_changeset
+            result = self.conf.get_nightly_changeset(archive_urls)
+
+            # Verify the result
+            assert isinstance(result, ChangesetInfo)
+            assert result.changeset == "abc123def456"
+            assert result.repo_url == "https://hg.mozilla.org/mozilla-central"
+
+            # Verify JsonPushes was called
+            MockJsonPushes.assert_called_once_with(branch="mozilla-central")
+            mock_jpushes_instance.push_by_timestamp.assert_called_once()
+
+    def test_build_regex(self):
+        assert re.match(self.conf.build_regex(), "fenix-148.0a1.multi.android-arm64-v8a.apk")
+        assert not re.match(
+            self.conf.build_info_regex(), "fenix-148.0a1.multi.android-arm64-v8a.txt"
+        )
 
 
 class TestGetBuildUrl(unittest.TestCase):
@@ -481,7 +532,7 @@ CHSET12 = "47856a214918"
             None,
             None,
             TIMESTAMP_FENNEC_API_15 - 1,
-            "gecko.v2.mozilla-central.revision.%s.mobile.android-api-11-opt" % CHSET,
+            "gecko.v2.mozilla-central.shippable.revision.%s.mobile.android-api-11-opt" % CHSET,
         ),
         (
             "fennec",
@@ -490,7 +541,7 @@ CHSET12 = "47856a214918"
             None,
             None,
             TIMESTAMP_FENNEC_API_15,
-            "gecko.v2.mozilla-central.revision.%s.mobile.android-api-15-opt" % CHSET,
+            "gecko.v2.mozilla-central.shippable.revision.%s.mobile.android-api-15-opt" % CHSET,
         ),
         (
             "fennec",
@@ -499,7 +550,7 @@ CHSET12 = "47856a214918"
             None,
             None,
             TIMESTAMP_FENNEC_API_16,
-            "gecko.v2.mozilla-central.revision.%s.mobile.android-api-16-opt" % CHSET,
+            "gecko.v2.mozilla-central.shippable.revision.%s.mobile.android-api-16-opt" % CHSET,
         ),
         # thunderbird
         (
@@ -625,6 +676,18 @@ def test_jsshell_aarch64_build_regex():
 
     conf = create_config("jsshell", "win", 64, "aarch64", arch="x86_64")
     assert re.match(conf.build_regex(), "jsshell-win64-x86_64.zip")
+
+
+def test_nightly_timestamp_parse():
+    conf = create_config("fenix", None, None, None, "arm64-v8a")
+    build_url = (
+        "https://archive.mozilla.org/pub/fenix/nightly/2025/12/"
+        "2025-12-01-10-27-59-fenix-147.0a1-android-arm64-v8a/"
+        "fenix-147.0a1.multi.android-arm64-v8a.apk"
+    )
+    expected_dt = datetime.datetime(2025, 12, 1, 10, 27, 59)
+
+    assert conf.get_nightly_timestamp_from_url(build_url) == expected_dt
 
 
 @pytest.mark.parametrize(

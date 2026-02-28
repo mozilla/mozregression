@@ -130,6 +130,24 @@ def tag_of_beta(release):
         raise UnavailableRelease(release)
 
 
+def tag_of_esr(release):
+    """
+    Provide the mercurial tag of an ESR release, suitable for use in place of a hash
+    """
+    release = release.replace("esr", "")
+    if re.match(r"^\d+$", release):
+        release += ".0"
+    else:
+        minorVersion = re.match(r"^\d+\.(\d+)$", release)
+        if minorVersion and not minorVersion.group(1) == "0":
+            release += ".0"
+    release += "esr"
+    if re.match(r"^\d+\.\d+(\.\d)?esr$", release):
+        return "FIREFOX_%s_RELEASE" % release.replace(".", "_")
+    else:
+        raise UnavailableRelease(release)
+
+
 def formatted_valid_release_dates():
     """
     Returns a formatted string (ready to be printed) representing

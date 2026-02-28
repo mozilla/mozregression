@@ -26,7 +26,7 @@ jobs:
     uses: ./.github/workflows/compile-requirements.yml
     with:
       requirements_files: '["base.in base.universal2.in dev.in gui-dev.in gui.in linters.in"]'
-      os: '["macos-latest"]'
+      os: '["macos-15"]'
       python: '["3.9", "3.10", "3.11", "3.12", "3.13"]'
 
   commit-and-push:

@@ -232,10 +232,10 @@ class NightlyInfoFetcher(InfoFetcher):
         month_links = self._get_month_links(url)
 
         # first parse monthly list to get correct directory
-        matches = []
-        for dirlink in month_links:
-            if link_regex.search(dirlink):
-                matches.append(dirlink)
+        matches = [
+            dirlink for dirlink in month_links
+            if link_regex.search(dirlink)
+        ]
         # the most recent build urls first
         matches.reverse()
         return matches

@@ -215,9 +215,9 @@ flake8==7.3.0 ; python_version >= "3.8" \
     # via
     #   -r linters.in
     #   flake8-black
-flake8-black==0.3.6 \
-    --hash=sha256:0dfbca3274777792a5bcb2af887a4cad72c72d0e86c94e08e3a3de151bb41c34 \
-    --hash=sha256:fe8ea2eca98d8a504f22040d9117347f6b367458366952862ac3586e7d4eeaca
+flake8-black==0.4.0 \
+    --hash=sha256:288762d0c9ea065782d87eeecbcc20c69079d17fe1d0f0445f0eb0b0ffb80c39 \
+    --hash=sha256:bf226868f695dee48d55ff6d7747e900709bfd6f605b7a378c70e711e3fc26cb
     # via -r linters.in
 frozenlist==1.7.0 \
     --hash=sha256:04fb24d104f425da3540ed83cbfc31388a586a7696142004c577fa61c6298c3f \

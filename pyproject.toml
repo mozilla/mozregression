@@ -27,24 +27,48 @@ dynamic = ["version"]
 description = "Regression range finder for Mozilla nightly builds"
 readme = "README.md"
 dependencies = [
-  "glean_sdk>=60.3.0",
   "beautifulsoup4>=4.7.1",
+  "charset-normalizer<3",
   "colorama>=0.4.1",
   "configobj>=5.0.6",
   "distro>=1.8.0",
-  "importlib_resources>= 5.10",
+  # `glean-sdk` is held at 60.3.0 on Linux/Windows because newer releases lack
+  # wheels for some of our supported Pythons; on darwin it is URL-pinned to a
+  # `universal2` wheel via `[tool.uv.sources]` below.
+  "glean-sdk==60.3.0; sys_platform != 'darwin'",
+  "glean-sdk==65.0.1; sys_platform == 'darwin'",
+  "importlib-metadata==8.5.0",
+  "importlib_resources>=5.10",
+  # `jsonschema` 4.18+ depends on `rpds-py`, which has no `universal2` wheels;
+  # PyInstaller's `target_arch="universal2"` build would fail. The clamp below
+  # keeps `rpds-py` out of the darwin closure.
+  "jsonschema; sys_platform != 'darwin'",
+  "jsonschema==4.17.3; sys_platform == 'darwin'",
   "mozdevice>=4.1.0,<5",
   "mozfile>=2.0.0",
   "mozinfo>=1.1.0",
   "mozinstall>=2.0.0",
-  "mozlog>=4.0",
+  # `mozlog` 8.1+ pulls in `mozsystemmonitor` → `psutil`, which has no
+  # `universal2` wheel and breaks PyInstaller's `target_arch="universal2"`
+  # bundle. Pin under 8.1 until we have a universal2 story for `psutil`.
+  "mozlog>=4.0,<8.1",
   "mozprocess>=1.3.1",
   "mozprofile>=2.2.0",
   "mozrunner>=8.0.2",
   "mozversion>=2.1.0",
+  "pyyaml==6.*",
   "redo>=2.0.2",
   "requests>=2.21.0",
   "taskcluster>=6.0.0",
+  # Native-extension transitive deps pinned on darwin so the URL pins in
+  # `[tool.uv.sources]` resolve to a matching version. On other platforms the
+  # resolver is free to pick the latest compatible version.
+  "aiohttp==3.12.15; sys_platform == 'darwin'",
+  "frozenlist==1.7.0; sys_platform == 'darwin'",
+  "markupsafe==3.0.2; sys_platform == 'darwin'",
+  "multidict==6.6.4; sys_platform == 'darwin'",
+  "propcache==0.3.2; sys_platform == 'darwin'",
+  "yarl==1.20.1; sys_platform == 'darwin'",
 ]
 requires-python = ">= 3.9"
 license = {text = "MPL 2.0"}
@@ -74,3 +98,97 @@ platforms = ["Any"]
 
 [tool.setuptools.package-data]
 mozregression = ["*.yaml"]
+
+[dependency-groups]
+dev = [
+  "coverage",
+  "coveralls",
+  "mock",
+  "pytest",
+  "pytest-mock",
+]
+gui = [
+  "PySide6==6.9.*",
+]
+gui-dev = [
+  "pytest-qt",
+]
+linters = [
+  "flake8>=6.0.0",
+  "flake8-black",
+  "glean-parser",
+  "isort",
+  "mccabe",
+  "pyflakes",
+]
+build = [
+  "PyInstaller==6.15.*",
+  "dmgbuild==1.*",
+  "setuptools_scm==8.*",
+]
+
+[tool.uv]
+# Force the resolver to pick versions whose wheels cover both Mac arches, so
+# PyInstaller's `target_arch="universal2"` bundle (see `gui/gui.spec`) can find
+# `universal2` wheels for every native-extension dependency.
+required-environments = [
+  "sys_platform == 'darwin' and platform_machine == 'arm64'",
+  "sys_platform == 'darwin' and platform_machine == 'x86_64'",
+]
+# Replaces the `--no-binary` directives that lived in the old `.in` files.
+no-binary-package = [
+  "coverage",
+  "mypy-extensions",
+  "pyyaml",
+]
+
+[tool.uv.sources]
+# `universal2` wheel pins for the macOS PyInstaller bundle. `pip`/`uv` would
+# otherwise prefer the more-specific `arm64`/`x86_64` wheels at install time,
+# which would break PyInstaller's `target_arch="universal2"` check. The URLs
+# must match the versions pinned in `[project.dependencies]` above.
+aiohttp = [
+  { url = "https://files.pythonhosted.org/packages/18/8d/da08099af8db234d1cd43163e6ffc8e9313d0e988cee1901610f2fa5c764/aiohttp-3.12.15-cp39-cp39-macosx_10_9_universal2.whl",   marker = "sys_platform == 'darwin' and python_version == '3.9'" },
+  { url = "https://files.pythonhosted.org/packages/47/dc/ef9394bde9080128ad401ac7ede185267ed637df03b51f05d14d1c99ad67/aiohttp-3.12.15-cp310-cp310-macosx_10_9_universal2.whl",  marker = "sys_platform == 'darwin' and python_version == '3.10'" },
+  { url = "https://files.pythonhosted.org/packages/20/19/9e86722ec8e835959bd97ce8c1efa78cf361fa4531fca372551abcc9cdd6/aiohttp-3.12.15-cp311-cp311-macosx_10_9_universal2.whl",  marker = "sys_platform == 'darwin' and python_version == '3.11'" },
+  { url = "https://files.pythonhosted.org/packages/63/97/77cb2450d9b35f517d6cf506256bf4f5bda3f93a66b4ad64ba7fc917899c/aiohttp-3.12.15-cp312-cp312-macosx_10_13_universal2.whl", marker = "sys_platform == 'darwin' and python_version == '3.12'" },
+  { url = "https://files.pythonhosted.org/packages/f2/33/918091abcf102e39d15aba2476ad9e7bd35ddb190dcdd43a854000d3da0d/aiohttp-3.12.15-cp313-cp313-macosx_10_13_universal2.whl", marker = "sys_platform == 'darwin' and python_version == '3.13'" },
+]
+frozenlist = [
+  { url = "https://files.pythonhosted.org/packages/dd/b1/ee59496f51cd244039330015d60f13ce5a54a0f2bd8d79e4a4a375ab7469/frozenlist-1.7.0-cp39-cp39-macosx_10_9_universal2.whl",   marker = "sys_platform == 'darwin' and python_version == '3.9'" },
+  { url = "https://files.pythonhosted.org/packages/af/36/0da0a49409f6b47cc2d060dc8c9040b897b5902a8a4e37d9bc1deb11f680/frozenlist-1.7.0-cp310-cp310-macosx_10_9_universal2.whl",  marker = "sys_platform == 'darwin' and python_version == '3.10'" },
+  { url = "https://files.pythonhosted.org/packages/34/7e/803dde33760128acd393a27eb002f2020ddb8d99d30a44bfbaab31c5f08a/frozenlist-1.7.0-cp311-cp311-macosx_10_9_universal2.whl",  marker = "sys_platform == 'darwin' and python_version == '3.11'" },
+  { url = "https://files.pythonhosted.org/packages/ef/a2/c8131383f1e66adad5f6ecfcce383d584ca94055a34d683bbb24ac5f2f1c/frozenlist-1.7.0-cp312-cp312-macosx_10_13_universal2.whl", marker = "sys_platform == 'darwin' and python_version == '3.12'" },
+  { url = "https://files.pythonhosted.org/packages/24/90/6b2cebdabdbd50367273c20ff6b57a3dfa89bd0762de02c3a1eb42cb6462/frozenlist-1.7.0-cp313-cp313-macosx_10_13_universal2.whl", marker = "sys_platform == 'darwin' and python_version == '3.13'" },
+]
+multidict = [
+  { url = "https://files.pythonhosted.org/packages/d4/d3/f04c5db316caee9b5b2cbba66270b358c922a959855995bedde87134287c/multidict-6.6.4-cp39-cp39-macosx_10_9_universal2.whl",   marker = "sys_platform == 'darwin' and python_version == '3.9'" },
+  { url = "https://files.pythonhosted.org/packages/eb/6b/86f353088c1358e76fd30b0146947fddecee812703b604ee901e85cd2a80/multidict-6.6.4-cp310-cp310-macosx_10_9_universal2.whl",  marker = "sys_platform == 'darwin' and python_version == '3.10'" },
+  { url = "https://files.pythonhosted.org/packages/6b/7f/90a7f01e2d005d6653c689039977f6856718c75c5579445effb7e60923d1/multidict-6.6.4-cp311-cp311-macosx_10_9_universal2.whl",  marker = "sys_platform == 'darwin' and python_version == '3.11'" },
+  { url = "https://files.pythonhosted.org/packages/05/f6/512ffd8fd8b37fb2680e5ac35d788f1d71bbaf37789d21a820bdc441e565/multidict-6.6.4-cp312-cp312-macosx_10_13_universal2.whl", marker = "sys_platform == 'darwin' and python_version == '3.12'" },
+  { url = "https://files.pythonhosted.org/packages/3a/5d/e1db626f64f60008320aab00fbe4f23fc3300d75892a3381275b3d284580/multidict-6.6.4-cp313-cp313-macosx_10_13_universal2.whl", marker = "sys_platform == 'darwin' and python_version == '3.13'" },
+]
+yarl = [
+  { url = "https://files.pythonhosted.org/packages/01/75/0d37402d208d025afa6b5b8eb80e466d267d3fd1927db8e317d29a94a4cb/yarl-1.20.1-cp39-cp39-macosx_10_9_universal2.whl",   marker = "sys_platform == 'darwin' and python_version == '3.9'" },
+  { url = "https://files.pythonhosted.org/packages/cb/65/7fed0d774abf47487c64be14e9223749468922817b5e8792b8a64792a1bb/yarl-1.20.1-cp310-cp310-macosx_10_9_universal2.whl",  marker = "sys_platform == 'darwin' and python_version == '3.10'" },
+  { url = "https://files.pythonhosted.org/packages/b1/18/893b50efc2350e47a874c5c2d67e55a0ea5df91186b2a6f5ac52eff887cd/yarl-1.20.1-cp311-cp311-macosx_10_9_universal2.whl",  marker = "sys_platform == 'darwin' and python_version == '3.11'" },
+  { url = "https://files.pythonhosted.org/packages/5f/9a/cb7fad7d73c69f296eda6815e4a2c7ed53fc70c2f136479a91c8e5fbdb6d/yarl-1.20.1-cp312-cp312-macosx_10_13_universal2.whl", marker = "sys_platform == 'darwin' and python_version == '3.12'" },
+  { url = "https://files.pythonhosted.org/packages/8a/e1/2411b6d7f769a07687acee88a062af5833cf1966b7266f3d8dfb3d3dc7d3/yarl-1.20.1-cp313-cp313-macosx_10_13_universal2.whl", marker = "sys_platform == 'darwin' and python_version == '3.13'" },
+]
+markupsafe = [
+  { url = "https://files.pythonhosted.org/packages/a7/ea/9b1530c3fdeeca613faeb0fb5cbcf2389d816072fab72a71b45749ef6062/MarkupSafe-3.0.2-cp39-cp39-macosx_10_9_universal2.whl",   marker = "sys_platform == 'darwin' and python_version == '3.9'" },
+  { url = "https://files.pythonhosted.org/packages/04/90/d08277ce111dd22f77149fd1a5d4653eeb3b3eaacbdfcbae5afb2600eebd/MarkupSafe-3.0.2-cp310-cp310-macosx_10_9_universal2.whl",  marker = "sys_platform == 'darwin' and python_version == '3.10'" },
+  { url = "https://files.pythonhosted.org/packages/6b/28/bbf83e3f76936960b850435576dd5e67034e200469571be53f69174a2dfd/MarkupSafe-3.0.2-cp311-cp311-macosx_10_9_universal2.whl",  marker = "sys_platform == 'darwin' and python_version == '3.11'" },
+  { url = "https://files.pythonhosted.org/packages/22/09/d1f21434c97fc42f09d290cbb6350d44eb12f09cc62c9476effdb33a18aa/MarkupSafe-3.0.2-cp312-cp312-macosx_10_13_universal2.whl", marker = "sys_platform == 'darwin' and python_version == '3.12'" },
+  { url = "https://files.pythonhosted.org/packages/83/0e/67eb10a7ecc77a0c2bbe2b0235765b98d164d81600746914bebada795e97/MarkupSafe-3.0.2-cp313-cp313-macosx_10_13_universal2.whl", marker = "sys_platform == 'darwin' and python_version == '3.13'" },
+]
+propcache = [
+  { url = "https://files.pythonhosted.org/packages/6c/39/8ea9bcfaaff16fd0b0fc901ee522e24c9ec44b4ca0229cfffb8066a06959/propcache-0.3.2-cp39-cp39-macosx_10_9_universal2.whl",   marker = "sys_platform == 'darwin' and python_version == '3.9'" },
+  { url = "https://files.pythonhosted.org/packages/ab/14/510deed325e262afeb8b360043c5d7c960da7d3ecd6d6f9496c9c56dc7f4/propcache-0.3.2-cp310-cp310-macosx_10_9_universal2.whl",  marker = "sys_platform == 'darwin' and python_version == '3.10'" },
+  { url = "https://files.pythonhosted.org/packages/80/8d/e8b436717ab9c2cfc23b116d2c297305aa4cd8339172a456d61ebf5669b8/propcache-0.3.2-cp311-cp311-macosx_10_9_universal2.whl",  marker = "sys_platform == 'darwin' and python_version == '3.11'" },
+  { url = "https://files.pythonhosted.org/packages/a8/42/9ca01b0a6f48e81615dca4765a8f1dd2c057e0540f6116a27dc5ee01dfb6/propcache-0.3.2-cp312-cp312-macosx_10_13_universal2.whl", marker = "sys_platform == 'darwin' and python_version == '3.12'" },
+  { url = "https://files.pythonhosted.org/packages/dc/d1/8c747fafa558c603c4ca19d8e20b288aa0c7cda74e9402f50f31eb65267e/propcache-0.3.2-cp313-cp313-macosx_10_13_universal2.whl", marker = "sys_platform == 'darwin' and python_version == '3.13'" },
+]
+glean-sdk = [
+  { url = "https://files.pythonhosted.org/packages/68/e6/86689936edbf47a007646e394f3091cbf90fadf9dcf265a52ab355acec36/glean_sdk-65.0.1-py3-none-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", marker = "sys_platform == 'darwin'" },
+]

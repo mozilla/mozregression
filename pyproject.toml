@@ -114,6 +114,10 @@ gui-dev = [
   "pytest-qt",
 ]
 linters = [
+  # Pinned to match the version the existing codebase was formatted with.
+  # Black's "stable style" only holds across major versions (25.x -> 26.x),
+  # so a looser pin like `==25.*` would still allow formatting drift.
+  "black==25.1.0",
   "flake8>=6.0.0",
   "flake8-black",
   "glean-parser",

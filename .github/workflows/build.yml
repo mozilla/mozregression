@@ -13,12 +13,11 @@ jobs:
       - uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
-          python-version: "3.12"
       # NOTE: `--all-groups` mirrors the previous behavior of installing the full
       # `requirements-*.txt` everywhere. Trim per-job (e.g. `--only-group linters
       # --only-group dev` for `lint`) once we're confident the migration is stable.
       - name: Install dependencies
-        run: uv sync --frozen --all-groups
+        run: uv sync --frozen --all-groups --python 3.12
       - name: Lint
         run: uv run ./bin/lint-check.sh || (echo "Lint fix results:" && uv run ./bin/lint-fix.sh && git diff && false)
 
@@ -44,9 +43,8 @@ jobs:
       - uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
-          python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: uv sync --frozen --all-groups
+        run: uv sync --frozen --all-groups --python ${{ matrix.python-version }}
       - name: Test
         run: |
           uv run --no-sync coverage run -m pytest tests
@@ -63,10 +61,9 @@ jobs:
       - uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
-          python-version: "3.11"
       - name: Install dependencies and run tests
         run: |
-          uv sync --frozen --all-groups
+          uv sync --frozen --all-groups --python 3.11
           uv run --no-sync pytest tests
 
   build-and-test-linux-gui:
@@ -90,9 +87,8 @@ jobs:
       - uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
-          python-version: "3.9"
       - name: Install dependencies
-        run: uv sync --frozen --all-groups
+        run: uv sync --frozen --all-groups --python 3.9
       - name: Build
         run: |
           uv run --no-sync python gui/build.py bundle
@@ -146,9 +142,8 @@ jobs:
       - uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
-          python-version: "3.10"
       - name: Install dependencies
-        run: uv sync --frozen --all-groups
+        run: uv sync --frozen --all-groups --python 3.10
       - name: Build and test
         run: |
           uv run --no-sync python gui\build.py bundle --nsis-path "C:\\Program Files (x86)\\NSIS"

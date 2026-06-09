@@ -4,45 +4,42 @@ import datetime
 import re
 import unittest
 
+import pytest
 from mock import Mock, patch
 
 from mozregression import errors, fetch_build_info, fetch_configs
+from mozregression.fetch_build_info import ArchiveBuildUrls, ChangesetInfo
 
 from .test_fetch_configs import create_push
 
 
-class TestInfoFetcher(unittest.TestCase):
+class TestNightlyInfoFetcher(unittest.TestCase):
     def setUp(self):
-        fetch_config = fetch_configs.create_config("firefox", "linux", 64, "x86_64")
-        self.info_fetcher = fetch_build_info.InfoFetcher(fetch_config)
+        self.fetch_config = fetch_configs.create_config("firefox", "linux", 64, "x86_64")
+        self.info_fetcher = fetch_build_info.NightlyInfoFetcher(self.fetch_config)
 
     @patch("requests.get")
     def test__fetch_txt_info(self, get):
         response = Mock(
-            text="20141101030205\nhttps://hg.mozilla.org/\
-mozilla-central/rev/b695d9575654\n"
+            text="20141101030205\nhttps://hg.mozilla.org/mozilla-central/rev/b695d9575654\n"
         )
         get.return_value = response
-        expected = {
-            "repository": "https://hg.mozilla.org/mozilla-central",
-            "changeset": "b695d9575654",
-        }
-        self.assertEqual(self.info_fetcher._fetch_txt_info("http://foo.txt"), expected)
+
+        expected = ChangesetInfo(
+            "b695d9575654",
+            "https://hg.mozilla.org/mozilla-central",
+        )
+        urls = ArchiveBuildUrls("http://build.tar.bz2", "http://foo.txt")
+        self.assertEqual(ChangesetInfo.from_nightly_txt(urls), expected)
 
     @patch("requests.get")
     def test__fetch_txt_info_old_format(self, get):
         response = Mock(text="20110126030333 e0fc18b3bc41\n")
         get.return_value = response
-        expected = {
-            "changeset": "e0fc18b3bc41",
-        }
-        self.assertEqual(self.info_fetcher._fetch_txt_info("http://foo.txt"), expected)
 
-
-class TestNightlyInfoFetcher(unittest.TestCase):
-    def setUp(self):
-        fetch_config = fetch_configs.create_config("firefox", "linux", 64, "x86_64")
-        self.info_fetcher = fetch_build_info.NightlyInfoFetcher(fetch_config)
+        urls = ArchiveBuildUrls("http://build.tar.bz2", "http://foo.txt")
+        expected = ChangesetInfo("e0fc18b3bc41")
+        self.assertEqual(ChangesetInfo.from_nightly_txt(urls), expected)
 
     @patch("mozregression.fetch_build_info.url_links")
     def test__find_build_info_from_url(self, url_links):
@@ -52,10 +49,10 @@ class TestNightlyInfoFetcher(unittest.TestCase):
             "http://foo/firefox01linux-x86_64.txt",
             "http://foo/firefox01linux-x86_64.tar.bz2",
         ]
-        expected = {
-            "build_txt_url": "http://foo/firefox01linux-x86_64.txt",
-            "build_url": "http://foo/firefox01linux-x86_64.tar.bz2",
-        }
+        expected = ArchiveBuildUrls(
+            "http://foo/firefox01linux-x86_64.tar.bz2",
+            "http://foo/firefox01linux-x86_64.txt",
+        )
         builds = []
         self.info_fetcher._fetch_build_info_from_url("http://foo", 0, builds)
         self.assertEqual(builds, [(0, expected)])
@@ -117,10 +114,11 @@ bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/",
             # say only the last build url is invalid
             if url in get_urls.return_value[:-1]:
                 return
-            lst.append((index, {"build_txt_url": url, "build_url": url}))
+            fetch_info = ArchiveBuildUrls(url, url)
+            lst.append((index, fetch_info))
 
         self.info_fetcher._fetch_build_info_from_url = Mock(side_effect=my_find_build_info)
-        self.info_fetcher._fetch_txt_info = Mock(return_value={})
+        self.info_fetcher.fetch_config.get_nightly_changeset = Mock(return_value=ChangesetInfo())
         result = self.info_fetcher.find_build_info(datetime.date(2014, 11, 15))
         # we must have found the last build url valid
         self.assertEqual(result.build_url, get_urls.return_value[-1])
@@ -131,7 +129,7 @@ bar/nightly/2014/11/2014-11-15-01-02-05-mozilla-central/",
             self.info_fetcher.find_build_info(datetime.date(2014, 11, 15))
 
 
-class TestNightlyInfoFetcher2(unittest.TestCase):
+class TestNightlyInfoFetcherWin(unittest.TestCase):
     def setUp(self):
         fetch_config = fetch_configs.create_config("firefox", "win", 64, "x86_64")
         self.info_fetcher = fetch_build_info.NightlyInfoFetcher(fetch_config)
@@ -147,13 +145,99 @@ class TestNightlyInfoFetcher2(unittest.TestCase):
             "http://foo/firefox01win64.txt",
             "http://foo/firefox01win64.zip",
         ]
-        expected = {
-            "build_txt_url": "http://foo/firefox01win64.txt",
-            "build_url": "http://foo/firefox01win64.zip",
-        }
+        expected = ArchiveBuildUrls(
+            "http://foo/firefox01win64.zip",
+            "http://foo/firefox01win64.txt",
+        )
         builds = []
         self.info_fetcher._fetch_build_info_from_url("http://foo", 0, builds)
         self.assertEqual(builds, [(0, expected)])
+
+
+@pytest.mark.parametrize("app_name", ["firefox-l10n", "thunderbird-l10n"])
+class TestNightlyInfoFetcherL10N:
+    @patch("mozregression.fetch_build_info.retry_get")
+    @patch("mozregression.fetch_build_info.url_links")
+    def test_find_build_info(self, url_links, retry_get, app_name):
+        lang = "ar"
+        fetch_config = fetch_configs.create_config(app_name, "linux", 64, "x86_64")
+        fetch_config.set_lang(lang)
+        info_fetcher = fetch_build_info.NightlyInfoFetcher(fetch_config)
+
+        if app_name == "firefox-l10n":
+            base_app = "firefox"
+            repo_name = "mozilla-central"
+        elif app_name == "thunderbird-l10n":
+            base_app = "thunderbird"
+            repo_name = "comm-central"
+
+        version = "100.0a1"
+        l10n_suffix = "-l10n"
+        repo_url = f"https://hg.mozilla.org/{repo_name}"
+
+        build_file = f"{base_app}-{version}.{lang}.linux-x86_64.tar.bz2"
+        txt_file = f"{base_app}-{version}.en-US.linux-x86_64.txt"
+
+        l10n_url = (
+            f"https://archive.mozilla.org/pub/{app_name}/nightly/"
+            f"2016/01/2016-01-01-10-02-05-{repo_name}{l10n_suffix}/"
+        )
+        info_url = (
+            f"https://archive.mozilla.org/pub/{base_app}/nightly/"
+            f"2016/01/2016-01-01-10-02-05-{repo_name}/"
+        )
+
+        def mock_url_links(url):
+            if "-l10n/" in url:
+                return [url + build_file]
+            else:
+                return [url + txt_file]
+
+        info_fetcher._get_urls = Mock(return_value=[l10n_url])
+        url_links.side_effect = mock_url_links
+
+        txt_response = Mock(text=f"20160101100205\n{repo_url}/rev/abc123def456\n")
+        retry_get.return_value = txt_response
+
+        result = info_fetcher.find_build_info(datetime.date(2016, 1, 1))
+
+        assert url_links.call_count == 2
+        url_links.assert_any_call(l10n_url)
+        url_links.assert_any_call(info_url)
+
+        retry_get.assert_called_once_with(info_url + txt_file)
+
+        assert result.build_url == l10n_url + build_file
+        assert result.changeset == "abc123def456"
+        assert result.repo_url == repo_url
+
+
+class TestFenixNightlyInfoFetch(unittest.TestCase):
+    def setUp(self):
+        self.fetch_config = fetch_configs.create_config("fenix", None, None, None, "arm64-v8a")
+        self.info_fetcher = fetch_build_info.NightlyInfoFetcher(self.fetch_config)
+
+    @patch("mozregression.fetch_build_info.url_links")
+    def test__find_build_info_from_url(self, url_links):
+        """Test that _fetch_build_info_from_url returns ArchiveBuildUrls for Fenix builds."""
+        build_folder = "2026-01-01-09-03-33-fenix-147.0a1-android-arm64-v8a"
+        build_file = "fenix-147.0a1.multi.android-arm64-v8a.apk"
+        build_url = f"http://foo/{build_folder}/"
+
+        url_links.return_value = [build_url + build_file]
+
+        builds = []
+        self.info_fetcher._fetch_build_info_from_url(build_url, 0, builds)
+
+        # Verify we got one build
+        self.assertEqual(len(builds), 1)
+
+        # Verify the structure: (index, ArchiveBuildUrls)
+        index, archive_urls = builds[0]
+        self.assertEqual(index, 0)
+        self.assertIsInstance(archive_urls, ArchiveBuildUrls)
+        self.assertEqual(archive_urls.build_url, build_url + build_file)
+        self.assertIsNone(archive_urls.build_txt_url)  # Fenix doesn't have .txt files
 
 
 class TestIntegrationInfoFetcher(unittest.TestCase):
@@ -180,7 +264,6 @@ class TestIntegrationInfoFetcher(unittest.TestCase):
             "http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2"
         )
         self.info_fetcher = fetch_build_info.IntegrationInfoFetcher(self.fetch_config)
-        self.info_fetcher._fetch_txt_info = Mock(return_value={"changeset": "123456789"})
 
         result = self.info_fetcher.find_build_info(create_push("123456789", 1))
         self.assertEqual(result.build_url, "http://firefox-42.0a1.en-US.linux-x86_64.tar.bz2")
@@ -255,7 +338,6 @@ class TestIntegrationInfoFetcherGVE(unittest.TestCase):
         requests_head().status_code = 200
 
         self.info_fetcher = fetch_build_info.IntegrationInfoFetcher(self.fetch_config)
-        self.info_fetcher._fetch_txt_info = Mock(return_value={"changeset": "123456789"})
 
         result = self.info_fetcher.find_build_info(create_push("123456789", 1))
         self.assertEqual(result.build_url, "http://geckoview_example.apk")
@@ -282,7 +364,6 @@ class TestIntegrationInfoFetcherGVE(unittest.TestCase):
         requests_head().status_code = 403
 
         self.info_fetcher = fetch_build_info.IntegrationInfoFetcher(self.fetch_config)
-        self.info_fetcher._fetch_txt_info = Mock(return_value={"changeset": "123456789"})
 
         with self.assertRaises(errors.BuildInfoNotFound):
             self.info_fetcher.find_build_info(create_push("123456789", 1))

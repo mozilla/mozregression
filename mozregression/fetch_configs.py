@@ -32,6 +32,7 @@ from mozregression import branches, errors
 from mozregression.class_registry import ClassRegistry
 from mozregression.config import ARCHIVE_BASE_URL
 from mozregression.dates import to_utc_timestamp
+from mozregression.fetch_build_info import ChangesetInfo
 
 LOG = get_proxy_logger(__name__)
 
@@ -130,7 +131,7 @@ class CommonConfig(object):
         self.processor = processor
         self.set_arch(arch)
         self.repo = None
-        self.set_build_type("opt")
+        self.set_build_type(self.BUILD_TYPES[0])
         self._used_build_index = 0
 
     @property
@@ -270,7 +271,7 @@ class NightlyConfigMixin(metaclass=ABCMeta):
     A nightly build url is divided in 2 parts here:
 
     1. the base part as returned by :meth:`get_nightly_base_url`
-    2. the final part, which can be found using :meth:`get_nighly_repo_regex`
+    2. the final part, which can be found using :meth:`get_nightly_repo_regex`
 
     The final part contains a repo name, which is returned by
     :meth:`get_nightly_repo`.
@@ -281,8 +282,6 @@ class NightlyConfigMixin(metaclass=ABCMeta):
 
     archive_base_url = ARCHIVE_BASE_URL
     nightly_base_repo_name = "firefox"
-    nightly_repo = None
-    has_build_info = True
 
     def set_base_url(self, url):
         self.archive_base_url = url.rstrip("/")
@@ -303,6 +302,16 @@ class NightlyConfigMixin(metaclass=ABCMeta):
         Returns the url for the folder to find the build info .txt
         """
         return url
+
+    def get_nightly_changeset(self, archive_urls):
+        """
+        Retrieve changeset info for a nightly build based on url.
+
+        There is no universal way to determine changeset of a binary build for
+        all the supported products. Subclasses should override with their specific
+        approach if possible.
+        """
+        return ChangesetInfo()
 
     def get_nightly_repo(self, date):
         """
@@ -339,6 +348,13 @@ class NightlyConfigMixin(metaclass=ABCMeta):
             )
         return r"/%04d-%02d-%02d-[\d-]+%s/$" % (date.year, date.month, date.day, repo)
 
+    def get_nightly_timestamp_from_url(self, url):
+        """
+        Extract the build timestamp from a build url.
+        """
+        matches = re.search(r"/(\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2})-(.*)/", url)
+        return datetime.datetime.strptime(matches.group(1), "%Y-%m-%d-%H-%M-%S")
+
     def can_go_integration(self):
         """
         Indicate if we can bisect integration from this nightly config.
@@ -346,7 +362,31 @@ class NightlyConfigMixin(metaclass=ABCMeta):
         return self.is_integration()
 
 
-class FirefoxNightlyConfigMixin(NightlyConfigMixin):
+class NightlyTxtConfigMixin(NightlyConfigMixin):
+    """
+    Config mixin to use when a .txt file with changeset/repo info should exist.
+
+    The meth:`get_nightly_info_url` and meth:`build_info_regex` methods of the
+    config are used to locate the appropriate build info .txt file.
+    """
+
+    def get_nightly_changeset(self, archive_urls):
+        return ChangesetInfo.from_nightly_txt(archive_urls)
+
+
+class NightlyPushlogConfigMixin(NightlyConfigMixin):
+    """
+    Config mixin when the source of changeset data is the pushlog.
+
+    The meth:`get_nightly_timestamp_from_url` and meth:`get_nightly_repo`
+    methods of the config help generate the query.
+    """
+
+    def get_nightly_changeset(self, archive_urls):
+        return ChangesetInfo.from_pushlog(archive_urls, self)
+
+
+class FirefoxNightlyConfigMixin(NightlyTxtConfigMixin):
     def _get_nightly_repo(self, date):
         if date < datetime.date(2008, 6, 17):
             return "trunk"
@@ -354,8 +394,7 @@ class FirefoxNightlyConfigMixin(NightlyConfigMixin):
             return "mozilla-central"
 
 
-class FirefoxL10nNightlyConfigMixin(NightlyConfigMixin):
-    has_build_info = False
+class FirefoxL10nNightlyConfigMixin(NightlyTxtConfigMixin):
     oldest_builds = datetime.date(2015, 10, 19)
 
     def _get_nightly_repo(self, date):
@@ -370,7 +409,7 @@ class FirefoxL10nNightlyConfigMixin(NightlyConfigMixin):
         return url.replace("-l10n/", "/")
 
 
-class ThunderbirdNightlyConfigMixin(NightlyConfigMixin):
+class ThunderbirdNightlyConfigMixin(NightlyTxtConfigMixin):
     nightly_base_repo_name = "thunderbird"
 
     def _get_nightly_repo(self, date):
@@ -390,7 +429,6 @@ class ThunderbirdNightlyConfigMixin(NightlyConfigMixin):
 
 
 class ThunderbirdL10nNightlyConfigMixin(ThunderbirdNightlyConfigMixin):
-    has_build_info = False
     oldest_builds = datetime.date(2015, 10, 8)
 
     def _get_nightly_repo(self, date):
@@ -400,8 +438,11 @@ class ThunderbirdL10nNightlyConfigMixin(ThunderbirdNightlyConfigMixin):
             )
         return "comm-central-l10n"
 
+    def get_nightly_info_url(self, url):
+        return url.replace("-l10n/", "/")
 
-class FennecNightlyConfigMixin(NightlyConfigMixin):
+
+class FennecNightlyConfigMixin(NightlyTxtConfigMixin):
     nightly_base_repo_name = "mobile"
 
     def _get_nightly_repo(self, date):
@@ -423,24 +464,33 @@ class FennecNightlyConfigMixin(NightlyConfigMixin):
         return self._get_nightly_repo_regex(date, repo)
 
 
-class FenixNightlyConfigMixin(NightlyConfigMixin):
+class FenixNightlyConfigMixin(NightlyPushlogConfigMixin):
+    # https://archive.mozilla.org/pub/fenix/
     nightly_base_repo_name = "fenix"
-    arch_regex_bits = ""
 
     def _get_nightly_repo(self, date):
-        return "fenix"
+        if date < datetime.date(2023, 2, 13):
+            # https://github.com/mozilla-mobile/fenix
+            return "fenix"
+        if date < datetime.date(2024, 3, 18):
+            # https://github.com/mozilla-mobile/firefox-android
+            return "firefox-android"
+        # https://hg.mozilla.org/mozilla-central/
+        return "mozilla-central"
 
     def get_nightly_repo_regex(self, date):
-        repo = self.get_nightly_repo(date)
-        repo += self.arch_regex_bits  # e.g., ".*arm64.*".
+        # Generated regex matches paths such as:
+        #   2022-06-10-17-01-58-fenix-103.0.0-android-x86_64
+        #   2025-07-01-09-15-43-fenix-142.0a1-android
+        #
+        # Note: This scheme was the same regardless of which
+        #       repo Fenix source code was in.
+        product = self.nightly_base_repo_name
+        version = r"[^-]+"
+        repo = f"{product}-{version}-android"
+        if self.arch:
+            repo += f"-{self.arch}"
         return self._get_nightly_repo_regex(date, repo)
-
-
-class FocusNightlyConfigMixin(FenixNightlyConfigMixin):
-    nightly_base_repo_name = "focus"
-
-    def _get_nightly_repo(self, date):
-        return "focus"
 
 
 class IntegrationConfigMixin(metaclass=ABCMeta):
@@ -554,6 +604,21 @@ class FennecIntegrationConfigMixin(IntegrationConfigMixin):
         return
 
 
+class FenixIntegrationConfigMixin(IntegrationConfigMixin):
+    tk_name = "fenix"
+
+    def tk_routes(self, push):
+        for build_type in self.build_types:
+            yield "gecko.v2.{}.revision.{}.mobile.{}-{}".format(
+                self.integration_branch,
+                push.changeset,
+                self.tk_name,
+                build_type,
+            )
+            self._inc_used_build()
+        return
+
+
 class ThunderbirdIntegrationConfigMixin(IntegrationConfigMixin):
     default_integration_branch = "comm-central"
 
@@ -625,10 +690,6 @@ class FirefoxConfig(CommonConfig, FirefoxNightlyConfigMixin, FirefoxIntegrationC
         "shippable": ("opt", "pgo"),
         "opt": ("shippable", "pgo"),
     }
-
-    def __init__(self, os, bits, processor, arch):
-        super(FirefoxConfig, self).__init__(os, bits, processor, arch)
-        self.set_build_type("shippable")
 
     def build_regex(self):
         return (
@@ -702,9 +763,17 @@ class FennecConfig(CommonConfig, FennecNightlyConfigMixin, FennecIntegrationConf
 
 
 @REGISTRY.register("fenix")
-class FenixConfig(CommonConfig, FenixNightlyConfigMixin):
+class FenixConfig(CommonConfig, FenixNightlyConfigMixin, FenixIntegrationConfigMixin):
+    BUILD_TYPES = ("shippable",)
+    BUILD_TYPE_FALLBACKS = {
+        "shippable": ("nightly", "nightly-simulation"),
+    }
+
     def build_regex(self):
-        return r"fenix-.+\.apk"
+        return r"(target.{}|fenix-.*)\.apk".format(self.arch)
+
+    def build_info_regex(self):
+        return r"(?!)"  # Match nothing
 
     def available_bits(self):
         return ()
@@ -717,25 +786,34 @@ class FenixConfig(CommonConfig, FenixNightlyConfigMixin):
             "x86_64",
         ]
 
-    def set_arch(self, arch):
-        CommonConfig.set_arch(self, arch)
-        # Map "arch" value to one that can be used in the nightly repo regex lookup.
-        mapping = {
-            "arm64-v8a": "-.+-android-arm64-v8a",
-            "armeabi-v7a": "-.+-android-armeabi-v7a",
-            "x86": "-.+-android-x86",
-            "x86_64": "-.+-android-x86_64",
-        }
-        self.arch_regex_bits = mapping.get(self.arch, "")
-
     def should_use_archive(self):
         return True
 
 
 @REGISTRY.register("focus")
-class FocusConfig(FenixConfig, FocusNightlyConfigMixin):
+class FocusConfig(FenixConfig):
+    BUILD_TYPE_FALLBACKS = {
+        "shippable": ("nightly",),
+    }
+
     def build_regex(self):
-        return r"focus-.+\.apk"
+        return r"(target.{}|focus-.*)\.apk".format(self.arch)
+
+    # https://archive.mozilla.org/pub/focus/
+    nightly_base_repo_name = "focus"
+
+    def _get_nightly_repo(self, date):
+        if date < datetime.date(2022, 12, 12):
+            # https://github.com/mozilla-mobile/focus-android
+            return "focus-android"
+        if date < datetime.date(2024, 3, 18):
+            # https://github.com/mozilla-mobile/firefox-android
+            return "firefox-android"
+        # https://hg.mozilla.org/mozilla-central/
+        return "mozilla-central"
+
+    # Index: gecko.v2.{repo}.revision.{rev}.mobile.focus-{build_type}
+    tk_name = "focus"
 
 
 @REGISTRY.register("gve")

@@ -5,21 +5,18 @@ requires = ["setuptools>=61", "wheel", "setuptools_scm[toml]>=3.4"]
 [tool.setuptools_scm]
 write_to = "mozregression/version.py"
 
-[tool.black]
+[tool.ruff]
 line-length = 100
-# excludes handled in setup.cfg, since it's called via flake8
 
-[tool.isort]
-line_length = 100
-skip_glob = "**/gui/mozregui/ui/*"
-default_section = "THIRDPARTY"
-known_first_party = "mozregression,mozregui"
-known_third_party = "taskcluster"
-# For compatibility with black:
-multi_line_output = 3
-include_trailing_comma = "True"
-force_grid_wrap = 0
-use_parentheses = "True"
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["mozregression", "mozregui"]
+known-third-party = ["taskcluster"]
+
+[tool.ruff.format]
+exclude = ["gui/mozregui/ui/*", "mozregression/version.py"]
 
 [project]
 name = "mozregression"

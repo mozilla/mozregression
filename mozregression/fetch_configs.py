@@ -103,7 +103,7 @@ def get_build_regex(
         platform, ext = r"mac.*", r"\.dmg"
     else:
         raise errors.MozRegressionError(
-            "mozregression supports linux, mac and windows but your" " os is reported as '%s'." % os
+            "mozregression supports linux, mac and windows but your os is reported as '%s'." % os
         )
 
     # New taskcluster builds now just name the binary archive 'target', so
@@ -148,8 +148,7 @@ class CommonConfig(object):
         """
         self._used_build_index = (
             # Need to be careful not to overflow the list
-            (self._used_build_index + 1)
-            % len(self.build_types)
+            (self._used_build_index + 1) % len(self.build_types)
         )
 
     def build_regex(self):

@@ -1,6 +1,0 @@
---no-binary coverage
-coverage
-coveralls
-mock
-pytest
-pytest-mock

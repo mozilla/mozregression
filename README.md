@@ -36,79 +36,52 @@ Want to hack on mozregression ? Cool!
 
 ### Installing dependencies
 
-To make setup more deterministic, we have provided requirements files to use a known-working
-set of python dependencies. From your mozregression checkout, you can install these inside
-a virtual development environment.
+We use [`uv`](https://docs.astral.sh/uv/) to manage Python and dependencies. The pinned
+`uv.lock` is checked in so every contributor and CI run uses an identical dependency set.
 
-After checking out the mozregression repository from GitHub, this is a two step process:
+1. Install `uv` ([installation guide](https://docs.astral.sh/uv/getting-started/installation/)).
 
-1. Be sure you are using Python 3.8 or above: earlier versions are not supported (if you
-   are not sure, run `python --version` or `python3 --version` on the command line).
+2. From your mozregression checkout, create the environment and install the project plus
+   every dependency group (CLI deps, GUI deps, dev tools, linters, build tools):
 
-2. From inside your mozregression checkout, create a virtual environment, activate it, and install the dependencies. The instructions are slightly different depending on whether you are using Windows or Linux/MacOS.
+   ```bash
+   uv sync --frozen --all-groups
+   ```
 
-
-On Windows:
-
-```bash
-python3 -m venv venv
-venv\Scripts\activate
-pip install -r requirements\requirements-3.9-Windows.txt
-pip install -e .
-```
-
-On Linux:
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements/requirements-3.9-Linux.txt
-pip install -e .
-```
-
-On macOS:
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements/requirements-3.9-macOS.txt
-pip install -e .
-```
-
-NOTE: You should replace the Python version with the one that matches with the virtual environment.
+   `uv` provisions a compatible Python automatically and writes the virtual environment
+   to `.venv/`.
 
 ### Hacking on mozregression
 
-After running the above commands, you should be able to run the command-line version of
-mozregression as normal (e.g. `mozregression --help`) inside the virtual environment. If
-you wish to try running the GUI, use the provided helper script:
+Run any project command via `uv run`, which transparently uses `.venv`:
 
 ```bash
-python gui/build.py run
+uv run mozregression --help
+uv run python gui/build.py run
 ```
 
 To run the unit tests for the console version:
 
 ```bash
-pytest tests
+uv run pytest tests
 ```
 
 For the GUI version:
 
 ```bash
-python gui/build.py test
+uv run python gui/build.py test
 ```
 
 Before submitting a pull request, please lint your code for errors and formatting (we use [black](https://black.readthedocs.io/en/stable/), [flake8](https://flake8.pycqa.org/en/latest/) and [isort](https://isort.readthedocs.io/en/latest/))
 
 ```bash
-./bin/lint-check.sh
+uv run ./bin/lint-check.sh
 ```
 
 If it turns up errors, try using the `lint-fix.sh` script to fix any errors which can be addressed automatically:
 
 ```bash
-./bin/lint-fix.sh
+uv run ./bin/lint-fix.sh
 ```
 
 ### Making a release

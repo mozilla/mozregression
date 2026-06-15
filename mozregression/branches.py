@@ -67,6 +67,9 @@ def create_branches():
     for name in ("comm-beta", "comm-release", "mozilla-beta", "mozilla-release"):
         branches.set_branch(name, "releases/%s" % name, category="releases")
 
+    # esr branches
+    branches.set_branch("mozilla-esr140", "releases/mozilla-esr140")
+
     branches.set_branch("try", "try", category="try")
 
     # aliases

@@ -27,6 +27,9 @@ class Branches(object):
         self._branches[name] = self.DEFAULT_REPO_URL + path
         self._categories[category].append(name)
 
+    def has_branch(self, name):
+        return name in self._branches
+
     def get_branches(self, category=None):
         if category is None:
             return list(self._branches.keys())
@@ -64,7 +67,7 @@ def create_branches():
         branches.set_branch(name, "integration/%s" % name, category="integration")
 
     # release branches
-    for name in ("comm-beta", "comm-release", "mozilla-beta", "mozilla-release"):
+    for name in ("comm-beta", "comm-release", "mozilla-beta", "mozilla-release", "mozilla-esr"):
         branches.set_branch(name, "releases/%s" % name, category="releases")
 
     branches.set_branch("try", "try", category="try")
@@ -75,6 +78,7 @@ def create_branches():
         ("mozilla-inbound", ("m-i", "inbound", "mozilla inbound")),
         ("mozilla-beta", ("m-b", "beta")),
         ("mozilla-release", ("m-r", "release")),
+        ("mozilla-esr", ("esr")),
     ):
         for alias in aliases:
             branches.set_alias(alias, name)
@@ -89,6 +93,8 @@ get_url = BRANCHES.get_url
 get_name = BRANCHES.get_name
 get_branches = BRANCHES.get_branches
 get_category = BRANCHES.get_category
+has_branch = BRANCHES.has_branch
+set_branch = BRANCHES.set_branch
 
 
 RE_MERGE_BRANCH = re.compile(r"merge ([\w\s-]+) to ([\w\s-]+).*", re.I)

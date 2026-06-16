@@ -9,6 +9,7 @@ from mozregression.releases import (
     releases,
     tag_of_beta,
     tag_of_release,
+    tag_of_esr,
 )
 
 
@@ -77,3 +78,25 @@ class TestRelease(unittest.TestCase):
             tag_of_beta("57.0.1")
         with self.assertRaises(errors.UnavailableRelease):
             tag_of_beta("xyz")
+
+    def test_valid_esr_tags(self):
+        tag = tag_of_esr("24.0")
+        self.assertEqual(tag, "FIREFOX_24_0esr_RELEASE")
+        tag = tag_of_esr("91")
+        self.assertEqual(tag, "FIREFOX_91_0esr_RELEASE")
+        tag = tag_of_esr("128esr")
+        self.assertEqual(tag, "FIREFOX_128_0esr_RELEASE")
+        tag = tag_of_esr("115.1")
+        self.assertEqual(tag, "FIREFOX_115_1_0esr_RELEASE")
+        tag = tag_of_esr("91.4.1")
+        self.assertEqual(tag, "FIREFOX_91_4_1esr_RELEASE")
+        tag = tag_of_esr("128.4.0esr")
+        self.assertEqual(tag, "FIREFOX_128_4_0esr_RELEASE")
+
+    def test_invalid_esr_tags(self):
+        with self.assertRaises(errors.UnavailableRelease):
+            tag_of_esr("55.0.1.1")
+        with self.assertRaises(errors.UnavailableRelease):
+            tag_of_esr("57.0b4")
+        with self.assertRaises(errors.UnavailableRelease):
+            tag_of_esr("def")

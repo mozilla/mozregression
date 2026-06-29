@@ -30,7 +30,7 @@ from mozregression.network import set_http_session
 from mozregression.persist_limit import PersistLimit
 from mozregression.telemetry import UsageMetrics, get_system_info, send_telemetry_ping_oop
 from mozregression.tempdir import safe_mkdtemp
-from mozregression.test_runner import CommandTestRunner, ManualTestRunner
+from mozregression.test_runner import AgentTestRunner, CommandTestRunner, ManualTestRunner
 
 LOG = get_proxy_logger("main")
 
@@ -81,7 +81,17 @@ class Application(object):
     @property
     def test_runner(self):
         if self._test_runner is None:
-            if self.options.command is None:
+            if self.options.prompt is not None:
+                self._test_runner = AgentTestRunner(
+                    self.options.prompt,
+                    min_version=self.options.prompt_min_version,
+                    headless=self.options.prompt_headless,
+                    model=self.options.prompt_model,
+                    recheck_mcp=self.options.prompt_recheck_mcp,
+                    allow_other_mcp=self.options.prompt_allow_other_mcp,
+                    max_budget_usd=self.options.max_budget_usd,
+                )
+            elif self.options.command is None:
                 self._test_runner = ManualTestRunner(
                     launcher_kwargs=dict(
                         addons=self.options.addons,
@@ -330,6 +340,10 @@ def main(
         set_http_session(get_defaults={"timeout": config.options.http_timeout})
 
         app = Application(config.fetch_config, config.options)
+        if config.options.prompt is not None:
+            # fail fast before bisecting: ensure the agent can run and that the
+            # prompt is able to yield a good/bad verdict.
+            app.test_runner.check_prerequisites()
         send_telemetry_ping_oop(
             UsageMetrics(
                 variant=mozregression_variant,

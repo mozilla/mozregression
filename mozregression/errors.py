@@ -16,6 +16,21 @@ class WinTooOldBuildError(MozRegressionError):
         MozRegressionError.__init__(self, "Can't run Windows builds before" " 2010-03-18")
 
 
+class UnsupportedVersionError(MozRegressionError):
+    """
+    Raised when a build's Firefox version is too old to be driven by the
+    Firefox DevTools MCP used by the ``--prompt`` option.
+    """
+
+    def __init__(self, build, min_version):
+        MozRegressionError.__init__(
+            self,
+            "Build %s is too old for --prompt: the Firefox DevTools MCP requires"
+            " Firefox %s or later. Narrow the regression range, or lower"
+            " --prompt-min-version if you know it works on older builds." % (build, min_version),
+        )
+
+
 class DateFormatError(MozRegressionError):
     """
     Raised when a date can not be parsed from a string.

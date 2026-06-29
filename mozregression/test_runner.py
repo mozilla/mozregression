@@ -6,15 +6,19 @@ and a default implementation :class:`ManualTestRunner`.
 from __future__ import absolute_import, print_function
 
 import datetime
+import json
 import os
+import re
 import shlex
+import shutil
 import subprocess
 import sys
+import tempfile
 from abc import ABCMeta, abstractmethod
 
 from mozlog import get_proxy_logger
 
-from mozregression.errors import LauncherError, TestCommandError
+from mozregression.errors import LauncherError, TestCommandError, UnsupportedVersionError
 from mozregression.launchers import create_launcher as mozlauncher
 
 LOG = get_proxy_logger("Test Runner")
@@ -226,6 +230,268 @@ class CommandTestRunner(TestRunner):
             "Test command result: %d (build is %s)" % (retcode, "good" if retcode == 0 else "bad")
         )
         return "g" if retcode == 0 else "b"
+
+    def run_once(self, build_info):
+        return 0 if self.evaluate(build_info) == "g" else 1
+
+
+# Verdict tokens the agent is instructed to emit, matched as standalone words.
+_VERDICT_RE = re.compile(r"\b(GOOD|BAD)\b")
+
+
+def _major_version(version):
+    """
+    Return the integer major version from a version string like "128.0.1",
+    or None if it can not be parsed.
+    """
+    if not version:
+        return None
+    match = re.match(r"\s*(\d+)", str(version))
+    return int(match.group(1)) if match else None
+
+
+class AgentTestRunner(TestRunner):
+    """
+    A TestRunner subclass that evaluates builds with an LLM agent driving the
+    Firefox DevTools MCP (https://github.com/mozilla/firefox-devtools-mcp).
+
+    Given a natural language instruction, the agent inspects the running build
+    via the MCP and decides whether it is good or bad. This is the higher level
+    equivalent of :class:`CommandTestRunner` (similar to ``git bisect run``).
+
+    The agent is run by shelling out to the ``claude`` CLI in headless mode,
+    pointed at the MCP through a generated ``--mcp-config``. The MCP launches
+    the build itself, so this runner installs the build (to obtain the binary
+    path) but does not start it.
+
+    Requires the ``claude`` CLI (installed and authenticated) and Node/``npx``
+    on the PATH.
+    """
+
+    #: Name used for the MCP server in the generated config, also the prefix of
+    #: the tool names exposed to the agent (``mcp__firefox-devtools__*``).
+    MCP_SERVER_NAME = "firefox-devtools"
+
+    #: npm package providing the Firefox DevTools MCP server.
+    MCP_PACKAGE = "@mozilla/firefox-devtools-mcp"
+
+    #: Model/effort for the up-front prompt validation only. That is a trivial
+    #: text yes/no check (it does not drive the MCP), so a fast, cheap model at
+    #: low effort is plenty. The per-build verdict agent, which actually drives
+    #: the browser, uses the `claude` CLI's default model unless overridden with
+    #: ``--prompt-model`` -- a weaker model there misreads multi-step
+    #: instructions and navigates to the wrong place.
+    VALIDATION_MODEL = "haiku"
+    VALIDATION_EFFORT = "low"
+
+    def __init__(
+        self,
+        instruction,
+        min_version=100,
+        headless=False,
+        model=None,
+        recheck_mcp=False,
+        allow_other_mcp=False,
+        max_budget_usd=10.0,
+    ):
+        TestRunner.__init__(self)
+        self.instruction = instruction
+        self.min_version = min_version
+        self.headless = headless
+        self.model = model
+        self.recheck_mcp = recheck_mcp
+        self.allow_other_mcp = allow_other_mcp
+        self.max_budget_usd = max_budget_usd
+
+    def check_prerequisites(self):
+        """
+        Fail fast, before any bisection happens, if the agent can not run or if
+        the instruction is not usable. Checks that the required executables are
+        available and that the prompt is able to yield a good/bad verdict.
+        """
+        for executable in ("claude", "npx"):
+            if shutil.which(executable) is None:
+                raise TestCommandError(
+                    "`%s` is required for --prompt but was not found on the"
+                    " PATH. Install it (and run `claude` once to authenticate)"
+                    " before using --prompt." % executable
+                )
+        self._validate_prompt()
+
+    def _validate_prompt(self):
+        """
+        Ask the agent whether the instruction can produce a clear good/bad
+        determination, and raise :class:`TestCommandError` if it can not.
+        """
+        meta_prompt = (
+            "You are validating an instruction that will be used to judge"
+            " whether a Firefox build is GOOD or BAD during a regression"
+            " bisection. A usable instruction describes something observable in"
+            " the browser that maps to a clear good-or-bad outcome.\n\n"
+            'Instruction: "%s"\n\n'
+            "If the instruction is usable, reply with exactly: VALID\n"
+            "Otherwise reply with: INVALID: <one sentence on what is missing>" % self.instruction
+        )
+        command = (
+            ["claude", "-p", meta_prompt, "--output-format", "json"]
+            + ["--model", self.VALIDATION_MODEL, "--effort", self.VALIDATION_EFFORT]
+            + self._budget_flags()
+        )
+        LOG.info("Validating --prompt instruction with the agent...")
+        proc = self._invoke_claude(command)
+        if proc.returncode != 0:
+            _raise_command_error(
+                "claude exited with code %d: %s" % (proc.returncode, proc.stderr.strip())
+            )
+        text = self._result_text(proc.stdout)
+        if "VALID" not in text.upper() or "INVALID" in text.upper():
+            raise TestCommandError(
+                "the --prompt instruction does not look usable for a good/bad"
+                " verdict: %s" % text.strip()
+            )
+        LOG.info("--prompt instruction validated.")
+
+    def _budget_flags(self):
+        """
+        Per-call spending cap shared by the validation and verdict claude calls.
+        """
+        if self.max_budget_usd is not None:
+            return ["--max-budget-usd", str(self.max_budget_usd)]
+        return []
+
+    def _invoke_claude(self, command):
+        try:
+            return subprocess.run(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+            )
+        except OSError as exc:
+            _raise_command_error(exc, " (claude not found or not executable)")
+
+    def _check_version(self, app_info):
+        version = app_info.get("application_version")
+        major = _major_version(version)
+        if major is not None and major < self.min_version:
+            raise UnsupportedVersionError(version, self.min_version)
+
+    def _mcp_config(self, binary):
+        # By default reuse whatever npx already has cached and stay offline, so
+        # each build in the bisection does not pay a registry round-trip (and
+        # uses a consistent version). --prompt-recheck-mcp forces npx to fetch
+        # the latest published version instead.
+        if self.recheck_mcp:
+            args = ["-y", "--prefer-online", self.MCP_PACKAGE + "@latest"]
+        else:
+            args = ["-y", "--prefer-offline", self.MCP_PACKAGE]
+        args += ["--firefox-path", binary]
+        if self.headless:
+            args.append("--headless")
+        return {
+            "mcpServers": {
+                self.MCP_SERVER_NAME: {
+                    "command": "npx",
+                    "args": args,
+                }
+            }
+        }
+
+    def _build_prompt(self):
+        return (
+            "You are evaluating a Firefox build during a regression bisection."
+            " Use the Firefox DevTools MCP tools to investigate the running"
+            " build, then decide whether the build is GOOD or BAD according to"
+            " this instruction:\n\n"
+            "%s\n\n"
+            "When you are done investigating, reply with exactly one word on"
+            " the final line: GOOD if the build behaves as expected, or BAD if"
+            " it exhibits the problem." % self.instruction
+        )
+
+    @staticmethod
+    def _result_text(stdout):
+        """
+        Return the agent's final answer text from the ``claude`` output. With
+        ``--output-format json`` the answer is wrapped in a "result" field;
+        otherwise the raw stdout is returned.
+        """
+        try:
+            payload = json.loads(stdout)
+        except ValueError:
+            return stdout
+        if isinstance(payload, dict):
+            return payload.get("result") or ""
+        return stdout
+
+    @classmethod
+    def _parse_verdict(cls, stdout):
+        """
+        Extract a 'g'/'b' verdict from the ``claude`` output, or return None if
+        no verdict could be determined.
+        """
+        matches = _VERDICT_RE.findall(cls._result_text(stdout))
+        if not matches:
+            return None
+        # the verdict is the last standalone GOOD/BAD token emitted.
+        return "g" if matches[-1] == "GOOD" else "b"
+
+    def _run_agent(self, binary, build_info):
+        config = self._mcp_config(binary)
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", prefix="mozregression-mcp-", delete=False
+        ) as fp:
+            json.dump(config, fp)
+            config_path = fp.name
+        try:
+            command = [
+                "claude",
+                "-p",
+                self._build_prompt(),
+                "--mcp-config",
+                config_path,
+                "--allowedTools",
+                "mcp__%s" % self.MCP_SERVER_NAME,
+                "--output-format",
+                "json",
+                "--permission-mode",
+                "bypassPermissions",
+            ]
+            if not self.allow_other_mcp:
+                # only load the Firefox DevTools MCP from our generated config,
+                # ignoring any other MCP servers the user has configured.
+                command.append("--strict-mcp-config")
+            # the verdict agent drives the browser, so it keeps the claude CLI's
+            # default model/effort unless --prompt-model overrides it.
+            if self.model:
+                command += ["--model", self.model]
+            command += self._budget_flags()
+            LOG.info("Running agent with instruction: %r" % self.instruction)
+            proc = self._invoke_claude(command)
+        finally:
+            try:
+                os.unlink(config_path)
+            except OSError:
+                pass
+
+        if proc.returncode != 0:
+            _raise_command_error(
+                "claude exited with code %d: %s" % (proc.returncode, proc.stderr.strip())
+            )
+        verdict = self._parse_verdict(proc.stdout)
+        if verdict is None:
+            _raise_command_error(
+                "could not find a GOOD/BAD verdict in the agent output:" " %s" % proc.stdout.strip()
+            )
+        LOG.info("Agent verdict: build is %s" % ("good" if verdict == "g" else "bad"))
+        return verdict
+
+    def evaluate(self, build_info, allow_back=False):
+        with create_launcher(build_info) as launcher:
+            app_info = launcher.get_app_info()
+            build_info.update_from_app_info(app_info)
+            self._check_version(app_info)
+            return self._run_agent(launcher.binary, build_info)
 
     def run_once(self, build_info):
         return 0 if self.evaluate(build_info) == "g" else 1

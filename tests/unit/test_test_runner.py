@@ -266,6 +266,183 @@ class TestCommandTestRunner(unittest.TestCase):
         self.runner.evaluate.assert_called_once_with(build_info)
 
 
+class TestAgentTestRunner(unittest.TestCase):
+    def setUp(self):
+        self.runner = test_runner.AgentTestRunner("check the page", min_version=100)
+        self.launcher = Mock(binary="/path/to/firefox")
+        self.launcher.get_app_info.return_value = {"application_version": "128.0"}
+
+    @patch("mozregression.test_runner.create_launcher")
+    @patch("mozregression.test_runner.subprocess.run")
+    def evaluate(self, run, create_launcher, stdout=None, returncode=0, run_effect=None):
+        create_launcher.return_value = Launcher(self.launcher)
+        proc = Mock(returncode=returncode, stdout=stdout or "", stderr="")
+        run.return_value = proc
+        if run_effect:
+            run.side_effect = run_effect
+        self.subprocess_run = run
+        return self.runner.evaluate(mockinfo(to_dict=lambda: {}))
+
+    def test_create(self):
+        self.assertEqual(self.runner.instruction, "check the page")
+        self.assertEqual(self.runner.min_version, 100)
+
+    def test_evaluate_good(self):
+        verdict = self.evaluate(stdout='{"result": "Looks fine. GOOD"}')
+        self.assertEqual("g", verdict)
+
+    def test_evaluate_bad(self):
+        verdict = self.evaluate(stdout='{"result": "The box is missing. BAD"}')
+        self.assertEqual("b", verdict)
+
+    def test_evaluate_plain_text_output(self):
+        # output that is not JSON is scanned directly for the verdict
+        verdict = self.evaluate(stdout="some logs\nBAD\n")
+        self.assertEqual("b", verdict)
+
+    def test_evaluate_last_verdict_wins(self):
+        verdict = self.evaluate(stdout='{"result": "first I thought BAD but it is GOOD"}')
+        self.assertEqual("g", verdict)
+
+    def test_command_built(self):
+        self.evaluate(stdout='{"result": "GOOD"}')
+        command = self.subprocess_run.mock_calls[0][1][0]
+        self.assertEqual(command[0], "claude")
+        self.assertIn("--mcp-config", command)
+        self.assertIn("mcp__firefox-devtools", command)
+
+    def test_verdict_uses_cli_default_model_and_budget(self):
+        # the verdict agent drives the browser, so it keeps the claude CLI's
+        # default model/effort (no --model/--effort forced) but stays capped.
+        self.evaluate(stdout='{"result": "GOOD"}')
+        command = self.subprocess_run.mock_calls[0][1][0]
+        self.assertNotIn("--model", command)
+        self.assertNotIn("--effort", command)
+        self.assertEqual(command[command.index("--max-budget-usd") + 1], "10.0")
+
+    def test_strict_mcp_config_by_default(self):
+        self.evaluate(stdout='{"result": "GOOD"}')
+        command = self.subprocess_run.mock_calls[0][1][0]
+        self.assertIn("--strict-mcp-config", command)
+
+    def test_allow_other_mcp_drops_strict_flag(self):
+        self.runner = test_runner.AgentTestRunner("check", min_version=100, allow_other_mcp=True)
+        self.evaluate(stdout='{"result": "GOOD"}')
+        command = self.subprocess_run.mock_calls[0][1][0]
+        self.assertNotIn("--strict-mcp-config", command)
+
+    def test_max_budget_override(self):
+        self.runner = test_runner.AgentTestRunner("check", min_version=100, max_budget_usd=2.5)
+        self.evaluate(stdout='{"result": "GOOD"}')
+        command = self.subprocess_run.mock_calls[0][1][0]
+        self.assertEqual(command[command.index("--max-budget-usd") + 1], "2.5")
+
+    def test_mcp_config_reuses_cached_package_by_default(self):
+        with patch("mozregression.test_runner.json.dump") as dump:
+            self.evaluate(stdout='{"result": "GOOD"}')
+            config = dump.mock_calls[0][1][0]
+        args = config["mcpServers"]["firefox-devtools"]["args"]
+        self.assertIn("--prefer-offline", args)
+        self.assertIn(test_runner.AgentTestRunner.MCP_PACKAGE, args)
+        self.assertNotIn(test_runner.AgentTestRunner.MCP_PACKAGE + "@latest", args)
+
+    def test_mcp_config_recheck_fetches_latest(self):
+        self.runner = test_runner.AgentTestRunner("check", min_version=100, recheck_mcp=True)
+        with patch("mozregression.test_runner.json.dump") as dump:
+            self.evaluate(stdout='{"result": "GOOD"}')
+            config = dump.mock_calls[0][1][0]
+        args = config["mcpServers"]["firefox-devtools"]["args"]
+        self.assertIn("--prefer-online", args)
+        self.assertIn(test_runner.AgentTestRunner.MCP_PACKAGE + "@latest", args)
+
+    def test_headless_and_model_forwarded(self):
+        self.runner = test_runner.AgentTestRunner(
+            "check", min_version=100, headless=True, model="claude-x"
+        )
+        with patch("mozregression.test_runner.json.dump") as dump:
+            self.evaluate(stdout='{"result": "GOOD"}')
+            config = dump.mock_calls[0][1][0]
+        args = config["mcpServers"]["firefox-devtools"]["args"]
+        self.assertIn("--firefox-path", args)
+        self.assertIn("/path/to/firefox", args)
+        self.assertIn("--headless", args)
+        command = self.subprocess_run.mock_calls[0][1][0]
+        self.assertIn("--model", command)
+        self.assertIn("claude-x", command)
+
+    def test_unsupported_version(self):
+        self.launcher.get_app_info.return_value = {"application_version": "96.0"}
+        self.assertRaises(errors.UnsupportedVersionError, self.evaluate)
+
+    def test_unknown_version_passes_to_agent(self):
+        # if mozversion can't report a version, defer to the per-build agent
+        self.launcher.get_app_info.return_value = {}
+        verdict = self.evaluate(stdout='{"result": "GOOD"}')
+        self.assertEqual("g", verdict)
+
+    def test_no_verdict_in_output(self):
+        self.assertRaisesRegex(
+            errors.TestCommandError, "verdict", self.evaluate, stdout='{"result": "no idea"}'
+        )
+
+    def test_nonzero_returncode(self):
+        self.assertRaisesRegex(errors.TestCommandError, "exited", self.evaluate, returncode=1)
+
+    def test_claude_missing(self):
+        self.assertRaisesRegex(
+            errors.TestCommandError, "not found", self.evaluate, run_effect=OSError
+        )
+
+    def test_run_once(self):
+        self.runner.evaluate = Mock(return_value="g")
+        build_info = Mock()
+        self.assertEqual(self.runner.run_once(build_info), 0)
+        self.runner.evaluate.assert_called_once_with(build_info)
+
+    @patch("mozregression.test_runner.shutil.which")
+    @patch("mozregression.test_runner.subprocess.run")
+    def check_prerequisites(self, run, which, missing=(), validation='{"result": "VALID"}'):
+        which.side_effect = lambda exe: None if exe in missing else "/usr/bin/" + exe
+        run.return_value = Mock(returncode=0, stdout=validation, stderr="")
+        self.subprocess_run = run
+        return self.runner.check_prerequisites()
+
+    def test_check_prerequisites_ok(self):
+        # claude + npx present, prompt validated: no error
+        self.check_prerequisites()
+        # the validation call does not enable any MCP/tools
+        command = self.subprocess_run.mock_calls[0][1][0]
+        self.assertEqual(command[0], "claude")
+        self.assertNotIn("--mcp-config", command)
+
+    def test_validation_uses_fast_model(self):
+        # the validation step is a trivial text check, so it always uses the
+        # fast model at low effort regardless of --prompt-model.
+        self.runner = test_runner.AgentTestRunner("check", min_version=100, model="sonnet")
+        self.check_prerequisites()
+        command = self.subprocess_run.mock_calls[0][1][0]
+        self.assertEqual(command[command.index("--model") + 1], "haiku")
+        self.assertEqual(command[command.index("--effort") + 1], "low")
+
+    def test_check_prerequisites_claude_missing(self):
+        self.assertRaisesRegex(
+            errors.TestCommandError, "claude", self.check_prerequisites, missing=("claude",)
+        )
+
+    def test_check_prerequisites_npx_missing(self):
+        self.assertRaisesRegex(
+            errors.TestCommandError, "npx", self.check_prerequisites, missing=("npx",)
+        )
+
+    def test_check_prerequisites_invalid_prompt(self):
+        self.assertRaisesRegex(
+            errors.TestCommandError,
+            "usable",
+            self.check_prerequisites,
+            validation='{"result": "INVALID: too vague"}',
+        )
+
+
 @pytest.mark.parametrize(
     "brange,input,allowed_range,result",
     [  # noqa

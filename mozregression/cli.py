@@ -21,7 +21,12 @@ from mozregression import __version__
 from mozregression.branches import get_name
 from mozregression.config import DEFAULT_CONF_FNAME, get_config, write_config
 from mozregression.dates import is_date_or_datetime, parse_date, to_datetime
-from mozregression.errors import DateFormatError, MozRegressionError, UnavailableRelease
+from mozregression.errors import (
+    DateFormatError,
+    MozRegressionError,
+    UnavailableRelease,
+    UnsupportedVersionError,
+)
 from mozregression.fetch_configs import REGISTRY as FC_REGISTRY
 from mozregression.fetch_configs import create_config
 from mozregression.log import colorize, init_logger
@@ -302,6 +307,79 @@ def create_parser(defaults):
     )
 
     parser.add_argument(
+        "--prompt",
+        help=(
+            "Evaluate builds automatically with an LLM agent driving the"
+            " Firefox DevTools MCP. Give a natural language instruction"
+            " describing what to check, e.g."
+            ' --prompt "open example.com and tell me if the search box is'
+            " present\". The build is judged good or bad based on the agent's"
+            " findings. Mutually exclusive with --command. Requires the"
+            " `claude` CLI (installed and authenticated) and Node/`npx` on the"
+            " PATH. Note: the Firefox DevTools MCP only supports recent Firefox"
+            " versions, so older regression ranges are rejected (see"
+            " --prompt-min-version)."
+        ),
+    )
+
+    parser.add_argument(
+        "--prompt-min-version",
+        type=int,
+        default=100,
+        help=(
+            "Minimum Firefox major version the Firefox DevTools MCP supports,"
+            " used to gate the --prompt option. Builds (and regression ranges)"
+            " older than this are rejected. Defaults to %(default)s."
+        ),
+    )
+
+    parser.add_argument(
+        "--prompt-headless",
+        action="store_true",
+        help="Run the --prompt Firefox build in headless mode.",
+    )
+
+    parser.add_argument(
+        "--prompt-model",
+        default=None,
+        help=(
+            "Model passed to the `claude` CLI for the per-build --prompt agent"
+            " that drives the browser. Defaults to the `claude` CLI's configured"
+            " model."
+        ),
+    )
+
+    parser.add_argument(
+        "--prompt-recheck-mcp",
+        action="store_true",
+        help=(
+            "Re-check the npm registry for the latest Firefox DevTools MCP"
+            " version on every build. By default the version npx already has"
+            " cached is reused (no per-build registry round-trip)."
+        ),
+    )
+
+    parser.add_argument(
+        "--prompt-allow-other-mcp",
+        action="store_true",
+        help=(
+            "Also load your other configured MCP servers when running the"
+            " --prompt agent. By default only the Firefox DevTools MCP is used"
+            " (claude is run with --strict-mcp-config)."
+        ),
+    )
+
+    parser.add_argument(
+        "--max-budget-usd",
+        type=float,
+        default=10.0,
+        help=(
+            "Maximum dollar amount the --prompt agent may spend per build,"
+            " passed to the `claude` CLI. Defaults to %(default)s."
+        ),
+    )
+
+    parser.add_argument(
         "--persist",
         default=defaults["persist"],
         help=(
@@ -554,12 +632,38 @@ class Configuration(object):
                 self.logger.info("%s is not a release, assuming it's a hash..." % value)
         return value
 
+    def _check_prompt_min_version(self, options):
+        """
+        Up-front gate for the --prompt option: reject regression ranges that
+        predate the minimum Firefox version supported by the Firefox DevTools
+        MCP.
+
+        Only date-based endpoints (dates, buildids, release numbers) can be
+        checked here without extra network requests; raw changeset endpoints are
+        left to the authoritative per-build version check in AgentTestRunner.
+        """
+        try:
+            cutoff = to_datetime(parse_date(date_of_release(options.prompt_min_version)))
+        except (UnavailableRelease, DateFormatError):
+            # we can't resolve a cutoff date for this version; rely on the
+            # per-build check instead.
+            return
+        for endpoint in (options.good, options.bad):
+            if is_date_or_datetime(endpoint) and to_datetime(endpoint) < cutoff:
+                raise UnsupportedVersionError(endpoint, options.prompt_min_version)
+
     def validate(self):
         """
         Validate the options, define the `action` and `fetch_config` that
         should be used to run the application.
         """
         options = self.options
+
+        if options.prompt is not None:
+            if options.command is not None:
+                raise MozRegressionError("--prompt can not be used together with --command.")
+            if options.launch:
+                raise MozRegressionError("--prompt can not be used together with --launch.")
 
         arch_options = {
             "firefox": [
@@ -703,6 +807,8 @@ class Configuration(object):
                     )
                 if fetch_config.should_use_archive():
                     self.action = "bisect_nightlies"
+            if options.prompt is not None:
+                self._check_prompt_min_version(options)
         if (
             self.action in ("launch_integration", "bisect_integration")
             and not fetch_config.is_integration()

@@ -151,6 +151,54 @@ def test_no_args():
     assert config.enable_telemetry
 
 
+def test_prompt_recent_range():
+    # the default good/bad range is the last year, well after Firefox 100,
+    # so the up-front gate should accept it and --prompt should be recorded.
+    config = do_cli("--prompt", "check the page")
+    assert config.options.prompt == "check the page"
+    assert config.options.prompt_min_version == 100
+    assert config.action == "bisect_nightlies"
+
+
+def test_prompt_efficiency_defaults():
+    # the per-build agent reuses the cached MCP, stays strict, and is capped.
+    config = do_cli("--prompt", "check the page")
+    assert config.options.prompt_recheck_mcp is False
+    assert config.options.prompt_allow_other_mcp is False
+    assert config.options.max_budget_usd == 10.0
+
+
+def test_prompt_with_command_is_rejected():
+    with pytest.raises(errors.MozRegressionError):
+        do_cli("--prompt", "check", "--command", "true")
+
+
+def test_prompt_with_launch_is_rejected():
+    with pytest.raises(errors.MozRegressionError):
+        do_cli("--prompt", "check", "--launch", "2025-01-01")
+
+
+def test_prompt_range_too_old():
+    # a range predating Firefox 100 (released in 2022) must be rejected up front.
+    with pytest.raises(errors.UnsupportedVersionError):
+        do_cli("--prompt", "check", "--good", "2017-01-01", "--bad", "2017-06-01")
+
+
+def test_prompt_min_version_override_allows_old_range():
+    # lowering the minimum version below the range's era should let it through.
+    config = do_cli(
+        "--prompt",
+        "check",
+        "--good",
+        "2017-01-01",
+        "--bad",
+        "2017-06-01",
+        "--prompt-min-version",
+        "50",
+    )
+    assert config.options.prompt_min_version == 50
+
+
 TODAY = datetime.date.today()
 SOME_DATE = TODAY + datetime.timedelta(days=-20)
 SOME_OLDER_DATE = TODAY + datetime.timedelta(days=-10)

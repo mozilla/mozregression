@@ -12,7 +12,7 @@ from mozregression import __version__, config, errors, main
 from mozregression.bisector import Bisection, Bisector, IntegrationHandler, NightlyHandler
 from mozregression.download_manager import BuildDownloadManager
 from mozregression.telemetry import UsageMetrics, get_system_info
-from mozregression.test_runner import CommandTestRunner, ManualTestRunner
+from mozregression.test_runner import AgentTestRunner, CommandTestRunner, ManualTestRunner
 
 
 class AppCreator(object):
@@ -64,6 +64,38 @@ def test_app_get_command_test_runner(create_app):
     app = create_app(["--command=echo {binary}"])
     assert isinstance(app.test_runner, CommandTestRunner)
     assert app.test_runner.command == "echo {binary}"
+
+
+def test_app_get_agent_test_runner(create_app):
+    app = create_app(
+        ["--prompt", "check the page", "--prompt-headless", "--prompt-model", "claude-x"]
+    )
+    assert isinstance(app.test_runner, AgentTestRunner)
+    assert app.test_runner.instruction == "check the page"
+    assert app.test_runner.min_version == 100
+    assert app.test_runner.headless is True
+    assert app.test_runner.model == "claude-x"
+    # new options keep their defaults unless overridden
+    assert app.test_runner.recheck_mcp is False
+    assert app.test_runner.allow_other_mcp is False
+    assert app.test_runner.max_budget_usd == 10.0
+
+
+def test_app_get_agent_test_runner_options_forwarded(create_app):
+    app = create_app(
+        [
+            "--prompt",
+            "check the page",
+            "--prompt-recheck-mcp",
+            "--prompt-allow-other-mcp",
+            "--max-budget-usd",
+            "3.5",
+        ]
+    )
+    assert isinstance(app.test_runner, AgentTestRunner)
+    assert app.test_runner.recheck_mcp is True
+    assert app.test_runner.allow_other_mcp is True
+    assert app.test_runner.max_budget_usd == 3.5
 
 
 @pytest.mark.parametrize(

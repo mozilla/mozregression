@@ -28,9 +28,7 @@ http://mozilla.github.io/mozregression/</a></p>
 from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a>
 and licensed under <a href="http://creativecommons.org/licenses/by/3.0/"
                       title="Creative Commons BY 3.0">CC BY 3.0</a></p>
-""" % (
-    mozregression_version
-)
+""" % (mozregression_version)
 
 
 class MainWindow(QMainWindow):

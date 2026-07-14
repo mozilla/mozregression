@@ -14,6 +14,7 @@ from mozregression.errors import MozRegressionError
 LOG = get_proxy_logger("Branches")
 RE_ESR = re.compile(r"^(?:mozilla-)?esr(\d+)$", re.I)
 
+
 class Branches(object):
     DEFAULT_REPO_URL = "https://hg.mozilla.org/"
 
@@ -43,9 +44,9 @@ class Branches(object):
             return self._branches[name]
         except KeyError:
             if RE_ESR.match(name):
-                return self.DEFAULT_REPO_URL + "releases/mozilla-esr%s" % RE_ESR.match(
-                    name
-                ).group(1)
+                return self.DEFAULT_REPO_URL + "releases/mozilla-esr%s" % RE_ESR.match(name).group(
+                    1
+                )
             raise MozRegressionError("No such branch '%s'." % branch_name_or_alias)
 
     def get_name(self, branch_name_or_alias):

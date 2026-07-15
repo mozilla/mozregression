@@ -67,8 +67,8 @@ def test_get_url_unknown_branch():
         ("mozilla-beta", "releases"),
         ("", None),
         (None, None),
-        ("mozilla-esr140", None),
-        ("esr140", None),
+        ("mozilla-esr140", "releases"),
+        ("esr140", "releases"),
     ],
 )
 def test_get_category(name, expected):

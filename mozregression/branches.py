@@ -61,6 +61,8 @@ class Branches(object):
         for cat, names in self._categories.items():
             if name in names:
                 return cat
+        if RE_ESR.match(name):
+            return "releases"
 
 
 def create_branches():

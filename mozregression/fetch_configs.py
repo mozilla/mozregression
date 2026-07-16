@@ -559,11 +559,12 @@ class ThunderbirdIntegrationConfigMixin(IntegrationConfigMixin):
 
     def tk_routes(self, push):
         for build_type in self.build_types:
-            yield "comm.v2.{}.revision.{}.thunderbird.{}-{}".format(
+            yield "comm.v2.{}{}.revision.{}.thunderbird.{}-{}".format(
                 self.integration_branch,
+                ".shippable" if build_type == "shippable" else "",
                 push.changeset,
                 _common_tk_part(self),
-                build_type,
+                "opt" if build_type == "shippable" else build_type,
             )
             self._inc_used_build()
         return
@@ -675,7 +676,18 @@ class FirefoxL10nConfig(L10nMixin, FirefoxL10nNightlyConfigMixin, CommonConfig):
 class ThunderbirdConfig(
     CommonConfig, ThunderbirdNightlyConfigMixin, ThunderbirdIntegrationConfigMixin
 ):
-    pass
+    BUILD_TYPES = (
+        "shippable",
+        "opt",
+        "debug",
+    )
+    BUILD_TYPE_FALLBACKS = {
+        "shippable": ("opt",),
+        "opt": ("shippable", ),
+    }
+    def __init__(self, os, bits, processor, arch):
+        super(ThunderbirdConfig, self).__init__(os, bits, processor, arch)
+        self.set_build_type("shippable")
 
 
 @REGISTRY.register("thunderbird-l10n", attr_value="thunderbird")

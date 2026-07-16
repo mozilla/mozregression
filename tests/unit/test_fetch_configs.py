@@ -518,7 +518,7 @@ CHSET12 = "47856a214918"
             "x86_64",
             "comm-beta",
             TIMESTAMP_TEST,
-            "comm.v2.comm-beta.revision.%s.thunderbird.linux64-opt" % CHSET,
+            "comm.v2.comm-beta.shippable.revision.%s.thunderbird.linux64-opt" % CHSET,
         ),
     ],
 )

@@ -247,7 +247,6 @@ class CommonConfig(object):
         else:
             self.repo = None
 
-
     def should_use_archive(self):
         """
         Returns True if we should use the archive as an initial bisection
@@ -691,8 +690,9 @@ class ThunderbirdConfig(
     )
     BUILD_TYPE_FALLBACKS = {
         "shippable": ("opt",),
-        "opt": ("shippable", ),
+        "opt": ("shippable",),
     }
+
     def __init__(self, os, bits, processor, arch):
         super(ThunderbirdConfig, self).__init__(os, bits, processor, arch)
         self.set_build_type("shippable")

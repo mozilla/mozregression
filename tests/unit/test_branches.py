@@ -69,6 +69,7 @@ def test_get_url_unknown_branch():
         (None, None),
         ("mozilla-esr140", "releases"),
         ("esr140", "releases"),
+        ("comm-esr140", "releases"),
     ],
 )
 def test_get_category(name, expected):

@@ -568,10 +568,15 @@ class ThunderbirdIntegrationConfigMixin(IntegrationConfigMixin):
         for build_type in self.build_types:
             yield "comm.v2.{}{}.revision.{}.thunderbird.{}-{}".format(
                 self.integration_branch,
-                ".shippable" if build_type == "shippable" else "",
+                (
+                    ".shippable"
+                    if self.integration_branch != "comm-central"
+                    or (self.integration_branch == "comm-central" and build_type == "shippable")
+                    else ""
+                ),
                 push.changeset,
                 _common_tk_part(self),
-                "opt" if build_type == "shippable" else build_type,
+                "opt",
             )
             self._inc_used_build()
         return
@@ -686,7 +691,6 @@ class ThunderbirdConfig(
     BUILD_TYPES = (
         "shippable",
         "opt",
-        "debug",
     )
     BUILD_TYPE_FALLBACKS = {
         "shippable": ("opt",),
@@ -695,7 +699,7 @@ class ThunderbirdConfig(
 
     def __init__(self, os, bits, processor, arch):
         super(ThunderbirdConfig, self).__init__(os, bits, processor, arch)
-        self.set_build_type("shippable")
+        pass
 
 
 @REGISTRY.register("thunderbird-l10n", attr_value="thunderbird")

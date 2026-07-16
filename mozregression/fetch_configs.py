@@ -238,7 +238,15 @@ class CommonConfig(object):
         If not set or set to None, default repos would be used (see
         :meth:`get_nightly_repo` and :attr:`integration_branch`)
         """
-        self.repo = branches.get_name(repo) if repo else None
+        if repo:
+            name = branches.get_name(repo)
+            if self.app_name == "thunderbird" and name.startswith("mozilla"):
+                self.repo = name.replace("mozilla", "comm")
+            else:
+                self.repo = name
+        else:
+            self.repo = None
+
 
     def should_use_archive(self):
         """

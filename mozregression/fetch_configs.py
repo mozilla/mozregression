@@ -245,7 +245,7 @@ class CommonConfig(object):
             elif self.app_name == "firefox" and name.startswith("esr"):
                 self.repo = "mozilla-" + name
             elif name.startswith("esr"):
-            # A bare `esr` defaults to the Firefox (`mozilla`) repository.
+                # A bare `esr` defaults to the Firefox (`mozilla`) repository.
                 self.repo = "mozilla-" + name
             else:
                 self.repo = name

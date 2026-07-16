@@ -566,6 +566,15 @@ def test_tk_route(app, os, bits, processor, repo, push_date, expected):
             "shippable",
             "gecko.v2.mozilla-central.shippable.revision.%s.mobile.android-api-16-opt" % CHSET,
         ),
+        # thunderbird
+        (
+            "thunderbird",
+            "win",
+            32,
+            "x86_64",
+            "shippable",
+            "comm.v2.comm-central.shippable.revision.%s.thunderbird.win32-opt" % CHSET,
+        ),
     ],
 )
 def test_tk_route_with_build_type(app, os, bits, processor, build_type, expected):

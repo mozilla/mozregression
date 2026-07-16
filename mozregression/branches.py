@@ -12,7 +12,7 @@ from mozlog import get_proxy_logger
 from mozregression.errors import MozRegressionError
 
 LOG = get_proxy_logger("Branches")
-RE_ESR = re.compile(r"^(?:(mozilla|comm)-)?esr(\d+)$", re.I)
+RE_ESR = re.compile(r"^(?:(mozilla-|comm-))?esr(\d+)$", re.I)
 
 
 class Branches(object):
@@ -52,9 +52,11 @@ class Branches(object):
         if branch_name_or_alias:
             match = RE_ESR.match(branch_name_or_alias)
             if match:
-                # A bare `esr` defaults to the Firefox (`mozilla`) repository.
-                prefix = match.group(1) or "mozilla"
-                return "%s-esr%s" % (prefix.lower(), match.group(2))
+                prefix = match.group(1)
+                if prefix:
+                    return "%sesr%s" % (prefix, match.group(2))
+                else:
+                    return "esr%s" % match.group(2)
         return self._aliases.get(branch_name_or_alias) or branch_name_or_alias
 
     def get_category(self, branch_name_or_alias):

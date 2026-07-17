@@ -703,8 +703,7 @@ class ThunderbirdConfig(
         "opt": ("shippable",),
     }
 
-    def __init__(self, os, bits, processor, arch):
-        pass
+    pass
 
 
 @REGISTRY.register("thunderbird-l10n", attr_value="thunderbird")

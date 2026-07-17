@@ -574,11 +574,7 @@ class ThunderbirdIntegrationConfigMixin(IntegrationConfigMixin):
         for build_type in self.build_types:
             yield "comm.v2.{}{}.revision.{}.thunderbird.{}-{}".format(
                 self.integration_branch,
-                (
-                    ".shippable"
-                    if self.integration_branch != "comm-central"
-                    else ""
-                ),
+                (".shippable" if self.integration_branch != "comm-central" else ""),
                 push.changeset,
                 _common_tk_part(self),
                 "opt",

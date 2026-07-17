@@ -504,6 +504,15 @@ CHSET12 = "47856a214918"
         # thunderbird
         (
             "thunderbird",
+            "win",
+            32,
+            "x86_64",
+            "comm-central",
+            TIMESTAMP_TEST,
+            "comm.v2.comm-central.revision.%s.thunderbird.win32-opt" % CHSET,
+        ),
+        (
+            "thunderbird",
             "linux",
             64,
             "x86_64",
@@ -556,6 +565,15 @@ def test_tk_route(app, os, bits, processor, repo, push_date, expected):
             "x86_64",
             "shippable",
             "gecko.v2.mozilla-central.shippable.revision.%s.mobile.android-api-16-opt" % CHSET,
+        ),
+        # thunderbird
+        (
+            "thunderbird",
+            "win",
+            32,
+            "x86_64",
+            "shippable",
+            "comm.v2.comm-central.shippable.revision.%s.thunderbird.win32-opt" % CHSET,
         ),
     ],
 )

@@ -577,7 +577,6 @@ class ThunderbirdIntegrationConfigMixin(IntegrationConfigMixin):
                 (
                     ".shippable"
                     if self.integration_branch != "comm-central"
-                    or (self.integration_branch == "comm-central" and build_type == "shippable")
                     else ""
                 ),
                 push.changeset,

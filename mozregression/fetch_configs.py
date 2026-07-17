@@ -704,7 +704,6 @@ class ThunderbirdConfig(
     }
 
     def __init__(self, os, bits, processor, arch):
-        super(ThunderbirdConfig, self).__init__(os, bits, processor, arch)
         pass
 
 

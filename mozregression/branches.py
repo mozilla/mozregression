@@ -42,7 +42,7 @@ class Branches(object):
         if not branch_name:
             return None
         return RE_ESR.match(branch_name)
-    
+
     def is_esr_name(self, branch_name):
         return self.esr_match(branch_name) is not None
 

@@ -241,13 +241,13 @@ class CommonConfig(object):
         if repo:
             name = branches.get_name(repo)
             is_esr = name.startswith("esr")
-            if self.app_name == "thunderbird" and is_esr:
+            if not is_esr:
+                self.repo = name
+            elif self.app_name == "thunderbird":
                 self.repo = "comm-" + name
-            elif is_esr:
+            else:
                 # A bare `esr` defaults to the Firefox (`mozilla`) repository.
                 self.repo = "mozilla-" + name
-            else:
-                self.repo = name
         else:
             self.repo = None
 

@@ -38,25 +38,31 @@ class Branches(object):
         assert branch_name in self._branches, "no such branch %s" % branch_name
         self._aliases[alias] = branch_name
 
+    def esr_match(self, branch_name):
+        if not branch_name:
+            return None
+        return RE_ESR.match(branch_name)
+    
+    def is_esr_name(self, branch_name):
+        return self.esr_match(branch_name) is not None
+
     def get_url(self, branch_name_or_alias):
         name = self.get_name(branch_name_or_alias)
         try:
             return self._branches[name]
         except KeyError:
-            if RE_ESR.match(name):
+            if self.is_esr_name(name):
                 url = self.DEFAULT_REPO_URL + "releases/%s" % name
                 return url
             raise MozRegressionError("No such branch '%s'." % branch_name_or_alias)
 
     def get_name(self, branch_name_or_alias):
-        if branch_name_or_alias:
-            match = RE_ESR.match(branch_name_or_alias)
-            if match:
-                prefix = match.group(1)
-                if prefix:
-                    return "%sesr%s" % (prefix, match.group(2))
-                else:
-                    return "esr%s" % match.group(2)
+        if branch_name_or_alias and (match := self.esr_match(branch_name_or_alias)):
+            prefix = match.group(1)
+            if prefix:
+                return "%sesr%s" % (prefix, match.group(2))
+            else:
+                return "esr%s" % match.group(2)
         return self._aliases.get(branch_name_or_alias) or branch_name_or_alias
 
     def get_category(self, branch_name_or_alias):
@@ -64,7 +70,7 @@ class Branches(object):
         for cat, names in self._categories.items():
             if name in names:
                 return cat
-        if name and RE_ESR.match(name):
+        if name and self.is_esr_name(name):
             return "releases"
 
 

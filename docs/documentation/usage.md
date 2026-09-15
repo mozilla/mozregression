@@ -90,6 +90,10 @@ to date list of available options.
 
         mozregression  --repo mozilla-aurora
 
+- Bisecting from a ESR branch
+
+        mozregression --repo esr140
+
 - Bisecting inbound directly
 
         mozregression --good 8850aa0f --bad 2a193b7f

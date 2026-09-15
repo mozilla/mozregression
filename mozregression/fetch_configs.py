@@ -238,7 +238,18 @@ class CommonConfig(object):
         If not set or set to None, default repos would be used (see
         :meth:`get_nightly_repo` and :attr:`integration_branch`)
         """
-        self.repo = branches.get_name(repo) if repo else None
+        if repo:
+            name = branches.get_name(repo)
+            is_esr = name.startswith("esr")
+            if not is_esr:
+                self.repo = name
+            elif self.app_name == "thunderbird":
+                self.repo = "comm-" + name
+            else:
+                # A bare `esr` defaults to the Firefox (`mozilla`) repository.
+                self.repo = "mozilla-" + name
+        else:
+            self.repo = None
 
     def should_use_archive(self):
         """
@@ -559,11 +570,17 @@ class ThunderbirdIntegrationConfigMixin(IntegrationConfigMixin):
 
     def tk_routes(self, push):
         for build_type in self.build_types:
-            yield "comm.v2.{}.revision.{}.thunderbird.{}-{}".format(
+            yield "comm.v2.{}{}.revision.{}.thunderbird.{}-{}".format(
                 self.integration_branch,
+                (
+                    ".shippable"
+                    if self.integration_branch != "comm-central"
+                    or (self.integration_branch == "comm-central" and build_type == "shippable")
+                    else ""
+                ),
                 push.changeset,
                 _common_tk_part(self),
-                build_type,
+                "opt",
             )
             self._inc_used_build()
         return
@@ -675,6 +692,15 @@ class FirefoxL10nConfig(L10nMixin, FirefoxL10nNightlyConfigMixin, CommonConfig):
 class ThunderbirdConfig(
     CommonConfig, ThunderbirdNightlyConfigMixin, ThunderbirdIntegrationConfigMixin
 ):
+    BUILD_TYPES = (
+        "shippable",
+        "opt",
+    )
+    BUILD_TYPE_FALLBACKS = {
+        "shippable": ("opt",),
+        "opt": ("shippable",),
+    }
+
     pass
 
 

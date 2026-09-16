@@ -18,10 +18,8 @@ class TestInfoFetcher(unittest.TestCase):
 
     @patch("requests.get")
     def test__fetch_txt_info(self, get):
-        response = Mock(
-            text="20141101030205\nhttps://hg.mozilla.org/\
-mozilla-central/rev/b695d9575654\n"
-        )
+        response = Mock(text="20141101030205\nhttps://hg.mozilla.org/\
+mozilla-central/rev/b695d9575654\n")
         get.return_value = response
         expected = {
             "repository": "https://hg.mozilla.org/mozilla-central",

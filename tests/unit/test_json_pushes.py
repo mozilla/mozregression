@@ -25,7 +25,7 @@ def test_push(mocker):
     assert push.utc_date == datetime(1970, 1, 2, 10, 17, 36)
     assert str(push) == "c"
     retry_get.assert_called_once_with(
-        "https://hg.mozilla.org/mozilla-central/json-pushes" "?changeset=validchangeset"
+        "https://hg.mozilla.org/mozilla-central/json-pushes?changeset=validchangeset"
     )
 
 
@@ -69,7 +69,7 @@ def test_pushes_within_changes(mocker):
 
     retry_get.assert_has_calls(
         [
-            call("https://hg.mozilla.org/mozilla-central/json-pushes" "?changeset=fromchset"),
+            call("https://hg.mozilla.org/mozilla-central/json-pushes?changeset=fromchset"),
             call(
                 "https://hg.mozilla.org/mozilla-central/json-pushes"
                 "?fromchange=fromchset&tochange=tochset"

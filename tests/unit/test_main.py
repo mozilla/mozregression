@@ -119,7 +119,7 @@ def test_app_bisect_integration_finished(create_app, same_chsets):
     assert create_app.find_in_log("No more integration revisions, bisection finished.")
     if same_chsets:
         assert create_app.find_in_log(
-            "It seems that you used two changesets" " that are in the same push.", False
+            "It seems that you used two changesets that are in the same push.", False
         )
 
 

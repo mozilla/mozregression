@@ -1,4 +1,4 @@
-exclude .coveragerc .gitignore .linter-files .travis.yml CODE_OF_CONDUCT.md setup.cfg
+exclude .coveragerc .gitignore .linter-files .travis.yml CODE_OF_CONDUCT.md
 recursive-exclude bin *
 recursive-exclude docs *
 recursive-exclude tests *

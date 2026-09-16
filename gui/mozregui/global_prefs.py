@@ -24,7 +24,7 @@ def get_prefs():
     options["approx_policy"] = settings["approx-policy"] == "auto"
     options["archive_base_url"] = settings["archive-base-url"]
     options["cmdargs"] = settings["cmdargs"]
-    options["enable_telemetry"] = not settings.get("enable-telemetry") in ["no", "0", "false"]
+    options["enable_telemetry"] = settings.get("enable-telemetry") not in ["no", "0", "false"]
 
     return options
 

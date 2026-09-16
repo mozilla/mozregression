@@ -126,7 +126,7 @@ def parse_args():
         bundle.add_argument(
             "--nsis-path",
             default="C:\\NSIS",
-            help="your NSIS path on the" " system(default: %(default)r)",
+            help="your NSIS path on the system(default: %(default)r)",
         )
         bundle.add_argument("--upx-path", default=None, help="Path to upx executable")
 

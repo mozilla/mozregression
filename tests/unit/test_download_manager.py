@@ -338,7 +338,7 @@ class TestBuildDownloadManager(unittest.TestCase):
         self.assertEqual(url, "http://some/thing")
         self.assertEqual(fname, "2015-01-03--my-repo--thing")
 
-    @patch("mozregression.download_manager.BuildDownloadManager." "_extract_download_info")
+    @patch("mozregression.download_manager.BuildDownloadManager._extract_download_info")
     @patch("mozregression.download_manager.BuildDownloadManager.download")
     def test_download_in_background(self, download, extract):
         extract.return_value = ("http://foo/bar", "myfile")
@@ -352,7 +352,7 @@ class TestBuildDownloadManager(unittest.TestCase):
         self.assertEqual(result, ANY)
 
     @patch("mozregression.download_manager.LOG")
-    @patch("mozregression.download_manager.BuildDownloadManager." "_extract_download_info")
+    @patch("mozregression.download_manager.BuildDownloadManager._extract_download_info")
     def _test_focus_download(self, other_canceled, extract, log):
         extract.return_value = ("http://foo/bar", "myfile")
         current_dest = os.path.join("dest", "myfile")
@@ -390,7 +390,7 @@ class TestBuildDownloadManager(unittest.TestCase):
         self._test_focus_download(False)
 
     @patch("mozregression.download_manager.LOG")
-    @patch("mozregression.download_manager.BuildDownloadManager." "_extract_download_info")
+    @patch("mozregression.download_manager.BuildDownloadManager._extract_download_info")
     @patch("mozregression.download_manager.BuildDownloadManager.download")
     def test_focus_download_file_already_exists(self, download, extract, log):
         extract.return_value = ("http://foo/bar", "myfile")

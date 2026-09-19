@@ -12,6 +12,7 @@ for pkgname in [
     "glean_parser",
     "mozregression",
     "yamllint",
+    "colorama",
     "bs4",
     "redo",
     "taskcluster",

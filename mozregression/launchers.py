@@ -544,6 +544,7 @@ class AndroidLauncher(Launcher):
     ):
         extras = {}
         extras["args"] = f"-profile {self.remote_profile}"
+        extras["performancetest"] = True
 
         self.adb.launch_application(
             app_name,

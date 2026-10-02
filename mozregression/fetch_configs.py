@@ -670,6 +670,9 @@ class FirefoxConfig(CommonConfig, FirefoxNightlyConfigMixin, FirefoxIntegrationC
         """
         Returns the available architectures for this application.
         """
+        # Firefox on macOS uses universal binaries, so arch selection is not relevant
+        if self.os == "mac":
+            return []
         return ["x86", "x86_64", "aarch64"]
 
 
@@ -685,6 +688,9 @@ class FirefoxL10nConfig(L10nMixin, FirefoxL10nNightlyConfigMixin, CommonConfig):
         """
         Returns the available architectures for this application.
         """
+        # Firefox-l10n on macOS uses universal binaries, so arch selection is not relevant
+        if self.os == "mac":
+            return []
         return ["x86", "x86_64", "aarch64"]
 
 

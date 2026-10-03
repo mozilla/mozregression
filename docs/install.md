@@ -17,9 +17,14 @@ For the graphical interface, we provide a simple installation process:
   follow the installation process. Some anti-virus programs falsely claim that
   mozregression is a virus, you can ignore this warning: see [bug 1647533].
 - **macOS**:
-  Download the latest **mozregression-gui.dmg** file from the
-  [github releases]. Once the file is downloaded, open it and drag
-  the "mozregression GUI" icon to "Applications".
+  - **Via Homebrew (recommended)**: Install using the following command:
+    ```sh
+    brew install --cask mozregression-gui
+    ```
+    If you don't have Homebrew, see [brew.sh](https://brew.sh).
+  - **Via direct download**: Download the latest **mozregression-gui.dmg** file from the
+    [github releases]. Once the file is downloaded, open it and drag
+    the "mozregression GUI" icon to "Applications".
 - **Linux**:
   Download the gzipped tarball of mozregression-gui corresponding to your
   version of Ubuntu from the [github releases]. Once the file is downloaded,

@@ -104,8 +104,17 @@ lint = [
 ]
 
 [tool.setuptools]
-packages = ["mozregression"]
+packages = [
+  "mozregression",
+  "mozregui",
+  "resources_rc",
+]
 platforms = ["Any"]
+
+[tool.setuptools.package-dir]
+mozregui= "gui/mozregui"
+# XXX: this gets built by gui/build.py, so we can't pre-install it
+resources_rc = "gui/resources_rc"
 
 [tool.setuptools.package-data]
 mozregression = ["*.yaml"]

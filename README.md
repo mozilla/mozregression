@@ -53,7 +53,7 @@ On Windows:
 ```bash
 python3 -m venv venv
 venv\Scripts\activate
-pip install -r requirements\requirements-3.9-Windows.txt
+pip install -r requirements\requirements-3.13-Windows.txt
 pip install -e .
 ```
 
@@ -62,7 +62,7 @@ On Linux:
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements/requirements-3.9-Linux.txt
+pip install -r requirements/requirements-3.13-Linux.txt
 pip install -e .
 ```
 
@@ -71,7 +71,7 @@ On macOS:
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements/requirements-3.9-macOS.txt
+pip install -r requirements/requirements-3.13-macOS.txt
 pip install -e .
 ```
 

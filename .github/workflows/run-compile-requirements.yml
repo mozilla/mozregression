@@ -13,21 +13,21 @@ jobs:
     with:
       requirements_files: '["base.in dev.in gui-dev.in gui.in linters.in"]'
       os: '["ubuntu-latest"]'
-      python: '["3.9", "3.10", "3.11", "3.12", "3.13"]'
+      python: '["3.10", "3.11", "3.12", "3.13", "3.14"]'
 
   call-compile-requirements-windows:
     uses: ./.github/workflows/compile-requirements.yml
     with:
       requirements_files: '["base.in dev.in gui-dev.in gui.in linters.in"]'
       os: '["windows-latest"]'
-      python: '["3.9", "3.10", "3.11", "3.12", "3.13"]'
+      python: '["3.10", "3.11", "3.12", "3.13", "3.14"]'
 
   call-compile-requirements-macos:
     uses: ./.github/workflows/compile-requirements.yml
     with:
       requirements_files: '["base.in base.universal2.in dev.in gui-dev.in gui.in linters.in"]'
-      os: '["macos-latest"]'
-      python: '["3.9", "3.10", "3.11", "3.12", "3.13"]'
+      os: '["macos-15"]'
+      python: '["3.10", "3.11", "3.12", "3.13", "3.14"]'
 
   commit-and-push:
     uses: ./.github/workflows/compile-requirements.yml

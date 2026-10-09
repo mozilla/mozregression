@@ -231,6 +231,14 @@ def test_launch(args, action, value):
         (["--launch=63.0b4", "--repo=m-b"], "mozilla-beta", "FIREFOX_63_0b4_RELEASE"),
         (["--launch=64", "--repo=m-b"], "mozilla-beta", "FIREFOX_RELEASE_64_BASE"),
         (["--launch=65.0b11"], "mozilla-beta", "FIREFOX_65_0b11_RELEASE"),
+        (["-n", "thunderbird", "--launch=156.0.1"], "comm-release", "THUNDERBIRD_156_0_1_RELEASE"),
+        (
+            ["-n", "thunderbird", "--launch=157", "--repo=comm-release"],
+            "comm-release",
+            "THUNDERBIRD_157_0_RELEASE",
+        ),
+        (["-n", "thunderbird", "--launch=157.0b3"], "comm-beta", "THUNDERBIRD_157_0b3_RELEASE"),
+        (["-n", "thunderbird", "--launch=157", "--repo=comm-beta"], "comm-beta", "BETA_157_BASE"),
     ],
 )
 def test_versions(args, repo, value):

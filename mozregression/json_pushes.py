@@ -155,3 +155,24 @@ class JsonPushes(object):
                     "No pushes available for the date %s on %s." % (changeset, self.branch)
                 )
         return self.pushes(changeset=changeset, **kwargs)[0]
+
+    def push_by_timestamp(self, timestamp):
+        """
+        Returns a list of Push objects for a timestamp.
+
+        This will return at least one Push. In case of error it will raise
+        a MozRegressionError.
+        """
+
+        if not isinstance(timestamp, datetime.datetime):
+            raise TypeError()
+
+        # The server interprets these as exclusive ranges, so shift
+        # them each by the minimum time unit.
+        dt = datetime.timedelta(seconds=1)
+        kwargs = {
+            "startdate": str(timestamp - dt),
+            "enddate": str(timestamp + dt),
+        }
+
+        return self.pushes(**kwargs)

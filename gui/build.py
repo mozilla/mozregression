@@ -55,15 +55,18 @@ def do_rcc(options, force=False):
         call("pyside6-rcc", "-o", pyfile, rccfile)
 
 
+def do_build(options, force=False):
+    do_uic(options, force)
+    do_rcc(options, force)
+    call(sys.executable, "mozregression-gui.py")
+
 def do_run(options):
-    do_uic(options)
-    do_rcc(options)
+    do_build(options)
     call(sys.executable, "mozregression-gui.py")
 
 
 def do_test(options):
-    do_uic(options)
-    do_rcc(options)
+    do_build(options)
     print("Running tests...")
     import pytest
 
@@ -71,8 +74,7 @@ def do_test(options):
 
 
 def do_bundle(options):
-    do_uic(options, True)
-    do_rcc(options, True)
+    do_build(options, True)
 
     # clean previous runs
     for dirname in ("build", "dist"):
@@ -114,6 +116,9 @@ def parse_args():
 
     rcc = subparsers.add_parser("rcc", help="build rcc files")
     rcc.set_defaults(func=do_rcc)
+
+    build = subparsers.add_parser("build", help="build all files")
+    build.set_defaults(func=do_build)
 
     run = subparsers.add_parser("run", help="run the application")
     run.set_defaults(func=do_run)

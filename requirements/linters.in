@@ -1,3 +1,4 @@
+# Make sure to update pyproject.toml dependency-groups.lint.
 --no-binary mypy-extensions
 flake8>=6.0.0; python_version >= '3.8'
 flake8-black

@@ -1,1 +1,2 @@
+# Make sure to update pyproject.toml dependency-groups.dev-gui.
 pytest-qt

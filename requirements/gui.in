@@ -1,1 +1,2 @@
+# Make sure to update pyproject.toml project.optional-dependencies.gui.
 PySide6==6.9.*

@@ -276,6 +276,8 @@ class BuildSelectionPage(WizardPage):
 class Wizard(QWizard):
     def __init__(self, title, class_pages, parent=None):
         QWizard.__init__(self, parent)
+        if mozinfo.os == "win":
+            self.setWizardStyle(QWizard.WizardStyle.ModernStyle)
         self.setWindowTitle(title)
         self.resize(800, 600)
 

@@ -67,7 +67,7 @@
       <string>Hint: To choose an ESR branch, select target app and enter esrXXX.</string>
      </property>
      <property name="styleSheet">
-      <string notr="true">font-size: 10px;</string>
+      <string notr="true">color: gray; font-size: 10px;</string>
      </property>
     </widget>
    </item>

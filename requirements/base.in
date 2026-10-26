@@ -1,4 +1,5 @@
 --no-binary pyyaml
+--no-binary MarkupSafe
 PyInstaller==6.15.*
 beautifulsoup4>=4.7.1
 charset-normalizer<3
@@ -23,3 +24,5 @@ requests>=2.21.0
 setuptools
 setuptools_scm==8.*
 taskcluster>=6.0.0
+wcwidth==0.8.5
+MarkupSafe==3.0.4

@@ -49,7 +49,7 @@ mozregression via [mach]. For example:
 ./mach mozregression --help
 ```
 
-[github releases]: https://github.com/mozilla/mozregression/releases
+[github releases]: https://github.com/mozilla/mozregression/releases/latest
 [bug 1366570]: https://bugzilla.mozilla.org/show_bug.cgi?id=1366570
 [bug 1581643]: https://bugzilla.mozilla.org/show_bug.cgi?id=1581643
 [bug 1647533]: https://bugzilla.mozilla.org/show_bug.cgi?id=1647533

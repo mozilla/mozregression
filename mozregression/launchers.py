@@ -4,9 +4,12 @@ Define the launcher classes, responsible of running the tested applications.
 
 from __future__ import absolute_import, print_function
 
+import datetime
 import json
 import os
+import socket
 import stat
+import struct
 import sys
 import time
 import zipfile
@@ -51,9 +54,10 @@ class Launcher(metaclass=ABCMeta):
         """
         pass
 
-    def __init__(self, dest, **kwargs):
+    def __init__(self, dest, build_date=None, **kwargs):
         self._running = False
         self._stopping = False
+        self._build_date = build_date
 
         try:
             self._install(dest)
@@ -339,12 +343,77 @@ class MozRunnerLauncher(Launcher):
 
 REGISTRY = ClassRegistry("app_name")
 
+# Builds in this range may crash on Linux due to a Wayland wp_color_manager_v1
+# version mismatch introduced by Bug 1959368 and fixed by Bug 2008777.
+_WAYLAND_HDR_BUG_START = datetime.date(2025, 5, 20)
+_WAYLAND_HDR_BUG_END = datetime.date(2026, 1, 16)
+
+
+def _wayland_compositor_has_color_manager_v2():
+    """Return True if the Wayland compositor advertises wp_color_manager_v1 at version >= 2.
+
+    Firefox builds in _WAYLAND_HDR_BUG_START.._WAYLAND_HDR_BUG_END bind the protocol at
+    the compositor-advertised version but only have v1 event listeners, so compositors
+    that send v2 events cause a null-dispatch SIGSEGV during Wayland display init.
+    """
+    wayland_display = os.environ.get("WAYLAND_DISPLAY", "wayland-0")
+    runtime_dir = os.environ.get("XDG_RUNTIME_DIR") or "/run/user/%d" % os.getuid()
+    socket_path = (
+        wayland_display
+        if os.path.isabs(wayland_display)
+        else os.path.join(runtime_dir, wayland_display)
+    )
+    try:
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+            sock.settimeout(2.0)
+            sock.connect(socket_path)
+            # wl_display.get_registry (opcode 1): creates wl_registry at id=2
+            sock.sendall(struct.pack("<III", 1, (12 << 16) | 1, 2))
+            # wl_display.sync (opcode 0): creates wl_callback at id=3; fires after all globals
+            sock.sendall(struct.pack("<III", 1, (12 << 16) | 0, 3))
+            buf = b""
+            while True:
+                try:
+                    buf += sock.recv(4096)
+                except socket.timeout:
+                    break
+                while len(buf) >= 8:
+                    obj_id, hdr = struct.unpack_from("<II", buf)
+                    msg_size = hdr >> 16
+                    if len(buf) < msg_size:
+                        break
+                    opcode = hdr & 0xFFFF
+                    payload = buf[8:msg_size]
+                    buf = buf[msg_size:]
+                    if obj_id == 3 and opcode == 0:
+                        # wl_callback.done: sync complete, protocol not found
+                        return False
+                    if obj_id == 2 and opcode == 0 and len(payload) >= 12:
+                        # wl_registry.global: name(4), interface(string), version(4)
+                        str_len = struct.unpack_from("<I", payload, 4)[0]
+                        if len(payload) >= 8 + str_len:
+                            iface = payload[8 : 8 + str_len - 1].decode("ascii", errors="replace")
+                            padded = 8 + ((str_len + 3) & ~3)
+                            if len(payload) >= padded + 4:
+                                ver = struct.unpack_from("<I", payload, padded)[0]
+                                if iface == "wp_color_manager_v1" and ver >= 2:
+                                    return True
+    except OSError:
+        # FileNotFoundError: socket path missing; ConnectionRefusedError: no compositor;
+        # PermissionError: no access — in all cases we can't determine the version.
+        pass
+    return False
+
 
 def create_launcher(buildinfo):
     """
     Create and returns an instance launcher for the given buildinfo.
     """
-    return REGISTRY.get(buildinfo.app_name)(buildinfo.build_file, task_id=buildinfo.task_id)
+    return REGISTRY.get(buildinfo.app_name)(
+        buildinfo.build_file,
+        build_date=buildinfo.build_date,
+        task_id=buildinfo.task_id,
+    )
 
 
 class FirefoxRegressionProfile(Profile):
@@ -400,6 +469,26 @@ class FirefoxLauncher(MozRunnerLauncher):
         if self._codesign_invalid_on_macOS_13:
             LOG.warning(f"codesign verification failed for {self.appdir}, re-signing...")
             self._codesign_sign(self.appdir)
+
+        if self._needs_x11_fallback():
+            LOG.warning(
+                "Wayland compositor advertises wp_color_manager_v1 >= 2; "
+                "forcing MOZ_ENABLE_WAYLAND=0 to avoid startup crash (Bug 1959368)."
+            )
+            self.env = self.env + (("MOZ_ENABLE_WAYLAND", "0"),)
+
+    def _needs_x11_fallback(self):
+        if mozinfo.os != "linux" or not os.environ.get("WAYLAND_DISPLAY"):
+            return False
+        if self._build_date is None:
+            return False
+        build_date = self._build_date
+        if isinstance(build_date, datetime.datetime):
+            build_date = build_date.date()
+        return (
+            _WAYLAND_HDR_BUG_START <= build_date < _WAYLAND_HDR_BUG_END
+            and _wayland_compositor_has_color_manager_v2()
+        )
 
 
 class ThunderbirdRegressionProfile(ThunderbirdProfile):

@@ -5,12 +5,7 @@ from configobj import ConfigObj
 from glean import Glean
 from PySide6.QtWidgets import QDialog, QMessageBox
 
-from mozregression.config import (
-    ARCHIVE_BASE_URL,
-    DEFAULT_CONF_FNAME,
-    check_temp_dir,
-    get_config,
-)
+from mozregression.config import ARCHIVE_BASE_URL, DEFAULT_CONF_FNAME, check_temp_dir, get_config
 from mozregression.errors import MozRegressionError
 from mozregression.network import set_http_session
 from mozregui.log_report import log

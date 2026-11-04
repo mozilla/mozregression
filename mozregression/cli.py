@@ -20,12 +20,7 @@ from mozlog.structuredlog import get_default_logger
 
 from mozregression import __version__
 from mozregression.branches import get_name
-from mozregression.config import (
-    DEFAULT_CONF_FNAME,
-    check_temp_dir,
-    get_config,
-    write_config,
-)
+from mozregression.config import DEFAULT_CONF_FNAME, check_temp_dir, get_config, write_config
 from mozregression.dates import is_date_or_datetime, parse_date, to_datetime
 from mozregression.errors import DateFormatError, MozRegressionError, UnavailableRelease
 from mozregression.fetch_configs import REGISTRY as FC_REGISTRY

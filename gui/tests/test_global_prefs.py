@@ -102,6 +102,7 @@ def test_invalid_temp_dir_is_rejected(write_default_conf, qtbot, tmp_path, mocke
 def test_apply_prefs_checks_temp_dir(tmp_path, monkeypatch):
     monkeypatch.setattr(tempfile, "tempdir", None)
     monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))  # expanduser uses this on windows
     prefs = {"http_timeout": 30.0, "temp_dir": "~"}
 
     global_prefs.apply_prefs(prefs)

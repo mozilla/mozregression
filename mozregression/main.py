@@ -26,6 +26,7 @@ from mozregression.errors import GoodBadExpectationError, MozRegressionError
 from mozregression.fetch_build_info import IntegrationInfoFetcher, NightlyInfoFetcher
 from mozregression.json_pushes import JsonPushes
 from mozregression.launchers import REGISTRY as APP_REGISTRY
+from mozregression.linux_utils import check_unprivileged_userns
 from mozregression.network import set_http_session
 from mozregression.persist_limit import PersistLimit
 from mozregression.telemetry import UsageMetrics, get_system_info, send_telemetry_ping_oop
@@ -327,6 +328,15 @@ def main(
         if check_new_version:
             check_mozregression_version()
         config.validate()
+        if (
+            sys.platform
+            in (
+                "linux",
+                "linux2",
+            )
+            and not config.dont_check_userns
+        ):
+            check_unprivileged_userns(LOG)
         set_http_session(get_defaults={"timeout": config.options.http_timeout})
 
         app = Application(config.fetch_config, config.options)

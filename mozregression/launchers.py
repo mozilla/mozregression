@@ -261,6 +261,7 @@ class MozRunnerLauncher(Launcher):
         addons=(),
         cmdargs=(),
         preferences=None,
+        policy=None,
         adb_profile_dir=None,
     ):
         profile = self._create_profile(profile=profile, addons=addons, preferences=preferences)
@@ -393,9 +394,27 @@ class FirefoxLauncher(MozRunnerLauncher):
     profile_class = FirefoxRegressionProfile
     env = (("MOZ_DISABLE_SAFE_MODE_KEY", "1"),)
 
+    def __init__(self, dest, **kwargs):
+        self.policy = kwargs.get("policy", {"policies": {"DisableAppUpdate": True}})
+        super().__init__(dest, **kwargs)
+
+    def _install_policy(self, policy):
+        install_dir = os.path.dirname(self.binary)
+        if mozinfo.os == "mac":
+            # macOS has the following filestructure:
+            # binary at:
+            #     PackageName.app/Contents/MacOS/firefox
+            # we need policies.json in:
+            #     PackageName.app/Contents/Resources/distribution
+            install_dir = os.path.normpath(os.path.join(install_dir, "..", "Resources"))
+        os.mkdir(os.path.join(install_dir, "distribution"))
+        policy_file = os.path.join(install_dir, "distribution", "policies.json")
+        with open(policy_file, "w") as fp:
+            json.dump(policy, fp, indent=2)
+
     def _install(self, dest):
         super(FirefoxLauncher, self)._install(dest)
-        self._disableUpdateByPolicy()
+        self._install_policy(self.policy)
 
         if self._codesign_invalid_on_macOS_13:
             LOG.warning(f"codesign verification failed for {self.appdir}, re-signing...")

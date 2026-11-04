@@ -11,6 +11,7 @@ from __future__ import absolute_import, print_function
 import datetime
 import os
 import re
+import tempfile
 from argparse import SUPPRESS, Action, ArgumentParser
 
 import mozinfo
@@ -19,7 +20,12 @@ from mozlog.structuredlog import get_default_logger
 
 from mozregression import __version__
 from mozregression.branches import get_name
-from mozregression.config import DEFAULT_CONF_FNAME, get_config, write_config
+from mozregression.config import (
+    DEFAULT_CONF_FNAME,
+    check_temp_dir,
+    get_config,
+    write_config,
+)
 from mozregression.dates import is_date_or_datetime, parse_date, to_datetime
 from mozregression.errors import DateFormatError, MozRegressionError, UnavailableRelease
 from mozregression.fetch_configs import REGISTRY as FC_REGISTRY
@@ -310,6 +316,15 @@ def create_parser(defaults):
     )
 
     parser.add_argument(
+        "--temp-dir",
+        default=defaults["temp-dir"],
+        help=(
+            "directory for temporary files such as profile clones and"
+            " unpacked builds. Defaults to the system temp directory."
+        ),
+    )
+
+    parser.add_argument(
         "--persist-size-limit",
         type=float,
         default=defaults["persist-size-limit"],
@@ -563,6 +578,10 @@ class Configuration(object):
         should be used to run the application.
         """
         options = self.options
+
+        if options.temp_dir:
+            options.temp_dir = check_temp_dir(options.temp_dir)
+            tempfile.tempdir = options.temp_dir
 
         arch_options = {
             "firefox": [

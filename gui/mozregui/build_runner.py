@@ -1,3 +1,5 @@
+from tempfile import mkdtemp
+
 from PySide6.QtCore import QObject, QThread, QTimer, Signal, Slot
 
 from mozregression.download_manager import BuildDownloadManager
@@ -126,6 +128,8 @@ class AbstractBuildRunner(QObject):
 
         download_dir = global_prefs["persist"]
         if not download_dir:
+            if self.mainwindow.persist is None:
+                self.mainwindow.persist = mkdtemp()
             download_dir = self.mainwindow.persist
         persist_limit = PersistLimit(abs(global_prefs["persist_size_limit"]) * 1073741824)
         self.download_manager = GuiBuildDownloadManager(download_dir, persist_limit)

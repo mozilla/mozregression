@@ -349,3 +349,25 @@ def test_telemetry(enable_telemetry):
         config = do_cli(conf_file=f.name)
         assert config.enable_telemetry is enable_telemetry
         os.unlink(f.name)
+
+
+def test_temp_dir(tmp_path, monkeypatch):
+    monkeypatch.setattr(tempfile, "tempdir", None)
+    config = do_cli("--temp-dir", str(tmp_path))
+    assert config.options.temp_dir == str(tmp_path)
+    assert os.path.dirname(tempfile.mkdtemp()) == str(tmp_path)
+
+
+def test_temp_dir_from_conf(tmp_path, monkeypatch):
+    monkeypatch.setattr(tempfile, "tempdir", None)
+    conf = tmp_path / "mozregression.cfg"
+    conf.write_text("temp-dir = %s\n" % tmp_path)
+    do_cli(conf_file=str(conf))
+    assert tempfile.tempdir == str(tmp_path)
+
+
+def test_temp_dir_invalid(tmp_path, monkeypatch):
+    monkeypatch.setattr(tempfile, "tempdir", None)
+    with pytest.raises(errors.MozRegressionError, match="temp-dir"):
+        do_cli("--temp-dir", str(tmp_path / "missing"))
+    assert tempfile.tempdir is None

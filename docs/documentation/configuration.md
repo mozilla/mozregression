@@ -26,11 +26,17 @@ cmdargs = "https://mozilla.org",
 ```
 Note the trailing comma, it is required to be correctly parsed as a list.
 
+Use `temp-dir` to choose where temporary files (such as profile clones and
+unpacked builds) are created, e.g. if your system temp directory is too small.
+Setting the `TMPDIR` environment variable has the same effect, but it also
+changes the temp directory for any other program started from that shell.
+
 ## Example
 
 {% highlight ini %}
 persist = /home/jp/.mozilla/mozregression/persist
 persist-size-limit = 3.0
+temp-dir = /home/jp/tmp
 bits = 64
 profile-persistence = clone-first
 http-timeout = 30.0

@@ -12,6 +12,7 @@ for pkgname in [
     "glean_parser",
     "mozregression",
     "yamllint",
+    "colorama",
     "bs4",
     "redo",
     "taskcluster",
@@ -69,7 +70,12 @@ if IS_MAC:
         name="mozregression GUI.app",
         icon="icons/app_icon.icns",
         bundle_identifier=None,
-        info_plist={"NSPrincipalClass": "NSApplication", "NSHighResolutionCapable": "True"},
+        info_plist={
+            "NSPrincipalClass": "NSApplication",
+            "NSHighResolutionCapable": "True",
+            "NSCameraUsageDescription": "This permission is required to allow launched builds to use the camera.",
+            "NSMicrophoneUsageDescription": "This permission is required to allow launched builds to use the microphone.",
+        },
     )
 else:
     exe = EXE(

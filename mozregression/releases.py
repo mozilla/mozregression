@@ -105,27 +105,34 @@ def date_of_release(release):
         raise UnavailableRelease(release)
 
 
-def tag_of_release(release):
+def _tag_prefix(app_name):
+    return "THUNDERBIRD" if app_name == "thunderbird" else "FIREFOX"
+
+
+def tag_of_release(release, app_name="firefox"):
     """
     Provide the mercurial tag of a release, suitable for use in place of a hash
     """
     if re.match(r"^\d+$", release):
         release += ".0"
     if re.match(r"^\d+\.\d(\.\d)?$", release):
-        return "FIREFOX_%s_RELEASE" % release.replace(".", "_")
+        return "%s_%s_RELEASE" % (_tag_prefix(app_name), release.replace(".", "_"))
     else:
         raise UnavailableRelease(release)
 
 
-def tag_of_beta(release):
+def tag_of_beta(release, app_name="firefox"):
     """
     Provide the mercurial tag of a beta release, suitable for use in place of a
     hash
     """
     if re.match(r"^\d+\.0b\d+$", release):
-        return "FIREFOX_%s_RELEASE" % release.replace(".", "_")
+        return "%s_%s_RELEASE" % (_tag_prefix(app_name), release.replace(".", "_"))
     elif re.match(r"^\d+(\.0)?$", release):
-        return "FIREFOX_RELEASE_%s_BASE" % release.replace(".0", "")
+        version = release.replace(".0", "")
+        if app_name == "thunderbird":
+            return "BETA_%s_BASE" % version
+        return "FIREFOX_RELEASE_%s_BASE" % version
     else:
         raise UnavailableRelease(release)
 
@@ -136,7 +143,9 @@ def formatted_valid_release_dates():
     the valid release dates.
     """
     message = "Valid releases: \n"
-    for key, value in releases().items():
+    releases_descending = list(releases().items())
+    releases_descending.sort(reverse=True, key=lambda t: t[0])
+    for key, value in releases_descending:
         message += "% 3s: %s\n" % (key, value)
 
     return message

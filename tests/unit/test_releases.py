@@ -53,6 +53,10 @@ class TestRelease(unittest.TestCase):
         self.assertEqual(tag, "FIREFOX_60_0_RELEASE")
         tag = tag_of_release("65.0.1")
         self.assertEqual(tag, "FIREFOX_65_0_1_RELEASE")
+        tag = tag_of_release("156.0.1", "thunderbird")
+        self.assertEqual(tag, "THUNDERBIRD_156_0_1_RELEASE")
+        tag = tag_of_release("157", "thunderbird")
+        self.assertEqual(tag, "THUNDERBIRD_157_0_RELEASE")
 
     def test_invalid_release_tags(self):
         with self.assertRaises(errors.UnavailableRelease):
@@ -71,6 +75,10 @@ class TestRelease(unittest.TestCase):
         self.assertEqual(tag, "FIREFOX_RELEASE_65_BASE")
         tag = tag_of_beta("66.0")
         self.assertEqual(tag, "FIREFOX_RELEASE_66_BASE")
+        tag = tag_of_beta("157.0b3", "thunderbird")
+        self.assertEqual(tag, "THUNDERBIRD_157_0b3_RELEASE")
+        tag = tag_of_beta("157", "thunderbird")
+        self.assertEqual(tag, "BETA_157_BASE")
 
     def test_invalid_beta_tags(self):
         with self.assertRaises(errors.UnavailableRelease):

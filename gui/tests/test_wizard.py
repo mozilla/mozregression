@@ -1,5 +1,6 @@
 import pytest
 from PySide6.QtCore import QDate
+from PySide6.QtWidgets import QWizard
 
 from mozregression.fetch_configs import CommonConfig
 from mozregui.wizard import (
@@ -41,6 +42,9 @@ def test_wizard(mocker, qtbot, os, bits, wizard_class, pages):
     wizard.show()
     with qtbot.waitExposed(wizard):
         pass
+
+    if os == "win":
+        assert wizard.wizardStyle() == QWizard.WizardStyle.ModernStyle
 
     for page_class in pages:
         assert isinstance(wizard.currentPage(), page_class)

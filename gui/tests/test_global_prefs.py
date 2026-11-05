@@ -26,12 +26,10 @@ def write_default_conf():
 
 
 def test_change_prefs_dialog(write_default_conf, qtbot):
-    write_default_conf(
-        """
+    write_default_conf("""
 http-timeout = 32.1
 persist-size-limit = 2.5
-"""
-    )
+""")
 
     pref_dialog = global_prefs.ChangePrefsDialog()
     qtbot.add_widget(pref_dialog)

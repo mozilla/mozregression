@@ -102,7 +102,7 @@ def create_parser(defaults):
         "--version",
         action="version",
         version=__version__,
-        help=("print the mozregression version number and" " exits."),
+        help=("print the mozregression version number and exits."),
     )
 
     parser.add_argument(
@@ -120,7 +120,7 @@ def create_parser(defaults):
         "-g",
         "--good",
         metavar="DATE|BUILDID|RELEASE|CHANGESET",
-        help=("last known good build. Same possible values" " as the --bad option."),
+        help=("last known good build. Same possible values as the --bad option."),
     )
 
     parser.add_argument(
@@ -268,8 +268,8 @@ def create_parser(defaults):
         choices=("32", "64"),
         default=defaults["bits"],
         help=(
-            "force 32 or 64 bit version (only applies to"
-            " x86_64 boxes). Default: %s bits." % defaults["bits"]
+            "force 32 or 64 bit version (only applies to x86_64 boxes). Default: %s bits."
+            % defaults["bits"]
             or mozinfo.bits
         ),
     )
@@ -304,9 +304,7 @@ def create_parser(defaults):
     parser.add_argument(
         "--persist",
         default=defaults["persist"],
-        help=(
-            "the directory in which downloaded files are" " to persist. Defaults to %(default)r."
-        ),
+        help=("the directory in which downloaded files are to persist. Defaults to %(default)r."),
     )
 
     parser.add_argument(
@@ -340,9 +338,7 @@ def create_parser(defaults):
         action="store_false",
         dest="background_dl",
         default=(defaults["no-background-dl"].lower() not in ("1", "yes", "true")),
-        help=(
-            "Do not download next builds in the background" " while evaluating the current build."
-        ),
+        help=("Do not download next builds in the background while evaluating the current build."),
     )
 
     parser.add_argument(
@@ -378,7 +374,7 @@ def create_parser(defaults):
     parser.add_argument(
         "--launch",
         metavar="DATE|BUILDID|RELEASE|CHANGESET",
-        help=("Launch only one specific build. Same possible" " values as the --bad option."),
+        help=("Launch only one specific build. Same possible values as the --bad option."),
     )
 
     parser.add_argument(
@@ -408,7 +404,7 @@ def create_parser(defaults):
     parser.add_argument(
         "--archive-base-url",
         default=defaults["archive-base-url"],
-        help=("Base url used to find the archived builds." " Defaults to %(default)s"),
+        help=("Base url used to find the archived builds. Defaults to %(default)s"),
     )
 
     parser.add_argument(

@@ -4,5 +4,5 @@ set -e
 
 LINTER_FILES="$(dirname "$0")/../.linter-files"
 
-cat $LINTER_FILES | xargs isort --check-only --skip-gitignore
-cat $LINTER_FILES | xargs flake8
+cat $LINTER_FILES | xargs ruff check
+cat $LINTER_FILES | xargs ruff format --check

@@ -54,7 +54,7 @@ class WizardPage(QWizardPage):
 class IntroPage(WizardPage):
     UI_CLASS = Ui_Intro
     TITLE = "Basic configuration"
-    SUBTITLE = "Please choose an application and other options to specify" " what you want to test."
+    SUBTITLE = "Please choose an application and other options to specify what you want to test."
     FIELDS = {
         "application": "app_combo",
         "repository": "repository",

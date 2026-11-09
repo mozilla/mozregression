@@ -368,6 +368,6 @@ def test_temp_dir_from_conf(tmp_path, monkeypatch):
 
 def test_temp_dir_invalid(tmp_path, monkeypatch):
     monkeypatch.setattr(tempfile, "tempdir", None)
-    with pytest.raises(errors.MozRegressionError, match="temp-dir"):
+    with pytest.raises(errors.MozRegressionError, match="does not exist"):
         do_cli("--temp-dir", str(tmp_path / "missing"))
     assert tempfile.tempdir is None

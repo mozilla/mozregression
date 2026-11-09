@@ -20,7 +20,7 @@ from mozlog.structuredlog import get_default_logger
 
 from mozregression import __version__
 from mozregression.branches import get_name
-from mozregression.config import DEFAULT_CONF_FNAME, check_temp_dir, get_config, write_config
+from mozregression.config import DEFAULT_CONF_FNAME, get_absolute_dir_path, get_config, write_config
 from mozregression.dates import is_date_or_datetime, parse_date, to_datetime
 from mozregression.errors import DateFormatError, MozRegressionError, UnavailableRelease
 from mozregression.fetch_configs import REGISTRY as FC_REGISTRY
@@ -314,7 +314,7 @@ def create_parser(defaults):
         "--temp-dir",
         default=defaults["temp-dir"],
         help=(
-            "directory for temporary files such as profile clones and"
+            "Directory for temporary files such as profile clones and"
             " unpacked builds. Defaults to the system temp directory."
         ),
     )
@@ -575,8 +575,7 @@ class Configuration(object):
         options = self.options
 
         if options.temp_dir:
-            options.temp_dir = check_temp_dir(options.temp_dir)
-            tempfile.tempdir = options.temp_dir
+            tempfile.tempdir = get_absolute_dir_path(options.temp_dir)
 
         arch_options = {
             "firefox": [

@@ -5,7 +5,12 @@ from configobj import ConfigObj
 from glean import Glean
 from PySide6.QtWidgets import QDialog, QMessageBox
 
-from mozregression.config import ARCHIVE_BASE_URL, DEFAULT_CONF_FNAME, check_temp_dir, get_config
+from mozregression.config import (
+    ARCHIVE_BASE_URL,
+    DEFAULT_CONF_FNAME,
+    get_absolute_dir_path,
+    get_config,
+)
 from mozregression.errors import MozRegressionError
 from mozregression.network import set_http_session
 from mozregui.log_report import log
@@ -73,14 +78,16 @@ def set_default_prefs():
 
 def apply_prefs(options):
     set_http_session(get_defaults={"timeout": options["http_timeout"]})
+    # None means the system temp dir
+    tempfile.tempdir = None
     temp_dir = options["temp_dir"]
     if temp_dir:
         try:
-            temp_dir = check_temp_dir(temp_dir)
+            abs_temp_dir = get_absolute_dir_path(temp_dir)
         except MozRegressionError as exc:
             log("%s, using the system temp dir instead" % exc, status_bar=False)
-            temp_dir = None
-    tempfile.tempdir = temp_dir
+        else:
+            tempfile.tempdir = abs_temp_dir
     # persist options have to be passed in the bisection, not handled here.
 
 
@@ -124,11 +131,14 @@ class ChangePrefsDialog(QDialog):
         self.ui.telemetryLabel.setVisible(visible)
 
     def accept(self):
+        """Validate the temporary files directory before closing the dialog."""
         temp_dir = str(self.ui.temp_dir.line_edit.text())
         if temp_dir:
             try:
-                check_temp_dir(temp_dir)
+                get_absolute_dir_path(temp_dir)
             except MozRegressionError as exc:
+                # warn and return without accepting, so the dialog stays
+                # open and the user can fix the path
                 QMessageBox.warning(self, "Invalid temporary files directory", str(exc))
                 return
         QDialog.accept(self)

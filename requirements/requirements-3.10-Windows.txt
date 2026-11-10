@@ -1291,9 +1291,9 @@ semver==3.1.0 \
     --hash=sha256:14bc073439513d7773662a338f4db9829cf16c12b74b9568e2d2689975fbd7fc \
     --hash=sha256:6e4998f8b4762acdfea85f9bfd5b4032e0bb50038dc04bf82011b42d5d1145c5
     # via glean-sdk
-setuptools-scm==8.3.1 \
-    --hash=sha256:332ca0d43791b818b841213e76b1971b7711a960761c5bea5fc5cdb5196fbce3 \
-    --hash=sha256:3d555e92b75dacd037d32bafdf94f97af51ea29ae8c7b234cf94b7a5bd242a63
+setuptools-scm==10.3.4 \
+    --hash=sha256:82f34c3e3084fc2b57d397200637cc13f2338004052d2fee47baa5f0e902464e \
+    --hash=sha256:a69f28bfc245608781205e912faae437c2b2165773afa4e7b979d77447a69dd2
     # via -r base.in
 shellingham==1.5.4 \
     --hash=sha256:7ecfff8f2fd72616f7481040475a65b2bf8af90a56c89140852d1120324e8686 \

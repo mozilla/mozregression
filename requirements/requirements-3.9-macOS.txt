@@ -104,9 +104,9 @@ coverage[toml]==7.10.7 \
     # via
     #   -r dev.in
     #   coveralls
-coveralls==4.0.1 \
-    --hash=sha256:7a6b1fa9848332c7b2221afb20f3df90272ac0167060f41b5fe90429b30b1809 \
-    --hash=sha256:7b2a0a2bcef94f295e3cf28dcc55ca40b71c77d1c2446b538e85f0f7bc21aa69
+coveralls==4.1.0 \
+    --hash=sha256:bfacfda2d443c24fc90d67035027cec15015fff2dbd036427e8bf8f4953dda2e \
+    --hash=sha256:dab364025ba80cbb95ce56c6fc62cd9172d7fd637060ea235dde99d9b46a4494
     # via -r dev.in
 diskcache==5.6.3 \
     --hash=sha256:2c3a3fa2743d8535d832ec61c2054a1641f41775aa7c556758a109941e33e4fc \

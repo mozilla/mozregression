@@ -1,11 +1,19 @@
 import os
+import tempfile
 
 from configobj import ConfigObj
 from glean import Glean
-from PySide6.QtWidgets import QDialog
+from PySide6.QtWidgets import QDialog, QMessageBox
 
-from mozregression.config import ARCHIVE_BASE_URL, DEFAULT_CONF_FNAME, get_config
+from mozregression.config import (
+    ARCHIVE_BASE_URL,
+    DEFAULT_CONF_FNAME,
+    get_absolute_dir_path,
+    get_config,
+)
+from mozregression.errors import MozRegressionError
 from mozregression.network import set_http_session
+from mozregui.log_report import log
 from mozregui.ui.global_prefs import Ui_GlobalPrefs
 
 
@@ -16,6 +24,7 @@ def get_prefs():
     settings = get_config(DEFAULT_CONF_FNAME)
     options = dict()
     options["persist"] = settings["persist"]
+    options["temp_dir"] = settings["temp-dir"] or None
     options["http_timeout"] = float(settings["http-timeout"])
     options["persist_size_limit"] = float(settings["persist-size-limit"])
     options["background_downloads"] = (
@@ -38,6 +47,7 @@ def save_prefs(options):
     settings.update(
         {
             "persist": options["persist"] or "",
+            "temp-dir": options["temp_dir"] or "",
             "http-timeout": options["http_timeout"],
             "persist-size-limit": options["persist_size_limit"],
             "background_downloads": "yes" if options["background_downloads"] else "no",
@@ -68,6 +78,16 @@ def set_default_prefs():
 
 def apply_prefs(options):
     set_http_session(get_defaults={"timeout": options["http_timeout"]})
+    # None means the system temp dir
+    tempfile.tempdir = None
+    temp_dir = options["temp_dir"]
+    if temp_dir:
+        try:
+            abs_temp_dir = get_absolute_dir_path(temp_dir)
+        except MozRegressionError as exc:
+            log("%s, using the system temp dir" % exc, status_bar=False)
+        else:
+            tempfile.tempdir = abs_temp_dir
     # persist options have to be passed in the bisection, not handled here.
 
 
@@ -80,6 +100,8 @@ class ChangePrefsDialog(QDialog):
         # set default values
         options = get_prefs()
         self.ui.persist.line_edit.setText(options["persist"] or "")
+        self.ui.temp_dir.line_edit.setText(options["temp_dir"] or "")
+        self.ui.temp_dir.line_edit.setPlaceholderText("System default")
         self.ui.http_timeout.setValue(options["http_timeout"])
         self.ui.persist_size_limit.setValue(options["persist_size_limit"])
         self.ui.bg_downloads.setChecked(options["background_downloads"])
@@ -108,11 +130,25 @@ class ChangePrefsDialog(QDialog):
         self.ui.enable_telemetry.setVisible(visible)
         self.ui.telemetryLabel.setVisible(visible)
 
+    def accept(self):
+        """Validate the temporary files directory before closing the dialog."""
+        temp_dir = str(self.ui.temp_dir.line_edit.text())
+        if temp_dir:
+            try:
+                get_absolute_dir_path(temp_dir)
+            except MozRegressionError as exc:
+                # warn and return without accepting, so the dialog stays
+                # open and the user can fix the path
+                QMessageBox.warning(self, "Invalid temporary files directory", str(exc))
+                return
+        QDialog.accept(self)
+
     def save_prefs(self):
         options = get_prefs()
         ui = self.ui
 
         options["persist"] = str(ui.persist.line_edit.text()) or None
+        options["temp_dir"] = str(ui.temp_dir.line_edit.text()) or None
         options["http_timeout"] = ui.http_timeout.value()
         options["persist_size_limit"] = ui.persist_size_limit.value()
         options["background_downloads"] = ui.bg_downloads.isChecked()
@@ -129,8 +165,9 @@ class ChangePrefsDialog(QDialog):
 
 def change_prefs_dialog(parent=None):
     """
-    A dialog to change global prefs. This does not apply the prefs.
+    A dialog to change global prefs, applied straight away.
     """
     dlg = ChangePrefsDialog(parent)
     if dlg.exec() == QDialog.Accepted:
         dlg.save_prefs()
+        apply_prefs(get_prefs())

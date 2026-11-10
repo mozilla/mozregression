@@ -1,4 +1,5 @@
 import os
+import tempfile
 
 from mock import patch
 from PySide6.QtCore import QTimer
@@ -30,14 +31,14 @@ def run_app(func, _1, _2, QApplication):
         pass
 
 
-def test_persist_is_created_and_deleted():
+def test_persist_is_created_lazily_and_deleted():
     data = {
         "persist_dir": None,
-        "created": None,
+        "created_at_startup": None,
         "deleted": None,
     }
 
-    def check_persist_is_created():
+    def check_persist_is_lazy():
         main_win = None
 
         for w in APP.topLevelWidgets():
@@ -45,11 +46,12 @@ def test_persist_is_created_and_deleted():
                 main_win = w
                 break
 
-        data["persist_dir"] = main_win.persist
-        data["created"] = os.path.isdir(data["persist_dir"])
+        data["created_at_startup"] = main_win.persist is not None
+        # what a build runner does on first use
+        main_win.persist = data["persist_dir"] = tempfile.mkdtemp()
 
-    run_app(check_persist_is_created)
+    run_app(check_persist_is_lazy)
     data["deleted"] = not os.path.isdir(data["persist_dir"])
 
-    assert data["created"]
+    assert not data["created_at_startup"]
     assert data["deleted"]

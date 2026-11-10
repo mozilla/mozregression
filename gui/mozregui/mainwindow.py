@@ -1,5 +1,3 @@
-from tempfile import mkdtemp
-
 import mozfile
 from PySide6.QtCore import QEvent, QSettings, Slot
 from PySide6.QtGui import QIcon
@@ -8,7 +6,7 @@ from PySide6.QtWidgets import QMainWindow, QMessageBox
 from mozregression import __version__ as mozregression_version
 from mozregression.telemetry import initialize_telemetry
 from mozregui.bisection import BisectRunner
-from mozregui.global_prefs import change_prefs_dialog, get_prefs
+from mozregui.global_prefs import apply_prefs, change_prefs_dialog, get_prefs
 from mozregui.report_delegate import ReportItemDelegate
 from mozregui.single_runner import SingleBuildRunner
 from mozregui.ui.mainwindow import Ui_MainWindow
@@ -62,9 +60,12 @@ class MainWindow(QMainWindow):
             runner.running_state_changed.connect(self.ui.actionStop_the_bisection.setEnabled)
             runner.running_state_changed.connect(self.ui.actionRun_a_single_build.setDisabled)
 
-        self.persist = mkdtemp()
+        # created on first use, so it honours the temp dir pref
+        self.persist = None
 
         self.read_settings()
+        # apply now, as the wizard may clone a profile before any run starts
+        apply_prefs(get_prefs())
 
         # get weird behaviour if we enable multiprocessing on pyinstaller builds of the GUI
         initialize_telemetry(get_prefs()["enable_telemetry"], allow_multiprocessing=False)
@@ -78,7 +79,8 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def clear(self):
-        mozfile.remove(self.persist)
+        if self.persist:
+            mozfile.remove(self.persist)
 
     def read_settings(self):
         settings = QSettings()

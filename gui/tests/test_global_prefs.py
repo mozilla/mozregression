@@ -61,3 +61,53 @@ def test_change_prefs_dialog_saves_prefs(dlg_result, saved, mocker):
 
     global_prefs.change_prefs_dialog()
     assert dlg.save_prefs.called == saved
+
+
+def test_temp_dir_pref_is_saved_and_applied(write_default_conf, qtbot, tmp_path, monkeypatch):
+    monkeypatch.setattr(tempfile, "tempdir", None)
+    write_default_conf("")
+
+    pref_dialog = global_prefs.ChangePrefsDialog()
+    qtbot.add_widget(pref_dialog)
+    assert str(pref_dialog.ui.temp_dir.line_edit.text()) == ""
+    assert pref_dialog.ui.temp_dir.line_edit.placeholderText() == "System default"
+
+    pref_dialog.ui.temp_dir.line_edit.setText(str(tmp_path))
+    pref_dialog.save_prefs()
+    prefs = global_prefs.get_prefs()
+    assert prefs["temp_dir"] == str(tmp_path)
+
+    global_prefs.apply_prefs(prefs)
+    assert os.path.dirname(tempfile.mkdtemp()) == str(tmp_path)
+
+    pref_dialog.ui.temp_dir.line_edit.setText("")
+    pref_dialog.save_prefs()
+    global_prefs.apply_prefs(global_prefs.get_prefs())
+    assert tempfile.tempdir is None
+
+
+def test_invalid_temp_dir_is_rejected(write_default_conf, qtbot, tmp_path, mocker):
+    write_default_conf("")
+    warning = mocker.patch("mozregui.global_prefs.QMessageBox.warning")
+
+    pref_dialog = global_prefs.ChangePrefsDialog()
+    qtbot.add_widget(pref_dialog)
+    pref_dialog.ui.temp_dir.line_edit.setText(str(tmp_path / "missing"))
+    pref_dialog.accept()
+
+    assert warning.called
+    assert pref_dialog.result() != QDialog.Accepted
+
+
+def test_apply_prefs_checks_temp_dir(tmp_path, monkeypatch):
+    monkeypatch.setattr(tempfile, "tempdir", None)
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))  # expanduser uses this on windows
+    prefs = {"http_timeout": 30.0, "temp_dir": "~"}
+
+    global_prefs.apply_prefs(prefs)
+    assert tempfile.tempdir == str(tmp_path)
+
+    prefs["temp_dir"] = str(tmp_path / "missing")
+    global_prefs.apply_prefs(prefs)
+    assert tempfile.tempdir is None

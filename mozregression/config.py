@@ -45,6 +45,7 @@ DEFAULTS = {
     "profile": None,
     "profile-persistence": "clone",
     "repo": None,
+    "temp-dir": None,
     "taskcluster-accesstoken": None,
     "taskcluster-clientid": None,
     "enable-telemetry": True,
@@ -63,6 +64,17 @@ def get_config(conf_path):
     config.update(config_obj)
 
     return config
+
+
+def get_absolute_dir_path(path):
+    """Return the absolute form of a directory path.
+
+    Raise MozRegressionError if it is not a writable directory.
+    """
+    abs_path = os.path.abspath(os.path.expanduser(path))
+    if not (os.path.isdir(abs_path) and os.access(abs_path, os.W_OK)):
+        raise MozRegressionError("%r does not exist or is not a writable directory" % abs_path)
+    return abs_path
 
 
 def _get_persist_dir(default):

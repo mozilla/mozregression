@@ -524,9 +524,9 @@ pyyaml==6.0.3 \
     # via
     #   -r base.in
     #   glean-parser
-redo==3.0.0 \
-    --hash=sha256:52a14200004d6708924a547b31b7d1c717cb36b944f3a5c7b176e0d61ab81eef \
-    --hash=sha256:66905396b2882577fa4bf7edb90fee081db2b98992d303f12e3f898ac7f7bd56
+redo==3.0.1 \
+    --hash=sha256:3b5500e5946c85599f089e6c01c7d0e7fa127a59ac75b768191f4b2ae8e4d1cc \
+    --hash=sha256:879223f6201d384bde581d62207ef88bbc941478a3b05020287914f89eed4b72
     # via -r base.in
 requests==2.34.2 \
     --hash=sha256:2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0 \

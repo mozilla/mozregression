@@ -85,7 +85,7 @@ def apply_prefs(options):
         try:
             abs_temp_dir = get_absolute_dir_path(temp_dir)
         except MozRegressionError as exc:
-            log("%s, using the system temp dir instead" % exc, status_bar=False)
+            log("%s, using the system temp dir" % exc, status_bar=False)
         else:
             tempfile.tempdir = abs_temp_dir
     # persist options have to be passed in the bisection, not handled here.

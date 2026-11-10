@@ -329,8 +329,9 @@ multidict @ https://files.pythonhosted.org/packages/eb/6b/86f353088c1358e76fd30b
     #   -r base.universal2.in
     #   aiohttp
     #   yarl
-mypy-extensions==1.1.0 \
-    --hash=sha256:52e68efc3284861e772bbcd66823fde5ae21fd2fdb51c62a211403730b916558
+mypy-extensions==1.2.0 \
+    --hash=sha256:993e7a20aa5671eb41a7132cf555af30062da99729601601b9a8382b11cae768 \
+    --hash=sha256:c6e275a07f1c2fc096b62940452d0eaa3f3af7de45d704787866240a7c6d5a51
     # via
     #   black
     #   isort

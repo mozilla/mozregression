@@ -608,9 +608,9 @@ yarl @ https://files.pythonhosted.org/packages/5f/9a/cb7fad7d73c69f296eda6815e4a
     # via
     #   -r base.universal2.in
     #   aiohttp
-zipp==4.1.0 \
-    --hash=sha256:25ad4e16390cd314347dd8f1de67a2ac538ae658ed4ab9db16029c07c188e97f \
-    --hash=sha256:4cb57381f544315db7688e976e922a2b18cdb513d21cc194eb42232ba2a3e602
+zipp==4.1.2 \
+    --hash=sha256:b30cb6cd253122169c47de245ca24a86bac2a5d3802ba15bf7ba6414eb9e144d \
+    --hash=sha256:cf474b90b07ea932637e17c6b9479de2b2882900b0d311bdaf4f5c000a15a97f
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:

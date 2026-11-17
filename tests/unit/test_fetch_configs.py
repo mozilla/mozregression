@@ -487,6 +487,15 @@ CHSET12 = "47856a214918"
         ),
         (
             "firefox",
+            "mac",
+            64,
+            "arm",
+            "m-i",
+            TIMESTAMP_TEST,
+            "gecko.v2.mozilla-inbound.shippable.revision.%s.firefox.macosx64-aarch64-opt" % CHSET,
+        ),
+        (
+            "firefox",
             "linux",
             64,
             "x86_64",

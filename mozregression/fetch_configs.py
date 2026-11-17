@@ -519,6 +519,8 @@ def _common_tk_part(integration_conf):
             part += str(integration_conf.bits)
     elif integration_conf.os == "mac":
         part = "macosx64"
+        if integration_conf.processor == "arm":
+            part += "-aarch64"
     else:
         # windows
         part = "{}{}".format(integration_conf.os, integration_conf.bits)

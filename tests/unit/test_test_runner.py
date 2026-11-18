@@ -35,8 +35,8 @@ class TestManualTestRunner(unittest.TestCase):
         launcher = Mock()
         create_launcher.return_value = launcher
         info = mockinfo(build_type="nightly", app_name="firefox", build_file="/path/to")
-        result_launcher = test_runner.create_launcher(info)
-        create_launcher.assert_called_with(info)
+        result_launcher = test_runner.create_launcher(info, [])
+        create_launcher.assert_called_with(info, [])
 
         self.assertEqual(result_launcher, launcher)
 
@@ -52,8 +52,8 @@ class TestManualTestRunner(unittest.TestCase):
             build_date=datetime.datetime(2015, 11, 6, 5, 4, 3),
             repo_name="mozilla-central",
         )
-        result_launcher = test_runner.create_launcher(info)
-        mozlauncher.assert_called_with(info)
+        result_launcher = test_runner.create_launcher(info, [])
+        mozlauncher.assert_called_with(info, [])
         log.info.assert_called_with("Running mozilla-central build for buildid 20151106050403")
 
         self.assertEqual(result_launcher, launcher)
@@ -64,8 +64,39 @@ class TestManualTestRunner(unittest.TestCase):
         launcher = Mock()
         mozlauncher.return_value = launcher
         info = mockinfo(build_type="inbound", app_name="firefox", build_file="/path/to")
-        result_launcher = test_runner.create_launcher(info)
-        mozlauncher.assert_called_with(info)
+        result_launcher = test_runner.create_launcher(info, [])
+        mozlauncher.assert_called_with(info, [])
+        self.assertEqual(result_launcher, launcher)
+
+    @patch("mozregression.test_runner.mozlauncher")
+    def test_snap_create_launcher(self, create_launcher):
+        launcher = Mock()
+        create_launcher.return_value = launcher
+        info = mockinfo(build_type="integration", app_name="firefox-snap", build_file="/path/to")
+        result_launcher = test_runner.create_launcher(info, [True, False])
+        create_launcher.assert_called_with(info, [True, False])
+
+        self.assertEqual(result_launcher, launcher)
+
+    @patch("mozregression.test_runner.mozlauncher")
+    @patch("mozregression.test_runner.LOG")
+    def test_snap_create_launcher_buildid(self, log, mozlauncher):
+        launcher = Mock()
+        mozlauncher.return_value = launcher
+        info = mockinfo(
+            build_type="integration",
+            app_name="firefox-snap",
+            build_file="/path/to",
+            build_date=datetime.datetime(2023, 11, 6, 5, 4, 3),
+            repo_name="mozilla-central",
+            short_changeset="1234",
+        )
+        result_launcher = test_runner.create_launcher(info, [True, False])
+        mozlauncher.assert_called_with(info, [True, False])
+        log.info.assert_called_with(
+            "Running mozilla-central build built on 2023-11-06 05:04:03, revision 1234"
+        )
+
         self.assertEqual(result_launcher, launcher)
 
     @patch("mozregression.test_runner.input")
@@ -98,7 +129,7 @@ class TestManualTestRunner(unittest.TestCase):
         build_infos = mockinfo()
         result = self.runner.evaluate(build_infos)
 
-        create_launcher.assert_called_with(build_infos)
+        create_launcher.assert_called_with(build_infos, {})
         launcher.get_app_info.assert_called_with()
         launcher.start.assert_called_with()
         get_verdict.assert_called_with(build_infos, False)
@@ -124,7 +155,7 @@ class TestManualTestRunner(unittest.TestCase):
         create_launcher.return_value = Launcher(launcher)
         build_infos = mockinfo()
         self.assertEqual(self.runner.run_once(build_infos), 0)
-        create_launcher.assert_called_with(build_infos)
+        create_launcher.assert_called_with(build_infos, {})
         launcher.get_app_info.assert_called_with()
         launcher.start.assert_called_with()
         launcher.wait.assert_called_with()
@@ -136,7 +167,7 @@ class TestManualTestRunner(unittest.TestCase):
         build_infos = mockinfo()
         with self.assertRaises(KeyboardInterrupt):
             self.runner.run_once(build_infos)
-        create_launcher.assert_called_with(build_infos)
+        create_launcher.assert_called_with(build_infos, {})
         launcher.get_app_info.assert_called_with()
         launcher.start.assert_called_with()
         launcher.wait.assert_called_with()

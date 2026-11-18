@@ -54,6 +54,7 @@ def test_app_get_manual_test_runner(create_app):
     assert app.test_runner.launcher_kwargs == dict(
         addons=[],
         profile="/prof",
+        policy=None,
         cmdargs=["--allow-downgrade"],
         preferences=[],
         adb_profile_dir=None,

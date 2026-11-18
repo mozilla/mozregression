@@ -106,3 +106,22 @@ def test_push_with_date_raise_appropriate_error():
         jpushes.push(date(2015, 1, 1))
 
     assert str(ctx.value) == "No pushes available for the date 2015-01-01 on inbound."
+
+
+def test_push_by_timestamp_builds_url(mocker):
+    timestamp = datetime(2025, 1, 2, 3, 4, 5)
+    pushlog = {"1": {"changesets": ["abc"], "date": 12345}}
+
+    retry_get = mocker.patch("mozregression.json_pushes.retry_get")
+    retry_get.return_value = Mock(json=Mock(return_value=pushlog))
+
+    jpushes = JsonPushes(branch="mozilla-central")
+    pushes = jpushes.push_by_timestamp(timestamp)
+
+    assert pushes[0].push_id == "1"
+    assert pushes[0].changeset == "abc"
+    expected_url = (
+        "https://hg.mozilla.org/mozilla-central/json-pushes?"
+        "enddate=2025-01-02 03:04:06&startdate=2025-01-02 03:04:04"
+    )
+    retry_get.assert_called_once_with(expected_url)

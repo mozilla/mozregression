@@ -1,6 +1,6 @@
 # pyproject.toml
 [build-system]
-requires = ["setuptools>=61", "wheel", "setuptools_scm[toml]>=3.4"]
+requires = ["setuptools>=61", "wheel", "setuptools_scm[toml]>=3.4", "pyside6"]
 
 [tool.setuptools_scm]
 write_to = "mozregression/version.py"
@@ -65,12 +65,56 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
 ]
 
+[project.optional-dependencies]
+# Make sure sure to update requirements/gui.in
+gui = [
+  "pyside6>=6.9.0"
+]
+
 [project.scripts]
 mozregression = "mozregression.main:main"
 
+[project.gui-scripts]
+mozregui = "gui.mozregui.main:main"
+mozregression-gui = "gui.mozregui.main:main"
+
+[dependency-groups]
+# Make sure sure to update requirements/dev.in
+dev = [
+  "coverage",
+  "coveralls",
+  "mock",
+  "pytest",
+  "pytest-mock",
+  {include-group = "lint"},
+]
+# Make sure sure to update requirements/gui-dev.in
+dev-gui = [
+  "pytest-qt",
+  {include-group = "dev"},
+]
+# Make sure sure to update requirements/linters.in.
+lint = [
+  "flake8-black",
+  "flake8>=6.0.0; python_version >= '3.8'",
+  "glean-parser",
+  "isort",
+  "mccabe",
+  "pyflakes",
+]
+
 [tool.setuptools]
-packages = ["mozregression"]
+packages = [
+  "mozregression",
+  "mozregui",
+  "resources_rc",
+]
 platforms = ["Any"]
+
+[tool.setuptools.package-dir]
+mozregui= "gui/mozregui"
+# XXX: this gets built by gui/build.py, so we can't pre-install it
+resources_rc = "gui/resources_rc"
 
 [tool.setuptools.package-data]
 mozregression = ["*.yaml"]

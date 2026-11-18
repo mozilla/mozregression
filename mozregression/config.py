@@ -49,6 +49,7 @@ DEFAULTS = {
     "taskcluster-accesstoken": None,
     "taskcluster-clientid": None,
     "enable-telemetry": True,
+    "dont-check-userns": False,
 }
 
 

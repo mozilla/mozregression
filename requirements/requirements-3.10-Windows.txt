@@ -1287,9 +1287,9 @@ rpds-py==0.30.0 \
     # via
     #   jsonschema
     #   referencing
-semver==3.1.0 \
-    --hash=sha256:14bc073439513d7773662a338f4db9829cf16c12b74b9568e2d2689975fbd7fc \
-    --hash=sha256:6e4998f8b4762acdfea85f9bfd5b4032e0bb50038dc04bf82011b42d5d1145c5
+semver==3.1.2 \
+    --hash=sha256:45d107c3fa880910441dfab9d555046cba2829a25feeadfe4a1566439635c510 \
+    --hash=sha256:bea193552413194252d33ff26ce0962b76669bd1c6fb17e8e203ac37f072feaf
     # via glean-sdk
 setuptools-scm==8.3.1 \
     --hash=sha256:332ca0d43791b818b841213e76b1971b7711a960761c5bea5fc5cdb5196fbce3 \
